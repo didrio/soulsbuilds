@@ -1,0 +1,2450 @@
+[
+  {
+    "tier": "S",
+    "name": "Blasphemous Blade",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "13.5"
+  },
+  {
+    "tier": "S",
+    "name": "Dark Moon Greatsword",
+    "passive": "Causes frostbite buildup (55)",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "S",
+    "name": "Death's Poker",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "8.5"
+  },
+  {
+    "tier": "S",
+    "name": "Eleonora's Poleblade",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Twinblades",
+    "damageType": "Standard, Pierce",
+    "weight": "6"
+  },
+  {
+    "tier": "S",
+    "name": "Erdtree Bow",
+    "passive": "Scales all arrow damage with faith",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "4"
+  },
+  {
+    "tier": "S",
+    "name": "Fallingstar Beast Jaw",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike, Pierce",
+    "weight": "21.5"
+  },
+  {
+    "tier": "S",
+    "name": "Full Moon Crossbow",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "2.5"
+  },
+  {
+    "tier": "S",
+    "name": "Gargoyle's Blackblade",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "11.5"
+  },
+  {
+    "tier": "S",
+    "name": "Godslayer's Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "17.5"
+  },
+  {
+    "tier": "S",
+    "name": "Golden Order Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "S",
+    "name": "Lion Greatbow",
+    "passive": "",
+    "type": "Great Bow",
+    "damageType": "None",
+    "weight": "8.5"
+  },
+  {
+    "tier": "S",
+    "name": "Meteoric Ore Blade",
+    "passive": "Causes blood loss buildup",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "7.5"
+  },
+  {
+    "tier": "S",
+    "name": "Mohgwyn's Sacred Spear",
+    "passive": "Causes blood loss buildup (33)",
+    "type": "Great Spear",
+    "damageType": "Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "S",
+    "name": "Moonveil",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "6.5"
+  },
+  {
+    "tier": "S",
+    "name": "Onyx Lord's Greatsword",
+    "passive": "",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "11.5"
+  },
+  {
+    "tier": "S",
+    "name": "Rivers of Blood",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "6.5"
+  },
+  {
+    "tier": "S",
+    "name": "Scepter of the All-Knowing",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike, Pierce",
+    "weight": "4.5"
+  },
+  {
+    "tier": "S",
+    "name": "Sword of Night and Flame",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4"
+  },
+  {
+    "tier": "S",
+    "name": "Winged Scythe",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Reaper",
+    "damageType": "Slash",
+    "weight": "7.5"
+  },
+  {
+    "tier": "S",
+    "name": "Carian Regal Scepter",
+    "passive": "Boosts full moon sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "S",
+    "name": "Dragon Communion Seal",
+    "passive": "Boosts Dragon Communion incantations",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "0"
+  },
+  {
+    "tier": "S",
+    "name": "Frenzied Flame Seal",
+    "passive": "Boosts Frenzied Flame incantations, Causes madness buildup (55)",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "0"
+  },
+  {
+    "tier": "S",
+    "name": "Giant's Seal",
+    "passive": "Boosts Giants' Flame incantations",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "S",
+    "name": "Lusat's Glintstone Staff",
+    "passive": "",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4"
+  },
+  {
+    "tier": "A",
+    "name": "Bastard's Stars",
+    "passive": "",
+    "type": "Flail",
+    "damageType": "Strike",
+    "weight": "5.5"
+  },
+  {
+    "tier": "A",
+    "name": "Beastclaw Greathammer",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "9"
+  },
+  {
+    "tier": "A",
+    "name": "Black Knife",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2"
+  },
+  {
+    "tier": "A",
+    "name": "Blade of Calling",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "A",
+    "name": "Bolt of Gransax",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "8.5"
+  },
+  {
+    "tier": "A",
+    "name": "Carian Knight's Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4"
+  },
+  {
+    "tier": "A",
+    "name": "Cleanrot Spear",
+    "passive": "Raises Immunity by 50",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "5.5"
+  },
+  {
+    "tier": "A",
+    "name": "Cranial Vessel Candlestand",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "12.5"
+  },
+  {
+    "tier": "A",
+    "name": "Crystal Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4.5"
+  },
+  {
+    "tier": "A",
+    "name": "Death Ritual Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "6.5"
+  },
+  {
+    "tier": "A",
+    "name": "Devourer's Scepter",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "11.5"
+  },
+  {
+    "tier": "A",
+    "name": "Dragon Greatclaw",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Standard",
+    "weight": "16"
+  },
+  {
+    "tier": "A",
+    "name": "Dragon King's Cragblade",
+    "passive": "",
+    "type": "Heavy Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "A",
+    "name": "Dragonscale Blade",
+    "passive": "",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "5.5"
+  },
+  {
+    "tier": "A",
+    "name": "Eclipse Shotel",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3"
+  },
+  {
+    "tier": "A",
+    "name": "Envoy's Greathorn",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "",
+    "weight": "19.5"
+  },
+  {
+    "tier": "A",
+    "name": "Envoy's Horn",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "4"
+  },
+  {
+    "tier": "A",
+    "name": "Envoy's Long Horn",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "9.5"
+  },
+  {
+    "tier": "A",
+    "name": "Executioner's Greataxe",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Standard",
+    "weight": "15"
+  },
+  {
+    "tier": "A",
+    "name": "Family Heads",
+    "passive": "",
+    "type": "Flail",
+    "damageType": "Strike",
+    "weight": "5.5"
+  },
+  {
+    "tier": "A",
+    "name": "Giant's Red Braid",
+    "passive": "",
+    "type": "Whip",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "A",
+    "name": "Godskin Peeler",
+    "passive": "",
+    "type": "Twinblades",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "A",
+    "name": "Golden Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "13.5"
+  },
+  {
+    "tier": "A",
+    "name": "Grafted Blade Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "21"
+  },
+  {
+    "tier": "A",
+    "name": "Grafted Dragon",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "A",
+    "name": "Halo Scythe",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Reaper",
+    "damageType": "Slash",
+    "weight": "8.5"
+  },
+  {
+    "tier": "A",
+    "name": "Hand of Malenia",
+    "passive": "Causes blood loss buildup",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "7"
+  },
+  {
+    "tier": "A",
+    "name": "Helphen's Steeple",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "11.5"
+  },
+  {
+    "tier": "A",
+    "name": "Horn Bow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "4.5"
+  },
+  {
+    "tier": "A",
+    "name": "Icerind Hatchet",
+    "passive": "Causes frostbite buildup (65)",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "3"
+  },
+  {
+    "tier": "A",
+    "name": "Inquisitor's Girandole",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "7.5"
+  },
+  {
+    "tier": "A",
+    "name": "Inseparable Sword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10.0"
+  },
+  {
+    "tier": "A",
+    "name": "Lazuli Glintstone Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "A",
+    "name": "Magma Blade",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "4"
+  },
+  {
+    "tier": "A",
+    "name": "Magma Wyrm's Scalesword",
+    "passive": "",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "15"
+  },
+  {
+    "tier": "A",
+    "name": "Maliketh's Black Blade",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "22"
+  },
+  {
+    "tier": "A",
+    "name": "Marais Executioner's Sword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "11.5"
+  },
+  {
+    "tier": "A",
+    "name": "Miquellan Knight's Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "A",
+    "name": "Morgott's Cursed Sword",
+    "passive": "Causes blood loss buildup (60)",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "7.5"
+  },
+  {
+    "tier": "A",
+    "name": "Ornamental Straight Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "A",
+    "name": "Prelate's Inferno Crozier",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "23.5"
+  },
+  {
+    "tier": "A",
+    "name": "Royal Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "20"
+  },
+  {
+    "tier": "A",
+    "name": "Ruins Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "23"
+  },
+  {
+    "tier": "A",
+    "name": "Sacred Relic Sword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "11"
+  },
+  {
+    "tier": "A",
+    "name": "Siluria's Tree",
+    "passive": "",
+    "type": "Great Spear",
+    "damageType": "Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "A",
+    "name": "Staff of the Avatar",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "20"
+  },
+  {
+    "tier": "A",
+    "name": "Sword of St. Trina",
+    "passive": "Causes sleep buildup (66)",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "A",
+    "name": "Treespear",
+    "passive": "",
+    "type": "Great Spear",
+    "damageType": "Pierce",
+    "weight": "9.5"
+  },
+  {
+    "tier": "A",
+    "name": "Veteran's Prosthesis",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Slash, Pierce",
+    "weight": "4"
+  },
+  {
+    "tier": "A",
+    "name": "Wing of Astel",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "2.5"
+  },
+  {
+    "tier": "A",
+    "name": "Azur's Glintstone Staff",
+    "passive": "",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4"
+  },
+  {
+    "tier": "A",
+    "name": "Godslayer's Seal",
+    "passive": "Boosts Godslayer incantations",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "A",
+    "name": "Golden Order Seal",
+    "passive": "Boosts Fundamentalist incantations",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "0"
+  },
+  {
+    "tier": "A",
+    "name": "Gravel Stone Seal",
+    "passive": "15% Boosts Dragon Cult incantations",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "A",
+    "name": "Rotten Crystal Staff",
+    "passive": "Boosts Crystalian sorceries, Induces scarlet rot buildup (50)",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "B",
+    "name": "Antspur Rapier",
+    "passive": "Causes scarlet rot buildup (55)",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "B",
+    "name": "Axe of Godrick",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Standard",
+    "weight": "11"
+  },
+  {
+    "tier": "B",
+    "name": "Beast-Repellent Torch",
+    "passive": "",
+    "type": "Torchs",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Cipher Pata",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Slash, Pierce",
+    "weight": "0"
+  },
+  {
+    "tier": "B",
+    "name": "Clayman's Harpoon",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "5.5"
+  },
+  {
+    "tier": "B",
+    "name": "Coded Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Crystal Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "",
+    "weight": "5.5"
+  },
+  {
+    "tier": "B",
+    "name": "Frozen Needle",
+    "passive": "Causes frostbite buildup (60)",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Gargoyle's Black Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "8.5"
+  },
+  {
+    "tier": "B",
+    "name": "Gargoyle's Black Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "12"
+  },
+  {
+    "tier": "B",
+    "name": "Ghostflame Torch",
+    "passive": "",
+    "type": "Torchs",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Glintstone Kris",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "B",
+    "name": "Golden Epitaph",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "B",
+    "name": "Golem Greatbow",
+    "passive": "",
+    "type": "Great Bow",
+    "damageType": "None",
+    "weight": "14.5"
+  },
+  {
+    "tier": "B",
+    "name": "Great Omenkiller Cleaver",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Great Axe",
+    "damageType": "",
+    "weight": "11"
+  },
+  {
+    "tier": "B",
+    "name": "Greataxe",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Standard",
+    "weight": "13"
+  },
+  {
+    "tier": "B",
+    "name": "Hammer",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "6.5"
+  },
+  {
+    "tier": "B",
+    "name": "Ivory Sickle",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2"
+  },
+  {
+    "tier": "B",
+    "name": "Loretta's War Sickle",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "B",
+    "name": "Magma Whip Candlestick",
+    "passive": "",
+    "type": "Whip",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Marika's Hammer",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "6"
+  },
+  {
+    "tier": "B",
+    "name": "Monk's Flamemace",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "6"
+  },
+  {
+    "tier": "B",
+    "name": "Nagakiba",
+    "passive": "Causes blood loss buildup (45)",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "7"
+  },
+  {
+    "tier": "B",
+    "name": "Noble's Slender Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "B",
+    "name": "Nox Flowing Hammer",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "6.5"
+  },
+  {
+    "tier": "B",
+    "name": "Reduvia",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash , Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Ringed Finger",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "B",
+    "name": "Rogier's Rapier",
+    "passive": "",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "B",
+    "name": "Rosus' Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "5.5"
+  },
+  {
+    "tier": "B",
+    "name": "Rotten Crystal Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "5.5"
+  },
+  {
+    "tier": "B",
+    "name": "Rusted Anchor",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Pierce",
+    "weight": "12.5"
+  },
+  {
+    "tier": "B",
+    "name": "Sentry's Torch",
+    "passive": "",
+    "type": "Torchs",
+    "damageType": "Strike",
+    "weight": "5"
+  },
+  {
+    "tier": "B",
+    "name": "Serpent-Hunter",
+    "passive": "",
+    "type": "Great Spear",
+    "damageType": "Pierce",
+    "weight": "12"
+  },
+  {
+    "tier": "B",
+    "name": "St. Trina's Torch",
+    "passive": "Causes sleep buildup (72)",
+    "type": "Torchs",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "B",
+    "name": "Starscourge Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "20"
+  },
+  {
+    "tier": "B",
+    "name": "Stone Club",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "7"
+  },
+  {
+    "tier": "B",
+    "name": "Torchpole",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "6"
+  },
+  {
+    "tier": "B",
+    "name": "Troll Knight's Sword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "18"
+  },
+  {
+    "tier": "B",
+    "name": "Vyke's War Spear",
+    "passive": "Causes madness (65)",
+    "type": "Great Spear",
+    "damageType": "Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "B",
+    "name": "Winged Greathorn",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Standard",
+    "weight": "11"
+  },
+  {
+    "tier": "B",
+    "name": "Zamor Curved Sword",
+    "passive": "Causes blood loss buildup (65)",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "9"
+  },
+  {
+    "tier": "B",
+    "name": "Academy Glintstone Staff",
+    "passive": "",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "B",
+    "name": "Clawmark Seal",
+    "passive": "Boosts bestial incantations",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "B",
+    "name": "Demi-Human Queen's Staff",
+    "passive": "",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "B",
+    "name": "Gelmir Glintstone Staff",
+    "passive": "Boosts lava sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Meteorite Staff",
+    "passive": "Boosts Gravity sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "B",
+    "name": "Staff of Loss",
+    "passive": "Boosts invisibility sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "B",
+    "name": "Staff of the Guilty",
+    "passive": "Boosts Thorn sorcery, Causes blood loss buildup",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "C",
+    "name": "Albinauric Bow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "4.5"
+  },
+  {
+    "tier": "C",
+    "name": "Axe of Godfrey",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Standard",
+    "weight": "18"
+  },
+  {
+    "tier": "C",
+    "name": "Bandit's Curved Sword",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "5"
+  },
+  {
+    "tier": "C",
+    "name": "Bloodhound Claws",
+    "passive": "",
+    "type": "Claw",
+    "damageType": "Slash, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "C",
+    "name": "Cinquedea",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "C",
+    "name": "Crystal Knife",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2"
+  },
+  {
+    "tier": "C",
+    "name": "Curved Club",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Bludgeoning",
+    "weight": "5"
+  },
+  {
+    "tier": "C",
+    "name": "Duelist Greataxe",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "",
+    "weight": "20"
+  },
+  {
+    "tier": "C",
+    "name": "Gargoyle's Great Axe",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Standard",
+    "weight": ""
+  },
+  {
+    "tier": "C",
+    "name": "Gargoyle's Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "11.5"
+  },
+  {
+    "tier": "C",
+    "name": "Gargoyle's Twinblade",
+    "passive": "",
+    "type": "Twinblades",
+    "damageType": "Standard, Pierce",
+    "weight": "8.5"
+  },
+  {
+    "tier": "C",
+    "name": "Grave Scythe",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Reaper",
+    "damageType": "Slash",
+    "weight": "9.5"
+  },
+  {
+    "tier": "C",
+    "name": "Grossmesser",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "4.5"
+  },
+  {
+    "tier": "C",
+    "name": "Hoslow's Petal Whip",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Whip",
+    "damageType": "Strike",
+    "weight": "3.5"
+  },
+  {
+    "tier": "C",
+    "name": "Jar Cannon",
+    "passive": "",
+    "type": "Ballista",
+    "damageType": "None",
+    "weight": "15"
+  },
+  {
+    "tier": "C",
+    "name": "Longhaft Axe",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "",
+    "weight": "12.5"
+  },
+  {
+    "tier": "C",
+    "name": "Mace",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "C",
+    "name": "Morning Star",
+    "passive": "Causes blood loss buildup",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "5"
+  },
+  {
+    "tier": "C",
+    "name": "Ordovis's Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "12"
+  },
+  {
+    "tier": "C",
+    "name": "Regalia of Eochaid",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "5.5"
+  },
+  {
+    "tier": "C",
+    "name": "Rotten Crystal Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4.5"
+  },
+  {
+    "tier": "C",
+    "name": "Rotten Greataxe",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Standard",
+    "weight": "20"
+  },
+  {
+    "tier": "C",
+    "name": "Rotten Staff",
+    "passive": "Causes scarlet rot buildup (75)",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "18"
+  },
+  {
+    "tier": "C",
+    "name": "Spiked Club",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "5"
+  },
+  {
+    "tier": "C",
+    "name": "Steel-Wire Torch",
+    "passive": "",
+    "type": "Torchs",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "C",
+    "name": "Torch",
+    "passive": "",
+    "type": "Torchs",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "C",
+    "name": "Troll's Hammer",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "16"
+  },
+  {
+    "tier": "C",
+    "name": "Warpick",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "C",
+    "name": "Watchdog's Staff",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "19"
+  },
+  {
+    "tier": "C",
+    "name": "Watchdogs Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "22"
+  },
+  {
+    "tier": "C",
+    "name": "Finger Seal",
+    "passive": "",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "D",
+    "name": "Alabaster Lord's Sword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "D",
+    "name": "Beastman's Cleaver",
+    "passive": "",
+    "type": "Curved Greatsword",
+    "damageType": "",
+    "weight": "16.5"
+  },
+  {
+    "tier": "D",
+    "name": "Beastman's Curved Sword",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "4"
+  },
+  {
+    "tier": "D",
+    "name": "Bloodhound's Fang",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "11.5"
+  },
+  {
+    "tier": "D",
+    "name": "Butchering Knife",
+    "passive": "",
+    "type": "Great Axe",
+    "damageType": "Standard",
+    "weight": "8.5"
+  },
+  {
+    "tier": "D",
+    "name": "Celebrant's Skull",
+    "passive": "Grants runes upon landing attacks.",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "8.5"
+  },
+  {
+    "tier": "D",
+    "name": "Chainlink Flail",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Flail",
+    "damageType": "Strike",
+    "weight": "8"
+  },
+  {
+    "tier": "D",
+    "name": "Cleanrot Knight's Sword",
+    "passive": "",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4"
+  },
+  {
+    "tier": "D",
+    "name": "Club",
+    "passive": "",
+    "type": "Hammer",
+    "damageType": "Strike",
+    "weight": "3.5"
+  },
+  {
+    "tier": "D",
+    "name": "Cross-Naginata",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "D",
+    "name": "Curved Great Club",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "10"
+  },
+  {
+    "tier": "D",
+    "name": "Erdtree Greatbow",
+    "passive": "",
+    "type": "Great Bow",
+    "damageType": "None",
+    "weight": "11"
+  },
+  {
+    "tier": "D",
+    "name": "Falchion",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3.5"
+  },
+  {
+    "tier": "D",
+    "name": "Flail",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Flail",
+    "damageType": "Strike",
+    "weight": "5"
+  },
+  {
+    "tier": "D",
+    "name": "Flowing Curved Sword",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3.5"
+  },
+  {
+    "tier": "D",
+    "name": "Ghiza's Wheel",
+    "passive": "Causes blood loss buildup (70)",
+    "type": "Colossal Weapon",
+    "damageType": "Standard",
+    "weight": "19"
+  },
+  {
+    "tier": "D",
+    "name": "Giant-Crusher",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "26.5"
+  },
+  {
+    "tier": "D",
+    "name": "Golem's Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "21.5"
+  },
+  {
+    "tier": "D",
+    "name": "Great Club",
+    "passive": "",
+    "type": "Colossal Weapon",
+    "damageType": "Strike",
+    "weight": "17"
+  },
+  {
+    "tier": "D",
+    "name": "Great Stars",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "10"
+  },
+  {
+    "tier": "D",
+    "name": "Greatbow",
+    "passive": "",
+    "type": "Great Bow",
+    "damageType": "None",
+    "weight": "10"
+  },
+  {
+    "tier": "D",
+    "name": "Iron Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": ""
+  },
+  {
+    "tier": "D",
+    "name": "Longbow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "4"
+  },
+  {
+    "tier": "D",
+    "name": "Mantis Blade",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "4"
+  },
+  {
+    "tier": "D",
+    "name": "Misericorde",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2"
+  },
+  {
+    "tier": "D",
+    "name": "Nightrider Flail",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Flail",
+    "damageType": "Strike",
+    "weight": "6"
+  },
+  {
+    "tier": "D",
+    "name": "Nox Flowing Sword",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3.5"
+  },
+  {
+    "tier": "D",
+    "name": "Omen Cleaver",
+    "passive": "",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "11.5"
+  },
+  {
+    "tier": "D",
+    "name": "Partisan",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "6.5"
+  },
+  {
+    "tier": "D",
+    "name": "Pickaxe",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "10"
+  },
+  {
+    "tier": "D",
+    "name": "Pike",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "7.5"
+  },
+  {
+    "tier": "D",
+    "name": "Pulley Bow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "5"
+  },
+  {
+    "tier": "D",
+    "name": "Scavenger's Curved Sword",
+    "passive": "Causes blood loss buildup (45)",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3.5"
+  },
+  {
+    "tier": "D",
+    "name": "Scimitar",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3"
+  },
+  {
+    "tier": "D",
+    "name": "Serpent-God's Curved Sword",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "4"
+  },
+  {
+    "tier": "D",
+    "name": "Shamshir",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "3.5"
+  },
+  {
+    "tier": "D",
+    "name": "Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "4.5"
+  },
+  {
+    "tier": "D",
+    "name": "Spiked Spear",
+    "passive": "Causes blood loss builup",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "6"
+  },
+  {
+    "tier": "D",
+    "name": "Thorned Whip",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Whip",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "D",
+    "name": "Urumi",
+    "passive": "",
+    "type": "Whip",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "D",
+    "name": "Venomous Fang",
+    "passive": "Causes poison buildup (72)",
+    "type": "Claw",
+    "damageType": "Slash, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "D",
+    "name": "Wakizashi",
+    "passive": "Causes blood loss buildup",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "D",
+    "name": "Whip",
+    "passive": "",
+    "type": "Whip",
+    "damageType": "Strike",
+    "weight": "2"
+  },
+  {
+    "tier": "D",
+    "name": "Astrologer's Staff",
+    "passive": "",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "D",
+    "name": "Carian Glintstone Staff",
+    "passive": "Boosts Sword sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "D",
+    "name": "Crystal Staff",
+    "passive": "Boosts Crystalian sorceries",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "E",
+    "name": "Arbalest",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "6"
+  },
+  {
+    "tier": "E",
+    "name": "Battle Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "4.5"
+  },
+  {
+    "tier": "E",
+    "name": "Battle Hammer",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "10"
+  },
+  {
+    "tier": "E",
+    "name": "Bloodstained Dagger",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2.0"
+  },
+  {
+    "tier": "E",
+    "name": "Bloody Helice",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Heavy Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "E",
+    "name": "Broadsword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4"
+  },
+  {
+    "tier": "E",
+    "name": "Celebrant's Cleaver",
+    "passive": "Grants runes upon landing attacks.",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "4.5"
+  },
+  {
+    "tier": "E",
+    "name": "Celebrant's Rib-Rake",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "",
+    "weight": "5"
+  },
+  {
+    "tier": "E",
+    "name": "Celebrant's Sickle",
+    "passive": "Rune Gain on Hit",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "E",
+    "name": "Commander's Standard",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "11.5"
+  },
+  {
+    "tier": "E",
+    "name": "Crepus's Black-Key Crossbow",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "5"
+  },
+  {
+    "tier": "E",
+    "name": "Dismounter",
+    "passive": "",
+    "type": "Curved Greatsword",
+    "damageType": "Slash",
+    "weight": "10"
+  },
+  {
+    "tier": "E",
+    "name": "Dragon Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "10.5"
+  },
+  {
+    "tier": "E",
+    "name": "Estoc",
+    "passive": "",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "4.5"
+  },
+  {
+    "tier": "E",
+    "name": "Gargoyle's Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "12"
+  },
+  {
+    "tier": "E",
+    "name": "Glaive",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "E",
+    "name": "Godskin Stitcher",
+    "passive": "",
+    "type": "Heavy Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "7"
+  },
+  {
+    "tier": "E",
+    "name": "Great Mace",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "11.5"
+  },
+  {
+    "tier": "E",
+    "name": "Greathorn Hammer",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "10"
+  },
+  {
+    "tier": "E",
+    "name": "Greatsword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "23"
+  },
+  {
+    "tier": "E",
+    "name": "Guardian's Swordspear",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "9"
+  },
+  {
+    "tier": "E",
+    "name": "Highland Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "4.5"
+  },
+  {
+    "tier": "E",
+    "name": "Hookclaws",
+    "passive": "Causes blood loss buildup (60)",
+    "type": "Claw",
+    "damageType": "Slash, Pierce",
+    "weight": "2"
+  },
+  {
+    "tier": "E",
+    "name": "Iron Cleaver",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "6"
+  },
+  {
+    "tier": "E",
+    "name": "Iron Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "",
+    "weight": "12"
+  },
+  {
+    "tier": "E",
+    "name": "Jawbone Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "5.5"
+  },
+  {
+    "tier": "E",
+    "name": "Large Club",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "8.5"
+  },
+  {
+    "tier": "E",
+    "name": "Monk's Flameblade",
+    "passive": "",
+    "type": "Curved Greatsword",
+    "damageType": "",
+    "weight": "9"
+  },
+  {
+    "tier": "E",
+    "name": "Rotten Battle Hammer",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "10"
+  },
+  {
+    "tier": "E",
+    "name": "Sacrificial Axe",
+    "passive": "A small amount of FP is restored upon slaying a foe.",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "5.5"
+  },
+  {
+    "tier": "E",
+    "name": "Scorpion's Stinger",
+    "passive": "Causes scarlet rot buildup (50)",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "E",
+    "name": "Scythe",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Reaper",
+    "damageType": "Slash",
+    "weight": "7.5"
+  },
+  {
+    "tier": "E",
+    "name": "Serpent Bow",
+    "passive": "Imbues arrows with poison",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "5.5"
+  },
+  {
+    "tier": "E",
+    "name": "Serpentbone Blade",
+    "passive": "Causes poison buildup (66)",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "6"
+  },
+  {
+    "tier": "E",
+    "name": "Short Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "4"
+  },
+  {
+    "tier": "E",
+    "name": "Shotel",
+    "passive": "",
+    "type": "Curved Sword",
+    "damageType": "Slash",
+    "weight": "2"
+  },
+  {
+    "tier": "E",
+    "name": "Star Fist",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "E",
+    "name": "Stormhawk Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "5.5"
+  },
+  {
+    "tier": "E",
+    "name": "Troll's Golden Sword",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "19"
+  },
+  {
+    "tier": "E",
+    "name": "Uchigatana",
+    "passive": "Causes blood loss buildup",
+    "type": "Katana",
+    "damageType": "Slash, Pierce",
+    "weight": "5.5"
+  },
+  {
+    "tier": "E",
+    "name": "Warped Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "7.5"
+  },
+  {
+    "tier": "E",
+    "name": "Digger's Staff",
+    "passive": "Boosts Stonedigger sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "4.5"
+  },
+  {
+    "tier": "E",
+    "name": "Prince of Death's Staff",
+    "passive": "Boosts Death sorcery",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "3"
+  },
+  {
+    "tier": "F",
+    "name": "Banished Knight's Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "F",
+    "name": "Banished Knight's Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "F",
+    "name": "Bastard Sword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "9"
+  },
+  {
+    "tier": "F",
+    "name": "Black Bow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "4"
+  },
+  {
+    "tier": "F",
+    "name": "Brick Hammer",
+    "passive": "",
+    "type": "Warhammer",
+    "damageType": "Strike",
+    "weight": "12.5"
+  },
+  {
+    "tier": "F",
+    "name": "Caestus",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Strike",
+    "weight": "1.5"
+  },
+  {
+    "tier": "F",
+    "name": "Cane Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Claymore",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "9"
+  },
+  {
+    "tier": "F",
+    "name": "Clinging Bone",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Standard, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Composite Bow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "3"
+  },
+  {
+    "tier": "F",
+    "name": "Dagger",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "F",
+    "name": "Erdsteel Dagger",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "2"
+  },
+  {
+    "tier": "F",
+    "name": "Flamberge",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "F",
+    "name": "Forked Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "9"
+  },
+  {
+    "tier": "F",
+    "name": "Forked Hatchet",
+    "passive": "Causes blood loss buildup (50)",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Great Epee",
+    "passive": "",
+    "type": "Heavy Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "6.5"
+  },
+  {
+    "tier": "F",
+    "name": "Great Knife",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash , Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "F",
+    "name": "Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "F",
+    "name": "Hand Axe",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "3.5"
+  },
+  {
+    "tier": "F",
+    "name": "Hand Ballista",
+    "passive": "",
+    "type": "Ballista",
+    "damageType": "None",
+    "weight": "10"
+  },
+  {
+    "tier": "F",
+    "name": "Harp Bow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "2"
+  },
+  {
+    "tier": "F",
+    "name": "Heavy Crossbow",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "6.5"
+  },
+  {
+    "tier": "F",
+    "name": "Iron Ball",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Katar",
+    "passive": "",
+    "type": "Fist",
+    "damageType": "Standard, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Knight's Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "F",
+    "name": "Lance",
+    "passive": "",
+    "type": "Great Spear",
+    "damageType": "Pierce",
+    "weight": "10.5"
+  },
+  {
+    "tier": "F",
+    "name": "Light Crossbow",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "4"
+  },
+  {
+    "tier": "F",
+    "name": "Longsword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "F",
+    "name": "Lordsworn's Greatsword",
+    "passive": "",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "9"
+  },
+  {
+    "tier": "F",
+    "name": "Lordsworn's Straight Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "F",
+    "name": "Lucerne",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "7.0"
+  },
+  {
+    "tier": "F",
+    "name": "Misbegotten Shortbow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "",
+    "weight": "3"
+  },
+  {
+    "tier": "F",
+    "name": "Nightrider Glaive",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "12"
+  },
+  {
+    "tier": "F",
+    "name": "Noble's Estoc",
+    "passive": "",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3.5"
+  },
+  {
+    "tier": "F",
+    "name": "Parrying Dagger",
+    "passive": "",
+    "type": "Dagger",
+    "damageType": "Slash, Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "F",
+    "name": "Pest's Glaive",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "7"
+  },
+  {
+    "tier": "F",
+    "name": "Pulley Crossbow",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "4"
+  },
+  {
+    "tier": "F",
+    "name": "Rapier",
+    "passive": "",
+    "type": "Thrusting Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Raptor Talons",
+    "passive": "Causes blood loss buildup (60)",
+    "type": "Claw",
+    "damageType": "Slash, Pierce",
+    "weight": "1.5"
+  },
+  {
+    "tier": "F",
+    "name": "Red Branch Shortbow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Ripple Blade",
+    "passive": "",
+    "type": "Axe",
+    "damageType": "Standard",
+    "weight": "4.5"
+  },
+  {
+    "tier": "F",
+    "name": "Ripple Crescent Halberd",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "8.5"
+  },
+  {
+    "tier": "F",
+    "name": "Short Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard,  Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "F",
+    "name": "Shortbow",
+    "passive": "",
+    "type": "Light Bow",
+    "damageType": "None",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Soldier's Crossbow",
+    "passive": "",
+    "type": "Crossbow",
+    "damageType": "None",
+    "weight": "3.5"
+  },
+  {
+    "tier": "F",
+    "name": "Spiked Caestus",
+    "passive": "Causes blood loss buildup (45)",
+    "type": "Fist",
+    "damageType": "Strike",
+    "weight": "2"
+  },
+  {
+    "tier": "F",
+    "name": "Sword of Milos",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Greatsword",
+    "damageType": "Standard, Pierce",
+    "weight": "10"
+  },
+  {
+    "tier": "F",
+    "name": "Twinblade",
+    "passive": "",
+    "type": "Twinblades",
+    "damageType": "Standard, Pierce",
+    "weight": "7"
+  },
+  {
+    "tier": "F",
+    "name": "Twinned Knight Swords",
+    "passive": "",
+    "type": "Twinblades",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "F",
+    "name": "Varré's Bouquet",
+    "passive": "Causes blood loss buildup (39)",
+    "type": "Hammer",
+    "damageType": "Bludgeoning",
+    "weight": "2"
+  },
+  {
+    "tier": "F",
+    "name": "Vulgar Militia Saw",
+    "passive": "Causes blood loss buildup (55)",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "F",
+    "name": "Vulgar Militia Shotel",
+    "passive": "",
+    "type": "Halberd",
+    "damageType": "Standard, Pierce",
+    "weight": "8"
+  },
+  {
+    "tier": "F",
+    "name": "Warhawk's Talon",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "F",
+    "name": "Weathered Straight Sword",
+    "passive": "",
+    "type": "Straight Sword",
+    "damageType": "Standard, Pierce",
+    "weight": "3"
+  },
+  {
+    "tier": "F",
+    "name": "Winged Spear",
+    "passive": "",
+    "type": "Spear",
+    "damageType": "Pierce",
+    "weight": "4.5"
+  },
+  {
+    "tier": "F",
+    "name": "Zweihander",
+    "passive": "",
+    "type": "Colossal Sword",
+    "damageType": "Standard",
+    "weight": "15.5"
+  },
+  {
+    "tier": "F",
+    "name": "Carian Glintblade Staff",
+    "passive": "Boosts Glintblade Sorcery by 15%",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "2.5"
+  },
+  {
+    "tier": "F",
+    "name": "Erdtree Seal",
+    "passive": "",
+    "type": "Sacred Seal",
+    "damageType": "Strike",
+    "weight": "0"
+  },
+  {
+    "tier": "",
+    "name": "Albinauric Staff",
+    "passive": "",
+    "type": "Glintstone Staff",
+    "damageType": "Strike",
+    "weight": "2.5"
+  }
+]
