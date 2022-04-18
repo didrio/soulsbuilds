@@ -1,0 +1,657 @@
+[
+  {
+    "name": "Acid Spraymist",
+    "imageUrl": "/items/Acid Spraymist.png",
+    "effect": ""
+  },
+  {
+    "name": "Baldachin's Blessing",
+    "imageUrl": "/items/Baldachin's Blessing.png",
+    "effect": "Uses FP to boost poise"
+  },
+  {
+    "name": "Beastlure Pot",
+    "imageUrl": "/items/Beastlure Pot.png",
+    "effect": "Consumes FP. Throw to create a red shadow"
+  },
+  {
+    "name": "Bewitching Branch",
+    "imageUrl": "/items/Bewitching Branch.png",
+    "effect": "Pierce a foe using FP to turn them into a temporary ally."
+  },
+  {
+    "name": "Blasphemous Claw",
+    "imageUrl": "/items/Blasphemous Claw.png",
+    "effect": "Can deflect the power of the Black Blade"
+  },
+  {
+    "name": "Blood Grease",
+    "imageUrl": "/items/Blood Grease.png",
+    "effect": "Inflicts blood loss"
+  },
+  {
+    "name": "Bloodboil Aromatic",
+    "imageUrl": "/items/Bloodboil Aromatic.png",
+    "effect": "Uses FP to enter a temporary state of fervor, raising maximum attack power and stamina while also increasing damage received."
+  },
+  {
+    "name": "Boiled Prawn",
+    "imageUrl": "/items/Boiled Prawn.png",
+    "effect": "Boosts physical damage negation for a certain duration"
+  },
+  {
+    "name": "Bone Dart",
+    "imageUrl": "/items/Bone Dart.png",
+    "effect": "Throw at enemies to inflict damage"
+  },
+  {
+    "name": "Bone Knife",
+    "imageUrl": "/items/Bone Knife.png",
+    "effect": "Throw at enemy to deal damage."
+  },
+  {
+    "name": "Clarifying Boluses",
+    "imageUrl": "/items/Clarifying Boluses.png",
+    "effect": "Alleviates madness buildup"
+  },
+  {
+    "name": "Clarifying Cured Meat",
+    "imageUrl": "/items/Clarifying Cured Meat.png",
+    "effect": ""
+  },
+  {
+    "name": "Clarifying White Cured Meat",
+    "imageUrl": "/items/Clarifying White Cured Meat.png",
+    "effect": "Temporarily boosts focus"
+  },
+  {
+    "name": "Crystal Dart",
+    "imageUrl": "/items/Crystal Dart.png",
+    "effect": "Consumes FP. Throw at enemies to deal magic damage"
+  },
+  {
+    "name": "Cuckoo Glintstone",
+    "imageUrl": "/items/Cuckoo Glintstone.png",
+    "effect": "Launched straight ahead, using FP. A magic bolt springs forth from the point of impact"
+  },
+  {
+    "name": "Cursed-Blood Pot",
+    "imageUrl": "/items/Cursed-Blood Pot.png",
+    "effect": "Throw to douse enemy with accursed blood."
+  },
+  {
+    "name": "Dappled Cured Meat",
+    "imageUrl": "/items/Dappled Cured Meat.png",
+    "effect": "Temporarily boosts Immunity, Robustness, and Focus"
+  },
+  {
+    "name": "Dappled White Cured Meat",
+    "imageUrl": "/items/Dappled White Cured Meat.png",
+    "effect": "Temporarily boosts Immunity, Robustness, and Focus"
+  },
+  {
+    "name": "Dragonwound Grease",
+    "imageUrl": "/items/Dragonwound Grease.png",
+    "effect": "Coats armament, granting anti-dragon effects."
+  },
+  {
+    "name": "Drawstring Blood Grease",
+    "imageUrl": "/items/Drawstring Blood Grease.png",
+    "effect": "Inflicts blood loss"
+  },
+  {
+    "name": "Drawstring Fire Grease",
+    "imageUrl": "/items/Drawstring Fire Grease.png",
+    "effect": "Quickly coats armament, inflicting fire damage"
+  },
+  {
+    "name": "Drawstring Holy Grease",
+    "imageUrl": "/items/Drawstring Holy Grease.png",
+    "effect": "Quickly coats armament, inflicting holy damage"
+  },
+  {
+    "name": "Drawstring Lightning Grease",
+    "imageUrl": "/items/Drawstring Lightning Grease.png",
+    "effect": "Quickly coats armament, inflicting lightning damage"
+  },
+  {
+    "name": "Drawstring Magic Grease",
+    "imageUrl": "/items/Drawstring Magic Grease.png",
+    "effect": "Inflicts magic damage"
+  },
+  {
+    "name": "Drawstring Rot Grease",
+    "imageUrl": "/items/Drawstring Rot Grease.png",
+    "effect": "Quickly coats armament, inflicting scarlet rot,"
+  },
+  {
+    "name": "Exalted Flesh",
+    "imageUrl": "/items/Exalted Flesh.png",
+    "effect": "Temporarily Boosts physical attack"
+  },
+  {
+    "name": "Explosive Stone",
+    "imageUrl": "/items/Explosive Stone.png",
+    "effect": "Explodes when thrown at enemies, inflicting fire damage."
+  },
+  {
+    "name": "Explosive Stone Clump",
+    "imageUrl": "/items/Explosive Stone Clump.png",
+    "effect": "Explodes when thrown together at enemies, inflicting fire damage."
+  },
+  {
+    "name": "Fan Daggers",
+    "imageUrl": "/items/Fan Daggers.png",
+    "effect": "Each knife deals paltry damage"
+  },
+  {
+    "name": "Fetid Pot",
+    "imageUrl": "/items/Fetid Pot.png",
+    "effect": "Throw at enemies to cause buildup of deadly poison."
+  },
+  {
+    "name": "Fire Grease",
+    "imageUrl": "/items/Fire Grease.png",
+    "effect": "Coats armament, adding fire damage to attacks."
+  },
+  {
+    "name": "Fire Pot",
+    "imageUrl": "/items/Fire Pot.png",
+    "effect": "Throw at enemies to inflict fire damage"
+  },
+  {
+    "name": "Fireproof Dried Liver",
+    "imageUrl": "/items/Fireproof Dried Liver.png",
+    "effect": "Boosts fire damage negation for a short time, improving damage mitigation against attacks imbued with fire"
+  },
+  {
+    "name": "Flask of Cerulean Tears",
+    "imageUrl": "/items/Flask of Cerulean Tears.png",
+    "effect": "Restores FP with use."
+  },
+  {
+    "name": "Flask of Crimson Tears",
+    "imageUrl": "/items/Flask of Crimson Tears.png",
+    "effect": "Restores HP with use."
+  },
+  {
+    "name": "Flask of Wondrous Physick",
+    "imageUrl": "/items/Flask of Wondrous Physick.png",
+    "effect": "Various specials effects are bestowed upon the drinker, dependent on the specific mixture of crystal tears."
+  },
+  {
+    "name": "Freezing Grease",
+    "imageUrl": "/items/Freezing Grease.png",
+    "effect": "Coats armament, inflicting frost"
+  },
+  {
+    "name": "Freezing Pot",
+    "imageUrl": "/items/Freezing Pot.png",
+    "effect": "Throwing causes buildup of frost."
+  },
+  {
+    "name": "Frenzyflame Stone",
+    "imageUrl": "/items/Frenzyflame Stone.png",
+    "effect": "Uses FP to generate warmth, continuously restoring the HP of those who host the frenzied flame."
+  },
+  {
+    "name": "Fringefolk's Rune",
+    "imageUrl": "/items/Fringefolk's Rune.png",
+    "effect": "Use to gain runes."
+  },
+  {
+    "name": "Frozen Raisin",
+    "imageUrl": "/items/Frozen Raisin.png",
+    "effect": "Feed to Torrent, the spectral steed, while riding to vastly restore his HP."
+  },
+  {
+    "name": "Giantsflame Fire Pot",
+    "imageUrl": "/items/Giantsflame Fire Pot.png",
+    "effect": "Consumes FP. Throw at enemies to inflict heavy fire damage."
+  },
+  {
+    "name": "Glass Shard",
+    "imageUrl": "/items/Glass Shard.png",
+    "effect": "Glass shard covered in dirt."
+  },
+  {
+    "name": "Glintstone Scrap",
+    "imageUrl": "/items/Glintstone Scrap.png",
+    "effect": "Break gem, using FP to produce a magic bolt."
+  },
+  {
+    "name": "Glowstone",
+    "imageUrl": "/items/Glowstone.png",
+    "effect": "Emits light from the location it is placed, illuminating surroundings"
+  },
+  {
+    "name": "Gold-Pickled Fowl Foot",
+    "imageUrl": "/items/Gold-Pickled Fowl Foot.png",
+    "effect": "Boosts the amount of runes obtained from defeating enemies for a certain duration"
+  },
+  {
+    "name": "Golden Rune 1",
+    "imageUrl": "/items/Golden Rune 1.png",
+    "effect": "Use to gain an abundance of runes."
+  },
+  {
+    "name": "Golden Rune 10",
+    "imageUrl": "/items/Golden Rune 10.png",
+    "effect": "Use to gain many runes."
+  },
+  {
+    "name": "Golden Rune 11",
+    "imageUrl": "/items/Golden Rune 11.png",
+    "effect": ""
+  },
+  {
+    "name": "Golden Rune 13",
+    "imageUrl": "/items/Golden Rune 13.png",
+    "effect": "Use to gain a great many runes"
+  },
+  {
+    "name": "Golden Rune 2",
+    "imageUrl": "/items/Golden Rune 2.png",
+    "effect": "Use to gain a small number of runes"
+  },
+  {
+    "name": "Golden Rune 3",
+    "imageUrl": "/items/Golden Rune 3.png",
+    "effect": "Use to gain runes"
+  },
+  {
+    "name": "Golden Rune 4",
+    "imageUrl": "/items/Golden Rune 4.png",
+    "effect": "Use to gain runes"
+  },
+  {
+    "name": "Golden Rune 5",
+    "imageUrl": "/items/Golden Rune 5.png",
+    "effect": "Use to gain an abundance of runes."
+  },
+  {
+    "name": "Golden Rune 6",
+    "imageUrl": "/items/Golden Rune 6.png",
+    "effect": "Use to gain many runes"
+  },
+  {
+    "name": "Golden Rune 7",
+    "imageUrl": "/items/Golden Rune 7.png",
+    "effect": "Use to gain many runes"
+  },
+  {
+    "name": "Golden Rune 8",
+    "imageUrl": "/items/Golden Rune 8.png",
+    "effect": "Use to gain many runes."
+  },
+  {
+    "name": "Golden Rune 9",
+    "imageUrl": "/items/Golden Rune 9.png",
+    "effect": "Use to gain many runes."
+  },
+  {
+    "name": "Golden Seed",
+    "imageUrl": "/items/Golden Seed.png",
+    "effect": "Increases Sacred Flask's number of uses."
+  },
+  {
+    "name": "Grace Mimic",
+    "imageUrl": "/items/Grace Mimic.png",
+    "effect": "this fetish draws rays guiding the way, only without any sense of order."
+  },
+  {
+    "name": "Gravity Stone Chunk",
+    "imageUrl": "/items/Gravity Stone Chunk.png",
+    "effect": "Throw at enemies, using FP to cause a gravitational explosion."
+  },
+  {
+    "name": "Gravity Stone Fan",
+    "imageUrl": "/items/Gravity Stone Fan.png",
+    "effect": "Uses FP to emit gravitational shockwave"
+  },
+  {
+    "name": "Heavy Meteorite Fragment",
+    "imageUrl": "/items/Heavy Meteorite Fragment.png",
+    "effect": "Throw at the ground to create a gravitational shockwave. (Consumes FP)"
+  },
+  {
+    "name": "Hero's Rune 2",
+    "imageUrl": "/items/Hero's Rune 2.png",
+    "effect": "Use to gain an abundance of runes"
+  },
+  {
+    "name": "Hero's Rune 3",
+    "imageUrl": "/items/Hero's Rune 3.png",
+    "effect": "Use to gain an abundance of runes"
+  },
+  {
+    "name": "Hero's Rune 4",
+    "imageUrl": "/items/Hero's Rune 4.png",
+    "effect": "Use to gain an abundance of runes"
+  },
+  {
+    "name": "Holy Grease",
+    "imageUrl": "/items/Holy Grease.png",
+    "effect": ""
+  },
+  {
+    "name": "Holy Water Pot",
+    "imageUrl": "/items/Holy Water Pot.png",
+    "effect": "Consumes FP. Throw at enemy to inflict holy damage"
+  },
+  {
+    "name": "Holyproof Dried Liver",
+    "imageUrl": "/items/Holyproof Dried Liver.png",
+    "effect": "Temporarily boosts holy damage negation, improving damage mitigation against attacks imbued with holiness."
+  },
+  {
+    "name": "Immunizing Cured Meat",
+    "imageUrl": "/items/Immunizing Cured Meat.png",
+    "effect": "Temporarily boosts immunity"
+  },
+  {
+    "name": "Immunizing White Cured Meat",
+    "imageUrl": "/items/Immunizing White Cured Meat.png",
+    "effect": "Temporarily boosts immunity"
+  },
+  {
+    "name": "Invigorating Cured Meat",
+    "imageUrl": "/items/Invigorating Cured Meat.png",
+    "effect": "Temporarily boosts robustness"
+  },
+  {
+    "name": "Invigorating White Cured Meat",
+    "imageUrl": "/items/Invigorating White Cured Meat.png",
+    "effect": "Temporarily boosts robustness."
+  },
+  {
+    "name": "Kukri",
+    "imageUrl": "/items/Kukri.png",
+    "effect": "Throw at enemies to inflict damage and build up onset of blood loss"
+  },
+  {
+    "name": "Lands Between Rune",
+    "imageUrl": "/items/Lands Between Rune.png",
+    "effect": "Use to gain many runes."
+  },
+  {
+    "name": "Large Glintstone Scrap",
+    "imageUrl": "/items/Large Glintstone Scrap.png",
+    "effect": "Break gem, using FP to produce a magic bolt."
+  },
+  {
+    "name": "Lightning Grease",
+    "imageUrl": "/items/Lightning Grease.png",
+    "effect": "Coats armament, adds lightning damage to attacks"
+  },
+  {
+    "name": "Lightningproof Dried Liver",
+    "imageUrl": "/items/Lightningproof Dried Liver.png",
+    "effect": "Temporarily boosts lightning damage negation, improvmg damage mitigation against attacks imbued with lightning"
+  },
+  {
+    "name": "Lord's Rune",
+    "imageUrl": "/items/Lord's Rune.png",
+    "effect": "Use to gain an enormous abundance of runes"
+  },
+  {
+    "name": "Magic Grease",
+    "imageUrl": "/items/Magic Grease.png",
+    "effect": "Coats armament, adding magic damage to attacks"
+  },
+  {
+    "name": "Margit's Shackle",
+    "imageUrl": "/items/Margit's Shackle.png",
+    "effect": "bind the accursed people called the Omen"
+  },
+  {
+    "name": "Mohg's Shackle",
+    "imageUrl": "/items/Mohg's Shackle.png",
+    "effect": "keep a particular Omen under strictest confinement"
+  },
+  {
+    "name": "Neutralizing Boluses",
+    "imageUrl": "/items/Neutralizing Boluses.png",
+    "effect": "Alleviates poison buildup and cures poison ailment."
+  },
+  {
+    "name": "Numen's Rune",
+    "imageUrl": "/items/Numen's Rune.png",
+    "effect": "Use to gain a multitude of runes."
+  },
+  {
+    "name": "Oil Pot",
+    "imageUrl": "/items/Oil Pot.png",
+    "effect": "Throw at enemies to soak them in oil."
+  },
+  {
+    "name": "Omen Bairn",
+    "imageUrl": "/items/Omen Bairn.png",
+    "effect": "Uses FP to unleash wraiths that chase down foes"
+  },
+  {
+    "name": "Pauper's Rune",
+    "imageUrl": "/items/Pauper's Rune.png",
+    "effect": "Use to gain a few runes"
+  },
+  {
+    "name": "Pickled Turtle Neck",
+    "imageUrl": "/items/Pickled Turtle Neck.png",
+    "effect": "Temporarily boosts stamina recovery"
+  },
+  {
+    "name": "Poison Grease",
+    "imageUrl": "/items/Poison Grease.png",
+    "effect": "Coats armament, inflicting poison"
+  },
+  {
+    "name": "Poison Pot",
+    "imageUrl": "/items/Poison Pot.png",
+    "effect": "Throw at enemies to cause buildup of poison"
+  },
+  {
+    "name": "Poison Spraymist",
+    "imageUrl": "/items/Poison Spraymist.png",
+    "effect": "Uses FP to release a poison mist from user's mouth, causing a buildup of poison"
+  },
+  {
+    "name": "Poisonbone Dart",
+    "imageUrl": "/items/Poisonbone Dart.png",
+    "effect": "Throw at enemies to inflict damage and build up poison"
+  },
+  {
+    "name": "Poisoned Stone",
+    "imageUrl": "/items/Poisoned Stone.png",
+    "effect": "Throw at enemies to cause buildup of poison"
+  },
+  {
+    "name": "Poisoned Stone Clump",
+    "imageUrl": "/items/Poisoned Stone Clump.png",
+    "effect": "Throw together at enemies to cause buildup of poison."
+  },
+  {
+    "name": "Preserving Boluses",
+    "imageUrl": "/items/Preserving Boluses.png",
+    "effect": "Alleviates scarlet rot buildup and cures rot ailment."
+  },
+  {
+    "name": "Radiant Baldachin's Blessing",
+    "imageUrl": "/items/Radiant Baldachin's Blessing.png",
+    "effect": "Uses FP to temporarily raise poise"
+  },
+  {
+    "name": "Rainbow Stone",
+    "imageUrl": "/items/Rainbow Stone.png",
+    "effect": "useful markers when placed on the ground. Can also be dropped to gauge the distance of a fall"
+  },
+  {
+    "name": "Rancor Pot",
+    "imageUrl": "/items/Rancor Pot.png",
+    "effect": "Uses FP. Throw to summon vengeful spirits."
+  },
+  {
+    "name": "Raw Meat Dumpling",
+    "imageUrl": "/items/Raw Meat Dumpling.png",
+    "effect": "Restores HP but also causes poison buildup."
+  },
+  {
+    "name": "Regal Omen Bairn",
+    "imageUrl": "/items/Regal Omen Bairn.png",
+    "effect": "Uses FP to unleash many wraiths that chase down foes."
+  },
+  {
+    "name": "Rejuvenating Boluces",
+    "imageUrl": "/items/Rejuvenating Boluces.png",
+    "effect": ""
+  },
+  {
+    "name": "Rejuvenating Boluses",
+    "imageUrl": "/items/Rejuvenating Boluses.png",
+    "effect": "Alleviates death blight buildup"
+  },
+  {
+    "name": "Roped Fetid Pot",
+    "imageUrl": "/items/Roped Fetid Pot.png",
+    "effect": "Throw at rearward enemies to cause buildup of deadly poison"
+  },
+  {
+    "name": "Roped Fire Pot",
+    "imageUrl": "/items/Roped Fire Pot.png",
+    "effect": "Throw at rearward enemies to inflict fire damage"
+  },
+  {
+    "name": "Roped Holy Water Pot",
+    "imageUrl": "/items/Roped Holy Water Pot.png",
+    "effect": "Consumes FP. Throw at rearward enemies to inflict holy damage"
+  },
+  {
+    "name": "Roped Oil Pot",
+    "imageUrl": "/items/Roped Oil Pot.png",
+    "effect": "Throw behind to douse enemies in oil"
+  },
+  {
+    "name": "Roped Poison Pot",
+    "imageUrl": "/items/Roped Poison Pot.png",
+    "effect": "Throw at rearward enemies to cause buildup of poison."
+  },
+  {
+    "name": "Roped Volcano Pot",
+    "imageUrl": "/items/Roped Volcano Pot.png",
+    "effect": ""
+  },
+  {
+    "name": "Rot Grease",
+    "imageUrl": "/items/Rot Grease.png",
+    "effect": "Coats armament, inflicting scarlet rot."
+  },
+  {
+    "name": "Rot Pot",
+    "imageUrl": "/items/Rot Pot.png",
+    "effect": "Throw at enemies to cause buildup of scarlet rot."
+  },
+  {
+    "name": "Rowa Raisin",
+    "imageUrl": "/items/Rowa Raisin.png",
+    "effect": "Feed to Torrent, the spectral steed, while riding to restore his HP"
+  },
+  {
+    "name": "Rune Arc",
+    "imageUrl": "/items/Rune Arc.png",
+    "effect": "Even if no Great Rune is equipped, it will slightly increase maximum HP upon use"
+  },
+  {
+    "name": "Sacred Order Pot",
+    "imageUrl": "/items/Sacred Order Pot.png",
+    "effect": "Consumes FP. Throw at enemies to inflict heavy holy damage."
+  },
+  {
+    "name": "Sacred Tear",
+    "imageUrl": "/items/Sacred Tear.png",
+    "effect": "Increases the potency of a Sacred Flask's restorative effects.Can be used after resting at a site of grace."
+  },
+  {
+    "name": "Scriptstone",
+    "imageUrl": "/items/Scriptstone.png",
+    "effect": "Reveals more messages from other worlds."
+  },
+  {
+    "name": "Shield Grease",
+    "imageUrl": "/items/Shield Grease.png",
+    "effect": "Coats left-hand armament, boosting guarding ability and all forms of damage negations."
+  },
+  {
+    "name": "Silver-Pickled Fowl Foot",
+    "imageUrl": "/items/Silver-Pickled Fowl Foot.png",
+    "effect": "Temporarily boosts item discovery"
+  },
+  {
+    "name": "Sleep Pot",
+    "imageUrl": "/items/Sleep Pot.png",
+    "effect": "Throw at enemy to release a purple, soporific haze."
+  },
+  {
+    "name": "Soap",
+    "imageUrl": "/items/Soap.png",
+    "effect": "Cleans off filth and other accumulations on the body while also slightly reducing poison buildup."
+  },
+  {
+    "name": "Soft Cotton",
+    "imageUrl": "/items/Soft Cotton.png",
+    "effect": "Attaching this cotton to the bottom of one's feet allows for a temporary reduction in fall damage and sound."
+  },
+  {
+    "name": "Soporific Grease",
+    "imageUrl": "/items/Soporific Grease.png",
+    "effect": "Coats armament, inflicting sleep"
+  },
+  {
+    "name": "Spark Aromatic",
+    "imageUrl": "/items/Spark Aromatic.png",
+    "effect": "Uses FP to broadly scatter sparks in a wide arc straight ahead."
+  },
+  {
+    "name": "Spellproof Dried Liver",
+    "imageUrl": "/items/Spellproof Dried Liver.png",
+    "effect": "Temporarily boosts magic damage negation, improvrng damage"
+  },
+  {
+    "name": "Stanching Boluses",
+    "imageUrl": "/items/Stanching Boluses.png",
+    "effect": "Alleviates impending blood loss"
+  },
+  {
+    "name": "Starlight Shards",
+    "imageUrl": "/items/Starlight Shards.png",
+    "effect": "Use to gradually recover FP"
+  },
+  {
+    "name": "Stimulating Boluses",
+    "imageUrl": "/items/Stimulating Boluses.png",
+    "effect": "Alleviates buildup of sleep"
+  },
+  {
+    "name": "Thawfrost Boluses",
+    "imageUrl": "/items/Thawfrost Boluses.png",
+    "effect": "Alleviates buildup of frost and cures frostbite ailments."
+  },
+  {
+    "name": "Throwing Dagger",
+    "imageUrl": "/items/Throwing Dagger.png",
+    "effect": "Throw at enemies to deal damage."
+  },
+  {
+    "name": "Uplifting Aromatic",
+    "imageUrl": "/items/Uplifting Aromatic.png",
+    "effect": "Uses FP to raise the attack power of the user and nearby allies while also reducing the damage from one incoming attack by half."
+  },
+  {
+    "name": "Volcano Pot",
+    "imageUrl": "/items/Volcano Pot.png",
+    "effect": ""
+  },
+  {
+    "name": "Warming Stone",
+    "imageUrl": "/items/Warming Stone.png",
+    "effect": "Uses FP to generate warmth, continuously restoring the HP of those nearby."
+  }
+]

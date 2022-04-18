@@ -1,0 +1,266 @@
+[
+  {
+    "name": "Aeonian Butterfly",
+    "imageUrl": "/materials/Aeonian Butterfly.png"
+  },
+  {
+    "name": "Albinauric Bloodclot",
+    "imageUrl": "/materials/Albinauric Bloodclot.png"
+  },
+  {
+    "name": "Altus Bloom",
+    "imageUrl": "/materials/Altus Bloom.png"
+  },
+  {
+    "name": "Arteria Leaf",
+    "imageUrl": "/materials/Arteria Leaf.png"
+  },
+  {
+    "name": "Beast Blood",
+    "imageUrl": "/materials/Beast Blood.png"
+  },
+  {
+    "name": "Beast Liver",
+    "imageUrl": "/materials/Beast Liver.png"
+  },
+  {
+    "name": "Bloodrose",
+    "imageUrl": "/materials/Bloodrose.png"
+  },
+  {
+    "name": "Budding Cave Moss",
+    "imageUrl": "/materials/Budding Cave Moss.png"
+  },
+  {
+    "name": "Budding Horn",
+    "imageUrl": "/materials/Budding Horn.png"
+  },
+  {
+    "name": "Cave Moss",
+    "imageUrl": "/materials/Cave Moss.png"
+  },
+  {
+    "name": "Crab Eggs",
+    "imageUrl": "/materials/Crab Eggs.png"
+  },
+  {
+    "name": "Cracked Crystal",
+    "imageUrl": "/materials/Cracked Crystal.png"
+  },
+  {
+    "name": "Cracked Pot",
+    "imageUrl": "/materials/Cracked Pot.png"
+  },
+  {
+    "name": "Crystal Bud",
+    "imageUrl": "/materials/Crystal Bud.png"
+  },
+  {
+    "name": "Crystal Cave Moss",
+    "imageUrl": "/materials/Crystal Cave Moss.png"
+  },
+  {
+    "name": "Dewkissed Herba",
+    "imageUrl": "/materials/Dewkissed Herba.png"
+  },
+  {
+    "name": "Erdleaf Flower",
+    "imageUrl": "/materials/Erdleaf Flower.png"
+  },
+  {
+    "name": "Eye of Yelough",
+    "imageUrl": "/materials/Eye of Yelough.png"
+  },
+  {
+    "name": "Faded Erdleaf Flower",
+    "imageUrl": "/materials/Faded Erdleaf Flower.png"
+  },
+  {
+    "name": "Fire Blossom",
+    "imageUrl": "/materials/Fire Blossom.png"
+  },
+  {
+    "name": "Flight Pinion",
+    "imageUrl": "/materials/Flight Pinion.png"
+  },
+  {
+    "name": "Formic Rock",
+    "imageUrl": "/materials/Formic Rock.png"
+  },
+  {
+    "name": "Four-Toed Fowl Foot",
+    "imageUrl": "/materials/Four-Toed Fowl Foot.png"
+  },
+  {
+    "name": "Fulgurbloom",
+    "imageUrl": "/materials/Fulgurbloom.png"
+  },
+  {
+    "name": "Glintstone Firefly",
+    "imageUrl": "/materials/Glintstone Firefly.png"
+  },
+  {
+    "name": "Glintstone Scrap",
+    "imageUrl": "/materials/Glintstone Scrap.png"
+  },
+  {
+    "name": "Gold-Tinged Excrement",
+    "imageUrl": "/materials/Gold-Tinged Excrement.png"
+  },
+  {
+    "name": "Golden Centipede",
+    "imageUrl": "/materials/Golden Centipede.png"
+  },
+  {
+    "name": "Golden Rowa",
+    "imageUrl": "/materials/Golden Rowa.png"
+  },
+  {
+    "name": "Golden Sunflower",
+    "imageUrl": "/materials/Golden Sunflower.png"
+  },
+  {
+    "name": "Grave Violet",
+    "imageUrl": "/materials/Grave Violet.png"
+  },
+  {
+    "name": "Gravel Stone",
+    "imageUrl": "/materials/Gravel Stone.png"
+  },
+  {
+    "name": "Great Dragonfly Head",
+    "imageUrl": "/materials/Great Dragonfly Head.png"
+  },
+  {
+    "name": "Herba",
+    "imageUrl": "/materials/Herba.png"
+  },
+  {
+    "name": "Human Bone Shard",
+    "imageUrl": "/materials/Human Bone Shard.png"
+  },
+  {
+    "name": "Land Octopus Ovary",
+    "imageUrl": "/materials/Land Octopus Ovary.png"
+  },
+  {
+    "name": "Living Jar Shard",
+    "imageUrl": "/materials/Living Jar Shard.png"
+  },
+  {
+    "name": "Lump of Flesh",
+    "imageUrl": "/materials/Lump of Flesh.png"
+  },
+  {
+    "name": "Melted Mushroom",
+    "imageUrl": "/materials/Melted Mushroom.png"
+  },
+  {
+    "name": "Miquella's Lily",
+    "imageUrl": "/materials/Miquella's Lily.png"
+  },
+  {
+    "name": "Miranda Powder",
+    "imageUrl": "/materials/Miranda Powder.png"
+  },
+  {
+    "name": "Moon Egg",
+    "imageUrl": "/materials/Moon Egg.png"
+  },
+  {
+    "name": "Mushroom",
+    "imageUrl": "/materials/Mushroom.png"
+  },
+  {
+    "name": "Nascent Butterfly",
+    "imageUrl": "/materials/Nascent Butterfly.png"
+  },
+  {
+    "name": "Perfume Bottle",
+    "imageUrl": "/materials/Perfume Bottle.png"
+  },
+  {
+    "name": "Poisonbloom",
+    "imageUrl": "/materials/Poisonbloom.png"
+  },
+  {
+    "name": "Rimed Crystal Bud",
+    "imageUrl": "/materials/Rimed Crystal Bud.png"
+  },
+  {
+    "name": "Rimed Rowa",
+    "imageUrl": "/materials/Rimed Rowa.png"
+  },
+  {
+    "name": "Root Resin",
+    "imageUrl": "/materials/Root Resin.png"
+  },
+  {
+    "name": "Rowa Fruit",
+    "imageUrl": "/materials/Rowa Fruit.png"
+  },
+  {
+    "name": "Ruin Fragment",
+    "imageUrl": "/materials/Ruin Fragment.png"
+  },
+  {
+    "name": "Sacramental Bud",
+    "imageUrl": "/materials/Sacramental Bud.png"
+  },
+  {
+    "name": "Sanctuary Stone",
+    "imageUrl": "/materials/Sanctuary Stone.png"
+  },
+  {
+    "name": "Silver Firefly",
+    "imageUrl": "/materials/Silver Firefly.png"
+  },
+  {
+    "name": "Sliver of Meat",
+    "imageUrl": "/materials/Sliver of Meat.png"
+  },
+  {
+    "name": "Slumbering Egg",
+    "imageUrl": "/materials/Slumbering Egg.png"
+  },
+  {
+    "name": "Smoldering Butterfly",
+    "imageUrl": "/materials/Smoldering Butterfly.png"
+  },
+  {
+    "name": "String",
+    "imageUrl": "/materials/String.png"
+  },
+  {
+    "name": "Strip of White Flesh",
+    "imageUrl": "/materials/Strip of White Flesh.png"
+  },
+  {
+    "name": "Tarnished Golden Sunflower",
+    "imageUrl": "/materials/Tarnished Golden Sunflower.png"
+  },
+  {
+    "name": "Thin Animal Bones",
+    "imageUrl": "/materials/Thin Animal Bones.png"
+  },
+  {
+    "name": "Toxic Mushroom",
+    "imageUrl": "/materials/Toxic Mushroom.png"
+  },
+  {
+    "name": "Trina's Lily",
+    "imageUrl": "/materials/Trina's Lily.png"
+  },
+  {
+    "name": "Turtle Neck Meat",
+    "imageUrl": "/materials/Turtle Neck Meat.png"
+  },
+  {
+    "name": "Volcanic Stone",
+    "imageUrl": "/materials/Volcanic Stone.png"
+  },
+  {
+    "name": "Yellow Ember",
+    "imageUrl": "/materials/Yellow Ember.png"
+  }
+]

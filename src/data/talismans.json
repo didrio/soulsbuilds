@@ -1,0 +1,548 @@
+[
+  {
+    "name": "Ancestral Spirit's Horn",
+    "tier": "S",
+    "effect": "Restores FP upon defeating enemies",
+    "imageUrl": "/talismans/Ancestral Spirit's Horn.png"
+  },
+  {
+    "name": "Erdtree's Favor",
+    "tier": "S",
+    "effect": "HP increased by 3%, Stamina increased by 6.75%, Equip Load increased by 5%",
+    "imageUrl": "/talismans/Erdtree's Favor.png"
+  },
+  {
+    "name": "Flock's Canvas Talisman",
+    "tier": "S",
+    "effect": "Greatly raises potency of incantations.",
+    "imageUrl": "/talismans/Flock's Canvas Talisman.png"
+  },
+  {
+    "name": "Golden Scarab",
+    "tier": "S",
+    "effect": "increases the ammount of runes obtained from defeating enemies. (Rune Gain Increase of 20%)",
+    "imageUrl": "/talismans/Golden Scarab.png"
+  },
+  {
+    "name": "Graven-Mass Talisman",
+    "tier": "S",
+    "effect": "Greatly raises potency of sorceries. (Sorcery Boost of 8%)",
+    "imageUrl": "/talismans/Graven-Mass Talisman.png"
+  },
+  {
+    "name": "Lord of Blood's Exultation",
+    "tier": "S",
+    "effect": "Blood loss in vicinity increases attack power by 20%",
+    "imageUrl": "/talismans/Lord of Blood's Exultation.png"
+  },
+  {
+    "name": "Radagon Icon",
+    "tier": "S",
+    "effect": "Shortens spell casting time",
+    "imageUrl": "/talismans/Radagon Icon.png"
+  },
+  {
+    "name": "Shard of Alexander",
+    "tier": "S",
+    "effect": "Greatly boosts the attack power of skills. (Damage Boost of 15%)",
+    "imageUrl": "/talismans/Shard of Alexander.png"
+  },
+  {
+    "name": "Silver Scarab",
+    "tier": "S",
+    "effect": "This silver scarab enhances item discovery. (Raises Item Discovery by 75)",
+    "imageUrl": "/talismans/Silver Scarab.png"
+  },
+  {
+    "name": "Winged Sword Insignia",
+    "tier": "S",
+    "effect": "Raises attack power with successive attacks",
+    "imageUrl": "/talismans/Winged Sword Insignia.png"
+  },
+  {
+    "name": "Arrow's Reach Talisman",
+    "tier": "A",
+    "effect": "Increases bow effective range.",
+    "imageUrl": "/talismans/Arrow's Reach Talisman.png"
+  },
+  {
+    "name": "Carian Filigreed Crest",
+    "tier": "A",
+    "effect": "Lowers FP consumed by skills",
+    "imageUrl": "/talismans/Carian Filigreed Crest.png"
+  },
+  {
+    "name": "Concealing Veil",
+    "tier": "A",
+    "effect": "Completely conceals the wearer's presence while crouching at a distance from foes.",
+    "imageUrl": "/talismans/Concealing Veil.png"
+  },
+  {
+    "name": "Crucible Feather Talisman",
+    "tier": "A",
+    "effect": "Improves the effectiveness of dodge rolls, but increases damage taken at all times. (Lowers all Damage Negation by 8-9%)",
+    "imageUrl": "/talismans/Crucible Feather Talisman.png"
+  },
+  {
+    "name": "Dagger Talisman",
+    "tier": "A",
+    "effect": "Enhances critical hits.",
+    "imageUrl": "/talismans/Dagger Talisman.png"
+  },
+  {
+    "name": "Faithful Canvas Talisman",
+    "tier": "A",
+    "effect": "Increases damage of Incantations by 15-20%",
+    "imageUrl": "/talismans/Faithful Canvas Talisman.png"
+  },
+  {
+    "name": "Godfrey Icon",
+    "tier": "A",
+    "effect": "enhances charged spells and skills",
+    "imageUrl": "/talismans/Godfrey Icon.png"
+  },
+  {
+    "name": "Godskin Swaddling Cloth",
+    "tier": "A",
+    "effect": "Succesive attacks restore HP",
+    "imageUrl": "/talismans/Godskin Swaddling Cloth.png"
+  },
+  {
+    "name": "Graven-School Talisman",
+    "tier": "A",
+    "effect": "Raises potency of sorceries",
+    "imageUrl": "/talismans/Graven-School Talisman.png"
+  },
+  {
+    "name": "Kindred of Rot's Exultation",
+    "tier": "A",
+    "effect": "Raises attack power when poisoning or rot occurs in the vicinity",
+    "imageUrl": "/talismans/Kindred of Rot's Exultation.png"
+  },
+  {
+    "name": "Magic Scorpion Charm",
+    "tier": "A",
+    "effect": "Raises magic attack power, but lowers damage negation. (Magic Attack Power Boost of 12%)",
+    "imageUrl": "/talismans/Magic Scorpion Charm.png"
+  },
+  {
+    "name": "Marika's Soreseal",
+    "tier": "A",
+    "effect": "Greatly raises mind, intelligence, faith, and arcane, but also increases damage taken by a similar measure. (+5 to each Stat)",
+    "imageUrl": "/talismans/Marika's Soreseal.png"
+  },
+  {
+    "name": "Millicent's Prosthesis",
+    "tier": "A",
+    "effect": "Boosts dexterity and raises attack power with successive attacks. (+5 Dexterity)",
+    "imageUrl": "/talismans/Millicent's Prosthesis.png"
+  },
+  {
+    "name": "Old Lord's Talisman",
+    "tier": "A",
+    "effect": "Extends spell effect duration",
+    "imageUrl": "/talismans/Old Lord's Talisman.png"
+  },
+  {
+    "name": "Pearldrake Talisman",
+    "tier": "A",
+    "effect": "Boosts non-physical damage negation.",
+    "imageUrl": "/talismans/Pearldrake Talisman.png"
+  },
+  {
+    "name": "Red-Feathered Branchsword",
+    "tier": "A",
+    "effect": "Raises attack power when HP is low.",
+    "imageUrl": "/talismans/Red-Feathered Branchsword.png"
+  },
+  {
+    "name": "Ritual Sword Talisman",
+    "tier": "A",
+    "effect": "Raises attack power when HP is at maximum. (Incrased Attack Power by 10% when at Full Health)",
+    "imageUrl": "/talismans/Ritual Sword Talisman.png"
+  },
+  {
+    "name": "Rotten Winged Sword Insignia",
+    "tier": "A",
+    "effect": "Greatly raises attack power with successive attacks.",
+    "imageUrl": "/talismans/Rotten Winged Sword Insignia.png"
+  },
+  {
+    "name": "Stalwart Horn Charm",
+    "tier": "A",
+    "effect": "Greatly raises robustness.",
+    "imageUrl": "/talismans/Stalwart Horn Charm.png"
+  },
+  {
+    "name": "Warrior Jar Shard",
+    "tier": "A",
+    "effect": "Boosts the attack power of skills. (Skill Attack Power Boost of 10%)",
+    "imageUrl": "/talismans/Warrior Jar Shard.png"
+  },
+  {
+    "name": "Arrow's Sting Talisman",
+    "tier": "B",
+    "effect": "Raises attack power of arrows and bolts",
+    "imageUrl": "/talismans/Arrow's Sting Talisman.png"
+  },
+  {
+    "name": "Arsenal Charm",
+    "tier": "B",
+    "effect": "Raises maximum equipment weight",
+    "imageUrl": "/talismans/Arsenal Charm.png"
+  },
+  {
+    "name": "Assassin's Cerulean Dagger",
+    "tier": "B",
+    "effect": "Critical hits restore FP",
+    "imageUrl": "/talismans/Assassin's Cerulean Dagger.png"
+  },
+  {
+    "name": "Axe Talisman",
+    "tier": "B",
+    "effect": "Enhances charge attacks.",
+    "imageUrl": "/talismans/Axe Talisman.png"
+  },
+  {
+    "name": "Blue Dancer Charm",
+    "tier": "B",
+    "effect": "Raises attack power with lower equipment level",
+    "imageUrl": "/talismans/Blue Dancer Charm.png"
+  },
+  {
+    "name": "Crimson Seed Talisman",
+    "tier": "B",
+    "effect": "Boosts HP regeneration from Flask of Crimson Tears",
+    "imageUrl": "/talismans/Crimson Seed Talisman.png"
+  },
+  {
+    "name": "Dragoncrest Greatshield Talisman",
+    "tier": "B",
+    "effect": "Enormously boosts physical damage negation.",
+    "imageUrl": "/talismans/Dragoncrest Greatshield Talisman.png"
+  },
+  {
+    "name": "Great-Jar's Arsenal",
+    "tier": "B",
+    "effect": "Vaslty Raises maximum equip load",
+    "imageUrl": "/talismans/Great-Jar's Arsenal.png"
+  },
+  {
+    "name": "Green Turtle Talisman",
+    "tier": "B",
+    "effect": "Raises stamina recovery speed.",
+    "imageUrl": "/talismans/Green Turtle Talisman.png"
+  },
+  {
+    "name": "Host's Trick-Mirror",
+    "tier": "B",
+    "effect": "Makes the bearer take on the appearance of a summoned cooperator.",
+    "imageUrl": "/talismans/Host's Trick-Mirror.png"
+  },
+  {
+    "name": "Immunizing Horn Charm",
+    "tier": "B",
+    "effect": "Raises Immunity",
+    "imageUrl": "/talismans/Immunizing Horn Charm.png"
+  },
+  {
+    "name": "Lightning Scorpion Charm",
+    "tier": "B",
+    "effect": "Raises lightning attack, but lowers damage negation",
+    "imageUrl": "/talismans/Lightning Scorpion Charm.png"
+  },
+  {
+    "name": "Moon of Nokstella",
+    "tier": "B",
+    "effect": "Increases memory slots by 2",
+    "imageUrl": "/talismans/Moon of Nokstella.png"
+  },
+  {
+    "name": "Primal Glintstone Blade",
+    "tier": "B",
+    "effect": "Spells consume less FP, but maximum HP is reduced",
+    "imageUrl": "/talismans/Primal Glintstone Blade.png"
+  },
+  {
+    "name": "Sacred Scorpion Charm",
+    "tier": "B",
+    "effect": "Raises holy attack, but lowers damage negation.",
+    "imageUrl": "/talismans/Sacred Scorpion Charm.png"
+  },
+  {
+    "name": "Spear Talisman",
+    "tier": "B",
+    "effect": "Enhances the counterattacks that are unique to thrusting weapons.",
+    "imageUrl": "/talismans/Spear Talisman.png"
+  },
+  {
+    "name": "Stargazer Heriloom",
+    "tier": "B",
+    "effect": "Raises intelligence",
+    "imageUrl": "/talismans/Stargazer Heriloom.png"
+  },
+  {
+    "name": "Twinblade Talisman",
+    "tier": "B",
+    "effect": "Enhances final hit of chain attacks.",
+    "imageUrl": "/talismans/Twinblade Talisman.png"
+  },
+  {
+    "name": "Assassin's Crimson Dagger",
+    "tier": "C",
+    "effect": "Critical hits restore HP",
+    "imageUrl": "/talismans/Assassin's Crimson Dagger.png"
+  },
+  {
+    "name": "Blue-Feathered Branchsword",
+    "tier": "C",
+    "effect": "Raises defense when HP is low.",
+    "imageUrl": "/talismans/Blue-Feathered Branchsword.png"
+  },
+  {
+    "name": "Boltdrake Talisman",
+    "tier": "C",
+    "effect": "Boosts lightning damage negation.",
+    "imageUrl": "/talismans/Boltdrake Talisman.png"
+  },
+  {
+    "name": "Bull-Goat's Talisman",
+    "tier": "C",
+    "effect": "Raises Poise",
+    "imageUrl": "/talismans/Bull-Goat's Talisman.png"
+  },
+  {
+    "name": "Cerulean Amber Medallion",
+    "tier": "C",
+    "effect": "Raises maximum FP",
+    "imageUrl": "/talismans/Cerulean Amber Medallion.png"
+  },
+  {
+    "name": "Clarifying Horn Charm",
+    "tier": "C",
+    "effect": "Raises Focus",
+    "imageUrl": "/talismans/Clarifying Horn Charm.png"
+  },
+  {
+    "name": "Crepus's Vial",
+    "tier": "C",
+    "effect": "Eliminates all sound made by the wearer during movement.",
+    "imageUrl": "/talismans/Crepus's Vial.png"
+  },
+  {
+    "name": "Crimson Amber Medallion",
+    "tier": "C",
+    "effect": "Raises maximum HP",
+    "imageUrl": "/talismans/Crimson Amber Medallion.png"
+  },
+  {
+    "name": "Fire Scorpion Charm",
+    "tier": "C",
+    "effect": "Raises fire attack, but lowers damage negation",
+    "imageUrl": "/talismans/Fire Scorpion Charm.png"
+  },
+  {
+    "name": "Flamedrake Talisman",
+    "tier": "C",
+    "effect": "Boosts fire damage negation.",
+    "imageUrl": "/talismans/Flamedrake Talisman.png"
+  },
+  {
+    "name": "Furled Finger's Trick-Mirror",
+    "tier": "C",
+    "effect": "Makes the bearer take on the appearance of a Host of Fingers",
+    "imageUrl": "/talismans/Furled Finger's Trick-Mirror.png"
+  },
+  {
+    "name": "Haligdrake Talisman",
+    "tier": "C",
+    "effect": "Boosts holy damage negation.",
+    "imageUrl": "/talismans/Haligdrake Talisman.png"
+  },
+  {
+    "name": "Hammer Talisman",
+    "tier": "C",
+    "effect": "Enhances stamina-reducing attacks against blockers.",
+    "imageUrl": "/talismans/Hammer Talisman.png"
+  },
+  {
+    "name": "Longtail Cat Talisman",
+    "tier": "C",
+    "effect": "Renders the wearer immune to fall damage",
+    "imageUrl": "/talismans/Longtail Cat Talisman.png"
+  },
+  {
+    "name": "Mottled Necklace",
+    "tier": "C",
+    "effect": "Raises Robustness, Immunity, and Focus",
+    "imageUrl": "/talismans/Mottled Necklace.png"
+  },
+  {
+    "name": "Perfumer's Talisman",
+    "tier": "C",
+    "effect": "Raises potency of perfume items.",
+    "imageUrl": "/talismans/Perfumer's Talisman.png"
+  },
+  {
+    "name": "Prince of Death's Pustule",
+    "tier": "C",
+    "effect": "Raises Vitality",
+    "imageUrl": "/talismans/Prince of Death's Pustule.png"
+  },
+  {
+    "name": "Prosthesis-Wearer Heirloom",
+    "tier": "C",
+    "effect": "Raises dexterity",
+    "imageUrl": "/talismans/Prosthesis-Wearer Heirloom.png"
+  },
+  {
+    "name": "Ritual Shield Talisman",
+    "tier": "C",
+    "effect": "Raises defense when HP is at maximum. (30% Damage Negation when at Full Health)",
+    "imageUrl": "/talismans/Ritual Shield Talisman.png"
+  },
+  {
+    "name": "Sacrificial Twig",
+    "tier": "C",
+    "effect": "Will be lost on death in place of runes.",
+    "imageUrl": "/talismans/Sacrificial Twig.png"
+  },
+  {
+    "name": "Shabriri's Woe",
+    "tier": "C",
+    "effect": "Constantly attracts enemies' aggression.",
+    "imageUrl": "/talismans/Shabriri's Woe.png"
+  },
+  {
+    "name": "Spelldrake Talisman",
+    "tier": "C",
+    "effect": "Boosts magical damage negation.",
+    "imageUrl": "/talismans/Spelldrake Talisman.png"
+  },
+  {
+    "name": "Starscourge Heirloom",
+    "tier": "C",
+    "effect": "Raises strength",
+    "imageUrl": "/talismans/Starscourge Heirloom.png"
+  },
+  {
+    "name": "Two Fingers Heirloom",
+    "tier": "C",
+    "effect": "Raises faith.",
+    "imageUrl": "/talismans/Two Fingers Heirloom.png"
+  },
+  {
+    "name": "Viridian Amber Medallion",
+    "tier": "C",
+    "effect": "Raises maximum stamina.",
+    "imageUrl": "/talismans/Viridian Amber Medallion.png"
+  },
+  {
+    "name": "Blessed Dew Talisman",
+    "tier": "D",
+    "effect": "Slowly restores HP.",
+    "imageUrl": "/talismans/Blessed Dew Talisman.png"
+  },
+  {
+    "name": "Companion Jar",
+    "tier": "D",
+    "effect": "Raises potency of thrown jars.",
+    "imageUrl": "/talismans/Companion Jar.png"
+  },
+  {
+    "name": "Crucible Scale Talisman",
+    "tier": "D",
+    "effect": "Reduces damage taken from critical hits",
+    "imageUrl": "/talismans/Crucible Scale Talisman.png"
+  },
+  {
+    "name": "Roar Medallion",
+    "tier": "D",
+    "effect": "Enhances roars and breath attacks.",
+    "imageUrl": "/talismans/Roar Medallion.png"
+  },
+  {
+    "name": "Taker's Cameo",
+    "tier": "D",
+    "effect": "Restores HP upon defeating enemies",
+    "imageUrl": "/talismans/Taker's Cameo.png"
+  },
+  {
+    "name": "Cerulean Seed Talisman",
+    "tier": "E",
+    "effect": "Boosts FP restoration from Flask of Cerulean Tears",
+    "imageUrl": "/talismans/Cerulean Seed Talisman.png"
+  },
+  {
+    "name": "Crepu's Vial",
+    "tier": "E",
+    "effect": "Eliminates all sound made by the wearer during movement",
+    "imageUrl": "/talismans/Crepu's Vial.png"
+  },
+  {
+    "name": "Crucible Knot Talisman",
+    "tier": "E",
+    "effect": "Reduces damage and impact of headshots",
+    "imageUrl": "/talismans/Crucible Knot Talisman.png"
+  },
+  {
+    "name": "Curved Sword Talisman",
+    "tier": "E",
+    "effect": "Enhances guard counters.",
+    "imageUrl": "/talismans/Curved Sword Talisman.png"
+  },
+  {
+    "name": "Dragoncrest Shield Talisman",
+    "tier": "E",
+    "effect": "Boosts physical damage negation",
+    "imageUrl": "/talismans/Dragoncrest Shield Talisman.png"
+  },
+  {
+    "name": "Greatshield Talisman",
+    "tier": "E",
+    "effect": "Boosts guarding ability.",
+    "imageUrl": "/talismans/Greatshield Talisman.png"
+  },
+  {
+    "name": "Lance Talisman",
+    "tier": "E",
+    "effect": "Enhances attacks on horseback",
+    "imageUrl": "/talismans/Lance Talisman.png"
+  },
+  {
+    "name": "Marika's Scarseal",
+    "tier": "E",
+    "effect": "Raises attributes, but also increases damage taken",
+    "imageUrl": "/talismans/Marika's Scarseal.png"
+  },
+  {
+    "name": "Radagon's Scarseal",
+    "tier": "E",
+    "effect": "Raises attributes, but also increases damage taken.",
+    "imageUrl": "/talismans/Radagon's Scarseal.png"
+  },
+  {
+    "name": "Radagon's Soreseal",
+    "tier": "E",
+    "effect": "Greatly raises attributes, but also increases damage taken",
+    "imageUrl": "/talismans/Radagon's Soreseal.png"
+  },
+  {
+    "name": "Claw Talisman",
+    "tier": "F",
+    "effect": "Enhances jump attacks.",
+    "imageUrl": "/talismans/Claw Talisman.png"
+  },
+  {
+    "name": "Daedicar's Woe",
+    "tier": "F",
+    "effect": "Increases damage taken.",
+    "imageUrl": "/talismans/Daedicar's Woe.png"
+  },
+  {
+    "name": "Entwining Umbilical Cord",
+    "tier": "?",
+    "effect": "Changes the demeanour of the wearer's actions.",
+    "imageUrl": "/talismans/Entwining Umbilical Cord.png"
+  }
+]

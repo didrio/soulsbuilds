@@ -1,0 +1,514 @@
+[
+  {
+    "name": "Azula Beastman Ashes",
+    "damageType": "Melee",
+    "tier": "S",
+    "fp": "102",
+    "effect": "Summons two Azula beastman spirits",
+    "imageUrl": "/spirits/Azula Beastman Ashes.png"
+  },
+  {
+    "name": "Greatshield Soldier Ashes",
+    "damageType": "Tank",
+    "tier": "S",
+    "fp": "74",
+    "effect": "Summons five greatshield soldier spirits",
+    "imageUrl": "/spirits/Greatshield Soldier Ashes.png"
+  },
+  {
+    "name": "Lhutel the Headless",
+    "damageType": "Tank, Ranged, Death, Melee",
+    "tier": "S",
+    "fp": "104",
+    "effect": "Summons spirit of Lhutel the Headless",
+    "imageUrl": "/spirits/Lhutel the Headless.png"
+  },
+  {
+    "name": "Mimic Tear Ashes",
+    "damageType": "Special",
+    "tier": "S",
+    "fp": "660",
+    "effect": "Summons mimic tear spirit",
+    "imageUrl": "/spirits/Mimic Tear Ashes.png"
+  },
+  {
+    "name": "Nightmaiden & Swordtress Puppets",
+    "damageType": "",
+    "tier": "S",
+    "fp": "97",
+    "effect": "Summons nightmaiden & swordstress spirits",
+    "imageUrl": "/spirits/Nightmaiden & Swordtress Puppets.png"
+  },
+  {
+    "name": "Radahn Soldier Ashes",
+    "damageType": "Fire",
+    "tier": "S",
+    "fp": "71",
+    "effect": "Summons two Radahn Soldier spirits",
+    "imageUrl": "/spirits/Radahn Soldier Ashes.png"
+  },
+  {
+    "name": "Ancient Dragon Knight Kristoff Ashes",
+    "damageType": "Lightning, Ranged, Melee",
+    "tier": "A",
+    "fp": "108",
+    "effect": "Summons spirit of Ancient Dragon Knight Kristoff",
+    "imageUrl": "/spirits/Ancient Dragon Knight Kristoff Ashes.png"
+  },
+  {
+    "name": "Black Knife Tiche",
+    "damageType": "Melee, Ranged",
+    "tier": "A",
+    "fp": "132",
+    "effect": "Summons spirit of Black Knife Tiche",
+    "imageUrl": "/spirits/Black Knife Tiche.png"
+  },
+  {
+    "name": "Dung Eater Puppet",
+    "damageType": "Melee, Ranged",
+    "tier": "A",
+    "fp": "118",
+    "effect": "Summons spirit of the Dung Eater",
+    "imageUrl": "/spirits/Dung Eater Puppet.png"
+  },
+  {
+    "name": "Fanged Imp Ashes",
+    "damageType": "Magic, Ranged, Melee",
+    "tier": "A",
+    "fp": "50",
+    "effect": "Summons two fanged imp spirits",
+    "imageUrl": "/spirits/Fanged Imp Ashes.png"
+  },
+  {
+    "name": "Godrick Soldier Ashes",
+    "damageType": "Ranged, Melee, Tank",
+    "tier": "A",
+    "fp": "54",
+    "effect": "Summons two Godrick soldier spirits",
+    "imageUrl": "/spirits/Godrick Soldier Ashes.png"
+  },
+  {
+    "name": "Nepheli Loux Puppet",
+    "damageType": "Lightning, Melee",
+    "tier": "A",
+    "fp": "90",
+    "effect": "Summons spirit of Nepheli Loux",
+    "imageUrl": "/spirits/Nepheli Loux Puppet.png"
+  },
+  {
+    "name": "Oracle Envoy Ashes",
+    "damageType": "Ranged, Melee",
+    "tier": "A",
+    "fp": "72",
+    "effect": "Summons four Oracle Envoy spirits",
+    "imageUrl": "/spirits/Oracle Envoy Ashes.png"
+  },
+  {
+    "name": "Spirit Jellyfish Ashes",
+    "damageType": "Tank",
+    "tier": "A",
+    "fp": "31",
+    "effect": "Summons spirit jellyfish.",
+    "imageUrl": "/spirits/Spirit Jellyfish Ashes.png"
+  },
+  {
+    "name": "Leyndell Soldier Ashes",
+    "damageType": "Tank",
+    "tier": "B",
+    "fp": "64",
+    "effect": "Summons two Leyndell soldier spirits",
+    "imageUrl": "/spirits/Leyndell Soldier Ashes.png"
+  },
+  {
+    "name": "Lone Wolf Ashes",
+    "damageType": "",
+    "tier": "B",
+    "fp": "55",
+    "effect": "Summons three lone wolf spirits.",
+    "imageUrl": "/spirits/Lone Wolf Ashes.png"
+  },
+  {
+    "name": "Mausoleum Soldier Ashes",
+    "damageType": "Tank",
+    "tier": "B",
+    "fp": "75",
+    "effect": "Summons five mausoleum soldier spirits",
+    "imageUrl": "/spirits/Mausoleum Soldier Ashes.png"
+  },
+  {
+    "name": "Omenkiller Rollo",
+    "damageType": "Fire, Melee",
+    "tier": "B",
+    "fp": "113",
+    "effect": "Summons spirit of Omenkiller Rollo",
+    "imageUrl": "/spirits/Omenkiller Rollo.png"
+  },
+  {
+    "name": "Raya Lucaria Soldier Ashes",
+    "damageType": "Ranged, Melee",
+    "tier": "B",
+    "fp": "59",
+    "effect": "Summons three Raya Lucaria soldier spirits",
+    "imageUrl": "/spirits/Raya Lucaria Soldier Ashes.png"
+  },
+  {
+    "name": "Albinauric Ashes",
+    "damageType": "Frostbite, Melee",
+    "tier": "C",
+    "fp": "53",
+    "effect": "Summons two Albinauric spirits",
+    "imageUrl": "/spirits/Albinauric Ashes.png"
+  },
+  {
+    "name": "Avionette Soldier Ashes",
+    "damageType": "",
+    "tier": "C",
+    "fp": "67",
+    "effect": "Summon the spirits of two avionette soldiers",
+    "imageUrl": "/spirits/Avionette Soldier Ashes.png"
+  },
+  {
+    "name": "Banished Knight Engvall Ashes",
+    "damageType": "",
+    "tier": "C",
+    "fp": "100",
+    "effect": "Summons spirit of Banished Knight Engvall",
+    "imageUrl": "/spirits/Banished Knight Engvall Ashes.png"
+  },
+  {
+    "name": "Banished Knight Oleg Ashes",
+    "damageType": "",
+    "tier": "C",
+    "fp": "100",
+    "effect": "Summons Banished Knight Oleg spirit",
+    "imageUrl": "/spirits/Banished Knight Oleg Ashes.png"
+  },
+  {
+    "name": "Demi-Human Ashes",
+    "damageType": "",
+    "tier": "C",
+    "fp": "69",
+    "effect": "Summons five demi-human spirits",
+    "imageUrl": "/spirits/Demi-Human Ashes.png"
+  },
+  {
+    "name": "Mad Pumpkin Head Ashes",
+    "damageType": "",
+    "tier": "C",
+    "fp": "110",
+    "effect": "Summon the spirit of a mad pumpkin head",
+    "imageUrl": "/spirits/Mad Pumpkin Head Ashes.png"
+  },
+  {
+    "name": "Man-Serpent Ashes",
+    "damageType": "Fire, Melee",
+    "tier": "C",
+    "fp": "62",
+    "effect": "Summons man-serpent spirit",
+    "imageUrl": "/spirits/Man-Serpent Ashes.png"
+  },
+  {
+    "name": "Stormhawk Deenh",
+    "damageType": "Buff",
+    "tier": "D",
+    "fp": "47",
+    "effect": "Summons spirit of Stormhawk Dreenh",
+    "imageUrl": "/spirits/Stormhawk Deenh.png"
+  },
+  {
+    "name": "Vulgar Militia Ashes",
+    "damageType": "Bleed",
+    "tier": "D",
+    "fp": "70",
+    "effect": "Summons three vulgar Militia spirits",
+    "imageUrl": "/spirits/Vulgar Militia Ashes.png"
+  },
+  {
+    "name": "Ancestral Follower Ashes",
+    "damageType": "Ranged",
+    "tier": "E",
+    "fp": "86",
+    "effect": "Summons ancestral follower spirit",
+    "imageUrl": "/spirits/Ancestral Follower Ashes.png"
+  },
+  {
+    "name": "Archer Ashes",
+    "damageType": "Frostbite",
+    "tier": "E",
+    "fp": "57",
+    "effect": "Summons three archer spirits",
+    "imageUrl": "/spirits/Archer Ashes.png"
+  },
+  {
+    "name": "Clayman Ashes",
+    "damageType": "Magic, Ranged",
+    "tier": "E",
+    "fp": "77",
+    "effect": "Summons two clayman spirits",
+    "imageUrl": "/spirits/Clayman Ashes.png"
+  },
+  {
+    "name": "Depraved Perfumer Carmaan Ashes",
+    "damageType": "Fire, Melee, Ranged",
+    "tier": "E",
+    "fp": "124",
+    "effect": "Summons spirit of Depraved Perfumer Carmaan",
+    "imageUrl": "/spirits/Depraved Perfumer Carmaan Ashes.png"
+  },
+  {
+    "name": "Finger Maiden Therolina Puppet",
+    "damageType": "Heal, Ranged",
+    "tier": "E",
+    "fp": "82",
+    "effect": "Summons spirit of Finger Maiden Therolina",
+    "imageUrl": "/spirits/Finger Maiden Therolina Puppet.png"
+  },
+  {
+    "name": "Fire Monk Ashes",
+    "damageType": "Fire, Melee, Ranged",
+    "tier": "E",
+    "fp": "85",
+    "effect": "Summons Fire Monk spirit",
+    "imageUrl": "/spirits/Fire Monk Ashes.png"
+  },
+  {
+    "name": "Giant Rat Ashes",
+    "damageType": "",
+    "tier": "E",
+    "fp": "0",
+    "effect": "Summons three giant rat spirits",
+    "imageUrl": "/spirits/Giant Rat Ashes.png"
+  },
+  {
+    "name": "Kindred of Rot Ashes",
+    "damageType": "Ranged, Melee",
+    "tier": "E",
+    "fp": "73",
+    "effect": "Summons Kindred of Rot spirit",
+    "imageUrl": "/spirits/Kindred of Rot Ashes.png"
+  },
+  {
+    "name": "Marionette Soldier Ashes",
+    "damageType": "Ranged",
+    "tier": "E",
+    "fp": "67",
+    "effect": "Summons two marionette soldier spirits",
+    "imageUrl": "/spirits/Marionette Soldier Ashes.png"
+  },
+  {
+    "name": "Noble Sorcerer Ashes",
+    "damageType": "Ranged",
+    "tier": "E",
+    "fp": "11",
+    "effect": "Summons noble sorcerer spirit.",
+    "imageUrl": "/spirits/Noble Sorcerer Ashes.png"
+  },
+  {
+    "name": "Nomad Ashes",
+    "damageType": "Fire",
+    "tier": "E",
+    "fp": "61",
+    "effect": "Summons nomad spirit",
+    "imageUrl": "/spirits/Nomad Ashes.png"
+  },
+  {
+    "name": "Page Ashes",
+    "damageType": "Fire",
+    "tier": "E",
+    "fp": "81",
+    "effect": "Summons page spirit",
+    "imageUrl": "/spirits/Page Ashes.png"
+  },
+  {
+    "name": "Soldjars of Fortune Ashes",
+    "damageType": "",
+    "tier": "E",
+    "fp": "135",
+    "effect": "Summons three little living jar spirits",
+    "imageUrl": "/spirits/Soldjars of Fortune Ashes.png"
+  },
+  {
+    "name": "Twinsage Sorcerer Ashes",
+    "damageType": "Magic, Ranged",
+    "tier": "E",
+    "fp": "89",
+    "effect": "Summons Twinsage sorcerer spirit",
+    "imageUrl": "/spirits/Twinsage Sorcerer Ashes.png"
+  },
+  {
+    "name": "Warhawk Ashes",
+    "damageType": "",
+    "tier": "E",
+    "fp": "52",
+    "effect": "Summons warhawk spirit",
+    "imageUrl": "/spirits/Warhawk Ashes.png"
+  },
+  {
+    "name": "Battlemage Hugues Ashes",
+    "damageType": "Magic, Melee, Ranged",
+    "tier": "F",
+    "fp": "122",
+    "effect": "Summons spirit of Battlemage Hugues",
+    "imageUrl": "/spirits/Battlemage Hugues Ashes.png"
+  },
+  {
+    "name": "Blackflame Monk Amon Ashes",
+    "damageType": "Fire, Melee",
+    "tier": "F",
+    "fp": "115",
+    "effect": "Summons spirit of Blackflame Monk Amon",
+    "imageUrl": "/spirits/Blackflame Monk Amon Ashes.png"
+  },
+  {
+    "name": "Bloodhound Knight Floh",
+    "damageType": "",
+    "tier": "F",
+    "fp": "95",
+    "effect": "Summons spirit of Bloodhound Knight Floh",
+    "imageUrl": "/spirits/Bloodhound Knight Floh.png"
+  },
+  {
+    "name": "Cleanrot Knight Finlay Ashes",
+    "damageType": "Holy, Melee, Ranged",
+    "tier": "F",
+    "fp": "127",
+    "effect": "Summons spirit of Cleanrot Knight Finlay",
+    "imageUrl": "/spirits/Cleanrot Knight Finlay Ashes.png"
+  },
+  {
+    "name": "Crystalian Ashes",
+    "damageType": "Ranged, Melee",
+    "tier": "F",
+    "fp": "101",
+    "effect": "Summons Crystalian spirit",
+    "imageUrl": "/spirits/Crystalian Ashes.png"
+  },
+  {
+    "name": "Dolores the Sleeping Arrow Puppet",
+    "damageType": "Ranged, Sleep",
+    "tier": "F",
+    "fp": "87",
+    "effect": "Summons spirit of Solores the Sleeping Arrow",
+    "imageUrl": "/spirits/Dolores the Sleeping Arrow Puppet.png"
+  },
+  {
+    "name": "Glintstone Sorcerer Ashes",
+    "damageType": "Magic, Ranged",
+    "tier": "F",
+    "fp": "49",
+    "effect": "Summons glintstone sorcerer spirit",
+    "imageUrl": "/spirits/Glintstone Sorcerer Ashes.png"
+  },
+  {
+    "name": "Haligtree Soldier Ashes",
+    "damageType": "Ranged, Melee",
+    "tier": "F",
+    "fp": "66",
+    "effect": "Summons four Haligtree soldier spirits",
+    "imageUrl": "/spirits/Haligtree Soldier Ashes.png"
+  },
+  {
+    "name": "Jarwight Puppet",
+    "damageType": "Ranged",
+    "tier": "F",
+    "fp": "60",
+    "effect": "Summons Jarwight spirit",
+    "imageUrl": "/spirits/Jarwight Puppet.png"
+  },
+  {
+    "name": "Kaiden Sellsword Ashes",
+    "damageType": "",
+    "tier": "F",
+    "fp": "88",
+    "effect": "Summons Kaiden Sellsword spirit.",
+    "imageUrl": "/spirits/Kaiden Sellsword Ashes.png"
+  },
+  {
+    "name": "Land Squirt Ashes",
+    "damageType": "Poison",
+    "tier": "F",
+    "fp": "240",
+    "effect": "Summons three land squirts",
+    "imageUrl": "/spirits/Land Squirt Ashes.png"
+  },
+  {
+    "name": "Latenna the Albinauric",
+    "damageType": "Magic, Ranged",
+    "tier": "F",
+    "fp": "74",
+    "effect": "Summons the spirit of Latenna the Albinauric",
+    "imageUrl": "/spirits/Latenna the Albinauric.png"
+  },
+  {
+    "name": "Miranda Sprout Ashes",
+    "damageType": "Poison",
+    "tier": "F",
+    "fp": "185",
+    "effect": "Summons five miranda sprouts",
+    "imageUrl": "/spirits/Miranda Sprout Ashes.png"
+  },
+  {
+    "name": "Perfumer Tricia",
+    "damageType": "Tank, Buff, Melee, Fire",
+    "tier": "F",
+    "fp": "78",
+    "effect": "Summons spirit of Perfumer Tricia",
+    "imageUrl": "/spirits/Perfumer Tricia.png"
+  },
+  {
+    "name": "Putrid Corpse Ashes",
+    "damageType": "",
+    "tier": "F",
+    "fp": "40",
+    "effect": "Summons four putrid corpse spirits",
+    "imageUrl": "/spirits/Putrid Corpse Ashes.png"
+  },
+  {
+    "name": "Redmane Knight Ogha",
+    "damageType": "Tank",
+    "tier": "F",
+    "fp": "106",
+    "effect": "Summons spirit of Redmane Knight Ogha",
+    "imageUrl": "/spirits/Redmane Knight Ogha.png"
+  },
+  {
+    "name": "Rotten Stray Ashes",
+    "damageType": "",
+    "tier": "F",
+    "fp": "35",
+    "effect": "Summon rotten stray spirit",
+    "imageUrl": "/spirits/Rotten Stray Ashes.png"
+  },
+  {
+    "name": "Skeletal Bandit Ashes",
+    "damageType": "",
+    "tier": "F",
+    "fp": "22",
+    "effect": "Summons skeletal bandit spirit",
+    "imageUrl": "/spirits/Skeletal Bandit Ashes.png"
+  },
+  {
+    "name": "Skeletal Militiaman Ashes",
+    "damageType": "",
+    "tier": "F",
+    "fp": "44",
+    "effect": "Summons two skeletal militiaman spirits",
+    "imageUrl": "/spirits/Skeletal Militiaman Ashes.png"
+  },
+  {
+    "name": "Wandering Noble Ashes",
+    "damageType": "",
+    "tier": "F",
+    "fp": "28",
+    "effect": "Summons five wandering noble spirits.",
+    "imageUrl": "/spirits/Wandering Noble Ashes.png"
+  },
+  {
+    "name": "Winged Misbegotten Ashes",
+    "damageType": "Ranged",
+    "tier": "F",
+    "fp": "37",
+    "effect": "Summons winged misbegotten spirit",
+    "imageUrl": "/spirits/Winged Misbegotten Ashes.png"
+  }
+]

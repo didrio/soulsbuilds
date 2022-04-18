@@ -1,0 +1,317 @@
+[
+  {
+    "name": "Arrow",
+    "imageUrl": "/items/Arrow.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Ballista Bolt",
+    "imageUrl": "/items/Ballista Bolt.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Black-Key Bolt",
+    "imageUrl": "/items/Black-Key Bolt.png",
+    "effect": "Rot"
+  },
+  {
+    "name": "Bloodbone Arrow",
+    "imageUrl": "/items/Bloodbone Arrow.png",
+    "effect": "Bloodloss"
+  },
+  {
+    "name": "Bloodbone Arrow Fletched",
+    "imageUrl": "/items/Bloodbone Arrow Fletched.png",
+    "effect": "Bloodloss"
+  },
+  {
+    "name": "Bloodbone Bolt",
+    "imageUrl": "/items/Bloodbone Bolt.png",
+    "effect": "Bloodloss"
+  },
+  {
+    "name": "Bolt",
+    "imageUrl": "/items/Bolt.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Bone Arrow",
+    "imageUrl": "/items/Bone Arrow.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Bone Arrow Fletched",
+    "imageUrl": "/items/Bone Arrow Fletched.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Bone Ballista Bolt",
+    "imageUrl": "/items/Bone Ballista Bolt.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Bone Bolt",
+    "imageUrl": "/items/Bone Bolt.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Bone Great Arrow",
+    "imageUrl": "/items/Bone Great Arrow.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Bone Great Arrow Fletched",
+    "imageUrl": "/items/Bone Great Arrow Fletched.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Burred Bolt",
+    "imageUrl": "/items/Burred Bolt.png",
+    "effect": "Bloodloss"
+  },
+  {
+    "name": "Coldbone Arrow",
+    "imageUrl": "/items/Coldbone Arrow.png",
+    "effect": "Frost"
+  },
+  {
+    "name": "Coldbone Arrow Fletched",
+    "imageUrl": "/items/Coldbone Arrow Fletched.png",
+    "effect": "Frost"
+  },
+  {
+    "name": "Coldbone Bolt",
+    "imageUrl": "/items/Coldbone Bolt.png",
+    "effect": "Frost"
+  },
+  {
+    "name": "Dwelling Arrow",
+    "imageUrl": "/items/Dwelling Arrow.png",
+    "effect": "Magic"
+  },
+  {
+    "name": "Explosive Bolt",
+    "imageUrl": "/items/Explosive Bolt.png",
+    "effect": "Deals fire damage"
+  },
+  {
+    "name": "Explosive Greatbolt",
+    "imageUrl": "/items/Explosive Greatbolt.png",
+    "effect": "Deals fire damage"
+  },
+  {
+    "name": "Fire Arrow",
+    "imageUrl": "/items/Fire Arrow.png",
+    "effect": "Deals fire damage"
+  },
+  {
+    "name": "Firebone Arrow",
+    "imageUrl": "/items/Firebone Arrow.png",
+    "effect": "Deals fire damage"
+  },
+  {
+    "name": "Firebone Arrow Fletched",
+    "imageUrl": "/items/Firebone Arrow Fletched.png",
+    "effect": "Deals fire damage to foes."
+  },
+  {
+    "name": "Firebone Bolt",
+    "imageUrl": "/items/Firebone Bolt.png",
+    "effect": "Deals fire damage"
+  },
+  {
+    "name": "Flaming Bolt",
+    "imageUrl": "/items/Flaming Bolt.png",
+    "effect": "Deals fire damage"
+  },
+  {
+    "name": "Golden Arrow",
+    "imageUrl": "/items/Golden Arrow.png",
+    "effect": "Deals holy damage"
+  },
+  {
+    "name": "Golden Bolt",
+    "imageUrl": "/items/Golden Bolt.png",
+    "effect": "Deals powerful holy damage"
+  },
+  {
+    "name": "Golden Great Arrow",
+    "imageUrl": "/items/Golden Great Arrow.png",
+    "effect": "Deals holy damage"
+  },
+  {
+    "name": "Golem's Great Arrow",
+    "imageUrl": "/items/Golem's Great Arrow.png",
+    "effect": "Break enemy stances and guards with ease"
+  },
+  {
+    "name": "Golem's Magic Arrow",
+    "imageUrl": "/items/Golem's Magic Arrow.png",
+    "effect": "Deals magic damage"
+  },
+  {
+    "name": "Great Arrow",
+    "imageUrl": "/items/Great Arrow.png",
+    "effect": "Pierce"
+  },
+  {
+    "name": "Haligbone Arrow",
+    "imageUrl": "/items/Haligbone Arrow.png",
+    "effect": "Deals holy damage"
+  },
+  {
+    "name": "Haligbone Arrow Fletched",
+    "imageUrl": "/items/Haligbone Arrow Fletched.png",
+    "effect": "Deals holy damage"
+  },
+  {
+    "name": "Haligbone Bolt",
+    "imageUrl": "/items/Haligbone Bolt.png",
+    "effect": "Deals holy damage"
+  },
+  {
+    "name": "Lightning Greatbolt",
+    "imageUrl": "/items/Lightning Greatbolt.png",
+    "effect": "Deals powerful lightning damage"
+  },
+  {
+    "name": "Lightningbone Arrow",
+    "imageUrl": "/items/Lightningbone Arrow.png",
+    "effect": "Deals lightning damage"
+  },
+  {
+    "name": "Lightningbone Arrow Fletched",
+    "imageUrl": "/items/Lightningbone Arrow Fletched.png",
+    "effect": "Deals lightning damage"
+  },
+  {
+    "name": "Lightningbone Bolt",
+    "imageUrl": "/items/Lightningbone Bolt.png",
+    "effect": "Deals lightning damage"
+  },
+  {
+    "name": "Lordsworn's Bolt",
+    "imageUrl": "/items/Lordsworn's Bolt.png",
+    "effect": "Deals more damage"
+  },
+  {
+    "name": "Magicbone Arrow",
+    "imageUrl": "/items/Magicbone Arrow.png",
+    "effect": "Deals magic damage"
+  },
+  {
+    "name": "Magicbone Arrow Fletched",
+    "imageUrl": "/items/Magicbone Arrow Fletched.png",
+    "effect": "Deals magic damage"
+  },
+  {
+    "name": "Magicbone Bolt",
+    "imageUrl": "/items/Magicbone Bolt.png",
+    "effect": "Deals magic damage"
+  },
+  {
+    "name": "Meteor Bolt",
+    "imageUrl": "/items/Meteor Bolt.png",
+    "effect": "Deals magic damage"
+  },
+  {
+    "name": "Perfumer's Bolt",
+    "imageUrl": "/items/Perfumer's Bolt.png",
+    "effect": "deals fire damage"
+  },
+  {
+    "name": "Poisonbone Arrow",
+    "imageUrl": "/items/Poisonbone Arrow.png",
+    "effect": "Afflicts targets with poison."
+  },
+  {
+    "name": "Poisonbone Arrow Fletched",
+    "imageUrl": "/items/Poisonbone Arrow Fletched.png",
+    "effect": "Afflicts targets with poison."
+  },
+  {
+    "name": "Poisonbone Bolt",
+    "imageUrl": "/items/Poisonbone Bolt.png",
+    "effect": "Afflicts targets with poison."
+  },
+  {
+    "name": "Radahn's Spear",
+    "imageUrl": "/items/Radahn's Spear.png",
+    "effect": "Imbued with Radahn's gravitational power"
+  },
+  {
+    "name": "Rainbow Stone Arrow",
+    "imageUrl": "/items/Rainbow Stone Arrow.png",
+    "effect": "Colored lights shine at the point of impact"
+  },
+  {
+    "name": "Rainbow Stone Arrow Fletched",
+    "imageUrl": "/items/Rainbow Stone Arrow Fletched.png",
+    "effect": "Colored light shines at the point of impact"
+  },
+  {
+    "name": "Rotbone Arrow",
+    "imageUrl": "/items/Rotbone Arrow.png",
+    "effect": "Afflicts targets with scarlet rot"
+  },
+  {
+    "name": "Rotbone Arrow Fletched",
+    "imageUrl": "/items/Rotbone Arrow Fletched.png",
+    "effect": "Afflicts targets with scarlet rot"
+  },
+  {
+    "name": "Rotbone Bolt",
+    "imageUrl": "/items/Rotbone Bolt.png",
+    "effect": "Afflicts targets with scarlet rot"
+  },
+  {
+    "name": "Serpent Arrow",
+    "imageUrl": "/items/Serpent Arrow.png",
+    "effect": "fangs are daubed with deadly poison"
+  },
+  {
+    "name": "Shattershard Arrow",
+    "imageUrl": "/items/Shattershard Arrow.png",
+    "effect": "Creates a resonating noise at the point of impact"
+  },
+  {
+    "name": "Shattershard Arrow Fletched",
+    "imageUrl": "/items/Shattershard Arrow Fletched.png",
+    "effect": "Creates a resonating noise at the point of impact."
+  },
+  {
+    "name": "Sleepbone Arrow",
+    "imageUrl": "/items/Sleepbone Arrow.png",
+    "effect": "Afflicts targets with drowsiness."
+  },
+  {
+    "name": "Sleepbone Arrow Fletched",
+    "imageUrl": "/items/Sleepbone Arrow Fletched.png",
+    "effect": "Afflicts targets with drowsiness."
+  },
+  {
+    "name": "Sleepbone Bolt",
+    "imageUrl": "/items/Sleepbone Bolt.png",
+    "effect": "Afflicts targets with sleep"
+  },
+  {
+    "name": "Spiritflame Arrow",
+    "imageUrl": "/items/Spiritflame Arrow.png",
+    "effect": "Deals magic damage while also afflictingfoes with frost"
+  },
+  {
+    "name": "St. Trina's Arrow",
+    "imageUrl": "/items/St. Trina's Arrow.png",
+    "effect": "Afflicts targets with a powerful sleep effect"
+  },
+  {
+    "name": "Storm Arrow",
+    "imageUrl": "/items/Storm Arrow.png",
+    "effect": "knocks enemies away with a gust of wind"
+  },
+  {
+    "name": "Stormwing Bone Arrow",
+    "imageUrl": "/items/Stormwing Bone Arrow.png",
+    "effect": "Flies enshrouded in storm winds"
+  }
+]

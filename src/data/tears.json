@@ -1,0 +1,147 @@
+[
+  {
+    "name": "Cerulean Crystal Tear",
+    "imageUrl": "/items/Cerulean Crystal Tear.png",
+    "effect": "restores half of one's maximum FP."
+  },
+  {
+    "name": "Cerulean Hidden Tear",
+    "imageUrl": "/items/Cerulean Hidden Tear.png",
+    "effect": "removes all FP consumption"
+  },
+  {
+    "name": "Crimson Bubbletear",
+    "imageUrl": "/items/Crimson Bubbletear.png",
+    "effect": "automatically heals one's HP in the moment before death"
+  },
+  {
+    "name": "Crimson Crystal Tear",
+    "imageUrl": "/items/Crimson Crystal Tear.png",
+    "effect": "restores half of one's maximum HP"
+  },
+  {
+    "name": "Crimsonburst Crystal Tear",
+    "imageUrl": "/items/Crimsonburst Crystal Tear.png",
+    "effect": "gradually restores one's HP over time"
+  },
+  {
+    "name": "Crimsonspill Crystal Tear",
+    "imageUrl": "/items/Crimsonspill Crystal Tear.png",
+    "effect": "Steadily restores one's HP over time"
+  },
+  {
+    "name": "Crimsonwhorl Bubbletear",
+    "imageUrl": "/items/Crimsonwhorl Bubbletear.png",
+    "effect": "converts incoming damage into recovered HP instead."
+  },
+  {
+    "name": "Dexterity-knot Crystal Tear",
+    "imageUrl": "/items/Dexterity-knot Crystal Tear.png",
+    "effect": "temporarily boosts one's dexterity"
+  },
+  {
+    "name": "Faith-knot Crystal Tear",
+    "imageUrl": "/items/Faith-knot Crystal Tear.png",
+    "effect": "temporarily boosts one's faith"
+  },
+  {
+    "name": "Flame-Shrouding Cracked Tear",
+    "imageUrl": "/items/Flame-Shrouding Cracked Tear.png",
+    "effect": "Temporarily boosts the power of one's fire attacks."
+  },
+  {
+    "name": "Greenburst Crystal Tear",
+    "imageUrl": "/items/Greenburst Crystal Tear.png",
+    "effect": "gradually restores stamina recovery speed"
+  },
+  {
+    "name": "Greenspill Crystal Tear",
+    "imageUrl": "/items/Greenspill Crystal Tear.png",
+    "effect": "temporarily raises one's maximum stamina"
+  },
+  {
+    "name": "Holy-Shrouding Cracked Tear",
+    "imageUrl": "/items/Holy-Shrouding Cracked Tear.png",
+    "effect": "Temporarily boosts holy attacks"
+  },
+  {
+    "name": "Intelligence-knot Crystal Tear",
+    "imageUrl": "/items/Intelligence-knot Crystal Tear.png",
+    "effect": "boosts one's intelligence"
+  },
+  {
+    "name": "Leaden Hardtear",
+    "imageUrl": "/items/Leaden Hardtear.png",
+    "effect": "Temporarily boosts poise"
+  },
+  {
+    "name": "Lightning-Shrouding Cracked Tear",
+    "imageUrl": "/items/Lightning-Shrouding Cracked Tear.png",
+    "effect": "Temporarily boosts lightning attacks"
+  },
+  {
+    "name": "Magic-Shrouding Cracked Tear",
+    "imageUrl": "/items/Magic-Shrouding Cracked Tear.png",
+    "effect": "Temporarily boosts magic attacks"
+  },
+  {
+    "name": "Opaline Bubbletear",
+    "imageUrl": "/items/Opaline Bubbletear.png",
+    "effect": "Provides significant damage negation"
+  },
+  {
+    "name": "Opaline Hardtear",
+    "imageUrl": "/items/Opaline Hardtear.png",
+    "effect": "temporarily boosts all forms of damage negation"
+  },
+  {
+    "name": "Purifying Crystal Tear",
+    "imageUrl": "/items/Purifying Crystal Tear.png",
+    "effect": "purifies the curse from Mohg, Lord of Blood's terrifying rite of blood"
+  },
+  {
+    "name": "Ruptured Crystal Tear",
+    "imageUrl": "/items/Ruptured Crystal Tear.png",
+    "effect": "Causes concoction to explode in mixed physick"
+  },
+  {
+    "name": "Speckled Hardtear",
+    "imageUrl": "/items/Speckled Hardtear.png",
+    "effect": "temporarily raises all resistances and heals all status ailments"
+  },
+  {
+    "name": "Spiked Cracked Tear",
+    "imageUrl": "/items/Spiked Cracked Tear.png",
+    "effect": "increases the power of charged attacks"
+  },
+  {
+    "name": "Stonebarb Cracked Tear",
+    "imageUrl": "/items/Stonebarb Cracked Tear.png",
+    "effect": "more likely to break enemy stances"
+  },
+  {
+    "name": "Strength-knot Crystal Tear",
+    "imageUrl": "/items/Strength-knot Crystal Tear.png",
+    "effect": "temporarily boosts one's strength"
+  },
+  {
+    "name": "Thorny Cracked Tear",
+    "imageUrl": "/items/Thorny Cracked Tear.png",
+    "effect": "consecutive attacks grow stronger the longer they continue"
+  },
+  {
+    "name": "Twiggy Cracked Tear",
+    "imageUrl": "/items/Twiggy Cracked Tear.png",
+    "effect": "Briefly stop rune loss on death"
+  },
+  {
+    "name": "Windy Crystal Tear",
+    "imageUrl": "/items/Windy Crystal Tear.png",
+    "effect": "increases the effectiveness of dodgerolls"
+  },
+  {
+    "name": "Winged Crystal Tear",
+    "imageUrl": "/items/Winged Crystal Tear.png",
+    "effect": "Temporarily reduces equipment load."
+  }
+]

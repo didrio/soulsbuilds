@@ -1,26 +1,67 @@
-const elements = Array.from(document.querySelectorAll('#Armor_Table_Body_List > tr'));
+import fs from 'fs';
+import fetch from 'node-fetch';
+import cheerio from 'cheerio';
 
-const items = [];
+const ARMOR_URL = 'https://rankedboost.com/elden-ring/armor/';
 
-elements.forEach(element => {
-  const [tier, name, type, weight, physical, slash, strike, pierce, magic, fire, light, holy] = Array.from(element.children);
-  const newItem = {};
-  newItem.tier = tier.outerText;
-  newItem.name = name.querySelector('.tier-list-object-name-table-css').outerText;
-  newItem.passive = name.querySelector('.tier-list-object-name-table-css-passive').outerText || '';
-  newItem.type = type.querySelector('.weapon-type-list-div-css').outerText;
-  newItem.set = type.querySelector('.set-type-list-div-css').outerText || '';
-  newItem.weight = weight.querySelector('b').outerText;
-  newItem.weightType = weight.querySelector('.set-type-weight-list-div-css').outerText;
-  newItem.physical = physical.outerText;
-  newItem.slash = slash.outerText;
-  newItem.strike = strike.outerText;
-  newItem.pierce = pierce.outerText;
-  newItem.magic = magic.outerText;
-  newItem.fire = fire.outerText;
-  newItem.light = light.outerText;
-  newItem.holy = holy.outerText;
-  items.push(newItem);
-});
+const run = async () => {
+  const response = await fetch(ARMOR_URL);
+  const body = await response.text();
+  const html = cheerio.load(body);
+  const elements = Array.from(html('#Armor_Table_Body_List > tr'));
 
-console.log(JSON.stringify(items, null, 2));
+  const armor = {
+    helms: [],
+    legs: [],
+    chests: [],
+    gauntlets: []
+  };
+
+  elements.forEach(element => {
+    const [tier, name, type, weight, physical, slash, strike, pierce, magic, fire, light, holy] = Array.from(element.childNodes);
+    const newItem = {};
+    newItem.name = html('.tier-list-object-name-table-css', name).text() || '';
+    newItem.type = html('.weapon-type-list-div-css', type).text() || '';
+    newItem.tier = html(tier).text() || '';
+    newItem.passive = html('.tier-list-object-name-table-css-passive', name).text() || '';
+    const imageUrl = html('.tier-list-table-object-image', name).attr('src') || '';
+    newItem.imageUrl = imageUrl.split('assets')[1];
+    newItem.set = html('.set-type-list-div-css', type).text() || '';
+    newItem.weight = html('b', weight).text() || '';
+    newItem.weightType = html('.set-type-weight-list-div-css', weight).text() || '';
+    newItem.physical = html(physical).text() || '';
+    newItem.slash = html(slash).text() || '';
+    newItem.strike = html(strike).text() || '';
+    newItem.pierce = html(pierce).text() || '';
+    newItem.magic = html(magic).text() || '';
+    newItem.fire = html(fire).text() || '';
+    newItem.light = html(light).text() || '';
+    newItem.holy = html(holy).text() || '';
+
+    Object.keys(newItem).forEach(key => {
+      newItem[key] = newItem[key].trim();
+    });
+
+    switch (newItem.type) {
+      case 'Helm':
+        armor.helms.push(newItem);
+        break;
+      case 'Leg':
+        armor.legs.push(newItem);
+        break;
+      case 'Chest':
+        armor.chests.push(newItem);
+        break;
+      case 'Gauntlet':
+        armor.gauntlets.push(newItem);
+        break;
+      default:
+        break;
+    }
+  });
+
+  const json = JSON.stringify(armor, null, 2);
+  fs.writeFileSync('./armor.json', json);
+};
+
+run();

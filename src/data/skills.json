@@ -1,0 +1,961 @@
+[
+  {
+    "name": "Angel's Wings",
+    "type": "Unique",
+    "tier": "S",
+    "fp": "17",
+    "effect": "white wings impede recovery actions using a flask of tears."
+  },
+  {
+    "name": "Great Oracular Bubble",
+    "type": "Unique",
+    "tier": "S",
+    "fp": "28",
+    "effect": "Blow on the horn to release a massive magic bubble. The bubble floats gently through the air towards its target."
+  },
+  {
+    "name": "Night-and-Flame Stance",
+    "type": "Unique",
+    "tier": "S",
+    "fp": "- (19 23)",
+    "effect": "sweep forward with a burst of flames"
+  },
+  {
+    "name": "Radahn's Rain",
+    "type": "Unique",
+    "tier": "S",
+    "fp": "-25",
+    "effect": "The arrows will pour on foes like rain"
+  },
+  {
+    "name": "Taker's Flames",
+    "type": "Unique",
+    "tier": "S",
+    "fp": "30",
+    "effect": "set things ablaze and steal HP"
+  },
+  {
+    "name": "Transient Moonlight",
+    "type": "Unique",
+    "tier": "S",
+    "fp": "15/20",
+    "effect": "Attacks fire off a wave of light."
+  },
+  {
+    "name": "Bloodhound's Step",
+    "type": "Normal",
+    "tier": "S",
+    "fp": "5",
+    "effect": "Skill that allows the user to become temporarily invisible while dodging at high speed. Moves faster and travels farther than a regular quickstep. This skill can be used to circle around lock-on targets."
+  },
+  {
+    "name": "Alabaster Lords' Pull",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "15",
+    "effect": "create a gravity well dealing damage and pulling enemies in"
+  },
+  {
+    "name": "Bear Witness!",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "20",
+    "effect": "Grand the small dragon a fleeting glimpse of life and thrust it skyward, spewing flames over a wide frontward area."
+  },
+  {
+    "name": "Bloodboon Ritual",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "20 (-20)",
+    "effect": "Raise the sacred spear and pierce the body of the Formless Mother.\nStab up to three times, creating explosions of blood with each thrust.\nThis skill will coat the armament with bloodflame for a while."
+  },
+  {
+    "name": "Cursed-Blood Slice",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "20 / - 20",
+    "effect": "charge forward to deliver a downward diagonal slice"
+  },
+  {
+    "name": "Death Flare",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "3",
+    "effect": "inflicting the death ailment upon foes"
+  },
+  {
+    "name": "Destined Death",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "40",
+    "effect": "dealing immediate damage, this attack reduces the enemy's\nmaximum HP and continues to wear down HP"
+  },
+  {
+    "name": "Devourer of Worlds",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "35",
+    "effect": "Charge the scepter with magic to steal HP"
+  },
+  {
+    "name": "Dynast's Finesse",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "5 / -7",
+    "effect": "avoid an attack while getting some distance from foes to follow up with strong attack to lunge do another strong attack for a sweeping slice"
+  },
+  {
+    "name": "Eochaid's Dancing Blade",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "15",
+    "effect": "Infuse the sword with energy, then fling it forwards in a corkscrew attack. The sword continuously deals damage while violently spinning. Charge the attack to increase reach and duration of the spin."
+  },
+  {
+    "name": "Flame Dance",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "25",
+    "effect": "Imbue the red braid with the Giants' Flame and lash out in a wide range with a series of agile swings."
+  },
+  {
+    "name": "Flowing Form",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "9",
+    "effect": "transforms armament into its liquid form"
+  },
+  {
+    "name": "I Command Thee, Kneel!",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "15",
+    "effect": "unleashing two earth-shaking shockwaves.\nFollow up with an additional input to produce a third shockwave."
+  },
+  {
+    "name": "Ice Lightning Sword",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "25",
+    "effect": "Call down a bolt of ice lightning"
+  },
+  {
+    "name": "Knowledge Above All",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "35",
+    "effect": "Enemy magic and holy damage negation will be reduced for all\nwithin the area, including the caster"
+  },
+  {
+    "name": "Last Rites",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "25",
+    "effect": "Grant Sacred Order to yourself and allies in the area"
+  },
+  {
+    "name": "Magma Guillotine",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "20 / - 10",
+    "effect": "triggering a blast of magma. Follow up with an additional input to perform a chopping attack."
+  },
+  {
+    "name": "Mists of Slumber",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "20",
+    "effect": "Releases a faint purple mist that spreads across a wide frontwards area. This mist inflicts the sleep ailment upon foes."
+  },
+  {
+    "name": "Moonlight Greatsword",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "40",
+    "effect": "Temporarily increases magic attack power and imbues blade with\nfrost"
+  },
+  {
+    "name": "Nebula",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "25",
+    "effect": "Imbue the Naturalborn's stars with magic"
+  },
+  {
+    "name": "Reduvia Blood Blade",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "6",
+    "effect": "Slash with the wicked dagger, transforming its never-drying bloostains into airborne blood blades that cause hemorrhaging. Can be fired in rapid succession."
+  },
+  {
+    "name": "Shriek of Milos",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "30",
+    "effect": "reduces all damage negation and status resistances"
+  },
+  {
+    "name": "Siluria's Woe",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "25",
+    "effect": "Thrust the treespear in a spiraling motion, surrounding it in a vortex of wind."
+  },
+  {
+    "name": "Starcaller Cry",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "20 / -20",
+    "effect": "pulls in enemies with gravitational wave. Follow up with an addition input to slam down with gravity-infused swords"
+  },
+  {
+    "name": "Waterfowl Dance",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "9 (- 7)",
+    "effect": "Perform a series of one-footed leaps in the manner of a waterfowl to unleash a swift yet graceful slashing combo. Repeated inputs allow for up to two follow-up attacks"
+  },
+  {
+    "name": "Black Flame Tornado",
+    "type": "Normal",
+    "tier": "A",
+    "fp": "30",
+    "effect": "Spin armament overhead and then plunge it into the ground to summon a raging vortex of black flames. Hold to create an initial flame tornado while spinning the armament."
+  },
+  {
+    "name": "Cragblade",
+    "type": "Normal",
+    "tier": "A",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Double Slash",
+    "type": "Unique",
+    "tier": "A",
+    "fp": "6",
+    "effect": ""
+  },
+  {
+    "name": "Enchanted Shot",
+    "type": "Normal",
+    "tier": "A",
+    "fp": "0",
+    "effect": "shot will fly faster than regular shots and change its trajectory to follow the target."
+  },
+  {
+    "name": "Gravitas",
+    "type": "Normal",
+    "tier": "A",
+    "fp": "13",
+    "effect": "Pierce the ground with your armament to damage foes as a surge of gravity draws them in."
+  },
+  {
+    "name": "Loretta's Slash",
+    "type": "Normal",
+    "tier": "A",
+    "fp": "14",
+    "effect": "Leap forward, imbuing the blade with glintstone, then descend, accelerating into a sweeping slash."
+  },
+  {
+    "name": "Seppuku",
+    "type": "Normal",
+    "tier": "A",
+    "fp": "4",
+    "effect": "Increases attack power and improves ability to inflict blood loss."
+  },
+  {
+    "name": "Blade of Death",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "25",
+    "effect": "blade-like projectile reduces the enemy's maximum HP and continues to wear down HP"
+  },
+  {
+    "name": "Bloodhound's Finesse",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "8 / 12",
+    "effect": "Slash upwards with the Bloodhound's Fang, using the momentum of the strike to perform a backwards somersault and gain some distance from foes.\nFollow up with a strong attack to perform the Bloodhound's Step attack."
+  },
+  {
+    "name": "Corpse Piler",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "17 ( -9 )",
+    "effect": "Forms a blade of cursed blood for repeated, interweaving successive attacks. Follow up with an additional input, for further successive attacks."
+  },
+  {
+    "name": "Corpse Wax Cutter",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "20",
+    "effect": "blade-like projectile"
+  },
+  {
+    "name": "Erdtree Slam",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "19",
+    "effect": "After jumping high in the air, crashing down sents golden shockwaves in all directions"
+  },
+  {
+    "name": "Fires of Slumber",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15",
+    "effect": "The intoxicating flames inflict the sleep ailment upon foes."
+  },
+  {
+    "name": "Flame Spit",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "28",
+    "effect": "launch a fireball from the barrel"
+  },
+  {
+    "name": "Golden Retaliation",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "4",
+    "effect": "Ready the shield to unleash its protective incantation.\nThis will dispel sorceries and incantations, retaliating with golden power."
+  },
+  {
+    "name": "Gravity Bolt",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "13 / -13",
+    "effect": "sends a bolt crashing down a short distance away. Can be fired in rapid succession"
+  },
+  {
+    "name": "Great-Serpent Hunt",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15",
+    "effect": "powerful forward lunge and follow up with an upward\nthrust"
+  },
+  {
+    "name": "Oath of Vengeance",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "20",
+    "effect": "temporarily raising all attributes for a certain duration. While the oath's effects are active, poise will also be increased."
+  },
+  {
+    "name": "Onyx Lord's Repulsion",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "27",
+    "effect": "create a gravity well to send enemies flying away"
+  },
+  {
+    "name": "Ordovis's Vortex",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15",
+    "effect": "slamming the blade down"
+  },
+  {
+    "name": "Regal Roar",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "25",
+    "effect": "raising attack power, while sending\nout a shockwave that cannot be guarded against"
+  },
+  {
+    "name": "Sorcery of the Crozier",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15",
+    "effect": "Channel magic into the glintstone to activate an ancient sorcery, producing projectiles that chase enemies"
+  },
+  {
+    "name": "Storm Kick",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15",
+    "effect": "Creates a storm"
+  },
+  {
+    "name": "Surge of Faith",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15 (-15)",
+    "effect": "rain down fireballs in all directions"
+  },
+  {
+    "name": "Zamor Ice Storm",
+    "type": "Unique",
+    "tier": "B",
+    "fp": "15",
+    "effect": "freezing storm that batters the surrounding"
+  },
+  {
+    "name": "Barricade Shield",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "8",
+    "effect": "Focus your energy into your shield, temporarily hardening"
+  },
+  {
+    "name": "Blood Tax",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "14",
+    "effect": "Unleashes a flurry of thrusts that rob the target of both their blood and their HP."
+  },
+  {
+    "name": "Carian Retaliation",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Charge Forth",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "13",
+    "effect": "Quickly charge forward with the armament at the hip, carrying the momentum into a thrust Hold to cover a greater distance."
+  },
+  {
+    "name": "Endure",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "9",
+    "effect": "boosting poise. Damage taken while using this skill is reduced."
+  },
+  {
+    "name": "Flame of the Redmanes",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "14",
+    "effect": "Produces a powerful burst of flames in a wide frontward arc."
+  },
+  {
+    "name": "Mighty Shot",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "0",
+    "effect": "Ready the bow, then pull the bowstring to its limit to enhance the power of the shot, penetrating the enemy's guard."
+  },
+  {
+    "name": "No Skill",
+    "type": "Regular",
+    "tier": "B",
+    "fp": "0",
+    "effect": "This armament has no skill. If the armament in the other hand has a skill, that skill will be used instead."
+  },
+  {
+    "name": "Royal Knight's Resolve",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "15",
+    "effect": "Hold the flat of the armament to your face and pledge your resolve, greatly powering up your next attack."
+  },
+  {
+    "name": "Sacred Blade",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "19",
+    "effect": "Holy essence and fires off a golden blade projectile"
+  },
+  {
+    "name": "Spinning Slash",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "6 / 12",
+    "effect": "Slash foes as your body spins.\nThis momentum can connect into a final heavy attack."
+  },
+  {
+    "name": "Storm Wall",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "3",
+    "effect": "Swing the shield to create a wall of storm winds in front of you, deflecting arrows and other such physical projectiles. Can also be used in the same way as a Normal parry."
+  },
+  {
+    "name": "Stormcaller",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "9",
+    "effect": "Spin armament to create surrounding storm winds. Repeated inputs allow for up to two follow-up attacks."
+  },
+  {
+    "name": "Sword Dance",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "6",
+    "effect": "Quickly close in to perform a series of spinning upward slashes. Follow up with an additional input to finish with a downward slash."
+  },
+  {
+    "name": "Thops's Barrier",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "",
+    "effect": "Erect a magical forcefield while swinging the shield to deflect sorceries and incantations. Can also be used in the same way as a regular parry."
+  },
+  {
+    "name": "Unsheathe",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "10 / 15",
+    "effect": "holding it at the hip in a composed stance. Follow up with a normal or strong attack to perform a swift slash attack."
+  },
+  {
+    "name": "Vow of the Indomitable",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Wild Strikes",
+    "type": "Normal",
+    "tier": "B",
+    "fp": "6 / 10",
+    "effect": "Swing armament with wild abandon.\nHold to continue swinging. Can be followed up with a normal or strong attack."
+  },
+  {
+    "name": "Golden Land",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "16 / - 5",
+    "effect": "Thrust armament into the ground, then gather strength to unleash a blast of sacred energy that coalesces into golden darts. Follow up with a strong attack to swing the armament in a sweeping strike."
+  },
+  {
+    "name": "Storm Assault",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "22",
+    "effect": "Leap forward through surrounding storm winds and thrust armament downward. The attack will produce more storm winds at the point of impact."
+  },
+  {
+    "name": "Thunderstorm",
+    "type": "Unique",
+    "tier": "C",
+    "fp": "19 / - 12",
+    "effect": "lightning storm"
+  },
+  {
+    "name": "Assassin's Gambit",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "5",
+    "effect": "self-inflicted wound. Grants near-invisibility and silences footsteps"
+  },
+  {
+    "name": "Chilling Mist",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Flaming Strike",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Ground Slam",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "14",
+    "effect": "Jump up high into the air and crash down on the ground ahead. The resulting pratfall sends a powerful shockwave in all directions."
+  },
+  {
+    "name": "Hoarfrost Stomp",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Ice Spear",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "15",
+    "effect": "Spin armament to release cold magic, then channel it into a piercing spear of ice."
+  },
+  {
+    "name": "Lifesteal Fist",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "14",
+    "effect": "A slow, controlled punch with an energy-infused fist that renders foes unconscious and steals their HP. Only effective against foes of human build."
+  },
+  {
+    "name": "Lightning Ram",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "5",
+    "effect": "Skill inspired by tumbling rams. Let out a bleat, then tumble forwards, clad in lightning. Tumbles can be repeated in rapid succession."
+  },
+  {
+    "name": "Lightning Slash",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Prayerful Strike",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "20",
+    "effect": "Raise armament aloft in prayer, then slam it into the ground. This inspired blow restores HP to the self and nearby allies if it successfully hits."
+  },
+  {
+    "name": "Prelate's Charge",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "20",
+    "effect": "Slam armament into the ground to create a surge of flames, then charge in. Hold to continue the charge"
+  },
+  {
+    "name": "Sacred Order",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "18",
+    "effect": "Perform a salute and grant the armament holy essence"
+  },
+  {
+    "name": "Sacred Ring of Light",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "9",
+    "effect": "Gather a sacred ring of light"
+  },
+  {
+    "name": "Storm Blade",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "10",
+    "effect": "Surround armament with shearing storm winds that can be fired forward. Can be fired in rapid succession"
+  },
+  {
+    "name": "Vacuum Slice",
+    "type": "Normal",
+    "tier": "C",
+    "fp": "18",
+    "effect": "shearin vacuum, then launch it forwards as a blade-like projectile"
+  },
+  {
+    "name": "Carian Greatsword",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "16",
+    "effect": "Transform blade into a magical greatsword"
+  },
+  {
+    "name": "Soul Stifler",
+    "type": "Unique",
+    "tier": "D",
+    "fp": "12",
+    "effect": "reduced defense"
+  },
+  {
+    "name": "Barbaric Roar",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "16",
+    "effect": "Let loose a bestial roar to rally the spirit and increase attack power. While active, strong attacks change to savage combo attacks."
+  },
+  {
+    "name": "Barrage",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "0",
+    "effect": "held horizontally. Ready the bow, then fire off a rapid succession of shots faster than the eye can see."
+  },
+  {
+    "name": "Beast's Roar",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "",
+    "effect": "Unleash a beastly roar, rending the air as a forward-travelling projectile."
+  },
+  {
+    "name": "Bloody Slash",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "6",
+    "effect": "unleash a rending blood slash in a wide arc."
+  },
+  {
+    "name": "Braggart's Roar",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "16",
+    "effect": "Raises attack power, defense and stamina recover speed."
+  },
+  {
+    "name": "Carian Grandeur",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "26",
+    "effect": "Transform blade into magical greatsword"
+  },
+  {
+    "name": "Parry Skill",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "",
+    "effect": "Use this Skill in time with a foe's melee attack to deflect it and break that foe's stance. This gives you a chance for a critical hit."
+  },
+  {
+    "name": "Shield Bash",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "10",
+    "effect": "Brace behind shield before using bodyweight to ram foes while maintaining guarding stance.\nWeaker enemies will be shoved backwards, and can even be staggered."
+  },
+  {
+    "name": "Spectral Lance",
+    "type": "Normal",
+    "tier": "D",
+    "fp": "9",
+    "effect": "Hurl a phantasmic spear at foes."
+  },
+  {
+    "name": "Buckler Parry",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "",
+    "effect": "Use this Skill in time with a foe's melee attack to deflect it and break that foe's stance. This is faster than a regular parry."
+  },
+  {
+    "name": "Golden Tempering",
+    "type": "Unique",
+    "tier": "E",
+    "fp": "30",
+    "effect": "grant attacks holy essence"
+  },
+  {
+    "name": "Sea of Magma",
+    "type": "Unique",
+    "tier": "E",
+    "fp": "5 (-5)",
+    "effect": "cover the surrounding area in a sea of magma"
+  },
+  {
+    "name": "Spinning Chain",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "8 / 10",
+    "effect": "Spins the striking part of a flail at high speed to attack. Follow up with a normal or strong attack to link the momentum of this skill into a successful attack."
+  },
+  {
+    "name": "Determination",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "10",
+    "effect": "Hold your armament to your face and pledge your resolve, powering up your next attack."
+  },
+  {
+    "name": "Eruption",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "14",
+    "effect": "Slam armament into the ground, spawning roiling lava"
+  },
+  {
+    "name": "Giant Hunt",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "16",
+    "effect": "Step forward from a low stance, carrying the momentum into a sudden upward thrust."
+  },
+  {
+    "name": "Glintblade Phalanx",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "10 / - 4",
+    "effect": "Blades over your head that attack enemies"
+  },
+  {
+    "name": "Golden Slam",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "",
+    "effect": ""
+  },
+  {
+    "name": "Hoarah Loux's Earthshaker",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "16",
+    "effect": "violently shake the earth and unleash a shockwave"
+  },
+  {
+    "name": "Impaling Thrust",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "14",
+    "effect": "Build power, then lunge forward for a long thrust that pierces an enemy's guard"
+  },
+  {
+    "name": "Lion's Claw",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "20",
+    "effect": "Somersault forwards, striking foes with armament"
+  },
+  {
+    "name": "Piercing Fang",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "16",
+    "effect": "make a powerful thrust that cannot be blocked"
+  },
+  {
+    "name": "Poison Moth Flight",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "7",
+    "effect": "Slash with a poison-infused blade. Strike poisoned foes to deal significant\ndamage."
+  },
+  {
+    "name": "Quickstep",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "3",
+    "effect": "Perform a quickstep maneuver that allows for circling around lock-on targets."
+  },
+  {
+    "name": "Raptor of the Mists",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "14",
+    "effect": "Duck into a low stance, momentarily vanishing. If an enemy attack connects, avian wings will allow for a quick escape into the air."
+  },
+  {
+    "name": "Repeating Thrust",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "7",
+    "effect": "Twist to build power, then unleash a flurry of thrusts. This Skill takes some time to build up, but it is very powerful. It can be used on all thrusting armaments."
+  },
+  {
+    "name": "Spinning Strikes",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "2",
+    "effect": "Polearm skill that performs continuous spinning attacks. ifies projectiles such as arrows while spinning."
+  },
+  {
+    "name": "Spinning Weapon",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "12",
+    "effect": "Lifts armament into mid-air, then makes it spin violently. Those it touches will suffer successive attacks."
+  },
+  {
+    "name": "Square Off",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "8 / 12",
+    "effect": "Slash up through enemy guards with a normal attack, or run and thrust with a strong attack."
+  },
+  {
+    "name": "Stamp Sweep",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "5 ( - 8 )",
+    "effect": "Brace armament and step into a low stance that prevents recoil from most enemy attacks. Follow up with a strong attack for a sweeping strike."
+  },
+  {
+    "name": "Stamp Upward Cut",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "5 / 8",
+    "effect": "Brace armament and step into a low stance that prevents recoil from most enemy attacks.\nFollow up with a strong attack for an upward strike."
+  },
+  {
+    "name": "Storm Stomp",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "6",
+    "effect": "Stomp the ground hard to kick up a temporary storm."
+  },
+  {
+    "name": "Through and Through",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "0",
+    "effect": "Powerful archery skill using a greatbow held in an oblique stance.\nReady the greatbow, then twist the bowstring to fire a mighty greatarrow that can penetrate through enemies."
+  },
+  {
+    "name": "Troll's Roar",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "22",
+    "effect": "powerful shockwave that blows back surrounding foes. Follow up with a strong attack to slam the armament down."
+  },
+  {
+    "name": "War Cry",
+    "type": "Normal",
+    "tier": "E",
+    "fp": "16",
+    "effect": "strong attacks change to charging attacks"
+  },
+  {
+    "name": "Firebreather",
+    "type": "Unique",
+    "tier": "F",
+    "fp": "8",
+    "effect": "Blow into torch flame, spreading flames in a wide frontward arc. The flames on the ground will continue to burn for a short time."
+  },
+  {
+    "name": "Glintstone Dart",
+    "type": "Unique",
+    "tier": "F",
+    "fp": "",
+    "effect": "Charge the skill to upgrade it to Glintstone Dart.\nFollow up with a strong attack to chain this skill into a lunging thrust.."
+  },
+  {
+    "name": "Glintstone Pebble",
+    "type": "Normal",
+    "tier": "F",
+    "fp": "8",
+    "effect": "employs the glintstone sorcery of the same name. Follow up with a strong attack to chain this skill into a lunging thrust"
+  },
+  {
+    "name": "Spinning Wheel",
+    "type": "Unique",
+    "tier": "F",
+    "fp": "3",
+    "effect": "Strike the wheel against the ground to set it spinning at top speed"
+  },
+  {
+    "name": "Torch Attack",
+    "type": "Unique",
+    "tier": "F",
+    "fp": "",
+    "effect": "Thrust your torch forward to set foes ablaze"
+  },
+  {
+    "name": "Golden Vow",
+    "type": "Normal",
+    "tier": "F",
+    "fp": "40",
+    "effect": "granting self and nearby allies increased attack power and defense."
+  },
+  {
+    "name": "Kick",
+    "type": "Normal",
+    "tier": "F",
+    "fp": "0",
+    "effect": "Push an enemy back with a high kick.Effective against enemies who are guarding, and can break a foe's stance."
+  },
+  {
+    "name": "Poisonous Mist",
+    "type": "Normal",
+    "tier": "F",
+    "fp": "14",
+    "effect": "Bathe armament in poison"
+  }
+]
