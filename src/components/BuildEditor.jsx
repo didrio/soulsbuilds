@@ -82,6 +82,12 @@ function BuildEditor() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  // useEffect(() => {
+  //   if (auth === false) {
+  //     navigate('/');
+  //   }
+  // }, [navigate, auth]);
+
   const spells = useSelector(selectSpells);
   const tears = useSelector(selectTears);
   const arc = useSelector(selectArc);
@@ -104,10 +110,12 @@ function BuildEditor() {
   useEffect(() => {
     const savedBuildId = params?.buildId ?? 'new';
     setBuildId(savedBuildId);
-    if (savedBuildId === 'new') {
+    if (savedBuildId === 'new' && auth) {
       setEditable(true);
+    } else if (savedBuildId === 'new' && auth === false) {
+      navigate('/');
     }
-  }, [params]);
+  }, [params, auth, navigate]);
 
   useEffect(() => {
     if (buildId !== null && buildId !== 'new' && loading) {
@@ -241,6 +249,10 @@ function BuildEditor() {
     }
     setSaveLoading(false);
   };
+
+  if (auth === null) {
+    return null;
+  }
 
   if (loading) {
     return (

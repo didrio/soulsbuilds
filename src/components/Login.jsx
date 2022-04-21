@@ -17,7 +17,7 @@ function Login() {
 
   useEffect(() => {
     if (auth) {
-      navigate('/new');
+      navigate('/builds/new');
     }
   }, [auth, navigate]);
 
