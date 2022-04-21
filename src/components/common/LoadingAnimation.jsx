@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { COLOR_DARK_GRAY } from '../../constants';
+import { COLOR_LIGHT_GRAY } from '../../constants';
 
 const getSize = ({ size }) => `${size}px`;
 
@@ -29,10 +29,10 @@ const Container = styled.div`
     position: absolute;
     width: ${getSize};
     height: ${getSize};
-    border: 2px solid ${COLOR_DARK_GRAY};
+    border: 2px solid ${COLOR_LIGHT_GRAY};
     border-radius: 50%;
     animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: ${COLOR_DARK_GRAY} transparent transparent transparent;
+    border-color: ${COLOR_LIGHT_GRAY} transparent transparent transparent;
   }
 
   & div:nth-child(1) {

@@ -56,7 +56,7 @@ const Container = styled(FlexGroup)`
   position: relative;
 
   &:hover {
-    background-color: ${COLOR_LIGHTER_GRAY};
+    background-color: ${({ disabled }) => (disabled ? COLOR_GRAY : COLOR_LIGHTER_GRAY)};
   }
 
   & > img {

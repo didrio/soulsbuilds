@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { CloseCircleOutline } from 'react-ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import concat from 'lodash/concat';
 import sortBy from 'lodash/sortBy';
@@ -182,14 +181,9 @@ function ItemSelector() {
             value={searchText}
           />
         </SearchContainer>
-        <IconContainer>
-          <CloseCircleOutline
-            color="#00000"
-            onClick={handleClose}
-            height="35px"
-            width="35px"
-          />
-        </IconContainer>
+        <IconContainer
+          onClick={handleClose}
+        />
       </TopBar>
       <Contents>
         {options.map((option) => row(option))}
@@ -210,8 +204,11 @@ const TopBar = styled(FlexGroup)`
   width: 100%;
 `;
 
-const IconContainer = styled(FlexItem)`
+const IconContainer = styled(FlexGroup)`
+  background-color: #000000;
   cursor: pointer;
+  height: 35px;
+  width: 35px;
 `;
 
 const RowContainer = styled(FlexGroup)`

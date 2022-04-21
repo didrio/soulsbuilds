@@ -1,11 +1,12 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import Slot from './common/Slot';
 import { SLOT_TYPE_TEAR } from '../constants';
 import { selectTear1, selectTear2 } from '../store/selectors';
 
-function TearEditor() {
+function TearEditor({ editable }) {
   const tear1 = useSelector(selectTear1);
   const tear2 = useSelector(selectTear2);
 
@@ -18,11 +19,13 @@ function TearEditor() {
       </Header>
       <SlotContainer>
         <Slot
+          disabled={!editable}
           id="tear1"
           item={tear1}
           type={SLOT_TYPE_TEAR}
         />
         <Slot
+          disabled={!editable}
           id="tear2"
           item={tear2}
           type={SLOT_TYPE_TEAR}
@@ -41,5 +44,9 @@ const SlotContainer = styled(FlexGroup)`
     margin-right: 10px;
   }
 `;
+
+TearEditor.propTypes = {
+  editable: PropTypes.bool.isRequired,
+};
 
 export default TearEditor;

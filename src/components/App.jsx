@@ -1,9 +1,13 @@
 import styled, { createGlobalStyle } from 'styled-components';
 import { useSelector } from 'react-redux';
+import { Routes, Route } from 'react-router-dom';
 import FlexGroup from './common/FlexGroup';
 import Header from './Header';
 import BuildEditor from './BuildEditor';
 import ItemSelector from './ItemSelector';
+import SignUp from './SignUp';
+import Login from './Login';
+import Landing from './Landing';
 import {
   COLOR_DARK_GRAY,
   COLOR_DARKEST_GRAY,
@@ -38,7 +42,12 @@ function App() {
       <Container>
         <Header />
         <Content>
-          <BuildEditor />
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/builds/:buildId" element={<BuildEditor />} />
+          </Routes>
         </Content>
       </Container>
     </Background>

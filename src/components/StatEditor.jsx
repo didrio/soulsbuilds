@@ -1,5 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import {
@@ -23,7 +24,7 @@ import {
   updateVigor,
 } from '../store/stats';
 
-function StatEditor() {
+function StatEditor({ editable }) {
   const dispatch = useDispatch();
 
   const arc = useSelector(selectArc);
@@ -80,10 +81,14 @@ function StatEditor() {
             ARC
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleArcChange}
-              value={arc}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleArcChange}
+                  value={arc}
+                />
+              ) : arc}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -91,10 +96,14 @@ function StatEditor() {
             DEX
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleDexChange}
-              value={dex}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleDexChange}
+                  value={dex}
+                />
+              ) : dex}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -102,10 +111,14 @@ function StatEditor() {
             END
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleEndChange}
-              value={end}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleEndChange}
+                  value={end}
+                />
+              ) : end}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -113,10 +126,14 @@ function StatEditor() {
             FAI
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleFaiChange}
-              value={fai}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleFaiChange}
+                  value={fai}
+                />
+              ) : fai}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -124,10 +141,14 @@ function StatEditor() {
             INT
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleIntChange}
-              value={int}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleIntChange}
+                  value={int}
+                />
+              ) : int}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -135,10 +156,14 @@ function StatEditor() {
             MIN
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleMindChange}
-              value={mind}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleMindChange}
+                  value={mind}
+                />
+              ) : mind}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -146,10 +171,14 @@ function StatEditor() {
             STR
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleStrChange}
-              value={str}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleStrChange}
+                  value={str}
+                />
+              ) : str}
+            </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
@@ -157,10 +186,14 @@ function StatEditor() {
             VIG
           </StatName>
           <StatInput>
-            <TextInput
-              onChange={handleVigorChange}
-              value={vigor}
-            />
+            <StatContainer>
+              {editable ? (
+                <TextInput
+                  onChange={handleVigorChange}
+                  value={vigor}
+                />
+              ) : vigor}
+            </StatContainer>
           </StatInput>
         </Stat>
       </StatsContainer>
@@ -191,5 +224,13 @@ const StatInput = styled(FlexGroup)`
   max-width: 40px;
   width: 40px;
 `;
+
+const StatContainer = styled.span`
+  font-weight: bold;
+`;
+
+StatEditor.propTypes = {
+  editable: PropTypes.bool.isRequired,
+};
 
 export default StatEditor;

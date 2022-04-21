@@ -12,7 +12,7 @@ const run = async () => {
 
   const spells = [];
 
-  elements.forEach(element => {
+  elements.forEach((element) => {
     const [tier, name, type, fp, slot, int, fai, arc, effect] = Array.from(element.childNodes);
     const newItem = {};
     newItem.name = html('.tier-list-object-name-table-css', name).text() || '';
@@ -28,7 +28,7 @@ const run = async () => {
     const imageUrl = html('.tier-list-table-object-image', name).attr('src') || '';
     newItem.imageUrl = imageUrl.split('assets')[1];
 
-    Object.keys(newItem).forEach(key => {
+    Object.keys(newItem).forEach((key) => {
       newItem[key] = newItem[key].trim();
     });
 

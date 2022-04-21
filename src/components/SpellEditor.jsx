@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import Slot from './common/Slot';
 import { SLOT_TYPE_SPELL } from '../constants';
@@ -17,7 +18,7 @@ import {
   selectSpell10,
 } from '../store/selectors';
 
-function SpellEditor() {
+function SpellEditor({ editable }) {
   const spell1 = useSelector(selectSpell1);
   const spell2 = useSelector(selectSpell2);
   const spell3 = useSelector(selectSpell3);
@@ -55,7 +56,7 @@ function SpellEditor() {
     spell10,
   ]);
 
-  const disabled = slotPoints >= 10;
+  const disabled = slotPoints >= 10 || !editable;
 
   return (
     <FlexGroup
@@ -150,5 +151,9 @@ const SlotContainer = styled(FlexGroup)`
     margin-right: 10px;
   }
 `;
+
+SpellEditor.propTypes = {
+  editable: PropTypes.bool.isRequired,
+};
 
 export default SpellEditor;

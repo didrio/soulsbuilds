@@ -35,3 +35,9 @@ export const SLOT_TYPES = [
   SLOT_TYPE_TEAR,
   SLOT_TYPE_WEAPON,
 ];
+
+export const DEFAULT_USER_DATA = {
+  admin: false,
+  email: '',
+  name: '',
+};

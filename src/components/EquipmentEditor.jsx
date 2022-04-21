@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import Slot from './common/Slot';
 import {
@@ -43,7 +44,7 @@ import {
   selectWeapon6,
 } from '../store/selectors';
 
-function EquipmentEditor() {
+function EquipmentEditor({ editable }) {
   const helm = useSelector(selectHelm);
   const leg = useSelector(selectLeg);
   const chest = useSelector(selectChest);
@@ -85,26 +86,31 @@ function EquipmentEditor() {
       </SubHeader>
       <SlotContainer>
         <Slot
+          disabled={!editable}
           id="weapon1"
           item={weapon1}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          disabled={!editable}
           id="weapon2"
           item={weapon2}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          disabled={!editable}
           id="weapon3"
           item={weapon3}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          disabled={!editable}
           id="arrow1"
           item={arrow1}
           type={SLOT_TYPE_ARROW}
         />
         <Slot
+          editable={editable}
           id="arrow2"
           item={arrow2}
           type={SLOT_TYPE_ARROW}
@@ -115,26 +121,31 @@ function EquipmentEditor() {
       </SubHeader>
       <SlotContainer>
         <Slot
+          disabled={!editable}
           id="weapon4"
           item={weapon4}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          disabled={!editable}
           id="weapon5"
           item={weapon5}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          disabled={!editable}
           id="weapon6"
           item={weapon6}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          disabled={!editable}
           id="arrow3"
           item={arrow3}
           type={SLOT_TYPE_ARROW}
         />
         <Slot
+          disabled={!editable}
           id="arrow4"
           item={arrow4}
           type={SLOT_TYPE_ARROW}
@@ -145,21 +156,25 @@ function EquipmentEditor() {
       </SubHeader>
       <SlotContainer>
         <Slot
+          disabled={!editable}
           id="helm"
           item={helm}
           type={SLOT_TYPE_HELM}
         />
         <Slot
+          disabled={!editable}
           id="chest"
           item={chest}
           type={SLOT_TYPE_CHEST}
         />
         <Slot
+          disabled={!editable}
           id="gauntlet"
           item={gauntlet}
           type={SLOT_TYPE_GAUNTLET}
         />
         <Slot
+          disabled={!editable}
           id="leg"
           item={leg}
           type={SLOT_TYPE_LEG}
@@ -170,21 +185,25 @@ function EquipmentEditor() {
       </SubHeader>
       <SlotContainer>
         <Slot
+          disabled={!editable}
           id="tal1"
           item={tal1}
           type={SLOT_TYPE_TAL}
         />
         <Slot
+          disabled={!editable}
           id="tal2"
           item={tal2}
           type={SLOT_TYPE_TAL}
         />
         <Slot
+          disabled={!editable}
           id="tal3"
           item={tal3}
           type={SLOT_TYPE_TAL}
         />
         <Slot
+          disabled={!editable}
           id="tal4"
           item={tal4}
           type={SLOT_TYPE_TAL}
@@ -195,51 +214,61 @@ function EquipmentEditor() {
       </SubHeader>
       <SlotContainer>
         <Slot
+          disabled={!editable}
           id="con1"
           item={con1}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con2"
           item={con2}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con3"
           item={con3}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con4"
           item={con4}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con5"
           item={con5}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con6"
           item={con6}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con7"
           item={con7}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con8"
           item={con8}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con9"
           item={con9}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          disabled={!editable}
           id="con10"
           item={con10}
           type={SLOT_TYPE_CON}
@@ -265,5 +294,9 @@ const SlotContainer = styled(FlexGroup)`
     margin-right: 10px;
   }
 `;
+
+EquipmentEditor.propTypes = {
+  editable: PropTypes.bool.isRequired,
+};
 
 export default EquipmentEditor;
