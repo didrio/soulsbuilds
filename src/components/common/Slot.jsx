@@ -10,6 +10,7 @@ import { updateEditSlot, updateSlotType } from '../../store/app';
 import FlexGroup from './FlexGroup';
 
 function Slot({
+  background,
   disabled,
   id,
   item,
@@ -28,6 +29,7 @@ function Slot({
 
   return (
     <Container
+      background={background}
       disabled={disabled}
       onClick={handleClick}
     >
@@ -55,6 +57,20 @@ const Container = styled(FlexGroup)`
   width: 120px;
   position: relative;
 
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    background-image: url("/assets/menu/${({ background }) => background}.png");
+    background-size: auto 80%;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: .4;
+  }
+
   &:hover {
     background-color: ${({ disabled }) => (disabled ? COLOR_GRAY : COLOR_LIGHTER_GRAY)};
   }
@@ -75,6 +91,7 @@ const NameContainer = styled.div`
 `;
 
 Slot.propTypes = {
+  background: PropTypes.string,
   disabled: PropTypes.bool,
   id: PropTypes.string.isRequired,
   item: PropTypes.objectOf(PropTypes.string),
@@ -82,6 +99,7 @@ Slot.propTypes = {
 };
 
 Slot.defaultProps = {
+  background: '',
   disabled: false,
   item: null,
 };

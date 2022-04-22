@@ -99,6 +99,8 @@ function SpellEditor({ editable }) {
           item={spell5}
           type={SLOT_TYPE_SPELL}
         />
+      </SlotContainer>
+      <SlotContainer>
         <Slot
           disabled={disabled}
           id="spell6"

@@ -12,6 +12,18 @@
     "imageUrl": "/talismans/Erdtree's Favor.png"
   },
   {
+    "name": "Erdtree's Favor +1",
+    "tier": "S",
+    "effect": "HP increased by 3.5%, Stamina increased by 8.25%, Equip Load increased by 6.5%",
+    "imageUrl": "/talismans/Erdtree's Favor +1.png"
+  },
+  {
+    "name": "Erdtree's Favor +2",
+    "tier": "S",
+    "effect": "HP increased by 4%, Stamina increased by 9.6%, Equip Load increased by 8%",
+    "imageUrl": "/talismans/Erdtree's Favor +2.png"
+  },
+  {
     "name": "Flock's Canvas Talisman",
     "tier": "S",
     "effect": "Greatly raises potency of incantations.",
@@ -150,6 +162,18 @@
     "imageUrl": "/talismans/Pearldrake Talisman.png"
   },
   {
+    "name": "Pearldrake Talisman +1",
+    "tier": "A",
+    "effect": "Greatly boosts non-physical damage negation.",
+    "imageUrl": "/talismans/Pearldrake Talisman +1.png"
+  },
+  {
+    "name": "Pearldrake Talisman +2",
+    "tier": "A",
+    "effect": "Vastly boosts non-physical damage negation.",
+    "imageUrl": "/talismans/Pearldrake Talisman +2.png"
+  },
+  {
     "name": "Red-Feathered Branchsword",
     "tier": "A",
     "effect": "Raises attack power when HP is low.",
@@ -170,8 +194,14 @@
   {
     "name": "Stalwart Horn Charm",
     "tier": "A",
-    "effect": "Greatly raises robustness.",
+    "effect": "Raises robustness.",
     "imageUrl": "/talismans/Stalwart Horn Charm.png"
+  },
+  {
+    "name": "Stalwart Horn Charm +1",
+    "tier": "A",
+    "effect": "Greatly raises robustness.",
+    "imageUrl": "/talismans/Stalwart Horn Charm +1.png"
   },
   {
     "name": "Warrior Jar Shard",
@@ -190,6 +220,12 @@
     "tier": "B",
     "effect": "Raises maximum equipment weight",
     "imageUrl": "/talismans/Arsenal Charm.png"
+  },
+  {
+    "name": "Arsenal Charm +1",
+    "tier": "B",
+    "effect": "Greatly raises maximum equipment weight",
+    "imageUrl": "/talismans/Arsenal Charm +1.png"
   },
   {
     "name": "Assassin's Cerulean Dagger",
@@ -244,6 +280,12 @@
     "tier": "B",
     "effect": "Raises Immunity",
     "imageUrl": "/talismans/Immunizing Horn Charm.png"
+  },
+  {
+    "name": "Immunizing Horn Charm +1",
+    "tier": "B",
+    "effect": "Greatly raises Immunity",
+    "imageUrl": "/talismans/Immunizing Horn Charm +1.png"
   },
   {
     "name": "Lightning Scorpion Charm",
@@ -306,6 +348,18 @@
     "imageUrl": "/talismans/Boltdrake Talisman.png"
   },
   {
+    "name": "Boltdrake Talisman +1",
+    "tier": "C",
+    "effect": "Greatly boosts lightning damage negation.",
+    "imageUrl": "/talismans/Boltdrake Talisman +1.png"
+  },
+  {
+    "name": "Boltdrake Talisman +2",
+    "tier": "C",
+    "effect": "Vastly boosts lightning damage negation.",
+    "imageUrl": "/talismans/Boltdrake Talisman +2.png"
+  },
+  {
     "name": "Bull-Goat's Talisman",
     "tier": "C",
     "effect": "Raises Poise",
@@ -318,10 +372,28 @@
     "imageUrl": "/talismans/Cerulean Amber Medallion.png"
   },
   {
+    "name": "Cerulean Amber Medallion +1",
+    "tier": "C",
+    "effect": "Greatly raises maximum FP",
+    "imageUrl": "/talismans/Cerulean Amber Medallion +1.png"
+  },
+  {
+    "name": "Cerulean Amber Medallion +2",
+    "tier": "C",
+    "effect": "Vastly raises maximum FP",
+    "imageUrl": "/talismans/Cerulean Amber Medallion +2.png"
+  },
+  {
     "name": "Clarifying Horn Charm",
     "tier": "C",
     "effect": "Raises Focus",
     "imageUrl": "/talismans/Clarifying Horn Charm.png"
+  },
+  {
+    "name": "Clarifying Horn Charm +1",
+    "tier": "C",
+    "effect": "Greatly raises Focus",
+    "imageUrl": "/talismans/Clarifying Horn Charm +1.png"
   },
   {
     "name": "Crepus's Vial",
@@ -336,6 +408,18 @@
     "imageUrl": "/talismans/Crimson Amber Medallion.png"
   },
   {
+    "name": "Crimson Amber Medallion +1",
+    "tier": "C",
+    "effect": "Greatly raises maximum HP",
+    "imageUrl": "/talismans/Crimson Amber Medallion +1.png"
+  },
+  {
+    "name": "Crimson Amber Medallion +2",
+    "tier": "C",
+    "effect": "Vastly raises maximum HP",
+    "imageUrl": "/talismans/Crimson Amber Medallion +2.png"
+  },
+  {
     "name": "Fire Scorpion Charm",
     "tier": "C",
     "effect": "Raises fire attack, but lowers damage negation",
@@ -348,6 +432,18 @@
     "imageUrl": "/talismans/Flamedrake Talisman.png"
   },
   {
+    "name": "Flamedrake Talisman +1",
+    "tier": "C",
+    "effect": "Greatly boosts fire damage negation.",
+    "imageUrl": "/talismans/Flamedrake Talisman +1.png"
+  },
+  {
+    "name": "Flamedrake Talisman +2",
+    "tier": "C",
+    "effect": "Vastly boosts fire damage negation.",
+    "imageUrl": "/talismans/Flamedrake Talisman +2.png"
+  },
+  {
     "name": "Furled Finger's Trick-Mirror",
     "tier": "C",
     "effect": "Makes the bearer take on the appearance of a Host of Fingers",
@@ -358,6 +454,18 @@
     "tier": "C",
     "effect": "Boosts holy damage negation.",
     "imageUrl": "/talismans/Haligdrake Talisman.png"
+  },
+  {
+    "name": "Haligdrake Talisman +1",
+    "tier": "C",
+    "effect": "Greatly boosts holy damage negation.",
+    "imageUrl": "/talismans/Haligdrake Talisman +1.png"
+  },
+  {
+    "name": "Haligdrake Talisman +2",
+    "tier": "C",
+    "effect": "Vastly boosts holy damage negation.",
+    "imageUrl": "/talismans/Haligdrake Talisman +2.png"
   },
   {
     "name": "Hammer Talisman",
@@ -376,6 +484,12 @@
     "tier": "C",
     "effect": "Raises Robustness, Immunity, and Focus",
     "imageUrl": "/talismans/Mottled Necklace.png"
+  },
+  {
+    "name": "Mottled Necklace +1",
+    "tier": "C",
+    "effect": "Greatly raises Robustness, Immunity, and Focus",
+    "imageUrl": "/talismans/Mottled Necklace +1.png"
   },
   {
     "name": "Perfumer's Talisman",
@@ -420,6 +534,18 @@
     "imageUrl": "/talismans/Spelldrake Talisman.png"
   },
   {
+    "name": "Spelldrake Talisma +1n",
+    "tier": "C",
+    "effect": "Greatly boosts magical damage negation.",
+    "imageUrl": "/talismans/Spelldrake Talisman +1.png"
+  },
+  {
+    "name": "Spelldrake Talisman +2",
+    "tier": "C",
+    "effect": "Vastly boosts magical damage negation.",
+    "imageUrl": "/talismans/Spelldrake Talisman +2.png"
+  },
+  {
     "name": "Starscourge Heirloom",
     "tier": "C",
     "effect": "Raises strength",
@@ -436,6 +562,18 @@
     "tier": "C",
     "effect": "Raises maximum stamina.",
     "imageUrl": "/talismans/Viridian Amber Medallion.png"
+  },
+  {
+    "name": "Viridian Amber Medallion +1",
+    "tier": "C",
+    "effect": "Greatly raises maximum stamina.",
+    "imageUrl": "/talismans/Viridian Amber Medallion +1.png"
+  },
+  {
+    "name": "Viridian Amber Medallion +2",
+    "tier": "C",
+    "effect": "Vastly raises maximum stamina.",
+    "imageUrl": "/talismans/Viridian Amber Medallion +2.png"
   },
   {
     "name": "Blessed Dew Talisman",
@@ -496,6 +634,18 @@
     "tier": "E",
     "effect": "Boosts physical damage negation",
     "imageUrl": "/talismans/Dragoncrest Shield Talisman.png"
+  },
+  {
+    "name": "Dragoncrest Shield Talisman +1",
+    "tier": "E",
+    "effect": "Greatly boosts physical damage negation",
+    "imageUrl": "/talismans/Dragoncrest Shield Talisman +1.png"
+  },
+  {
+    "name": "Dragoncrest Shield Talisman +2",
+    "tier": "E",
+    "effect": "Vastly boosts physical damage negation",
+    "imageUrl": "/talismans/Dragoncrest Shield Talisman +2.png"
   },
   {
     "name": "Greatshield Talisman",

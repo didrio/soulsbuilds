@@ -86,30 +86,35 @@ function EquipmentEditor({ editable }) {
       </SubHeader>
       <SlotContainer>
         <Slot
+          background="weapon"
           disabled={!editable}
           id="weapon1"
           item={weapon1}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          background="weapon"
           disabled={!editable}
           id="weapon2"
           item={weapon2}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          background="weapon"
           disabled={!editable}
           id="weapon3"
           item={weapon3}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          background="arrow"
           disabled={!editable}
           id="arrow1"
           item={arrow1}
           type={SLOT_TYPE_ARROW}
         />
         <Slot
+          background="arrow"
           editable={editable}
           id="arrow2"
           item={arrow2}
@@ -121,30 +126,35 @@ function EquipmentEditor({ editable }) {
       </SubHeader>
       <SlotContainer>
         <Slot
+          background="shield"
           disabled={!editable}
           id="weapon4"
           item={weapon4}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          background="shield"
           disabled={!editable}
           id="weapon5"
           item={weapon5}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          background="shield"
           disabled={!editable}
           id="weapon6"
           item={weapon6}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          background="bolt"
           disabled={!editable}
           id="arrow3"
           item={arrow3}
           type={SLOT_TYPE_ARROW}
         />
         <Slot
+          background="bolt"
           disabled={!editable}
           id="arrow4"
           item={arrow4}
@@ -156,24 +166,28 @@ function EquipmentEditor({ editable }) {
       </SubHeader>
       <SlotContainer>
         <Slot
+          background="helm"
           disabled={!editable}
           id="helm"
           item={helm}
           type={SLOT_TYPE_HELM}
         />
         <Slot
+          background="chest"
           disabled={!editable}
           id="chest"
           item={chest}
           type={SLOT_TYPE_CHEST}
         />
         <Slot
+          background="gauntlet"
           disabled={!editable}
           id="gauntlet"
           item={gauntlet}
           type={SLOT_TYPE_GAUNTLET}
         />
         <Slot
+          background="leg"
           disabled={!editable}
           id="leg"
           item={leg}
@@ -185,24 +199,28 @@ function EquipmentEditor({ editable }) {
       </SubHeader>
       <SlotContainer>
         <Slot
+          background="talisman"
           disabled={!editable}
           id="tal1"
           item={tal1}
           type={SLOT_TYPE_TAL}
         />
         <Slot
+          background="talisman"
           disabled={!editable}
           id="tal2"
           item={tal2}
           type={SLOT_TYPE_TAL}
         />
         <Slot
+          background="talisman"
           disabled={!editable}
           id="tal3"
           item={tal3}
           type={SLOT_TYPE_TAL}
         />
         <Slot
+          background="talisman"
           disabled={!editable}
           id="tal4"
           item={tal4}
@@ -214,60 +232,72 @@ function EquipmentEditor({ editable }) {
       </SubHeader>
       <SlotContainer>
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con1"
           item={con1}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con2"
           item={con2}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con3"
           item={con3}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con4"
           item={con4}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con5"
           item={con5}
           type={SLOT_TYPE_CON}
         />
+      </SlotContainer>
+      <SlotContainer>
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con6"
           item={con6}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con7"
           item={con7}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con8"
           item={con8}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con9"
           item={con9}
           type={SLOT_TYPE_CON}
         />
         <Slot
+          background="consumable"
           disabled={!editable}
           id="con10"
           item={con10}
