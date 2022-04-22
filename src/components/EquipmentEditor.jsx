@@ -120,7 +120,7 @@ function EquipmentEditor({ editable }) {
         />
         <Slot
           background="arrow"
-          editable={editable}
+          disabled={!editable}
           id="arrow2"
           item={arrow2}
           type={SLOT_TYPE_ARROW}

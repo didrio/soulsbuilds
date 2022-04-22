@@ -361,22 +361,22 @@ function BuildEditor() {
             </DescriptionContainer>
           )}
         </DescriptionInputContainer>
+        {editable ? (
+          <SaveContainer>
+            {saveLoading ? (
+              <LoadingAnimation
+                size={30}
+              />
+            ) : (
+              <Button
+                onClick={handleSave}
+              >
+                Save
+              </Button>
+            )}
+          </SaveContainer>
+        ) : null}
       </LowerSection>
-      {editable ? (
-        <SaveContainer>
-          {saveLoading ? (
-            <LoadingAnimation
-              size={30}
-            />
-          ) : (
-            <Button
-              onClick={handleSave}
-            >
-              Save
-            </Button>
-          )}
-        </SaveContainer>
-      ) : null}
     </Container>
   );
 }
@@ -403,6 +403,7 @@ const UpperSection = styled(FlexGroup)`
 const LowerSection = styled(FlexGroup)`
   align-items: center;
   justify-content: center;
+  margin-bottom: 30px;
   margin-top: 20px;
   width: 100%;
 `;
@@ -444,6 +445,7 @@ const NameContainer = styled(FlexGroup)`
 `;
 
 const DescriptionInputContainer = styled(FlexGroup)`
+  margin-top: 20px;
   width: 100%;
 `;
 
@@ -505,6 +507,7 @@ const RightColumn = styled(FlexGroup)`
 const SaveContainer = styled(EditorContainer)`
   justify-content: center;
   margin-top: 50px;
+  margin-bottom: -10px;
   
   & > button {
     width: 250px;
