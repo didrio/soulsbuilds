@@ -1,11 +1,13 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import {
-  COLOR_DARK_GRAY,
-  COLOR_LIGHT_GRAY,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
+  COLOR_GOLD,
 } from '../../constants';
 
 function TextInput({
+  centered,
   disabled,
   onChange,
   type,
@@ -18,6 +20,7 @@ function TextInput({
 
   return (
     <Container
+      centered={centered}
       disabled={disabled}
       onChange={handleChange}
       type={type}
@@ -27,17 +30,23 @@ function TextInput({
 }
 
 const Container = styled.input`
-  border: 1px solid ${COLOR_DARK_GRAY};
+  border: 1px solid ${COLOR_LIGHT_GREEN};
   border-radius: 2px;
   box-sizing: border-box;
-  height: 30px;
+  height: 40px;
   width: 100%;
   padding: 5px 10px;
   outline: none;
-  background-color: ${COLOR_LIGHT_GRAY};
+  background-color: ${COLOR_GREEN};
+  color: ${COLOR_GOLD};
+  font-size: 16px;
+  text-align: ${({ centered }) => (centered ? 'center' : 'left')};
+  box-shadow: 0px 0px 3px ${COLOR_GREEN};
+  font-family: garamond-premier-pro,  serif;
 `;
 
 TextInput.propTypes = {
+  centered: PropTypes.bool,
   disabled: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   type: PropTypes.string,
@@ -45,6 +54,7 @@ TextInput.propTypes = {
 };
 
 TextInput.defaultProps = {
+  centered: false,
   disabled: false,
   type: 'text',
 };

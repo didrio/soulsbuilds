@@ -1,5 +1,13 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import {
+  COLOR_GOLD,
+  COLOR_DARK_GOLD,
+  COLOR_LIGHT_GREEN,
+  COLOR_DARKER_GREEN,
+  COLOR_LIGHT_GOLD,
+  COLOR_GREEN,
+} from '../../constants';
 
 function Button({
   className,
@@ -21,24 +29,25 @@ function Button({
 const Container = styled.button`
   width: 150px;
   height: 40px;
-  color: #fff;
+  color: ${COLOR_DARKER_GREEN};
+  font-size: 16px;
   border-radius: 5px;
   padding: 10px 25px;
-  font-family: 'Lato', sans-serif;
-  font-weight: 500;
+  font-weight: bold;
   background: transparent;
   cursor: pointer;
   transition: all 0.3s ease;
   position: relative;
   display: inline-block;
-  box-shadow:inset 2px 2px 2px 0px rgba(255,255,255,.5),
+  box-shadow:inset 2px 2px 2px 0px ${COLOR_LIGHT_GOLD},
   7px 7px 20px 0px rgba(0,0,0,.1),
   4px 4px 5px 0px rgba(0,0,0,.1);
   outline: none;
-  background-color: #89d8d3;
-  background-image: linear-gradient(315deg, #89d8d3 0%, #03c8a8 74%);
+  background-color: ${COLOR_GOLD};
+  background-image: linear-gradient(315deg, ${COLOR_GOLD} 0%, ${COLOR_DARK_GOLD} 74%);
   border: none;
   z-index: 1;
+  font-family: garamond-premier-pro,  serif;
 
   &:after {
     position: absolute;
@@ -50,17 +59,13 @@ const Container = styled.button`
     z-index: -1;
     border-radius: 5px;
     background-color: #4dccc6;
-    background-image: linear-gradient(315deg, #4dccc6 0%, #96e4df 74%);
-    box-shadow:
-    -7px -7px 20px 0px #fff9,
-    -4px -4px 5px 0px #fff9,
-    7px 7px 20px 0px #0002,
-    4px 4px 5px 0px #0001;
+    background-image: linear-gradient(315deg, ${COLOR_LIGHT_GOLD} 0%, ${COLOR_GOLD} 74%);
+    box-shadow: 0px 0px 10px ${COLOR_LIGHT_GREEN};
     transition: all 0.3s ease;
   }
 
   &:enabled:hover {
-    color: #fff;
+    color: ${COLOR_GREEN};
   }
 
   &:enabled:hover:after {

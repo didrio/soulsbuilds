@@ -7,6 +7,7 @@ const getFlexDirection = ({ vertical }) => (
 );
 
 function FlexGroup({
+  basis,
   children,
   className,
   onClick,
@@ -28,6 +29,7 @@ function FlexGroup({
 
   return (
     <Container
+      basis={basis}
       className={className}
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
@@ -41,10 +43,12 @@ function FlexGroup({
 
 const Container = styled.div`
   display: flex;
+  flex-basis: ${({ basis }) => basis};
   flex-direction: ${getFlexDirection};
 `;
 
 FlexGroup.propTypes = {
+  basis: PropTypes.string,
   children: PropTypes.node.isRequired,
   className: PropTypes.string,
   onClick: PropTypes.func,
@@ -54,6 +58,7 @@ FlexGroup.propTypes = {
 };
 
 FlexGroup.defaultProps = {
+  basis: '1',
   className: '',
   onClick: noop,
   onMouseEnter: noop,

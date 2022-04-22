@@ -9,16 +9,18 @@ import SignUp from './SignUp';
 import Login from './Login';
 import Landing from './Landing';
 import {
-  COLOR_DARK_GRAY,
-  COLOR_DARKEST_GRAY,
-  COLOR_LIGHT_GRAY,
+  COLOR_DARK_GREEN,
+  COLOR_DARKER_GREEN,
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHTEST_GREEN,
 } from '../constants';
 import { selectSlotType } from '../store/selectors';
 
 const GlobalStyle = createGlobalStyle`
   body {
-    background-color: ${COLOR_DARKEST_GRAY};
-    color: ${COLOR_LIGHT_GRAY};
+    background-color: ${COLOR_DARKER_GREEN};
+    color: ${COLOR_GOLD};
   }
 `;
 
@@ -39,8 +41,8 @@ function App() {
           </Modal>
         </ModalContainer>
       )}
+      <Header />
       <Container>
-        <Header />
         <Content>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -62,15 +64,16 @@ const Background = styled(FlexGroup)`
 `;
 
 const Container = styled(FlexGroup)`
-  background-color: ${COLOR_DARK_GRAY};
+  background-color: ${COLOR_DARK_GREEN};
   border-radius: 10px;
   flex-direction: column;
-  width: 80%;
+  width: 72%;
+  box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
 `;
 
 const Content = styled(FlexGroup)`
   flex-direction: column;
-  padding: 50px;
+  padding: 30px;
 `;
 
 const ModalContainer = styled(FlexGroup)`
@@ -87,12 +90,13 @@ const ModalContainer = styled(FlexGroup)`
 `;
 
 const Modal = styled.div`
-  background-color: ${COLOR_LIGHT_GRAY};
+  background-color: ${COLOR_DARK_GREEN};
   width: 70vw;
   height: 70vh;
   border-radius: 10px;
   padding: 20px;
   margin-top: ${({ top }) => top}px;
+  box-shadow: 0px 0px 3px ${COLOR_GREEN};
 `;
 
 export default App;

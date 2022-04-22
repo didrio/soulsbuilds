@@ -2,12 +2,17 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
 import {
-  COLOR_GRAY,
-  COLOR_LIGHTER_GRAY,
+  COLOR_LIGHT_GOLD,
+  COLOR_DARK_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
   SLOT_TYPES,
 } from '../../constants';
 import { updateEditSlot, updateSlotType } from '../../store/app';
 import FlexGroup from './FlexGroup';
+
+const SLOT_SIZE = '80px';
+const SLOT_SIZE_SMALL = '60px';
 
 function Slot({
   background,
@@ -26,11 +31,16 @@ function Slot({
   };
 
   const hasItem = item !== null;
+  const backgroundColor = hasItem ? COLOR_DARK_GOLD : COLOR_GREEN;
+  const hoverColor = hasItem ? COLOR_LIGHT_GOLD : COLOR_LIGHT_GREEN;
 
   return (
     <Container
       background={background}
+      backgroundColor={backgroundColor}
       disabled={disabled}
+      hasItem={hasItem}
+      hoverColor={hoverColor}
       onClick={handleClick}
     >
       {!hasItem ? null : (
@@ -49,12 +59,13 @@ function Slot({
 }
 
 const Container = styled(FlexGroup)`
+  align-items: center;
   justify-content: center;
-  background-color: ${COLOR_GRAY};
+  background-color: ${({ backgroundColor }) => backgroundColor};
   border-radius: 2px;
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-  height: 120px;
-  width: 120px;
+  height: ${SLOT_SIZE};
+  width: ${SLOT_SIZE};
   position: relative;
 
   &::before {
@@ -64,20 +75,26 @@ const Container = styled(FlexGroup)`
     right: 0px;
     bottom: 0px;
     left: 0px;
-    background-image: url("/assets/menu/${({ background }) => background}.png");
+    background-image: ${({ background, hasItem }) => (hasItem ? 'none' : `url("/assets/menu/${background}.png")`)};
     background-size: auto 80%;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: .4;
+    opacity: 1;
+    box-shadow: 0px 0px 3px ${COLOR_GREEN};
   }
 
   &:hover {
-    background-color: ${({ disabled }) => (disabled ? COLOR_GRAY : COLOR_LIGHTER_GRAY)};
+    background-color: ${({ backgroundColor, disabled, hoverColor }) => (disabled ? backgroundColor : hoverColor)};
   }
 
   & > img {
-    height: 100%;
-    width: 100%;
+    height: 85%;
+    width: 85%;
+  }
+
+  @media only screen and (max-width: 1400px) {
+    height: ${SLOT_SIZE_SMALL};
+    width: ${SLOT_SIZE_SMALL};
   }
 `;
 

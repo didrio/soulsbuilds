@@ -4,9 +4,10 @@ import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import Slot from './common/Slot';
 import {
+  COLOR_LIGHTEST_GREEN,
   SLOT_TYPE_ARROW,
   SLOT_TYPE_CHEST,
-  SLOT_TYPE_CON,
+  // SLOT_TYPE_CON,
   SLOT_TYPE_GAUNTLET,
   SLOT_TYPE_HELM,
   SLOT_TYPE_LEG,
@@ -22,16 +23,16 @@ import {
   selectArrow2,
   selectArrow3,
   selectArrow4,
-  selectCon1,
-  selectCon2,
-  selectCon3,
-  selectCon4,
-  selectCon5,
-  selectCon6,
-  selectCon7,
-  selectCon8,
-  selectCon9,
-  selectCon10,
+  // selectCon1,
+  // selectCon2,
+  // selectCon3,
+  // selectCon4,
+  // selectCon5,
+  // selectCon6,
+  // selectCon7,
+  // selectCon8,
+  // selectCon9,
+  // selectCon10,
   selectTal1,
   selectTal2,
   selectTal3,
@@ -53,16 +54,16 @@ function EquipmentEditor({ editable }) {
   const arrow2 = useSelector(selectArrow2);
   const arrow3 = useSelector(selectArrow3);
   const arrow4 = useSelector(selectArrow4);
-  const con1 = useSelector(selectCon1);
-  const con2 = useSelector(selectCon2);
-  const con3 = useSelector(selectCon3);
-  const con4 = useSelector(selectCon4);
-  const con5 = useSelector(selectCon5);
-  const con6 = useSelector(selectCon6);
-  const con7 = useSelector(selectCon7);
-  const con8 = useSelector(selectCon8);
-  const con9 = useSelector(selectCon9);
-  const con10 = useSelector(selectCon10);
+  // const con1 = useSelector(selectCon1);
+  // const con2 = useSelector(selectCon2);
+  // const con3 = useSelector(selectCon3);
+  // const con4 = useSelector(selectCon4);
+  // const con5 = useSelector(selectCon5);
+  // const con6 = useSelector(selectCon6);
+  // const con7 = useSelector(selectCon7);
+  // const con8 = useSelector(selectCon8);
+  // const con9 = useSelector(selectCon9);
+  // const con10 = useSelector(selectCon10);
   const tal1 = useSelector(selectTal1);
   const tal2 = useSelector(selectTal2);
   const tal3 = useSelector(selectTal3);
@@ -75,15 +76,19 @@ function EquipmentEditor({ editable }) {
   const weapon6 = useSelector(selectWeapon6);
 
   return (
-    <FlexGroup
+    <Container
       vertical
     >
-      <Header>
-        Equipment
-      </Header>
-      <SubHeader>
-        Main Hand
-      </SubHeader>
+      <HeaderContainer>
+        <Header>
+          Equipment
+        </Header>
+      </HeaderContainer>
+      <HeaderContainer>
+        <SubHeader>
+          Main Hand
+        </SubHeader>
+      </HeaderContainer>
       <SlotContainer>
         <Slot
           background="weapon"
@@ -121,9 +126,11 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_ARROW}
         />
       </SlotContainer>
-      <SubHeader>
-        Off Hand
-      </SubHeader>
+      <HeaderContainer>
+        <SubHeader>
+          Off Hand
+        </SubHeader>
+      </HeaderContainer>
       <SlotContainer>
         <Slot
           background="shield"
@@ -161,9 +168,11 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_ARROW}
         />
       </SlotContainer>
-      <SubHeader>
-        Gear
-      </SubHeader>
+      <HeaderContainer>
+        <SubHeader>
+          Gear
+        </SubHeader>
+      </HeaderContainer>
       <SlotContainer>
         <Slot
           background="helm"
@@ -194,9 +203,11 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_LEG}
         />
       </SlotContainer>
-      <SubHeader>
-        Talismans
-      </SubHeader>
+      <HeaderContainer>
+        <SubHeader>
+          Talismans
+        </SubHeader>
+      </HeaderContainer>
       <SlotContainer>
         <Slot
           background="talisman"
@@ -227,7 +238,7 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_TAL}
         />
       </SlotContainer>
-      <SubHeader>
+      {/* <SubHeader>
         Consumables
       </SubHeader>
       <SlotContainer>
@@ -303,13 +314,23 @@ function EquipmentEditor({ editable }) {
           item={con10}
           type={SLOT_TYPE_CON}
         />
-      </SlotContainer>
-    </FlexGroup>
+      </SlotContainer> */}
+    </Container>
   );
 }
 
+const Container = styled(FlexGroup)`
+  justify-content: center;
+`;
+
+const HeaderContainer = styled(FlexGroup)`
+  justify-content: center;
+`;
+
 const Header = styled.h2`
+  color: ${COLOR_LIGHTEST_GREEN};
   margin-bottom: 20px;
+  font-size: 26px;
 `;
 
 const SubHeader = styled.h3`
@@ -317,6 +338,7 @@ const SubHeader = styled.h3`
 `;
 
 const SlotContainer = styled(FlexGroup)`
+  justify-content: center;
   flex-wrap: wrap;
 
   & > div {

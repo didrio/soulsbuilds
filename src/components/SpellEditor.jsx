@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import Slot from './common/Slot';
-import { SLOT_TYPE_SPELL } from '../constants';
+import { COLOR_LIGHTEST_GREEN, SLOT_TYPE_SPELL } from '../constants';
 import {
   selectSpell1,
   selectSpell2,
@@ -62,9 +62,11 @@ function SpellEditor({ editable }) {
     <FlexGroup
       vertical
     >
-      <Header>
-        Spells
-      </Header>
+      <HeaderContainer>
+        <Header>
+          Spells
+        </Header>
+      </HeaderContainer>
       <Count>
         {`${slotPoints}/10 Points Allocated`}
       </Count>
@@ -136,13 +138,20 @@ function SpellEditor({ editable }) {
   );
 }
 
-const Header = styled.h2`
-  margin-bottom: 20px;
+const HeaderContainer = styled(FlexGroup)`
+  justify-content: center;
 `;
 
-const Count = styled.span`
+const Header = styled.h2`
+  color: ${COLOR_LIGHTEST_GREEN};
+  margin-bottom: 20px;
+  font-size: 26px;
+`;
+
+const Count = styled(FlexGroup)`
   font-weight: bold;
   margin-bottom: 20px;
+  justify-content: center;
 `;
 
 const SlotContainer = styled(FlexGroup)`

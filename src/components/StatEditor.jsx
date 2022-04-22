@@ -4,6 +4,9 @@ import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import {
+  COLOR_LIGHTEST_GREEN,
+} from '../constants';
+import {
   selectArc,
   selectDex,
   selectEnd,
@@ -24,7 +27,7 @@ import {
   updateVigor,
 } from '../store/stats';
 
-function StatEditor({ editable }) {
+function StatEditor({ editable, level }) {
   const dispatch = useDispatch();
 
   const arc = useSelector(selectArc);
@@ -72,9 +75,16 @@ function StatEditor({ editable }) {
     <FlexGroup
       vertical
     >
-      <Header>
-        Stats
-      </Header>
+      <HeaderContainer>
+        <Header>
+          Stats
+        </Header>
+        <Level>
+          Level
+          {' '}
+          {level}
+        </Level>
+      </HeaderContainer>
       <StatsContainer>
         <Stat>
           <StatName>
@@ -84,6 +94,7 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleArcChange}
                   value={arc}
                 />
@@ -99,6 +110,7 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleDexChange}
                   value={dex}
                 />
@@ -114,6 +126,7 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleEndChange}
                   value={end}
                 />
@@ -121,7 +134,7 @@ function StatEditor({ editable }) {
             </StatContainer>
           </StatInput>
         </Stat>
-        <Stat>
+        <StatNoMargin>
           <StatName>
             FAI
           </StatName>
@@ -129,13 +142,16 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleFaiChange}
                   value={fai}
                 />
               ) : fai}
             </StatContainer>
           </StatInput>
-        </Stat>
+        </StatNoMargin>
+      </StatsContainer>
+      <StatsContainer>
         <Stat>
           <StatName>
             INT
@@ -144,6 +160,7 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleIntChange}
                   value={int}
                 />
@@ -159,6 +176,7 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleMindChange}
                   value={mind}
                 />
@@ -174,6 +192,7 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleStrChange}
                   value={str}
                 />
@@ -181,7 +200,7 @@ function StatEditor({ editable }) {
             </StatContainer>
           </StatInput>
         </Stat>
-        <Stat>
+        <StatNoMargin>
           <StatName>
             VIG
           </StatName>
@@ -189,20 +208,34 @@ function StatEditor({ editable }) {
             <StatContainer>
               {editable ? (
                 <TextInput
+                  centered
                   onChange={handleVigorChange}
                   value={vigor}
                 />
               ) : vigor}
             </StatContainer>
           </StatInput>
-        </Stat>
+        </StatNoMargin>
       </StatsContainer>
     </FlexGroup>
   );
 }
 
+const HeaderContainer = styled(FlexGroup)`
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+`;
+
 const Header = styled.h2`
+  color: ${COLOR_LIGHTEST_GREEN};
   margin-bottom: 20px;
+  font-size: 26px;
+`;
+
+const Level = styled(FlexGroup)`
+  margin-bottom: 20px;
+  font-weight: bold;
 `;
 
 const StatsContainer = styled(FlexGroup)`
@@ -213,11 +246,33 @@ const Stat = styled(FlexGroup)`
   align-items: center;
   margin-bottom: 15px;
   margin-right: 30px;
+
+  @media only screen and (max-width: 1400px) {
+    margin-right: 20px;
+  }
+
+  @media only screen and (max-width: 1100px) {
+    margin-right: 10px;
+  }
+`;
+
+const StatNoMargin = styled(Stat)`
+  margin-right: 0px;
 `;
 
 const StatName = styled.span`
   font-size: 12px;
   margin-right: 10px;
+  width: 30px;
+
+  @media only screen and (max-width: 1400px) {
+    width: 20px;
+  }
+
+  @media only screen and (max-width: 1100px) {
+    width: 20px;
+    font-size: 10px;
+  }
 `;
 
 const StatInput = styled(FlexGroup)`
@@ -231,6 +286,7 @@ const StatContainer = styled.span`
 
 StatEditor.propTypes = {
   editable: PropTypes.bool.isRequired,
+  level: PropTypes.string.isRequired,
 };
 
 export default StatEditor;

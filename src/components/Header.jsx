@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import FlexGroup from './common/FlexGroup';
 import { logout } from '../firebase';
 import useAuth from '../hooks/useAuth';
+import { COLOR_LIGHTEST_GREEN } from '../constants';
 
 function Header() {
   const auth = useAuth();
@@ -19,11 +20,11 @@ function Header() {
         Souls Builds
       </Link>
       {auth ? (
-        <FlexGroup
+        <LogoutContainer
           onClick={handleLogout}
         >
           Logout
-        </FlexGroup>
+        </LogoutContainer>
       ) : (
         <LoginContainer>
           <Link
@@ -47,11 +48,35 @@ const Container = styled(FlexGroup)`
   padding: 20px 30px;
   font-size: 24px;
   font-weight: bold;
+  width: 70%;
+  margin-bottom: 30px;
+
+  & > a {
+    font-size: 30px;
+
+    &:hover {
+      color: ${COLOR_LIGHTEST_GREEN};
+    }
+  }
+`;
+
+const LogoutContainer = styled(FlexGroup)`
+  cursor: pointer;
+  font-size: 18px;
+
+  &:hover {
+    color: ${COLOR_LIGHTEST_GREEN};
+  }
 `;
 
 const LoginContainer = styled(FlexGroup)`
   & > a {
     margin-left: 25px;
+    font-size: 18px;
+
+    &:hover {
+      color: ${COLOR_LIGHTEST_GREEN};
+    }
   }
 `;
 

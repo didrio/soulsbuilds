@@ -21,10 +21,9 @@ import { updateSpell } from '../store/spells';
 import { updateTear } from '../store/tears';
 import { selectEditSlot, selectSlotType } from '../store/selectors';
 import {
-  COLOR_BLACK,
-  COLOR_DARK_GRAY,
-  COLOR_LIGHT_GRAY,
-  COLOR_GRAY,
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
   SLOT_TYPE_ARROW,
   SLOT_TYPE_CHEST,
   SLOT_TYPE_CON,
@@ -183,7 +182,9 @@ function ItemSelector() {
         </SearchContainer>
         <IconContainer
           onClick={handleClose}
-        />
+        >
+          X
+        </IconContainer>
       </TopBar>
       <Contents>
         {options.map((option) => row(option))}
@@ -193,22 +194,33 @@ function ItemSelector() {
 }
 
 const Container = styled(FlexGroup)`
-  color: ${COLOR_BLACK};
+  color: ${COLOR_GOLD};
   flex-direction: column;
   height: 100%;
+  font-size: 14px;
 `;
 
 const TopBar = styled(FlexGroup)`
-  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 10px;
   width: 100%;
 `;
 
 const IconContainer = styled(FlexGroup)`
-  background-color: #000000;
+  background-color: ${COLOR_GREEN};
   cursor: pointer;
   height: 35px;
   width: 35px;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  border-radius: 2px;
+  box-shadow: 0px 0px 3px ${COLOR_GREEN};
+
+  &:hover {
+    background-color: ${COLOR_LIGHT_GREEN};
+  }
 `;
 
 const RowContainer = styled(FlexGroup)`
@@ -216,15 +228,17 @@ const RowContainer = styled(FlexGroup)`
   justify-content: space-between;
   height: 80px;
   min-height: 80px;
-  background-color: ${COLOR_DARK_GRAY};
+  background-color: ${COLOR_GREEN};
   margin: 5px 0;
+  margin-right: 10px;
   cursor: pointer;
-  color: ${COLOR_LIGHT_GRAY};
   padding: 0 10px;
-  border-radius: 10px;
+  border-radius: 2px;
+  width: 250px;
+  box-shadow: 0px 0px 3px ${COLOR_GREEN};
 
   &:hover {
-    background-color: ${COLOR_GRAY};
+    background-color: ${COLOR_LIGHT_GREEN};
   }
 `;
 
@@ -249,13 +263,22 @@ const ImageContainer = styled(FlexGroup)`
 `;
 
 const Contents = styled(FlexGroup)`
-  flex-direction: column;
+  justify-content: center;
   overflow: scroll;
-  height: 100%;
+  flex-wrap: wrap;
 `;
 
 const SearchContainer = styled(FlexGroup)`
-  width: 250px;
+  margin-right: 20px;
+  width: 450px;
+
+  @media only screen and (max-width: 1000px) {
+    width: 350px;
+  }
+
+  @media only screen and (max-width: 750px) {
+    width: 230px;
+  }
 `;
 
 export default ItemSelector;
