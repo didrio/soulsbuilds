@@ -69,6 +69,18 @@ const Container = styled(FlexGroup)`
   flex-direction: column;
   width: 72%;
   box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
+
+  @media only screen and (max-width: 1200px) {
+    width: 80%;
+  }
+
+  @media only screen and (max-width: 800px) {
+    width: 90%;
+  }
+
+  @media only screen and (max-width: 500px) {
+    width: 95%;
+  }
 `;
 
 const Content = styled(FlexGroup)`

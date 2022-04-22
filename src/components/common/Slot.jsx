@@ -13,6 +13,8 @@ import FlexGroup from './FlexGroup';
 
 const SLOT_SIZE = '80px';
 const SLOT_SIZE_SMALL = '60px';
+const SLOT_SIZE_XSMALL = '50px';
+const SLOT_SIZE_XXSMALL = '40px';
 
 function Slot({
   background,
@@ -95,6 +97,16 @@ const Container = styled(FlexGroup)`
   @media only screen and (max-width: 1400px) {
     height: ${SLOT_SIZE_SMALL};
     width: ${SLOT_SIZE_SMALL};
+  }
+
+  @media only screen and (max-width: 500px) {
+    height: ${SLOT_SIZE_XSMALL};
+    width: ${SLOT_SIZE_XSMALL};
+  }
+
+  @media only screen and (max-width: 400px) {
+    height: ${SLOT_SIZE_XXSMALL};
+    width: ${SLOT_SIZE_XXSMALL};
   }
 `;
 
