@@ -1,6 +1,7 @@
 import styled, { createGlobalStyle } from 'styled-components';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route } from 'react-router-dom';
+import OutsideClickHandler from 'react-outside-click-handler';
 import FlexGroup from './common/FlexGroup';
 import Header from './Header';
 import BuildEditor from './BuildEditor';
@@ -16,6 +17,7 @@ import {
   COLOR_LIGHTEST_GREEN,
 } from '../constants';
 import { selectSlotType } from '../store/selectors';
+import { updateEditSlot, updateSlotType } from '../store/app';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -25,20 +27,30 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 function App() {
+  const dispatch = useDispatch();
   const slotType = useSelector(selectSlotType);
 
   const top = (document.documentElement.scrollTop || document.body.scrollTop || 0) + 120;
+
+  const handleHideModal = () => {
+    dispatch(updateEditSlot(null));
+    dispatch(updateSlotType(null));
+  };
 
   return (
     <Background>
       <GlobalStyle />
       {slotType === null ? null : (
         <ModalContainer>
-          <Modal
-            top={top}
+          <OutsideClickHandler
+            onOutsideClick={handleHideModal}
           >
-            <ItemSelector />
-          </Modal>
+            <Modal
+              top={top}
+            >
+              <ItemSelector />
+            </Modal>
+          </OutsideClickHandler>
         </ModalContainer>
       )}
       <Header />

@@ -21,20 +21,23 @@ function Slot({
   disabled,
   id,
   item,
+  onRemove,
   type,
 }) {
   const dispatch = useDispatch();
 
-  const handleClick = () => {
-    if (!disabled) {
-      dispatch(updateEditSlot(id));
-      dispatch(updateSlotType(type));
-    }
-  };
-
   const hasItem = item !== null;
   const backgroundColor = hasItem ? COLOR_DARK_GOLD : COLOR_GREEN;
   const hoverColor = hasItem ? COLOR_LIGHT_GOLD : COLOR_LIGHT_GREEN;
+
+  const handleClick = () => {
+    if (!disabled && !hasItem) {
+      dispatch(updateEditSlot(id));
+      dispatch(updateSlotType(type));
+    } else if (!disabled && hasItem) {
+      onRemove();
+    }
+  };
 
   return (
     <Container
@@ -124,6 +127,7 @@ Slot.propTypes = {
   disabled: PropTypes.bool,
   id: PropTypes.string.isRequired,
   item: PropTypes.objectOf(PropTypes.string),
+  onRemove: PropTypes.func.isRequired,
   type: PropTypes.oneOf(SLOT_TYPES).isRequired,
 };
 

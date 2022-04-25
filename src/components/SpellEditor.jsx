@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
@@ -17,8 +17,11 @@ import {
   selectSpell9,
   selectSpell10,
 } from '../store/selectors';
+import { updateSpell } from '../store/spells';
 
 function SpellEditor({ editable }) {
+  const dispatch = useDispatch();
+
   const spell1 = useSelector(selectSpell1);
   const spell2 = useSelector(selectSpell2);
   const spell3 = useSelector(selectSpell3);
@@ -56,7 +59,11 @@ function SpellEditor({ editable }) {
     spell10,
   ]);
 
-  const disabled = slotPoints >= 10 || !editable;
+  const disabled = !editable;
+
+  const handleRemoveSpell = (id) => () => {
+    dispatch(updateSpell({ id, item: null }));
+  };
 
   return (
     <FlexGroup
@@ -75,30 +82,35 @@ function SpellEditor({ editable }) {
           disabled={disabled}
           id="spell1"
           item={spell1}
+          onRemove={handleRemoveSpell('spell1')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell2"
           item={spell2}
+          onRemove={handleRemoveSpell('spell2')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell3"
           item={spell3}
+          onRemove={handleRemoveSpell('spell3')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell4"
           item={spell4}
+          onRemove={handleRemoveSpell('spell4')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell5"
           item={spell5}
+          onRemove={handleRemoveSpell('spell5')}
           type={SLOT_TYPE_SPELL}
         />
       </SlotContainer>
@@ -107,30 +119,35 @@ function SpellEditor({ editable }) {
           disabled={disabled}
           id="spell6"
           item={spell6}
+          onRemove={handleRemoveSpell('spell6')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell7"
           item={spell7}
+          onRemove={handleRemoveSpell('spell7')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell8"
           item={spell8}
+          onRemove={handleRemoveSpell('spell8')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell9"
           item={spell9}
+          onRemove={handleRemoveSpell('spell9')}
           type={SLOT_TYPE_SPELL}
         />
         <Slot
           disabled={disabled}
           id="spell10"
           item={spell10}
+          onRemove={handleRemoveSpell('spell10')}
           type={SLOT_TYPE_SPELL}
         />
       </SlotContainer>

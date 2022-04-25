@@ -1,14 +1,21 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import Slot from './common/Slot';
 import { COLOR_LIGHTEST_GREEN, SLOT_TYPE_TEAR } from '../constants';
 import { selectTear1, selectTear2 } from '../store/selectors';
+import { updateTear } from '../store/tears';
 
 function TearEditor({ editable }) {
+  const dispatch = useDispatch();
+
   const tear1 = useSelector(selectTear1);
   const tear2 = useSelector(selectTear2);
+
+  const handleRemoveTear = (id) => () => {
+    dispatch(updateTear({ id, item: null }));
+  };
 
   return (
     <Container
@@ -24,12 +31,14 @@ function TearEditor({ editable }) {
           disabled={!editable}
           id="tear1"
           item={tear1}
+          onRemove={handleRemoveTear('tear1')}
           type={SLOT_TYPE_TEAR}
         />
         <Slot
           disabled={!editable}
           id="tear2"
           item={tear2}
+          onRemove={handleRemoveTear('tear2')}
           type={SLOT_TYPE_TEAR}
         />
       </SlotContainer>

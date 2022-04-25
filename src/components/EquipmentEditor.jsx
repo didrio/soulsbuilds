@@ -1,4 +1,4 @@
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
@@ -44,8 +44,20 @@ import {
   selectWeapon5,
   selectWeapon6,
 } from '../store/selectors';
+import {
+  updateHelm,
+  updateLeg,
+  updateChest,
+  updateGauntlet,
+  updateArrow,
+  // updateCon,
+  updateTal,
+  updateWeapon,
+} from '../store/equipment';
 
 function EquipmentEditor({ editable }) {
+  const dispatch = useDispatch();
+
   const helm = useSelector(selectHelm);
   const leg = useSelector(selectLeg);
   const chest = useSelector(selectChest);
@@ -75,6 +87,34 @@ function EquipmentEditor({ editable }) {
   const weapon5 = useSelector(selectWeapon5);
   const weapon6 = useSelector(selectWeapon6);
 
+  const handleRemoveArrow = (id) => () => {
+    dispatch(updateArrow({ id, item: null }));
+  };
+
+  const handleRemoveTal = (id) => () => {
+    dispatch(updateTal({ id, item: null }));
+  };
+
+  const handleRemoveWeapon = (id) => () => {
+    dispatch(updateWeapon({ id, item: null }));
+  };
+
+  const handleRemoveHelm = () => {
+    dispatch(updateHelm(null));
+  };
+
+  const handleRemoveChest = () => {
+    dispatch(updateChest(null));
+  };
+
+  const handleRemoveGauntlet = () => {
+    dispatch(updateGauntlet(null));
+  };
+
+  const handleRemoveLeg = () => {
+    dispatch(updateLeg(null));
+  };
+
   return (
     <Container
       vertical
@@ -95,6 +135,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="weapon1"
           item={weapon1}
+          onRemove={handleRemoveWeapon('weapon1')}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -102,6 +143,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="weapon2"
           item={weapon2}
+          onRemove={handleRemoveWeapon('weapon2')}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -109,6 +151,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="weapon3"
           item={weapon3}
+          onRemove={handleRemoveWeapon('weapon3')}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -116,6 +159,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="arrow1"
           item={arrow1}
+          onRemove={handleRemoveArrow('arrow1')}
           type={SLOT_TYPE_ARROW}
         />
         <Slot
@@ -123,6 +167,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="arrow2"
           item={arrow2}
+          onRemove={handleRemoveArrow('arrow2')}
           type={SLOT_TYPE_ARROW}
         />
       </SlotContainer>
@@ -137,6 +182,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="weapon4"
           item={weapon4}
+          onRemove={handleRemoveWeapon('weapon4')}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -144,6 +190,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="weapon5"
           item={weapon5}
+          onRemove={handleRemoveWeapon('weapon5')}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -151,6 +198,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="weapon6"
           item={weapon6}
+          onRemove={handleRemoveWeapon('weapon6')}
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -158,6 +206,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="arrow3"
           item={arrow3}
+          onRemove={handleRemoveArrow('arrow3')}
           type={SLOT_TYPE_ARROW}
         />
         <Slot
@@ -165,6 +214,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="arrow4"
           item={arrow4}
+          onRemove={handleRemoveArrow('arrow4')}
           type={SLOT_TYPE_ARROW}
         />
       </SlotContainer>
@@ -179,6 +229,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="helm"
           item={helm}
+          onRemove={handleRemoveHelm}
           type={SLOT_TYPE_HELM}
         />
         <Slot
@@ -186,6 +237,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="chest"
           item={chest}
+          onRemove={handleRemoveChest}
           type={SLOT_TYPE_CHEST}
         />
         <Slot
@@ -193,6 +245,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="gauntlet"
           item={gauntlet}
+          onRemove={handleRemoveGauntlet}
           type={SLOT_TYPE_GAUNTLET}
         />
         <Slot
@@ -200,6 +253,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="leg"
           item={leg}
+          onRemove={handleRemoveLeg}
           type={SLOT_TYPE_LEG}
         />
       </SlotContainer>
@@ -214,6 +268,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="tal1"
           item={tal1}
+          onRemove={handleRemoveTal('tal1')}
           type={SLOT_TYPE_TAL}
         />
         <Slot
@@ -221,6 +276,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="tal2"
           item={tal2}
+          onRemove={handleRemoveTal('tal2')}
           type={SLOT_TYPE_TAL}
         />
         <Slot
@@ -228,6 +284,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="tal3"
           item={tal3}
+          onRemove={handleRemoveTal('tal3')}
           type={SLOT_TYPE_TAL}
         />
         <Slot
@@ -235,6 +292,7 @@ function EquipmentEditor({ editable }) {
           disabled={!editable}
           id="tal4"
           item={tal4}
+          onRemove={handleRemoveTal('tal4')}
           type={SLOT_TYPE_TAL}
         />
       </SlotContainer>

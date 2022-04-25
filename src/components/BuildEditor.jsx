@@ -3,12 +3,14 @@ import styled from 'styled-components';
 import { useSelector, useDispatch, batch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import flatten from 'lodash/flatten';
+import compact from 'lodash/compact';
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import Button from './common/Button';
 import LoadingAnimation from './common/LoadingAnimation';
+import Chips from './common/Chips';
 import EquipmentEditor from './EquipmentEditor';
 import TearEditor from './TearEditor';
 import SpellEditor from './SpellEditor';
@@ -28,6 +30,7 @@ import {
   COLOR_DARKER_GREEN,
   COLOR_GREEN,
   COLOR_GOLD,
+  COLOR_LIGHT_GREEN,
   COLOR_LIGHTEST_GREEN,
 } from '../constants';
 import {
@@ -81,6 +84,7 @@ const shieldsAndWeaponsData = ([
 function BuildEditor() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const [buildId, setBuildId] = useState(null);
@@ -142,6 +146,7 @@ function BuildEditor() {
             user,
             name: savedName,
             description: savedDescription,
+            tags: savedTags,
             arc: savedArc,
             dex: savedDex,
             end: savedEnd,
@@ -166,6 +171,7 @@ function BuildEditor() {
           }
           setName(savedName);
           setDescription(savedDescription);
+          setTags(savedTags);
           const helmObj = armorData.helms
             .find(({ name: helmName }) => helmName === savedHelm);
           const legObj = armorData.legs
@@ -239,6 +245,7 @@ function BuildEditor() {
       user: auth.uid,
       name,
       description,
+      tags,
       level,
       arrows,
       cons,
@@ -266,6 +273,16 @@ function BuildEditor() {
     setSaveLoading(false);
   };
 
+  const handleRemoveTag = (value) => {
+    setTags((prevTags) => prevTags.filter((tag) => tag !== value));
+  };
+
+  const handleAddTag = (tag) => {
+    setTags((prevTags) => (
+      compact([...prevTags, tag])
+    ));
+  };
+
   if (auth === null) {
     return null;
   }
@@ -283,9 +300,22 @@ function BuildEditor() {
   return (
     <Container>
       {editable ? null : (
-        <NameContainer>
-          {name}
-        </NameContainer>
+        <FlexGroup
+          vertical
+        >
+          <NameContainer>
+            {name}
+          </NameContainer>
+          {tags.length > 0 ? (
+            <TagDisplay>
+              {tags.map((tag) => (
+                <Tag>
+                  {tag}
+                </Tag>
+              ))}
+            </TagDisplay>
+          ) : null}
+        </FlexGroup>
       )}
       <UpperSection>
         <LeftColumn
@@ -305,6 +335,20 @@ function BuildEditor() {
                 />
               </NameInputContainer>
             </HeaderContainer>
+          ) : null}
+          {editable ? (
+            <TagContainer
+              vertical
+            >
+              <Header>
+                Tags
+              </Header>
+              <Chips
+                onAdd={handleAddTag}
+                onRemove={handleRemoveTag}
+                values={tags}
+              />
+            </TagContainer>
           ) : null}
           <EditorContainer>
             <EquipmentEditor
@@ -487,6 +531,7 @@ const StyledMarkdownPreview = styled(MDEditor.Markdown)`
 const LeftColumn = styled(FlexGroup)`
   max-width: 50%;
   width: 50%;
+  align-items: center;
 
   @media only screen and (max-width: 1100px) {
     max-width: 100%;
@@ -497,6 +542,7 @@ const LeftColumn = styled(FlexGroup)`
 const RightColumn = styled(FlexGroup)`
   max-width: 50%;
   width: 50%;
+  align-items: center;
 
   @media only screen and (max-width: 1100px) {
     max-width: 100%;
@@ -512,6 +558,32 @@ const SaveContainer = styled(EditorContainer)`
   & > button {
     width: 250px;
   }
+`;
+
+const TagContainer = styled(EditorContainer)`
+  max-width: 76%;
+  width: 76%;
+  z-index: 10;
+`;
+
+const Tag = styled(FlexGroup)`
+  background-color: ${COLOR_GREEN};
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+  align-items: center;
+  justify-content: center;
+  margin-right: 10px;
+  margin-top: 10px;
+  height: 30px;
+  box-shadow: 0px 0px 3px ${COLOR_GREEN};
+  box-sizing: border-box;
+  padding: 0 10px;
+  font-size: 14px;
+`;
+
+const TagDisplay = styled(FlexGroup)`
+  justify-content: center;
+  margin-bottom: 20px;
+  margin-top: -25px;
 `;
 
 export default BuildEditor;
