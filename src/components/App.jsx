@@ -5,6 +5,7 @@ import OutsideClickHandler from 'react-outside-click-handler';
 import FlexGroup from './common/FlexGroup';
 import Header from './Header';
 import BuildEditor from './BuildEditor';
+import Profile from './Profile';
 import ItemSelector from './ItemSelector';
 import SignUp from './SignUp';
 import Login from './Login';
@@ -60,7 +61,8 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/builds/:buildId" element={<BuildEditor />} />
+            <Route path="/build/:buildId" element={<BuildEditor />} />
+            <Route path="/user/:userId" element={<Profile />} />
           </Routes>
         </Content>
       </Container>

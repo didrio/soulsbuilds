@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FlexGroup from './common/FlexGroup';
 import { logout } from '../firebase';
 import useAuth from '../hooks/useAuth';
@@ -7,10 +7,17 @@ import { COLOR_LIGHTEST_GREEN } from '../constants';
 
 function Header() {
   const auth = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
     window.location.reload();
+  };
+
+  const handleNavigateProfile = () => {
+    if (auth.uid) {
+      navigate(`/user/${auth.uid}`);
+    }
   };
 
   return (
@@ -21,11 +28,18 @@ function Header() {
         Souls Builds
       </Link>
       {auth ? (
-        <LogoutContainer
-          onClick={handleLogout}
-        >
-          Logout
-        </LogoutContainer>
+        <FlexGroup>
+          <ProfileContainer
+            onClick={handleNavigateProfile}
+          >
+            Profile
+          </ProfileContainer>
+          <LogoutContainer
+            onClick={handleLogout}
+          >
+            Logout
+          </LogoutContainer>
+        </FlexGroup>
       ) : (
         <LoginContainer>
           <Link
@@ -79,6 +93,10 @@ const LoginContainer = styled(FlexGroup)`
       color: ${COLOR_LIGHTEST_GREEN};
     }
   }
+`;
+
+const ProfileContainer = styled(LogoutContainer)`
+  margin-right: 20px;
 `;
 
 export default Header;

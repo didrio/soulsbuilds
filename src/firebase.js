@@ -70,18 +70,23 @@ export const logout = async () => {
   await signOut(auth);
 };
 
-export const saveBuild = async (buildId, data, newId) => {
+export const saveBuild = async (buildId, data, newId, userId) => {
   let success = true;
   let savedBuildId = null;
   try {
     if (buildId === 'new') {
+      savedBuildId = newId;
       const buildsRef = doc(firestore, `builds/${newId}`);
-      const result = await setDoc(buildsRef, data);
-      savedBuildId = result.id;
+      await setDoc(buildsRef, data);
+      const { builds = [] } = await getUser(userId);
+      const userRef = doc(firestore, `users/${userId}`);
+      await updateDoc(userRef, {
+        builds: [...builds, newId],
+      });
     } else if (buildId) {
+      savedBuildId = buildId;
       const docRef = doc(firestore, `builds/${buildId}`);
       await updateDoc(docRef, data);
-      savedBuildId = buildId;
     }
   } catch (error) {
     console.log(error.message);
@@ -94,7 +99,10 @@ export const getBuild = async (buildId) => {
   const docRef = doc(firestore, `builds/${buildId}`);
   const snapshot = await getDoc(docRef);
   const data = snapshot.data();
-  return data;
+  return {
+    ...data,
+    id: snapshot.id,
+  };
 };
 
 export const getBuilds = async () => {
@@ -136,7 +144,6 @@ export const addComment = async (userId, buildId, comment) => {
   const buildRef = doc(firestore, `builds/${buildId}`);
   const buildSnapshot = await getDoc(buildRef);
   const { comments = [] } = buildSnapshot.data();
-  console.log('comments', comments);
   await updateDoc(buildRef, {
     comments: [
       ...comments,

@@ -15,6 +15,7 @@ import useAuth from '../hooks/useAuth';
 function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const auth = useAuth();
@@ -34,19 +35,24 @@ function SignUp() {
     setPassword(value);
   };
 
+  const handleNameChange = (value) => {
+    setName(value);
+  };
+
   const handleSignUp = useCallback(() => {
     setIsSubmitting(true);
     const run = async () => {
       const success = await createUser(email, password, {
         ...DEFAULT_USER_DATA,
         email,
+        name,
       });
       if (!success) {
         setIsSubmitting(false);
       }
     };
     run();
-  }, [email, password]);
+  }, [email, password, name]);
 
   const handleKeyDown = useCallback(({ code }) => {
     if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
@@ -65,7 +71,7 @@ function SignUp() {
     };
   }, [handleKeyDown]);
 
-  const canRegister = !isEmpty(email) && !isEmpty(password);
+  const canRegister = !isEmpty(email) && !isEmpty(password) && !isEmpty(password);
 
   if (auth) {
     return null;
@@ -104,6 +110,14 @@ function SignUp() {
           onChange={handlePasswordChange}
           type="password"
           value={password}
+        />
+        <Spacer />
+        <Label>
+          Display Name
+        </Label>
+        <TextInput
+          onChange={handleNameChange}
+          value={name}
         />
         <Spacer />
         <Button

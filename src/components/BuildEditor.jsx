@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch, batch } from 'react-redux';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import flatten from 'lodash/flatten';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
@@ -107,6 +107,7 @@ function BuildEditor() {
   const [commentText, setCommentText] = useState('');
   const [comments, setComments] = useState([]);
   const [commentUsers, setCommentUsers] = useState({});
+  const [buildUser, setBuildUser] = useState({});
 
   const auth = useAuth();
   const loggedInUser = useUser();
@@ -253,6 +254,8 @@ function BuildEditor() {
             dispatch(updateStr(savedStr));
             dispatch(updateVigor(savedVigor));
           });
+          const result = await getUser(user);
+          setBuildUser(result);
         }
         setLoading(false);
       };
@@ -292,9 +295,11 @@ function BuildEditor() {
       gauntlet: gauntlet?.name ?? null,
     };
     const newId = nanoid();
-    const { success, savedBuildId } = await saveBuild(buildId, build, newId);
-    if (success && savedBuildId) {
-      navigate(`/builds/${savedBuildId}`);
+    if (auth?.uid) {
+      const { success, savedBuildId } = await saveBuild(buildId, build, newId, auth?.uid);
+      if (success && savedBuildId) {
+        navigate(`/build/${savedBuildId}`);
+      }
     }
     setSaveLoading(false);
   };
@@ -363,6 +368,12 @@ function BuildEditor() {
     sortBy(comments, ({ date = -Infinity }) => date).reverse()
   ), [comments]);
 
+  const handleNavigateUser = () => {
+    if (buildUser.id) {
+      navigate(`/user/${buildUser.id}`);
+    }
+  };
+
   if (auth === null) {
     return null;
   }
@@ -386,6 +397,16 @@ function BuildEditor() {
           <NameContainer>
             {name}
           </NameContainer>
+          {buildUser?.name ? (
+            <CreatedByContainer>
+              Created by:
+              <CreatedBy
+                onClick={handleNavigateUser}
+              >
+                {buildUser?.name}
+              </CreatedBy>
+            </CreatedByContainer>
+          ) : null}
           <LikesContainer>
             {(auth && loggedInUser) ? (
               <LikesTag
@@ -515,57 +536,59 @@ function BuildEditor() {
             ))}
           </TagDisplay>
         )}
-        {editable ? null : (
-          <CommentsContainer
+        <CommentsContainer
+          vertical
+        >
+          <CommentsHeader>
+            Comments
+          </CommentsHeader>
+          <UserCommentsContainer
             vertical
           >
-            <CommentsHeader>
-              Comments
-            </CommentsHeader>
-            <UserCommentsContainer
-              vertical
-            >
-              {sortedComments.map(({ comment, user }) => (
-                <UserCommentContainer
-                  key={comment}
-                  vertical
-                >
-                  <UserContainer>
-                    {commentUsers?.[user]?.name}
-                  </UserContainer>
-                  <FlexGroup>
-                    {comment}
-                  </FlexGroup>
-                </UserCommentContainer>
-              ))}
-            </UserCommentsContainer>
-            <PostCommentContainer>
-              Post a comment
-            </PostCommentContainer>
-            <CommentTextAreaContainer>
-              <TextAreaInput
-                onChange={handleChangeComment}
-                value={commentText}
-              />
-            </CommentTextAreaContainer>
-            <SaveCommentContainer>
-              <Button
-                onClick={handleSaveComment}
+            {sortedComments.map(({ comment, user }) => (
+              <UserCommentContainer
+                key={comment}
+                vertical
               >
-                Post
-              </Button>
-            </SaveCommentContainer>
-          </CommentsContainer>
-        )}
+                <UserContainer>
+                  <Link
+                    to={`/user/${user}`}
+                  >
+                    {commentUsers?.[user]?.name}
+                  </Link>
+                </UserContainer>
+                <FlexGroup>
+                  {comment}
+                </FlexGroup>
+              </UserCommentContainer>
+            ))}
+          </UserCommentsContainer>
+          <PostCommentContainer>
+            Post a comment
+          </PostCommentContainer>
+          <CommentTextAreaContainer>
+            <TextAreaInput
+              onChange={handleChangeComment}
+              value={commentText}
+            />
+          </CommentTextAreaContainer>
+          <SaveCommentContainer>
+            <Button
+              onClick={handleSaveComment}
+            >
+              Post
+            </Button>
+          </SaveCommentContainer>
+        </CommentsContainer>
       </LowerSection>
     </Container>
   );
 }
 
-const Header = styled.h2`
+const Header = styled(FlexGroup)`
   color: ${COLOR_LIGHTEST_GREEN};
-  margin-bottom: 20px;
   font-size: 26px;
+  font-weight: bold;
 `;
 
 const Container = styled(FlexGroup)`
@@ -598,6 +621,19 @@ const EditorContainer = styled(FlexGroup)`
 const HeaderContainer = styled(EditorContainer)`
   align-items: center;
   justify-content: center;
+  margin-bottom: 30px;
+  margin-top: 20px;
+`;
+
+const CreatedByContainer = styled(FlexGroup)`
+  justify-content: center;
+`;
+
+const CreatedBy = styled(FlexGroup)`
+  color: ${COLOR_LIGHTEST_GREEN};
+  font-weight: bold;
+  cursor: pointer;
+  margin-left: 5px;
 `;
 
 const LoadingContainer = styled(FlexGroup)`
@@ -621,15 +657,14 @@ const NameInputContainer = styled(FlexGroup)`
 const NameContainer = styled(FlexGroup)`
   font-size: 34px;
   justify-content: center;
-  margin-bottom: 30px;
   margin-top: 10px;
 `;
 
 const CommentsHeader = styled(FlexGroup)`
   font-size: 34px;
   justify-content: center;
-  margin-bottom: 30px;
-  margin-top: 30px;
+  margin-bottom: 10px;
+  margin-top: 60px;
   color: ${COLOR_LIGHTEST_GREEN};
 `;
 
@@ -732,7 +767,6 @@ const TagDisplay = styled(FlexGroup)`
 
 const LikesContainer = styled(FlexGroup)`
   justify-content: center;
-  margin-top: -25px;
 `;
 
 const LikesTag = styled(Tag)`

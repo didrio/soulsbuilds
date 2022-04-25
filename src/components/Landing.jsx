@@ -1,24 +1,19 @@
 import { useEffect, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 import styled from 'styled-components';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import Chips from './common/Chips';
+import BuildsList from './common/BuildsList';
 import { getBuilds } from '../firebase';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-} from '../constants';
+import { COLOR_LIGHT_GREEN } from '../constants';
 
 const MAX_LEVEL = 713;
 
 const containsAll = (arr1, arr2) => arr1.every((element) => arr2.includes(element));
 
 function Landing() {
-  const navigate = useNavigate();
-
   const [builds, setBuilds] = useState([]);
   const [tags, setTags] = useState([]);
   const [levelRange, setLevelRange] = useState([0, MAX_LEVEL]);
@@ -58,10 +53,6 @@ function Landing() {
     newValue = newValue < 0 ? 0 : newValue;
     newValue = newValue > MAX_LEVEL ? MAX_LEVEL : newValue;
     setLevelRange((prevState) => ([prevState[0], Math.max(newValue, prevState[0])]));
-  };
-
-  const handleSelectBuild = (id) => () => {
-    navigate(`/builds/${id}`);
   };
 
   const buildResults = useMemo(() => {
@@ -129,41 +120,13 @@ function Landing() {
       <Results
         vertical
       >
-        {buildResults.map((build) => (
-          <Build
-            key={build.name}
-            onClick={handleSelectBuild(build.id)}
-          >
-            <FlexGroup>
-              {build.name}
-            </FlexGroup>
-            <FlexGroup>
-              {build.likes}
-            </FlexGroup>
-          </Build>
-        ))}
+        <BuildsList
+          builds={buildResults}
+        />
       </Results>
     </FlexGroup>
   );
 }
-
-const Build = styled(FlexGroup)`
-  background-color: ${COLOR_GREEN};
-  height: 40px;
-  width: 100%;
-  cursor: pointer;
-  padding: 0 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 18px;
-  align-items: center;
-  margin-bottom: 15px;
-  justify-content: space-between;
-
-  &:hover {
-    background-color: ${COLOR_LIGHT_GREEN};
-  }
-`;
 
 const SubHeader = styled(FlexGroup)`
   font-weight: bold;
