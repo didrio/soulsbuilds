@@ -49,8 +49,25 @@ export const createUser = async (email, password, data) => {
   return success;
 };
 
-export const logout = () => {
-  signOut(auth);
+export const getUser = async (id) => {
+  let success = true;
+  try {
+    const userRef = doc(firestore, `users/${id}`);
+    const snapshot = await getDoc(userRef);
+    const data = snapshot.data();
+    return {
+      ...data,
+      id,
+    };
+  } catch (error) {
+    console.log(error.message);
+    success = false;
+  }
+  return success;
+};
+
+export const logout = async () => {
+  await signOut(auth);
 };
 
 export const saveBuild = async (buildId, data, newId) => {
@@ -87,4 +104,43 @@ export const getBuilds = async () => {
     ...buildDoc.data(),
     id: buildDoc.id,
   }));
+};
+
+export const handleUserLike = async (userId, buildId, shouldAdd = true) => {
+  const userRef = doc(firestore, `users/${userId}`);
+  const buildRef = doc(firestore, `builds/${buildId}`);
+  const userSnapshot = await getDoc(userRef);
+  const buildSnapshot = await getDoc(buildRef);
+  const { likes = 0 } = buildSnapshot.data();
+  let newLikes = shouldAdd ? (Number(likes) + 1) : (Number(likes) - 1);
+  if (newLikes < 0) {
+    newLikes = 0;
+  }
+  let { likedBuilds = [] } = userSnapshot.data();
+  if (shouldAdd && likedBuilds.includes(buildId)) {
+    return;
+  }
+  if (!shouldAdd && !likedBuilds.includes(buildId)) {
+    return;
+  }
+  if (shouldAdd) {
+    likedBuilds = [...likedBuilds, buildId];
+  } else {
+    likedBuilds = likedBuilds.filter((id) => id !== buildId);
+  }
+  await updateDoc(userRef, { likedBuilds });
+  await updateDoc(buildRef, { likes: newLikes });
+};
+
+export const addComment = async (userId, buildId, comment) => {
+  const buildRef = doc(firestore, `builds/${buildId}`);
+  const buildSnapshot = await getDoc(buildRef);
+  const { comments = [] } = buildSnapshot.data();
+  console.log('comments', comments);
+  await updateDoc(buildRef, {
+    comments: [
+      ...comments,
+      { user: userId, comment, date: Date.now() },
+    ],
+  });
 };

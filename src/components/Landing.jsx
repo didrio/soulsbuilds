@@ -1,5 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import compact from 'lodash/compact';
+import sortBy from 'lodash/sortBy';
 import styled from 'styled-components';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
@@ -15,6 +17,8 @@ const MAX_LEVEL = 713;
 const containsAll = (arr1, arr2) => arr1.every((element) => arr2.includes(element));
 
 function Landing() {
+  const navigate = useNavigate();
+
   const [builds, setBuilds] = useState([]);
   const [tags, setTags] = useState([]);
   const [levelRange, setLevelRange] = useState([0, MAX_LEVEL]);
@@ -52,26 +56,26 @@ function Landing() {
       newValue = MAX_LEVEL;
     }
     newValue = newValue < 0 ? 0 : newValue;
+    newValue = newValue > MAX_LEVEL ? MAX_LEVEL : newValue;
     setLevelRange((prevState) => ([prevState[0], Math.max(newValue, prevState[0])]));
   };
 
+  const handleSelectBuild = (id) => () => {
+    navigate(`/builds/${id}`);
+  };
+
   const buildResults = useMemo(() => {
-    let filterdBuilds = builds
+    let filteredBuilds = builds
       .filter((build) => (
         Number(build.level) >= levelRange[0] && Number(build.level) <= levelRange[1]
       ));
     if (tags.length > 0) {
-      filterdBuilds = builds
+      filteredBuilds = builds
         .filter((build) => containsAll(tags, build.tags));
     }
-    return filterdBuilds;
+    filteredBuilds = sortBy(filteredBuilds, ({ likes = 0 }) => likes * -1);
+    return filteredBuilds;
   }, [builds, tags, levelRange]);
-
-  const handleSelectBuild = (id) => () => {
-    window.open(`https://soulsbuilds.com/builds/${id}`, '_blank');
-  };
-
-  console.log(buildResults);
 
   return (
     <FlexGroup
@@ -134,7 +138,7 @@ function Landing() {
               {build.name}
             </FlexGroup>
             <FlexGroup>
-              {build.level}
+              {build.likes}
             </FlexGroup>
           </Build>
         ))}
@@ -170,6 +174,8 @@ const Filters = styled(FlexGroup)`
   border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
   width: 100%;
   justify-content: space-between;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
 `;
 
 const Results = styled(FlexGroup)`

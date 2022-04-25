@@ -8,8 +8,9 @@ import { COLOR_LIGHTEST_GREEN } from '../constants';
 function Header() {
   const auth = useAuth();
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
+    window.location.reload();
   };
 
   return (

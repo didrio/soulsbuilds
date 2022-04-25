@@ -4,6 +4,7 @@ import { useSelector, useDispatch, batch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import flatten from 'lodash/flatten';
 import compact from 'lodash/compact';
+import sortBy from 'lodash/sortBy';
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
 import { customAlphabet } from 'nanoid';
@@ -12,12 +13,13 @@ import TextInput from './common/TextInput';
 import Button from './common/Button';
 import LoadingAnimation from './common/LoadingAnimation';
 import Chips from './common/Chips';
+import TextAreaInput from './common/TextAreaInput';
 import EquipmentEditor from './EquipmentEditor';
 import TearEditor from './TearEditor';
 import SpellEditor from './SpellEditor';
 import StatEditor from './StatEditor';
-import { getBuild, saveBuild } from '../firebase';
 import useAuth from '../hooks/useAuth';
+import useUser from '../hooks/useUser';
 import armorData from '../data/armor.json';
 import arrowsAndBoltsData from '../data/arrowsAndBolts.json';
 import consumablesData from '../data/consumables.json';
@@ -76,6 +78,13 @@ import {
 } from '../store/equipment';
 import { updateSpell } from '../store/spells';
 import { updateTear } from '../store/tears';
+import {
+  addComment,
+  getBuild,
+  getUser,
+  handleUserLike,
+  saveBuild,
+} from '../firebase';
 
 const shieldsAndWeaponsData = ([
   ...flatten(Object.values(shieldsData)),
@@ -88,12 +97,19 @@ function BuildEditor() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState([]);
+  const [likes, setLikes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
   const [buildId, setBuildId] = useState(null);
   const [editable, setEditable] = useState(false);
+  const [handlingLike, setHandlingLike] = useState(false);
+  const [likedBuilds, setLikedBuilds] = useState([]);
+  const [commentText, setCommentText] = useState('');
+  const [comments, setComments] = useState([]);
+  const [commentUsers, setCommentUsers] = useState({});
 
   const auth = useAuth();
+  const loggedInUser = useUser();
   const params = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -149,7 +165,9 @@ function BuildEditor() {
             user,
             name: savedName,
             description: savedDescription,
-            tags: savedTags,
+            tags: savedTags = [],
+            likes: savedLikes = 0,
+            comments: savedComments = [],
             arc: savedArc,
             dex: savedDex,
             end: savedEnd,
@@ -169,12 +187,14 @@ function BuildEditor() {
             chest: savedChest,
             gauntlet: savedGauntlet,
           } = data;
-          if (user === auth.uid) {
+          if (user === auth?.uid) {
             setEditable(true);
           }
           setName(savedName);
           setDescription(savedDescription);
           setTags(savedTags);
+          setLikes(savedLikes);
+          setComments(savedComments);
           const helmObj = armorData.helms
             .find(({ name: helmName }) => helmName === savedHelm);
           const legObj = armorData.legs
@@ -251,6 +271,7 @@ function BuildEditor() {
       tags,
       level,
       likes: 0,
+      comments: [],
       arrows,
       cons,
       tals,
@@ -288,6 +309,60 @@ function BuildEditor() {
     setTags((prevTags) => prevTags.filter((tag) => tag !== value));
   };
 
+  useEffect(() => {
+    const { likedBuilds: savedLikedBuilds = [] } = loggedInUser || {};
+    setLikedBuilds(savedLikedBuilds);
+  }, [loggedInUser]);
+
+  const handleLike = async () => {
+    if (!handlingLike && auth && loggedInUser) {
+      setHandlingLike(true);
+      const shouldAdd = !likedBuilds.includes(buildId);
+      if (shouldAdd) {
+        setLikedBuilds([...likedBuilds, buildId]);
+      } else {
+        setLikedBuilds(likedBuilds.filter((id) => id !== buildId));
+      }
+      setLikes((prevLikes) => (shouldAdd ? (prevLikes + 1) : (prevLikes - 1)));
+      try {
+        await handleUserLike(auth.uid, buildId, shouldAdd);
+        setHandlingLike(false);
+      } catch (error) {
+        console.log(error.message);
+      }
+    }
+  };
+
+  const handleChangeComment = (value) => {
+    setCommentText(value);
+  };
+
+  const handleSaveComment = async () => {
+    if (auth && auth?.uid && loggedInUser) {
+      await addComment(auth.uid, buildId, commentText);
+      setCommentText('');
+      window.location.reload();
+    }
+  };
+
+  useEffect(() => {
+    const run = async () => {
+      const result = await Promise.all(comments.map(({ user: userId }) => (
+        getUser(userId)
+      )));
+      const users = {};
+      result.forEach((user) => {
+        users[user.id] = user;
+      });
+      setCommentUsers(users);
+    };
+    run();
+  }, [comments]);
+
+  const sortedComments = useMemo(() => (
+    sortBy(comments, ({ date = -Infinity }) => date).reverse()
+  ), [comments]);
+
   if (auth === null) {
     return null;
   }
@@ -311,15 +386,19 @@ function BuildEditor() {
           <NameContainer>
             {name}
           </NameContainer>
-          {tags.length > 0 ? (
-            <TagDisplay>
-              {tags.map((tag) => (
-                <Tag>
-                  {tag}
-                </Tag>
-              ))}
-            </TagDisplay>
-          ) : null}
+          <LikesContainer>
+            {(auth && loggedInUser) ? (
+              <LikesTag
+                onClick={handleLike}
+              >
+                {`${likes} ${likes === 1 ? 'Like' : 'Likes'}`}
+              </LikesTag>
+            ) : (
+              <Tag>
+                {`${likes} ${likes === 1 ? 'Like' : 'Likes'}`}
+              </Tag>
+            )}
+          </LikesContainer>
         </FlexGroup>
       )}
       <UpperSection>
@@ -425,6 +504,59 @@ function BuildEditor() {
             )}
           </SaveContainer>
         ) : null}
+        {(editable && tags.length > 0) ? null : (
+          <TagDisplay>
+            {tags.map((tag) => (
+              <Tag
+                key={tag}
+              >
+                {tag}
+              </Tag>
+            ))}
+          </TagDisplay>
+        )}
+        {editable ? null : (
+          <CommentsContainer
+            vertical
+          >
+            <CommentsHeader>
+              Comments
+            </CommentsHeader>
+            <UserCommentsContainer
+              vertical
+            >
+              {sortedComments.map(({ comment, user }) => (
+                <UserCommentContainer
+                  key={comment}
+                  vertical
+                >
+                  <UserContainer>
+                    {commentUsers?.[user]?.name}
+                  </UserContainer>
+                  <FlexGroup>
+                    {comment}
+                  </FlexGroup>
+                </UserCommentContainer>
+              ))}
+            </UserCommentsContainer>
+            <PostCommentContainer>
+              Post a comment
+            </PostCommentContainer>
+            <CommentTextAreaContainer>
+              <TextAreaInput
+                onChange={handleChangeComment}
+                value={commentText}
+              />
+            </CommentTextAreaContainer>
+            <SaveCommentContainer>
+              <Button
+                onClick={handleSaveComment}
+              >
+                Post
+              </Button>
+            </SaveCommentContainer>
+          </CommentsContainer>
+        )}
       </LowerSection>
     </Container>
   );
@@ -491,6 +623,14 @@ const NameContainer = styled(FlexGroup)`
   justify-content: center;
   margin-bottom: 30px;
   margin-top: 10px;
+`;
+
+const CommentsHeader = styled(FlexGroup)`
+  font-size: 34px;
+  justify-content: center;
+  margin-bottom: 30px;
+  margin-top: 30px;
+  color: ${COLOR_LIGHTEST_GREEN};
 `;
 
 const DescriptionInputContainer = styled(FlexGroup)`
@@ -588,7 +728,56 @@ const Tag = styled(FlexGroup)`
 const TagDisplay = styled(FlexGroup)`
   justify-content: center;
   margin-bottom: 20px;
+`;
+
+const LikesContainer = styled(FlexGroup)`
+  justify-content: center;
   margin-top: -25px;
+`;
+
+const LikesTag = styled(Tag)`
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${COLOR_LIGHT_GREEN};
+  }
+`;
+
+const CommentsContainer = styled(FlexGroup)`
+  width: 100%;
+`;
+
+const SaveCommentContainer = styled(FlexGroup)`
+  justify-content: center;
+  margin-top: 20px;
+`;
+
+const PostCommentContainer = styled(FlexGroup)`
+  font-size: 18px;
+  margin-bottom: 10px;
+`;
+
+const CommentTextAreaContainer = styled(FlexGroup)`
+  height: 100px;
+`;
+
+const UserCommentsContainer = styled(FlexGroup)`
+  margin-bottom: 20px;
+`;
+
+const UserCommentContainer = styled(FlexGroup)`
+  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
+  padding-bottom: 10px;
+  margin-bottom: 20px;
+  font-size: 18px;
+`;
+
+const UserContainer = styled(FlexGroup)`
+  color: ${COLOR_LIGHTEST_GREEN};
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 10px;
 `;
 
 export default BuildEditor;

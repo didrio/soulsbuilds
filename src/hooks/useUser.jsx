@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import isEmpty from 'lodash/isEmpty';
+import { doc, getDoc } from 'firebase/firestore';
 import useAuth from './useAuth';
 import { firestore } from '../firebase';
 
@@ -7,16 +7,14 @@ const useUser = () => {
   const [user, setUser] = useState(null);
   const auth = useAuth();
 
-  const email = auth?.email ?? '';
-
   useEffect(() => {
     const run = async () => {
-      const db = firestore();
       try {
-        const query = await db.collection('users').where('email', '==', email).get();
-        if (!isEmpty(query?.docs ?? [])) {
-          const data = query.docs[0].data();
-          setUser(data);
+        if (auth?.uid) {
+          const docRef = doc(firestore, `users/${auth.uid}`);
+          const snapshot = await getDoc(docRef);
+          const data = snapshot.data();
+          setUser({ ...data, id: auth.uid });
         }
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -24,7 +22,7 @@ const useUser = () => {
       }
     };
     run();
-  }, [email]);
+  }, [auth]);
 
   return user;
 };

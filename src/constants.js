@@ -50,3 +50,9 @@ export const DEFAULT_USER_DATA = {
   email: '',
   name: '',
 };
+
+export const BASE_URL = (
+  window?.location?.hostname?.includes('localhost')
+    ? 'http://localhost:3000'
+    : 'https://soulsbuilds.com'
+);

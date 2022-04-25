@@ -22,7 +22,7 @@ function SignUp() {
 
   useEffect(() => {
     if (auth) {
-      navigate('/builds/new');
+      navigate('/');
     }
   }, [navigate, auth]);
 
