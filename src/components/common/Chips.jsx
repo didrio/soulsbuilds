@@ -112,10 +112,9 @@ function Chips({
                       >
                         <KeyContainer
                           key={key}
+                          onClick={handleSelectKey(key)}
                         >
-                          <FlexGroup
-                            onClick={handleSelectKey(key)}
-                          >
+                          <FlexGroup>
                             {key}
                           </FlexGroup>
                           <Caret>

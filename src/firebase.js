@@ -7,7 +7,7 @@ import {
 } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import {
-  getFirestore, addDoc, setDoc, collection, doc, getDoc, updateDoc,
+  getFirestore, setDoc, collection, doc, getDoc, getDocs, updateDoc,
 } from 'firebase/firestore';
 
 const config = {
@@ -53,13 +53,13 @@ export const logout = () => {
   signOut(auth);
 };
 
-export const saveBuild = async (buildId, data) => {
+export const saveBuild = async (buildId, data, newId) => {
   let success = true;
   let savedBuildId = null;
   try {
     if (buildId === 'new') {
-      const buildsRef = collection(firestore, 'builds');
-      const result = await addDoc(buildsRef, data);
+      const buildsRef = doc(firestore, `builds/${newId}`);
+      const result = await setDoc(buildsRef, data);
       savedBuildId = result.id;
     } else if (buildId) {
       const docRef = doc(firestore, `builds/${buildId}`);
@@ -78,4 +78,13 @@ export const getBuild = async (buildId) => {
   const snapshot = await getDoc(docRef);
   const data = snapshot.data();
   return data;
+};
+
+export const getBuilds = async () => {
+  const buildsRef = collection(firestore, 'builds');
+  const querySnapshot = await getDocs(buildsRef);
+  return querySnapshot.docs.map((buildDoc) => ({
+    ...buildDoc.data(),
+    id: buildDoc.id,
+  }));
 };

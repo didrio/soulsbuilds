@@ -6,6 +6,7 @@ import flatten from 'lodash/flatten';
 import compact from 'lodash/compact';
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
+import { customAlphabet } from 'nanoid';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import Button from './common/Button';
@@ -80,6 +81,8 @@ const shieldsAndWeaponsData = ([
   ...flatten(Object.values(shieldsData)),
   ...flatten(Object.values(weaponsData)),
 ]);
+
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 
 function BuildEditor() {
   const [name, setName] = useState('');
@@ -247,6 +250,7 @@ function BuildEditor() {
       description,
       tags,
       level,
+      likes: 0,
       arrows,
       cons,
       tals,
@@ -266,21 +270,22 @@ function BuildEditor() {
       chest: chest?.name ?? null,
       gauntlet: gauntlet?.name ?? null,
     };
-    const { success, savedBuildId } = await saveBuild(buildId, build);
+    const newId = nanoid();
+    const { success, savedBuildId } = await saveBuild(buildId, build, newId);
     if (success && savedBuildId) {
       navigate(`/builds/${savedBuildId}`);
     }
     setSaveLoading(false);
   };
 
-  const handleRemoveTag = (value) => {
-    setTags((prevTags) => prevTags.filter((tag) => tag !== value));
-  };
-
   const handleAddTag = (tag) => {
     setTags((prevTags) => (
       compact([...prevTags, tag])
     ));
+  };
+
+  const handleRemoveTag = (value) => {
+    setTags((prevTags) => prevTags.filter((tag) => tag !== value));
   };
 
   if (auth === null) {
