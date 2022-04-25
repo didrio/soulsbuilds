@@ -1,5 +1,4 @@
 import { useEffect, useState, useMemo } from 'react';
-import intersection from 'lodash/intersection';
 import compact from 'lodash/compact';
 import styled from 'styled-components';
 import FlexGroup from './common/FlexGroup';
@@ -12,6 +11,8 @@ import {
 } from '../constants';
 
 const MAX_LEVEL = 713;
+
+const containsAll = (arr1, arr2) => arr1.every((element) => arr2.includes(element));
 
 function Landing() {
   const [builds, setBuilds] = useState([]);
@@ -61,7 +62,7 @@ function Landing() {
       ));
     if (tags.length > 0) {
       filterdBuilds = builds
-        .filter((build) => intersection(build.tags, tags).length > 0);
+        .filter((build) => containsAll(tags, build.tags));
     }
     return filterdBuilds;
   }, [builds, tags, levelRange]);
@@ -76,9 +77,7 @@ function Landing() {
     <FlexGroup
       vertical
     >
-      <Filters
-        vertical
-      >
+      <Filters>
         <TagContainer
           vertical
         >
@@ -170,6 +169,7 @@ const SubHeader = styled(FlexGroup)`
 const Filters = styled(FlexGroup)`
   border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
   width: 100%;
+  justify-content: space-between;
 `;
 
 const Results = styled(FlexGroup)`
@@ -179,11 +179,11 @@ const Results = styled(FlexGroup)`
 `;
 
 const TagContainer = styled(FlexGroup)`
-  margin-bottom: 20px;
+  
 `;
 
 const LevelRangeContainer = styled(FlexGroup)`
-  margin-top: 10px;
+
 `;
 
 const LevelRange = styled(FlexGroup)`
