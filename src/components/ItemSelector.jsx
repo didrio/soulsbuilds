@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
-import concat from 'lodash/concat';
 import sortBy from 'lodash/sortBy';
 import FlexGroup from './common/FlexGroup';
 import FlexItem from './common/FlexItem';
@@ -38,9 +37,8 @@ import {
 import armor from '../data/armor.json';
 import arrowsAndBolts from '../data/arrowsAndBolts.json';
 import consumables from '../data/consumables.json';
-import shields from '../data/shields.json';
+import weaponsAndShieldsData from '../data/weaponsAndShields.json';
 import talismans from '../data/talismans.json';
-import weapons from '../data/weapons.json';
 import spells from '../data/spells.json';
 import tears from '../data/tears.json';
 
@@ -87,10 +85,7 @@ function ItemSelector() {
         items = tears;
         break;
       case SLOT_TYPE_WEAPON:
-        items = [
-          ...concat(...Object.values(weapons)),
-          ...concat(...Object.values(shields)),
-        ];
+        items = Object.values(weaponsAndShieldsData);
         break;
       default:
         break;

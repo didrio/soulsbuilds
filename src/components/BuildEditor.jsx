@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch, batch } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import flatten from 'lodash/flatten';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 import MDEditor from '@uiw/react-md-editor';
@@ -23,11 +22,10 @@ import useUser from '../hooks/useUser';
 import armorData from '../data/armor.json';
 import arrowsAndBoltsData from '../data/arrowsAndBolts.json';
 import consumablesData from '../data/consumables.json';
-import shieldsData from '../data/shields.json';
+import weaponsAndShieldsData from '../data/weaponsAndShields.json';
 import spellsData from '../data/spells.json';
 import talismansData from '../data/talismans.json';
 import tearsData from '../data/tears.json';
-import weaponsData from '../data/weapons.json';
 import {
   COLOR_DARK_GREEN,
   COLOR_DARKER_GREEN,
@@ -85,11 +83,6 @@ import {
   handleUserLike,
   saveBuild,
 } from '../firebase';
-
-const shieldsAndWeaponsData = ([
-  ...flatten(Object.values(shieldsData)),
-  ...flatten(Object.values(weaponsData)),
-]);
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 
@@ -236,8 +229,7 @@ function BuildEditor() {
               dispatch(updateTear({ item, id: `tear${id}` }));
             });
             savedWeapons.forEach((savedWeaponName, i) => {
-              const item = shieldsAndWeaponsData
-                .find(({ name: weaponName }) => weaponName === savedWeaponName);
+              const item = weaponsAndShieldsData[savedWeaponName];
               const id = i + 1;
               dispatch(updateWeapon({ item, id: `weapon${id}` }));
             });
