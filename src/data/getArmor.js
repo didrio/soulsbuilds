@@ -14,10 +14,10 @@ const run = async () => {
     helms: [],
     legs: [],
     chests: [],
-    gauntlets: []
+    gauntlets: [],
   };
 
-  elements.forEach(element => {
+  elements.forEach((element) => {
     const [tier, name, type, weight, physical, slash, strike, pierce, magic, fire, light, holy] = Array.from(element.childNodes);
     const newItem = {};
     newItem.name = html('.tier-list-object-name-table-css', name).text() || '';
@@ -38,7 +38,7 @@ const run = async () => {
     newItem.light = html(light).text() || '';
     newItem.holy = html(holy).text() || '';
 
-    Object.keys(newItem).forEach(key => {
+    Object.keys(newItem).forEach((key) => {
       newItem[key] = newItem[key].trim();
     });
 

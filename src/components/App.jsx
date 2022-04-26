@@ -54,8 +54,8 @@ function App() {
           </OutsideClickHandler>
         </ModalContainer>
       )}
-      <Header />
       <Container>
+        <Header />
         <Content>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -71,7 +71,6 @@ function App() {
 }
 
 const Background = styled(FlexGroup)`
-  padding: 50px 0;
   flex-direction: column;
   align-items: center;
   position: relative;
@@ -79,9 +78,10 @@ const Background = styled(FlexGroup)`
 
 const Container = styled(FlexGroup)`
   background-color: ${COLOR_DARK_GREEN};
-  border-radius: 10px;
   flex-direction: column;
   width: 72%;
+  min-height: 100vh;
+  padding: 10px 50px 30px 50px;
   box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
 
   @media only screen and (max-width: 1200px) {
@@ -99,7 +99,6 @@ const Container = styled(FlexGroup)`
 
 const Content = styled(FlexGroup)`
   flex-direction: column;
-  padding: 30px;
 `;
 
 const ModalContainer = styled(FlexGroup)`

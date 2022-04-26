@@ -143,8 +143,8 @@ function BuildEditor() {
   };
 
   const level = useMemo(() => (
-    String(Number(arc) + Number(dex) + Number(end) + Number(fai)
-    + Number(int) + Number(mind) + Number(str) + Number(vigor))
+    Math.max((String(Number(arc) + Number(dex) + Number(end) + Number(fai)
+    + Number(int) + Number(mind) + Number(str) + Number(vigor))) - 79, 1)
   ), [arc, dex, end, fai, int, mind, str, vigor]);
 
   useEffect(() => {
@@ -391,7 +391,7 @@ function BuildEditor() {
   return (
     <Container>
       {editable ? null : (
-        <FlexGroup
+        <TitleContainer
           vertical
         >
           <NameContainer>
@@ -420,7 +420,7 @@ function BuildEditor() {
               </Tag>
             )}
           </LikesContainer>
-        </FlexGroup>
+        </TitleContainer>
       )}
       <UpperSection>
         <LeftColumn
@@ -585,6 +585,11 @@ function BuildEditor() {
   );
 }
 
+const TitleContainer = styled(FlexGroup)`
+  margin-bottom: 50px;
+  margin-top: -30px;
+`;
+
 const Header = styled(FlexGroup)`
   color: ${COLOR_LIGHTEST_GREEN};
   font-size: 26px;
@@ -593,7 +598,6 @@ const Header = styled(FlexGroup)`
 
 const Container = styled(FlexGroup)`
   flex-direction: column;
-  min-height: 400px;
 `;
 
 const UpperSection = styled(FlexGroup)`

@@ -60,11 +60,10 @@ function Header() {
 
 const Container = styled(FlexGroup)`
   justify-content: space-between;
-  padding: 20px 30px;
   font-size: 24px;
   font-weight: bold;
-  width: 70%;
-  margin-bottom: 30px;
+  margin-bottom: 40px;
+  margin-top: 20px;
 
   & > a {
     font-size: 30px;

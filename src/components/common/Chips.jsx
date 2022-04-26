@@ -150,6 +150,7 @@ function Chips({
 
 const Container = styled(FlexGroup)`
   max-width: 100%;
+  z-index: 10;
 `;
 
 const ChipContainer = styled(FlexGroup)`
@@ -184,7 +185,7 @@ const Dropdown = styled(FlexGroup)`
   border: 1px solid ${COLOR_LIGHT_GREEN};
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
   position: absolute;
-  left: 75px;
+  left: 80px;
   top: 10px;
   width: 250px;
   max-height: 400px;

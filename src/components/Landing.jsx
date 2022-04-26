@@ -77,7 +77,7 @@ function Landing() {
           vertical
         >
           <SubHeader>
-            Tags
+            Filter by Tags
           </SubHeader>
           <FlexGroup>
             <Chips
@@ -91,12 +91,9 @@ function Landing() {
           vertical
         >
           <SubHeader>
-            Level Range
+            Filter by Level Range
           </SubHeader>
           <LevelRange>
-            <FlexGroup>
-              Min:
-            </FlexGroup>
             <LevelRangeInput>
               <TextInput
                 centered
@@ -104,9 +101,9 @@ function Landing() {
                 value={levelRange[0]}
               />
             </LevelRangeInput>
-            <FlexGroup>
-              Max:
-            </FlexGroup>
+            <LevelSpacer>
+              -
+            </LevelSpacer>
             <LevelRangeInput>
               <TextInput
                 centered
@@ -143,7 +140,6 @@ const Filters = styled(FlexGroup)`
 
 const Results = styled(FlexGroup)`
   margin-top: 10px;
-  padding: 20px;
   width: 100%;
 `;
 
@@ -152,7 +148,7 @@ const TagContainer = styled(FlexGroup)`
 `;
 
 const LevelRangeContainer = styled(FlexGroup)`
-
+  align-items: flex-end;
 `;
 
 const LevelRange = styled(FlexGroup)`
@@ -162,10 +158,12 @@ const LevelRange = styled(FlexGroup)`
 `;
 
 const LevelRangeInput = styled(FlexGroup)`
-  margin-left: 10px;
-  margin-right: 10px;
   max-width: 60px;
   width: 60px;
+`;
+
+const LevelSpacer = styled(FlexGroup)`
+  margin: 0 10px;
 `;
 
 export default Landing;

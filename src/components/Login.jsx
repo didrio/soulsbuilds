@@ -97,7 +97,7 @@ function Login() {
 
 const Container = styled(FlexGroup)`
   align-items: center;
-  margin-top: 30px;
+  margin-top: 120px;
   padding-left: 25%;
   padding-right: 25%;
 `;

@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
+import noop from 'lodash/noop';
 import {
   COLOR_LIGHT_GOLD,
   COLOR_DARK_GOLD,
@@ -22,6 +23,7 @@ function Slot({
   id,
   item,
   onRemove,
+  size,
   type,
 }) {
   const dispatch = useDispatch();
@@ -47,6 +49,7 @@ function Slot({
       hasItem={hasItem}
       hoverColor={hoverColor}
       onClick={handleClick}
+      size={size}
     >
       {!hasItem ? null : (
         // eslint-disable-next-line jsx-a11y/alt-text
@@ -69,8 +72,8 @@ const Container = styled(FlexGroup)`
   background-color: ${({ backgroundColor }) => backgroundColor};
   border-radius: 2px;
   cursor: ${({ disabled }) => (disabled ? 'auto' : 'pointer')};
-  height: ${SLOT_SIZE};
-  width: ${SLOT_SIZE};
+  height: ${({ size }) => (size === null ? SLOT_SIZE : size)};
+  width: ${({ size }) => (size === null ? SLOT_SIZE : size)};
   position: relative;
 
   &::before {
@@ -125,16 +128,20 @@ const NameContainer = styled.div`
 Slot.propTypes = {
   background: PropTypes.string,
   disabled: PropTypes.bool,
-  id: PropTypes.string.isRequired,
+  id: PropTypes.string,
   item: PropTypes.objectOf(PropTypes.string),
-  onRemove: PropTypes.func.isRequired,
+  onRemove: PropTypes.func,
+  size: PropTypes.string,
   type: PropTypes.oneOf(SLOT_TYPES).isRequired,
 };
 
 Slot.defaultProps = {
   background: '',
   disabled: false,
+  id: '',
   item: null,
+  onRemove: noop,
+  size: null,
 };
 
 export default Slot;
