@@ -16,4 +16,3 @@ shieldsAndWeaponsData.forEach((item) => {
 
 const json = JSON.stringify(data, null, 2);
 fs.writeFileSync('./weaponsAndShields.json', json);
-console.log('json', json);

@@ -19,7 +19,7 @@ import SpellEditor from './SpellEditor';
 import StatEditor from './StatEditor';
 import useAuth from '../hooks/useAuth';
 import useUser from '../hooks/useUser';
-import armorData from '../data/armor.json';
+import armorData from '../data/armorIndexed.json';
 import arrowsAndBoltsData from '../data/arrowsAndBolts.json';
 import consumablesData from '../data/consumables.json';
 import weaponsAndShieldsData from '../data/weaponsAndShields.json';
@@ -183,20 +183,18 @@ function BuildEditor() {
           } = data;
           if (user === auth?.uid) {
             setEditable(true);
+          } else {
+            setEditable(false);
           }
           setName(savedName);
           setDescription(savedDescription);
           setTags(savedTags);
           setLikes(savedLikes);
           setComments(savedComments);
-          const helmObj = armorData.helms
-            .find(({ name: helmName }) => helmName === savedHelm);
-          const legObj = armorData.legs
-            .find(({ name: legName }) => legName === savedLeg);
-          const chestObj = armorData.chests
-            .find(({ name: chestName }) => chestName === savedChest);
-          const gauntletObj = armorData.gauntlets
-            .find(({ name: gauntletName }) => gauntletName === savedGauntlet);
+          const helmObj = armorData.helms[savedHelm];
+          const legObj = armorData.legs[savedLeg];
+          const chestObj = armorData.chests[savedChest];
+          const gauntletObj = armorData.gauntlets[savedGauntlet];
           batch(() => {
             savedArrows.forEach((savedArrowName, i) => {
               const item = arrowsAndBoltsData

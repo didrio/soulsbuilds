@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 import styled from 'styled-components';
+import OutsideClickHandler from 'react-outside-click-handler';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import Chips from './common/Chips';
@@ -16,7 +17,7 @@ const containsAll = (arr1, arr2) => arr1.every((element) => arr2.includes(elemen
 function Landing() {
   const [builds, setBuilds] = useState([]);
   const [tags, setTags] = useState([]);
-  const [levelRange, setLevelRange] = useState([0, MAX_LEVEL]);
+  const [levelRange, setLevelRange] = useState([1, MAX_LEVEL]);
 
   useEffect(() => {
     const run = async () => {
@@ -37,22 +38,31 @@ function Landing() {
   };
 
   const handleChangeMinRange = (value) => {
-    let newValue = Number(value);
-    if (Number.isNaN(newValue)) {
-      newValue = 0;
-    }
-    newValue = newValue < 0 ? 0 : newValue;
-    setLevelRange((prevState) => ([Math.min(newValue, prevState[1]), prevState[1]]));
+    setLevelRange((prevState) => ([value, prevState[1]]));
   };
 
   const handleChangeMaxRange = (value) => {
-    let newValue = Number(value);
-    if (Number.isNaN(newValue)) {
-      newValue = MAX_LEVEL;
-    }
-    newValue = newValue < 0 ? 0 : newValue;
-    newValue = newValue > MAX_LEVEL ? MAX_LEVEL : newValue;
-    setLevelRange((prevState) => ([prevState[0], Math.max(newValue, prevState[0])]));
+    setLevelRange((prevState) => ([prevState[0], value]));
+  };
+
+  const handleRangeClickOutside = () => {
+    setLevelRange((prevState) => {
+      let min = Number(prevState[0]);
+      let max = Number(prevState[1]);
+      if (Number.isNaN(min) || min < 1 || min > MAX_LEVEL) {
+        min = 1;
+      }
+      if (Number.isNaN(max) || max < 1 || max > MAX_LEVEL) {
+        max = MAX_LEVEL;
+      }
+      if (min > max) {
+        min = max;
+      }
+      if (max < min) {
+        max = min;
+      }
+      return [min, max];
+    });
   };
 
   const buildResults = useMemo(() => {
@@ -95,21 +105,29 @@ function Landing() {
           </SubHeader>
           <LevelRange>
             <LevelRangeInput>
-              <TextInput
-                centered
-                onChange={handleChangeMinRange}
-                value={levelRange[0]}
-              />
+              <OutsideClickHandler
+                onOutsideClick={handleRangeClickOutside}
+              >
+                <TextInput
+                  centered
+                  onChange={handleChangeMinRange}
+                  value={levelRange[0]}
+                />
+              </OutsideClickHandler>
             </LevelRangeInput>
             <LevelSpacer>
               -
             </LevelSpacer>
             <LevelRangeInput>
-              <TextInput
-                centered
-                onChange={handleChangeMaxRange}
-                value={levelRange[1]}
-              />
+              <OutsideClickHandler
+                onOutsideClick={handleRangeClickOutside}
+              >
+                <TextInput
+                  centered
+                  onChange={handleChangeMaxRange}
+                  value={levelRange[1]}
+                />
+              </OutsideClickHandler>
             </LevelRangeInput>
           </LevelRange>
         </LevelRangeContainer>

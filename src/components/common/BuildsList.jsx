@@ -9,6 +9,7 @@ import {
   SLOT_TYPE_WEAPON,
 } from '../../constants';
 import weaponsAndShields from '../../data/weaponsAndShields.json';
+import armorData from '../../data/armorIndexed.json';
 
 function BuildsList({ builds }) {
   const navigate = useNavigate();
@@ -54,27 +55,39 @@ function BuildsList({ builds }) {
               type={SLOT_TYPE_WEAPON}
             />
             <Slot
-              background="weapon"
-              disabled
-              item={weaponsAndShields[build?.weapons?.[2]] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="weapon"
+              background="shield"
               disabled
               item={weaponsAndShields[build?.weapons?.[3]] || null}
               type={SLOT_TYPE_WEAPON}
             />
             <Slot
-              background="weapon"
+              background="shield"
               disabled
               item={weaponsAndShields[build?.weapons?.[4]] || null}
               type={SLOT_TYPE_WEAPON}
             />
             <Slot
-              background="weapon"
+              background="helm"
               disabled
-              item={weaponsAndShields[build?.weapons?.[5]] || null}
+              item={armorData.helms[build?.helm] || null}
+              type={SLOT_TYPE_WEAPON}
+            />
+            <Slot
+              background="chest"
+              disabled
+              item={armorData.chests[build?.chest] || null}
+              type={SLOT_TYPE_WEAPON}
+            />
+            <Slot
+              background="gauntlet"
+              disabled
+              item={armorData.gauntlets[build?.gauntlet] || null}
+              type={SLOT_TYPE_WEAPON}
+            />
+            <Slot
+              background="leg"
+              disabled
+              item={armorData.legs[build?.leg] || null}
               type={SLOT_TYPE_WEAPON}
             />
           </LowerSection>
