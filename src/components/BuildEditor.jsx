@@ -564,6 +564,7 @@ function BuildEditor() {
           </CommentTextAreaContainer>
           <SaveCommentContainer>
             <Button
+              disabled={!commentText}
               onClick={handleSaveComment}
             >
               Post
