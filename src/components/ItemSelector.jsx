@@ -5,6 +5,7 @@ import sortBy from 'lodash/sortBy';
 import FlexGroup from './common/FlexGroup';
 import FlexItem from './common/FlexItem';
 import TextInput from './common/TextInput';
+import CloseButton from './common/CloseButton';
 import { updateEditSlot, updateSlotType } from '../store/app';
 import {
   updateHelm,
@@ -175,11 +176,9 @@ function ItemSelector() {
             value={searchText}
           />
         </SearchContainer>
-        <IconContainer
+        <CloseButton
           onClick={handleClose}
-        >
-          X
-        </IconContainer>
+        />
       </TopBar>
       <Contents>
         {options.map((option) => row(option))}
@@ -200,22 +199,6 @@ const TopBar = styled(FlexGroup)`
   justify-content: center;
   margin-bottom: 10px;
   width: 100%;
-`;
-
-const IconContainer = styled(FlexGroup)`
-  background-color: ${COLOR_GREEN};
-  cursor: pointer;
-  height: 35px;
-  width: 35px;
-  justify-content: center;
-  align-items: center;
-  font-size: 22px;
-  border-radius: 2px;
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
-
-  &:hover {
-    background-color: ${COLOR_LIGHT_GREEN};
-  }
 `;
 
 const RowContainer = styled(FlexGroup)`

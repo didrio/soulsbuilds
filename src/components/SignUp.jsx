@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
@@ -12,7 +13,7 @@ import {
 import { createUser } from '../firebase';
 import useAuth from '../hooks/useAuth';
 
-function SignUp() {
+function SignUp({ onSubmit }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -47,12 +48,15 @@ function SignUp() {
         email,
         name,
       });
+      if (success) {
+        onSubmit();
+      }
       if (!success) {
         setIsSubmitting(false);
       }
     };
     run();
-  }, [email, password, name]);
+  }, [email, password, name, onSubmit]);
 
   const handleKeyDown = useCallback(({ code }) => {
     if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
@@ -88,12 +92,8 @@ function SignUp() {
   }
 
   return (
-    <FlexGroup
-      vertical
-    >
-      <Container
-        vertical
-      >
+    <Container>
+      <Input>
         <Label>
           Email
         </Label>
@@ -102,7 +102,8 @@ function SignUp() {
           type="email"
           value={email}
         />
-        <Spacer />
+      </Input>
+      <Input>
         <Label>
           Password
         </Label>
@@ -111,7 +112,8 @@ function SignUp() {
           type="password"
           value={password}
         />
-        <Spacer />
+      </Input>
+      <Input>
         <Label>
           Display Name
         </Label>
@@ -119,35 +121,26 @@ function SignUp() {
           onChange={handleNameChange}
           value={name}
         />
-        <Spacer />
-        <Button
-          disabled={!canRegister}
-          onClick={handleSignUp}
-        >
-          Register
-        </Button>
-      </Container>
-    </FlexGroup>
+      </Input>
+      <RegisterButton
+        disabled={!canRegister}
+        onClick={handleSignUp}
+      >
+        Register
+      </RegisterButton>
+    </Container>
   );
 }
 
 const Container = styled(FlexGroup)`
   align-items: center;
-  margin-top: 120px;
-  padding-left: 25%;
-  padding-right: 25%;
 `;
 
 const Label = styled(FlexGroup)`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  text-align: left;
   text-transform: uppercase;
-  margin-bottom: 5px;
-`;
-
-const Spacer = styled.div`
-  height: 40px;
+  margin-bottom: 2px;
 `;
 
 const LoadingContainer = styled(FlexGroup)`
@@ -155,5 +148,19 @@ const LoadingContainer = styled(FlexGroup)`
   justify-content: center;
   margin-top: 100px;
 `;
+
+const Input = styled(FlexGroup)`
+  flex-direction: column;
+  margin-right: 20px;
+  width: 200px;
+`;
+
+const RegisterButton = styled(Button)`
+  margin-bottom: -22px;
+`;
+
+SignUp.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
 
 export default SignUp;

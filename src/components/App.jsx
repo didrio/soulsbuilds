@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { Routes, Route } from 'react-router-dom';
@@ -27,15 +28,43 @@ const GlobalStyle = createGlobalStyle`
   }
 `;
 
+const CONTENT_TYPE_LOGIN = 'CONTENT_TYPE_LOGIN';
+const CONTENT_TYPE_REGISTER = 'CONTENT_TYPE_REGISTER';
+
 function App() {
   const dispatch = useDispatch();
   const slotType = useSelector(selectSlotType);
+  const [showHiddenContainer, setShowHiddenContainer] = useState(false);
+  const [hiddenContainerContent, setHiddenContainerContent] = useState(null);
 
   const top = (document.documentElement.scrollTop || document.body.scrollTop || 0) + 120;
 
   const handleHideModal = () => {
     dispatch(updateEditSlot(null));
     dispatch(updateSlotType(null));
+  };
+
+  const handleCloseHiddenContainer = () => {
+    setShowHiddenContainer(false);
+    setHiddenContainerContent(null);
+  };
+
+  const handleShowLogin = () => {
+    if (showHiddenContainer === true && hiddenContainerContent === CONTENT_TYPE_LOGIN) {
+      handleCloseHiddenContainer();
+    } else {
+      setShowHiddenContainer(true);
+      setHiddenContainerContent(CONTENT_TYPE_LOGIN);
+    }
+  };
+
+  const handleShowRegister = () => {
+    if (showHiddenContainer === true && hiddenContainerContent === CONTENT_TYPE_REGISTER) {
+      handleCloseHiddenContainer();
+    } else {
+      setShowHiddenContainer(true);
+      setHiddenContainerContent(CONTENT_TYPE_REGISTER);
+    }
   };
 
   return (
@@ -55,7 +84,28 @@ function App() {
         </ModalContainer>
       )}
       <Container>
-        <Header />
+        <HeaderContainer>
+          <Header
+            onShowLogin={handleShowLogin}
+            onShowRegister={handleShowRegister}
+          />
+        </HeaderContainer>
+        <HiddenContainer
+          visible={showHiddenContainer}
+        >
+          {hiddenContainerContent === CONTENT_TYPE_LOGIN ? (
+            <Login
+              onSubmit={handleCloseHiddenContainer}
+            />
+          ) : null}
+          {hiddenContainerContent === CONTENT_TYPE_REGISTER ? (
+            <div>
+              <SignUp
+                onSubmit={handleCloseHiddenContainer}
+              />
+            </div>
+          ) : null}
+        </HiddenContainer>
         <Content>
           <Routes>
             <Route path="/" element={<Landing />} />
@@ -70,6 +120,24 @@ function App() {
   );
 }
 
+const HeaderContainer = styled(FlexGroup)`
+  padding: 0px 50px;
+  margin-bottom: 40px;
+  margin-top: 20px;
+`;
+
+const HiddenContainer = styled(FlexGroup)`
+  height: ${({ visible }) => (visible ? '100px' : '0px')};
+  margin-bottom: ${({ visible }) => (visible ? '40px' : '0px')};
+  transition: all .4s ease-in-out;
+  background-color: ${COLOR_GREEN};
+  overflow: hidden;
+  align-items: center;
+  padding-left: 20px;
+  width: 100%;
+  justify-content: center;
+`;
+
 const Background = styled(FlexGroup)`
   flex-direction: column;
   align-items: center;
@@ -81,7 +149,8 @@ const Container = styled(FlexGroup)`
   flex-direction: column;
   width: 72%;
   min-height: 100vh;
-  padding: 10px 50px 30px 50px;
+  padding-top: 10px;
+  padding-bottom: 30px;
   box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
 
   @media only screen and (max-width: 1200px) {
@@ -99,6 +168,7 @@ const Container = styled(FlexGroup)`
 
 const Content = styled(FlexGroup)`
   flex-direction: column;
+  padding: 0px 50px;
 `;
 
 const ModalContainer = styled(FlexGroup)`

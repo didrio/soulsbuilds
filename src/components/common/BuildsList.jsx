@@ -33,15 +33,17 @@ function BuildsList({ builds }) {
               <FlexGroup>
                 {build.name}
               </FlexGroup>
-              <TagsContainer>
-                {build.tags.map((tag) => (
-                  <Tag
-                    key={tag}
-                  >
-                    {tag}
-                  </Tag>
-                ))}
-              </TagsContainer>
+              {build.tags ? (
+                <TagsContainer>
+                  {build.tags.map((tag) => (
+                    <Tag
+                      key={tag}
+                    >
+                      {tag}
+                    </Tag>
+                  ))}
+                </TagsContainer>
+              ) : null}
             </NameContainer>
             <DetailsContainer>
               <LevelContainer>

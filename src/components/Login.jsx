@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import isEmpty from 'lodash/isEmpty';
@@ -8,7 +9,7 @@ import FlexGroup from './common/FlexGroup';
 import useAuth from '../hooks/useAuth';
 import { login } from '../firebase';
 
-function Login() {
+function Login({ onSubmit }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -35,10 +36,11 @@ function Login() {
       if (success) {
         setEmail('');
         setPassword('');
+        onSubmit();
       }
     };
     run();
-  }, [email, password]);
+  }, [email, password, onSubmit]);
 
   const handleKeyDown = useCallback(({ code }) => {
     if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
@@ -64,54 +66,61 @@ function Login() {
   }
 
   return (
-    <Container
-      vertical
-    >
-      <Label>
-        Email
-      </Label>
-      <TextInput
-        onChange={handleEmailChange}
-        type="email"
-        value={email}
-      />
-      <Spacer />
-      <Label>
-        Password
-      </Label>
-      <TextInput
-        onChange={handlePasswordChange}
-        type="password"
-        value={password}
-      />
-      <Spacer />
-      <Button
+    <Container>
+      <Input>
+        <Label>
+          Email
+        </Label>
+        <TextInput
+          onChange={handleEmailChange}
+          type="email"
+          value={email}
+        />
+      </Input>
+      <Input>
+        <Label>
+          Password
+        </Label>
+
+        <TextInput
+          onChange={handlePasswordChange}
+          type="password"
+          value={password}
+        />
+      </Input>
+      <RegisterButton
         disabled={!canRegister}
         onClick={handleLogin}
       >
         Login
-      </Button>
+      </RegisterButton>
     </Container>
   );
 }
 
 const Container = styled(FlexGroup)`
   align-items: center;
-  margin-top: 120px;
-  padding-left: 25%;
-  padding-right: 25%;
 `;
 
 const Label = styled(FlexGroup)`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: bold;
-  text-align: left;
   text-transform: uppercase;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 `;
 
-const Spacer = styled.div`
-  height: 40px;
+const Input = styled(FlexGroup)`
+  flex-direction: column;
+  margin-right: 20px;
+  width: 200px;
 `;
+
+const RegisterButton = styled(Button)`
+  margin-bottom: -22px;
+`;
+
+Login.propTypes = {
+  onSubmit: PropTypes.func.isRequired,
+};
 
 export default Login;

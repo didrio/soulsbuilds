@@ -1,11 +1,17 @@
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 import { Link, useNavigate } from 'react-router-dom';
 import FlexGroup from './common/FlexGroup';
 import { logout } from '../firebase';
 import useAuth from '../hooks/useAuth';
 import { COLOR_LIGHTEST_GREEN } from '../constants';
 
-function Header() {
+const LINK_FONT_SIZE = '20px';
+
+function Header({
+  onShowLogin,
+  onShowRegister,
+}) {
   const auth = useAuth();
   const navigate = useNavigate();
 
@@ -20,13 +26,23 @@ function Header() {
     }
   };
 
+  const handleShowLogin = () => {
+    onShowLogin();
+  };
+
+  const handleShowRegister = () => {
+    onShowRegister();
+  };
+
   return (
     <Container>
-      <Link
-        to="/"
-      >
-        Souls Builds
-      </Link>
+      <LogoContainer>
+        <Link
+          to="/"
+        >
+          Souls Builds
+        </Link>
+      </LogoContainer>
       {auth ? (
         <FlexGroup>
           <ProfileContainer
@@ -42,41 +58,44 @@ function Header() {
         </FlexGroup>
       ) : (
         <LoginContainer>
-          <Link
-            to="/login"
+          <LoginClicker
+            onClick={handleShowLogin}
           >
             Login
-          </Link>
-          <Link
-            to="/signup"
+          </LoginClicker>
+          <LoginClicker
+            onClick={handleShowRegister}
           >
             Register
-          </Link>
+          </LoginClicker>
         </LoginContainer>
       )}
     </Container>
   );
 }
 
+Header.propTypes = {
+  onShowLogin: PropTypes.func.isRequired,
+  onShowRegister: PropTypes.func.isRequired,
+};
+
 const Container = styled(FlexGroup)`
   justify-content: space-between;
   font-size: 24px;
   font-weight: bold;
-  margin-bottom: 40px;
-  margin-top: 20px;
+  width: 100%;
+`;
 
+const LogoContainer = styled(FlexGroup)`
   & > a {
-    font-size: 30px;
-
-    &:hover {
-      color: ${COLOR_LIGHTEST_GREEN};
-    }
+    color: ${COLOR_LIGHTEST_GREEN};
+    font-size: 32px;
   }
 `;
 
 const LogoutContainer = styled(FlexGroup)`
   cursor: pointer;
-  font-size: 18px;
+  font-size: ${LINK_FONT_SIZE};
 
   &:hover {
     color: ${COLOR_LIGHTEST_GREEN};
@@ -86,11 +105,17 @@ const LogoutContainer = styled(FlexGroup)`
 const LoginContainer = styled(FlexGroup)`
   & > a {
     margin-left: 25px;
-    font-size: 18px;
+    font-size: ${LINK_FONT_SIZE};
+  }
+`;
 
-    &:hover {
-      color: ${COLOR_LIGHTEST_GREEN};
-    }
+const LoginClicker = styled(FlexGroup)`
+  cursor: pointer;
+  margin-left: 25px;
+  font-size: ${LINK_FONT_SIZE};
+
+  &:hover {
+    color: ${COLOR_LIGHTEST_GREEN};
   }
 `;
 
