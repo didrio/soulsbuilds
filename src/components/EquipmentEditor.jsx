@@ -136,6 +136,7 @@ function EquipmentEditor({ editable }) {
           id="weapon1"
           item={weapon1}
           onRemove={handleRemoveWeapon('weapon1')}
+          subId="weaponSkill1"
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -144,6 +145,7 @@ function EquipmentEditor({ editable }) {
           id="weapon2"
           item={weapon2}
           onRemove={handleRemoveWeapon('weapon2')}
+          subId="weaponSkill2"
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -152,6 +154,7 @@ function EquipmentEditor({ editable }) {
           id="weapon3"
           item={weapon3}
           onRemove={handleRemoveWeapon('weapon3')}
+          subId="weaponSkill3"
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -183,6 +186,7 @@ function EquipmentEditor({ editable }) {
           id="weapon4"
           item={weapon4}
           onRemove={handleRemoveWeapon('weapon4')}
+          subId="weaponSkill4"
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -191,6 +195,7 @@ function EquipmentEditor({ editable }) {
           id="weapon5"
           item={weapon5}
           onRemove={handleRemoveWeapon('weapon5')}
+          subId="weaponSkill5"
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
@@ -199,6 +204,7 @@ function EquipmentEditor({ editable }) {
           id="weapon6"
           item={weapon6}
           onRemove={handleRemoveWeapon('weapon6')}
+          subId="weaponSkill6"
           type={SLOT_TYPE_WEAPON}
         />
         <Slot

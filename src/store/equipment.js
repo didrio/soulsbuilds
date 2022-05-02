@@ -30,6 +30,12 @@ const initialState = {
   weapon4: null,
   weapon5: null,
   weapon6: null,
+  weaponSkill1: null,
+  weaponSkill2: null,
+  weaponSkill3: null,
+  weaponSkill4: null,
+  weaponSkill5: null,
+  weaponSkill6: null,
 };
 
 const equipment = createSlice({
@@ -144,6 +150,30 @@ const equipment = createSlice({
           break;
       }
     },
+    updateWeaponSkill: (state, action) => {
+      switch (action.payload.id) {
+        case 'weaponSkill1':
+          state.weaponSkill1 = action.payload.item;
+          break;
+        case 'weaponSkill2':
+          state.weaponSkill2 = action.payload.item;
+          break;
+        case 'weaponSkill3':
+          state.weaponSkill3 = action.payload.item;
+          break;
+        case 'weaponSkill4':
+          state.weaponSkill4 = action.payload.item;
+          break;
+        case 'weaponSkill5':
+          state.weaponSkill5 = action.payload.item;
+          break;
+        case 'weaponSkill6':
+          state.weaponSkill6 = action.payload.item;
+          break;
+        default:
+          break;
+      }
+    },
   },
 });
 
@@ -156,6 +186,7 @@ export const {
   updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponSkill,
 } = equipment.actions;
 
 export default equipment.reducer;

@@ -6,7 +6,12 @@ import FlexGroup from './common/FlexGroup';
 import FlexItem from './common/FlexItem';
 import TextInput from './common/TextInput';
 import CloseButton from './common/CloseButton';
-import { updateEditSlot, updateSlotType } from '../store/app';
+import DropDown from './common/DropDown';
+import {
+  updateEditSlot,
+  updateSlotType,
+  updateEditSubSlot,
+} from '../store/app';
 import {
   updateHelm,
   updateLeg,
@@ -16,10 +21,16 @@ import {
   updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponSkill,
 } from '../store/equipment';
 import { updateSpell } from '../store/spells';
 import { updateTear } from '../store/tears';
-import { selectEditSlot, selectSlotType } from '../store/selectors';
+import {
+  selectEditSlot,
+  selectSlotType,
+  selectEditSubSlot,
+  selectEditWeaponSkill,
+} from '../store/selectors';
 import {
   COLOR_GOLD,
   COLOR_GREEN,
@@ -42,16 +53,22 @@ import weaponsAndShieldsData from '../data/weaponsAndShields.json';
 import talismans from '../data/talismans.json';
 import spells from '../data/spells.json';
 import tears from '../data/tears.json';
+import skills from '../data/skillsIndexed.json';
+
+const skillsOptions = Object.values(skills).map(({ name }) => name);
 
 function ItemSelector() {
   const [searchText, setSearchText] = useState('');
 
   const dispatch = useDispatch();
   const editSlot = useSelector(selectEditSlot);
+  const editSubSlot = useSelector(selectEditSubSlot);
+  const editWeaponSkill = useSelector(selectEditWeaponSkill);
   const slotType = useSelector(selectSlotType);
 
   const handleClose = () => {
     dispatch(updateEditSlot(null));
+    dispatch(updateEditSubSlot(null));
     dispatch(updateSlotType(null));
   };
 
@@ -142,7 +159,11 @@ function ItemSelector() {
     handleClose();
   };
 
-  const row = (item) => (
+  const handleSkillChange = (value) => {
+    dispatch(updateWeaponSkill({ id: editSubSlot, item: value }));
+  };
+
+  const getItem = (item) => (
     <RowContainer
       key={item.name}
       onClick={handleSelectItem(item)}
@@ -180,8 +201,23 @@ function ItemSelector() {
           onClick={handleClose}
         />
       </TopBar>
+      {slotType === SLOT_TYPE_WEAPON ? (
+        <SkillContainer>
+          <SkillLabel>
+            Add Skill
+          </SkillLabel>
+          <SkillDropDown>
+            <DropDown
+              onChange={handleSkillChange}
+              options={skillsOptions}
+              placeholder="-- Choose a Skill --"
+              value={editWeaponSkill || ''}
+            />
+          </SkillDropDown>
+        </SkillContainer>
+      ) : null}
       <Contents>
-        {options.map((option) => row(option))}
+        {options.map((option) => getItem(option))}
       </Contents>
     </Container>
   );
@@ -192,6 +228,24 @@ const Container = styled(FlexGroup)`
   flex-direction: column;
   height: 100%;
   font-size: 14px;
+`;
+
+const SkillContainer = styled(FlexGroup)`
+  margin-bottom: 10px;
+  margin-top: 10px;
+  width: 100%;
+  justify-content: center;
+  align-items: center;
+`;
+
+const SkillLabel = styled(FlexGroup)`
+  font-size: 16px;
+  font-weight: bold;
+  margin-right: 20px;
+`;
+
+const SkillDropDown = styled(FlexGroup)`
+  width: 200px;
 `;
 
 const TopBar = styled(FlexGroup)`

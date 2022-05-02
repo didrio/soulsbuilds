@@ -59,24 +59,28 @@ function BuildsList({ builds }) {
               background="weapon"
               disabled
               item={weaponsAndShields[build?.weapons?.[0]] || null}
+              subItem={build?.weaponSkills?.[0] || null}
               type={SLOT_TYPE_WEAPON}
             />
             <Slot
               background="weapon"
               disabled
               item={weaponsAndShields[build?.weapons?.[1]] || null}
+              subItem={build?.weaponSkills?.[1] || null}
               type={SLOT_TYPE_WEAPON}
             />
             <Slot
               background="shield"
               disabled
               item={weaponsAndShields[build?.weapons?.[3]] || null}
+              subItem={build?.weaponSkills?.[3] || null}
               type={SLOT_TYPE_WEAPON}
             />
             <Slot
               background="shield"
               disabled
               item={weaponsAndShields[build?.weapons?.[4]] || null}
+              subItem={build?.weaponSkills?.[4] || null}
               type={SLOT_TYPE_WEAPON}
             />
             <Slot

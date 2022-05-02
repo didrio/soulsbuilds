@@ -19,7 +19,11 @@ import {
   COLOR_LIGHTEST_GREEN,
 } from '../constants';
 import { selectSlotType } from '../store/selectors';
-import { updateEditSlot, updateSlotType } from '../store/app';
+import {
+  updateEditSlot,
+  updateSlotType,
+  updateEditSubSlot,
+} from '../store/app';
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -34,6 +38,7 @@ const CONTENT_TYPE_REGISTER = 'CONTENT_TYPE_REGISTER';
 function App() {
   const dispatch = useDispatch();
   const slotType = useSelector(selectSlotType);
+
   const [showHiddenContainer, setShowHiddenContainer] = useState(false);
   const [hiddenContainerContent, setHiddenContainerContent] = useState(null);
 
@@ -41,6 +46,7 @@ function App() {
 
   const handleHideModal = () => {
     dispatch(updateEditSlot(null));
+    dispatch(updateEditSubSlot(null));
     dispatch(updateSlotType(null));
   };
 
@@ -109,8 +115,6 @@ function App() {
         <Content>
           <Routes>
             <Route path="/" element={<Landing />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<SignUp />} />
             <Route path="/build/:buildId" element={<BuildEditor />} />
             <Route path="/user/:userId" element={<Profile />} />
           </Routes>

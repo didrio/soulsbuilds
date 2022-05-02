@@ -56,7 +56,7 @@ function Profile() {
   const isCurrentUser = userId && auth?.uid === userId;
 
   return (
-    <FlexGroup
+    <Container
       vertical
     >
       <HeaderContainer
@@ -67,7 +67,7 @@ function Profile() {
         </Header>
       </HeaderContainer>
       {builds.length > 0 ? (
-        <FlexGroup
+        <BuildListContainer
           vertical
         >
           <SubHeader>
@@ -78,7 +78,7 @@ function Profile() {
               builds={builds}
             />
           </BuildsListContainer>
-        </FlexGroup>
+        </BuildListContainer>
       ) : (
         <SubHeader>
           This user has no builds
@@ -93,9 +93,18 @@ function Profile() {
           </Button>
         </NewBuildContainer>
       ) : null}
-    </FlexGroup>
+    </Container>
   );
 }
+
+const Container = styled(FlexGroup)`
+  align-items: center;
+  width: 100%;
+`;
+
+const BuildListContainer = styled(FlexGroup)`
+  width: 95%;
+`;
 
 const HeaderContainer = styled(FlexGroup)`
   align-items: center;

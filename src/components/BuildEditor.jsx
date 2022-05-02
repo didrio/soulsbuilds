@@ -53,6 +53,7 @@ import {
   selectCons,
   selectTals,
   selectWeapons,
+  selectWeaponSkills,
 } from '../store/selectors';
 import {
   updateArc,
@@ -73,6 +74,7 @@ import {
   updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponSkill,
 } from '../store/equipment';
 import { updateSpell } from '../store/spells';
 import { updateTear } from '../store/tears';
@@ -126,6 +128,7 @@ function BuildEditor() {
   const cons = useSelector(selectCons);
   const tals = useSelector(selectTals);
   const weapons = useSelector(selectWeapons);
+  const weaponSkills = useSelector(selectWeaponSkills);
 
   const handleNameChange = (value) => {
     setName(value);
@@ -136,8 +139,8 @@ function BuildEditor() {
   };
 
   const level = useMemo(() => (
-    Math.max((String(Number(arc) + Number(dex) + Number(end) + Number(fai)
-    + Number(int) + Number(mind) + Number(str) + Number(vigor))) - 79, 1)
+    String(Math.max((Number(arc) + Number(dex) + Number(end) + Number(fai)
+    + Number(int) + Number(mind) + Number(str) + Number(vigor)) - 79, 1))
   ), [arc, dex, end, fai, int, mind, str, vigor]);
 
   useEffect(() => {
@@ -174,6 +177,7 @@ function BuildEditor() {
             cons: savedCons = [],
             tals: savedTals = [],
             weapons: savedWeapons = [],
+            weaponSkills: savedWeaponSkills = [],
             spells: savedSpells = [],
             tears: savedTears = [],
             helm: savedHelm,
@@ -231,6 +235,11 @@ function BuildEditor() {
               const id = i + 1;
               dispatch(updateWeapon({ item, id: `weapon${id}` }));
             });
+            savedWeaponSkills.forEach((savedWeaponSkillName, i) => {
+              const item = savedWeaponSkillName;
+              const id = i + 1;
+              dispatch(updateWeaponSkill({ item, id: `weaponSkill${id}` }));
+            });
             dispatch(updateHelm(helmObj));
             dispatch(updateLeg(legObj));
             dispatch(updateChest(chestObj));
@@ -269,6 +278,7 @@ function BuildEditor() {
       cons,
       tals,
       weapons,
+      weaponSkills,
       spells,
       tears,
       arc,

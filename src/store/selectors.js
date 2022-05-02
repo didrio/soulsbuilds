@@ -1,7 +1,9 @@
+/* eslint-disable prefer-destructuring */
 import { createSelector } from '@reduxjs/toolkit';
 import compact from 'lodash/compact';
 
 export const selectEditSlot = (state) => state.app.editSlot;
+export const selectEditSubSlot = (state) => state.app.editSubSlot;
 export const selectSlotType = (state) => state.app.slotType;
 
 export const selectTear1 = (state) => state.tears.tear1;
@@ -154,4 +156,60 @@ export const selectWeapons = createSelector(
     weapon5?.name ?? null,
     weapon6?.name ?? null,
   ]),
+);
+
+export const selectWeaponSkill1 = (state) => state.equipment.weaponSkill1;
+export const selectWeaponSkill2 = (state) => state.equipment.weaponSkill2;
+export const selectWeaponSkill3 = (state) => state.equipment.weaponSkill3;
+export const selectWeaponSkill4 = (state) => state.equipment.weaponSkill4;
+export const selectWeaponSkill5 = (state) => state.equipment.weaponSkill5;
+export const selectWeaponSkill6 = (state) => state.equipment.weaponSkill6;
+export const selectWeaponSkills = createSelector(
+  selectWeaponSkill1,
+  selectWeaponSkill2,
+  selectWeaponSkill3,
+  selectWeaponSkill4,
+  selectWeaponSkill5,
+  selectWeaponSkill6,
+  (weaponSkill1, weaponSkill2, weaponSkill3, weaponSkill4, weaponSkill5, weaponSkill6) => ([
+    weaponSkill1,
+    weaponSkill2,
+    weaponSkill3,
+    weaponSkill4,
+    weaponSkill5,
+    weaponSkill6,
+  ]),
+);
+export const selectEditWeaponSkill = createSelector(
+  selectEditSubSlot,
+  selectWeaponSkills,
+  (editSubSlot, weaponSkills) => {
+    let skill = null;
+    if (!editSubSlot) {
+      return skill;
+    }
+    switch (editSubSlot) {
+      case 'weaponSkill1':
+        skill = weaponSkills[0];
+        break;
+      case 'weaponSkill2':
+        skill = weaponSkills[1];
+        break;
+      case 'weaponSkill3':
+        skill = weaponSkills[2];
+        break;
+      case 'weaponSkill4':
+        skill = weaponSkills[3];
+        break;
+      case 'weaponSkill5':
+        skill = weaponSkills[4];
+        break;
+      case 'weaponSkill6':
+        skill = weaponSkills[5];
+        break;
+      default:
+        break;
+    }
+    return skill;
+  },
 );
