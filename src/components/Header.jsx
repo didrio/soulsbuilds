@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import FlexGroup from './common/FlexGroup';
 import { logout } from '../firebase';
 import useAuth from '../hooks/useAuth';
-import { COLOR_LIGHTEST_GREEN } from '../constants';
+import {
+  COLOR_LIGHTEST_GREEN,
+} from '../constants';
 
 const LINK_FONT_SIZE = '20px';
 

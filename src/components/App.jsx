@@ -121,9 +121,9 @@ function App() {
 }
 
 const HeaderContainer = styled(FlexGroup)`
-  padding: 0px 50px;
   margin-bottom: 40px;
   margin-top: 20px;
+  width: 95%;
 `;
 
 const HiddenContainer = styled(FlexGroup)`
@@ -136,6 +136,7 @@ const HiddenContainer = styled(FlexGroup)`
   padding-left: 20px;
   width: 100%;
   justify-content: center;
+  box-shadow: inset 0 0 5px ${COLOR_DARK_GREEN};
 `;
 
 const Background = styled(FlexGroup)`
@@ -152,6 +153,7 @@ const Container = styled(FlexGroup)`
   padding-top: 10px;
   padding-bottom: 30px;
   box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
+  align-items: center;
 
   @media only screen and (max-width: 1200px) {
     width: 80%;
@@ -168,7 +170,7 @@ const Container = styled(FlexGroup)`
 
 const Content = styled(FlexGroup)`
   flex-direction: column;
-  padding: 0px 50px;
+  width: 100%;
 `;
 
 const ModalContainer = styled(FlexGroup)`

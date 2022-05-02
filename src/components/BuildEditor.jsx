@@ -589,10 +589,12 @@ const Header = styled(FlexGroup)`
 
 const Container = styled(FlexGroup)`
   flex-direction: column;
+  align-items: center;
 `;
 
 const UpperSection = styled(FlexGroup)`
   min-height: 400px;
+  width: 100%;
 
   @media only screen and (max-width: 1100px) {
     flex-direction: column;
@@ -604,7 +606,7 @@ const LowerSection = styled(FlexGroup)`
   justify-content: center;
   margin-bottom: 30px;
   margin-top: 20px;
-  width: 100%;
+  width: 95%;
 `;
 
 const EditorContainer = styled(FlexGroup)`

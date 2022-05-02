@@ -4,6 +4,7 @@ import {
   COLOR_GREEN,
   COLOR_LIGHT_GREEN,
   COLOR_GOLD,
+  COLOR_DARK_GREEN,
 } from '../../constants';
 
 function TextInput({
@@ -41,8 +42,8 @@ const Container = styled.input`
   color: ${COLOR_GOLD};
   font-size: 16px;
   text-align: ${({ centered }) => (centered ? 'center' : 'left')};
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
   font-family: garamond-premier-pro,  serif;
+  box-shadow: inset 0 0 3px ${COLOR_DARK_GREEN};
 `;
 
 TextInput.propTypes = {

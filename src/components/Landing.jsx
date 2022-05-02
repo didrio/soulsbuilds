@@ -8,7 +8,6 @@ import TextInput from './common/TextInput';
 import Chips from './common/Chips';
 import BuildsList from './common/BuildsList';
 import { getBuilds } from '../firebase';
-import { COLOR_LIGHT_GREEN } from '../constants';
 
 const MAX_LEVEL = 713;
 
@@ -79,7 +78,7 @@ function Landing() {
   }, [builds, tags, levelRange]);
 
   return (
-    <FlexGroup
+    <Container
       vertical
     >
       <Filters>
@@ -139,9 +138,15 @@ function Landing() {
           builds={buildResults}
         />
       </Results>
-    </FlexGroup>
+    </Container>
   );
 }
+
+const Container = styled(FlexGroup)`
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+`;
 
 const SubHeader = styled(FlexGroup)`
   font-weight: bold;
@@ -149,16 +154,16 @@ const SubHeader = styled(FlexGroup)`
 `;
 
 const Filters = styled(FlexGroup)`
-  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
-  width: 100%;
   justify-content: space-between;
-  padding-bottom: 15px;
   margin-bottom: 15px;
+  align-items: center;
+  width: 95%;
 `;
 
 const Results = styled(FlexGroup)`
   margin-top: 10px;
   width: 100%;
+  width: 95%;
 `;
 
 const TagContainer = styled(FlexGroup)`
@@ -166,13 +171,13 @@ const TagContainer = styled(FlexGroup)`
 `;
 
 const LevelRangeContainer = styled(FlexGroup)`
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
 `;
 
 const LevelRange = styled(FlexGroup)`
   align-items: center;
   margin-top: 10px;
-  margin-bottom: 20px;
 `;
 
 const LevelRangeInput = styled(FlexGroup)`
