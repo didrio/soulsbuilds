@@ -100,6 +100,12 @@ function Login({ onSubmit }) {
 
 const Container = styled(FlexGroup)`
   align-items: center;
+  justify-content: center;
+
+  @media only screen and (max-width: 800px) {
+    flex-direction: column;
+    margin-top: -10px;
+  }
 `;
 
 const Label = styled(FlexGroup)`
@@ -113,10 +119,19 @@ const Input = styled(FlexGroup)`
   flex-direction: column;
   margin-right: 20px;
   width: 200px;
+
+  @media only screen and (max-width: 800px) {
+    margin-top: 10px;
+  }
 `;
 
 const RegisterButton = styled(Button)`
   margin-bottom: -22px;
+
+  @media only screen and (max-width: 800px) {
+    margin-bottom: 0px;
+    margin-top: 20px;
+  }
 `;
 
 Login.propTypes = {

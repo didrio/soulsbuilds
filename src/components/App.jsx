@@ -137,6 +137,10 @@ const HiddenContainer = styled(FlexGroup)`
   width: 100%;
   justify-content: center;
   box-shadow: inset 0 0 5px ${COLOR_DARK_GREEN};
+
+  @media only screen and (max-width: 800px) {
+    height: ${({ visible }) => (visible ? '300px' : '0px')};
+  }
 `;
 
 const Background = styled(FlexGroup)`

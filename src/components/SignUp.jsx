@@ -134,6 +134,10 @@ function SignUp({ onSubmit }) {
 
 const Container = styled(FlexGroup)`
   align-items: center;
+
+  @media only screen and (max-width: 800px) {
+    flex-direction: column;
+  }
 `;
 
 const Label = styled(FlexGroup)`
@@ -153,10 +157,19 @@ const Input = styled(FlexGroup)`
   flex-direction: column;
   margin-right: 20px;
   width: 200px;
+  
+  @media only screen and (max-width: 800px) {
+    margin-top: 10px;
+  }
 `;
 
 const RegisterButton = styled(Button)`
   margin-bottom: -22px;
+
+  @media only screen and (max-width: 800px) {
+    margin-bottom: 0px;
+    margin-top: 10px;
+  }
 `;
 
 SignUp.propTypes = {

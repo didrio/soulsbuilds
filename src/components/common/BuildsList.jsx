@@ -123,6 +123,7 @@ const Build = styled(FlexGroup)`
   font-weight: bold;
   font-size: 18px;
   margin-bottom: 15px;
+  transition: background-color .1s ease-in-out;
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};

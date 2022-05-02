@@ -75,6 +75,7 @@ const Container = styled(FlexGroup)`
   height: ${({ size }) => (size === null ? SLOT_SIZE : size)};
   width: ${({ size }) => (size === null ? SLOT_SIZE : size)};
   position: relative;
+  transition: background-color .1s ease-in-out;
 
   &::before {
     content: "";
