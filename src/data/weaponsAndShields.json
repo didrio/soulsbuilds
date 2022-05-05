@@ -4479,7 +4479,7 @@
     "type": "Hammer",
     "tier": "F",
     "passive": "Causes blood loss buildup (39)",
-    "imageUrl": "/weapons/Varré's Bouquet .png",
+    "imageUrl": "/weapons/Varré's Bouquet.png",
     "damageType": "Bludgeoning",
     "skill": "Blood Tax",
     "weight": "2",

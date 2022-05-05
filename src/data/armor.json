@@ -6989,11 +6989,11 @@
       "holy": "6.7"
     },
     {
-      "name": "Travelers Clothes",
+      "name": "Traveler's Clothes",
       "type": "Chest",
       "tier": "E",
       "passive": "",
-      "imageUrl": "/armor/Travelers Clothes.png",
+      "imageUrl": "/armor/Traveler's Clothes.png",
       "set": "",
       "weight": "4.1",
       "weightType": "Light Armor",
@@ -7113,24 +7113,6 @@
       "fire": "11.4",
       "light": "11.9",
       "holy": "12.8"
-    },
-    {
-      "name": "Guardian Armor",
-      "type": "Chest",
-      "tier": "F",
-      "passive": "",
-      "imageUrl": "/armor/Guardian Armor.png",
-      "set": "Guardian Set",
-      "weight": "2.9",
-      "weightType": "Light Armor",
-      "physical": "2.7",
-      "slash": "2.5",
-      "strike": "2.5",
-      "pierce": "2.3",
-      "magic": "2.9",
-      "fire": "2.8",
-      "light": "2.9",
-      "holy": "2.9"
     },
     {
       "name": "Official's Attire",
@@ -7495,11 +7477,11 @@
       "holy": "3.2"
     },
     {
-      "name": "All-Knowing Gauntlet",
+      "name": "All-Knowing Gauntlets",
       "type": "Gauntlet",
       "tier": "C",
       "passive": "",
-      "imageUrl": "/armor/All-Knowing Gauntlet.png",
+      "imageUrl": "/armor/All-Knowing Gauntlets.png",
       "set": "All-Knowing Set",
       "weight": "3.5",
       "weightType": "Heavy Armor",
