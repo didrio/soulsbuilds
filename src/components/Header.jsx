@@ -6,6 +6,7 @@ import { logout } from '../firebase';
 import useAuth from '../hooks/useAuth';
 import {
   COLOR_LIGHTEST_GREEN,
+  COLOR_GOLD,
 } from '../constants';
 
 const LINK_FONT_SIZE = '20px';
@@ -91,8 +92,11 @@ const Container = styled(FlexGroup)`
 const LogoContainer = styled(FlexGroup)`
   & > a {
     color: ${COLOR_LIGHTEST_GREEN};
-    font-size: 32px;
+    font-size: 44px;
   }
+
+  font-family: "OptimusPrincepsSemiBold", serif;
+  text-shadow: 0px 0px 7px ${COLOR_GOLD};
 `;
 
 const LogoutContainer = styled(FlexGroup)`

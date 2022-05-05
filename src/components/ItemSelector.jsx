@@ -55,7 +55,7 @@ import spells from '../data/spells.json';
 import tears from '../data/tears.json';
 import skills from '../data/skillsIndexed.json';
 
-const skillsOptions = Object.values(skills).map(({ name }) => name);
+const skillsOptions = Object.values(skills).map(({ name }) => name).sort();
 
 function ItemSelector() {
   const [searchText, setSearchText] = useState('');

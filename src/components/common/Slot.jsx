@@ -103,8 +103,6 @@ function Slot({
     setShowWeaponSkill(false);
   };
 
-  console.log(weaponSkill);
-
   return (
     <Container
       background={background}
