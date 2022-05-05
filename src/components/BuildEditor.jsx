@@ -586,6 +586,12 @@ function BuildEditor() {
   );
 }
 
+const Container = styled(FlexGroup)`
+  flex-direction: column;
+  align-items: center;
+  margin-top: 40px;
+`;
+
 const TitleContainer = styled(FlexGroup)`
   margin-bottom: 50px;
   margin-top: -30px;
@@ -595,11 +601,6 @@ const Header = styled(FlexGroup)`
   color: ${COLOR_LIGHTEST_GREEN};
   font-size: 26px;
   font-weight: bold;
-`;
-
-const Container = styled(FlexGroup)`
-  flex-direction: column;
-  align-items: center;
 `;
 
 const UpperSection = styled(FlexGroup)`
@@ -662,9 +663,13 @@ const NameInputContainer = styled(FlexGroup)`
 `;
 
 const NameContainer = styled(FlexGroup)`
-  font-size: 34px;
+  font-size: 40px;
   justify-content: center;
   margin-top: 10px;
+  margin-bottom: 10px;
+  font-family: "OptimusPrincepsSemiBold", serif;
+  text-shadow: 0px 0px 7px ${COLOR_GOLD};
+  color: ${COLOR_LIGHTEST_GREEN};
 `;
 
 const CommentsHeader = styled(FlexGroup)`
@@ -673,6 +678,7 @@ const CommentsHeader = styled(FlexGroup)`
   margin-bottom: 10px;
   margin-top: 60px;
   color: ${COLOR_LIGHTEST_GREEN};
+  font-weight: bold;
 `;
 
 const DescriptionInputContainer = styled(FlexGroup)`

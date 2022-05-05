@@ -106,7 +106,7 @@ const Container = styled(FlexGroup)`
   height: 34px;
   width: 100%;
   background-color: ${COLOR_DARKER_GREEN};
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 
   & > div {
     border-right: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};

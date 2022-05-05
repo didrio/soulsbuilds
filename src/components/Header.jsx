@@ -7,6 +7,7 @@ import useAuth from '../hooks/useAuth';
 import {
   COLOR_LIGHTEST_GREEN,
   COLOR_GOLD,
+  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
 } from '../constants';
 
 const LINK_FONT_SIZE = '20px';
@@ -87,6 +88,9 @@ const Container = styled(FlexGroup)`
   font-size: 24px;
   font-weight: bold;
   width: 100%;
+  border-bottom: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  padding-bottom: 10px;
+  align-items: flex-end;
 `;
 
 const LogoContainer = styled(FlexGroup)`
