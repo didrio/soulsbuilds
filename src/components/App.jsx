@@ -11,6 +11,7 @@ import ItemSelector from './ItemSelector';
 import SignUp from './SignUp';
 import Login from './Login';
 import Landing from './Landing';
+import GameSelector from './GameSelector';
 import {
   COLOR_DARK_GREEN,
   COLOR_DARKER_GREEN,
@@ -90,6 +91,7 @@ function App() {
         </ModalContainer>
       )}
       <Container>
+        <GameSelector />
         <HeaderContainer>
           <Header
             onShowLogin={handleShowLogin}
