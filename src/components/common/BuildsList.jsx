@@ -42,58 +42,62 @@ function BuildsList({ builds }) {
             </LikesContainer>
           </UpperSection>
           <LowerSection>
-            <Slot
-              background="weapon"
-              disabled
-              item={weaponsAndShields[build?.weapons?.[0]] || null}
-              subItem={build?.weaponSkills?.[0] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="weapon"
-              disabled
-              item={weaponsAndShields[build?.weapons?.[1]] || null}
-              subItem={build?.weaponSkills?.[1] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="shield"
-              disabled
-              item={weaponsAndShields[build?.weapons?.[3]] || null}
-              subItem={build?.weaponSkills?.[3] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="shield"
-              disabled
-              item={weaponsAndShields[build?.weapons?.[4]] || null}
-              subItem={build?.weaponSkills?.[4] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="helm"
-              disabled
-              item={armorData.helms[build?.helm] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="chest"
-              disabled
-              item={armorData.chests[build?.chest] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="gauntlet"
-              disabled
-              item={armorData.gauntlets[build?.gauntlet] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
-            <Slot
-              background="leg"
-              disabled
-              item={armorData.legs[build?.leg] || null}
-              type={SLOT_TYPE_WEAPON}
-            />
+            <EquipmentContainer>
+              <Slot
+                background="weapon"
+                disabled
+                item={weaponsAndShields[build?.weapons?.[0]] || null}
+                subItem={build?.weaponSkills?.[0] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+              <Slot
+                background="weapon"
+                disabled
+                item={weaponsAndShields[build?.weapons?.[1]] || null}
+                subItem={build?.weaponSkills?.[1] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+              <Slot
+                background="shield"
+                disabled
+                item={weaponsAndShields[build?.weapons?.[3]] || null}
+                subItem={build?.weaponSkills?.[3] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+              <Slot
+                background="shield"
+                disabled
+                item={weaponsAndShields[build?.weapons?.[4]] || null}
+                subItem={build?.weaponSkills?.[4] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+            </EquipmentContainer>
+            <GearContainer>
+              <Slot
+                background="helm"
+                disabled
+                item={armorData.helms[build?.helm] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+              <Slot
+                background="chest"
+                disabled
+                item={armorData.chests[build?.chest] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+              <Slot
+                background="gauntlet"
+                disabled
+                item={armorData.gauntlets[build?.gauntlet] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+              <Slot
+                background="leg"
+                disabled
+                item={armorData.legs[build?.leg] || null}
+                type={SLOT_TYPE_WEAPON}
+              />
+            </GearContainer>
           </LowerSection>
           {build.tags.length ? (
             <TagsSection>
@@ -137,9 +141,19 @@ const LowerSection = styled(FlexGroup)`
   justify-content: center;
   height: 80px;
   margin: 10px 0;
+`;
+
+const EquipmentContainer = styled(FlexGroup)`
+  border-right: 1px solid ${COLOR_LIGHT_GREEN};
 
   & > div {
-    margin-right: 10px;
+    margin-right: 20px;
+  }
+`;
+
+const GearContainer = styled(FlexGroup)`
+  & > div {
+    margin-left: 20px;
   }
 `;
 
