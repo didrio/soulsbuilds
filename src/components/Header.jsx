@@ -10,7 +10,7 @@ import {
   COLOR_LIGHTEST_GREEN_LOW_OPACITY,
 } from '../constants';
 
-const FONT_SIZE_LINK = '22px';
+const FONT_SIZE_LINK = '20px';
 
 function Header({
   onShowLogin,
@@ -101,12 +101,18 @@ const LogoContainer = styled(FlexGroup)`
 
   font-family: "OptimusPrincepsSemiBold", serif;
   text-shadow: 0px 0px 7px ${COLOR_GOLD};
+
+  &:hover {
+    text-shadow: 0px 0px 11px ${COLOR_GOLD};
+  }
+
+  transition: text-shadow ease-in-out .1s;
 `;
 
 const LogoutContainer = styled(FlexGroup)`
   cursor: pointer;
   font-size: ${FONT_SIZE_LINK};
-  font-weight: normal;
+  font-weight: bold;
 
   &:hover {
     color: ${COLOR_LIGHTEST_GREEN};
@@ -117,7 +123,7 @@ const LoginContainer = styled(FlexGroup)`
   & > a {
     margin-left: 25px;
     font-size: ${FONT_SIZE_LINK};
-    font-weight: normal;
+    font-weight: bold;
   }
 `;
 
@@ -125,7 +131,7 @@ const LoginClicker = styled(FlexGroup)`
   cursor: pointer;
   margin-left: 25px;
   font-size: ${FONT_SIZE_LINK};
-  font-weight: normal;
+  font-weight: bold;
 
   &:hover {
     color: ${COLOR_LIGHTEST_GREEN};
@@ -134,8 +140,8 @@ const LoginClicker = styled(FlexGroup)`
 
 const ProfileContainer = styled(LogoutContainer)`
   margin-right: 20px;
-  font-weight: normal;
-  font-size: 22px;
+  font-size: ${FONT_SIZE_LINK};
+  font-weight: bold;
 `;
 
 export default Header;

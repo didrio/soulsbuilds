@@ -149,7 +149,6 @@ const Container = styled(FlexGroup)`
 `;
 
 const SubHeader = styled(FlexGroup)`
-  font-weight: bold;
   font-size: 20px;
 `;
 

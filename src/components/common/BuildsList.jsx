@@ -160,9 +160,10 @@ const GearContainer = styled(FlexGroup)`
 const UpperSection = styled(FlexGroup)`
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0px;
+  padding: 10px 0px;
   width: 100%;
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: bold;
   border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
 `;
 
@@ -181,7 +182,7 @@ const NameContainer = styled(FlexGroup)`
   justify-content: center;
   font-size: 20px;
   font-family: "OptimusPrincepsSemiBold", serif;
-  text-shadow: 0px 0px 7px ${COLOR_GOLD};
+  text-shadow: 0px 0px 3px ${COLOR_GOLD};
   color: ${COLOR_LIGHTEST_GREEN};
 `;
 

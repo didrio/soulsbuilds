@@ -667,7 +667,6 @@ const TitleContainer = styled(FlexGroup)`
 const Header = styled(FlexGroup)`
   color: ${COLOR_LIGHTEST_GREEN};
   font-size: 26px;
-  // font-weight: bold;
 `;
 
 const UpperSection = styled(FlexGroup)`
@@ -736,7 +735,7 @@ const NameContainer = styled(FlexGroup)`
   margin-top: 10px;
   margin-bottom: 10px;
   font-family: "OptimusPrincepsSemiBold", serif;
-  text-shadow: 0px 0px 7px ${COLOR_GOLD};
+  text-shadow: 0px 0px 4px ${COLOR_GOLD};
   color: ${COLOR_LIGHTEST_GREEN};
 `;
 
