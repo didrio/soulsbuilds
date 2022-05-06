@@ -31,15 +31,15 @@ function BuildsList({ builds }) {
           vertical
         >
           <UpperSection>
-            <LevelContainer>
-              {`Level ${build.level}`}
-            </LevelContainer>
-            <NameContainer>
-              {build.name}
-            </NameContainer>
             <LikesContainer>
               {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
             </LikesContainer>
+            <NameContainer>
+              {build.name}
+            </NameContainer>
+            <LevelContainer>
+              {`Level ${build.level}`}
+            </LevelContainer>
           </UpperSection>
           <LowerSection>
             <EquipmentContainer>
@@ -168,12 +168,12 @@ const UpperSection = styled(FlexGroup)`
 
 const LevelContainer = styled(FlexGroup)`
   width: 25%;
-  justify-content: flex-start;
+  justify-content: flex-end;
 `;
 
 const LikesContainer = styled(FlexGroup)`
   width: 25%;
-  justify-content: flex-end;
+  justify-content: flex-start;
 `;
 
 const NameContainer = styled(FlexGroup)`

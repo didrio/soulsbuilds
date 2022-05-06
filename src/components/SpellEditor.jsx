@@ -162,11 +162,12 @@ const HeaderContainer = styled(FlexGroup)`
 const Header = styled.h2`
   color: ${COLOR_LIGHTEST_GREEN};
   margin-bottom: 20px;
-  font-size: 26px;
+  font-size: 28px;
+  font-weight: normal;
 `;
 
 const Count = styled(FlexGroup)`
-  font-weight: bold;
+  font-size: 18px;
   margin-bottom: 20px;
   justify-content: center;
 `;

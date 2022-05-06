@@ -667,7 +667,7 @@ const TitleContainer = styled(FlexGroup)`
 const Header = styled(FlexGroup)`
   color: ${COLOR_LIGHTEST_GREEN};
   font-size: 26px;
-  font-weight: bold;
+  // font-weight: bold;
 `;
 
 const UpperSection = styled(FlexGroup)`
@@ -742,7 +742,6 @@ const NameContainer = styled(FlexGroup)`
 
 const TagLabel = styled(FlexGroup)`
   font-size: 18px;
-  font-weight: bold;
   color: ${COLOR_LIGHTEST_GREEN};
   margin-right: 10px;
 `;
@@ -885,6 +884,7 @@ const SaveCommentContainer = styled(FlexGroup)`
 const CommentTitleContainer = styled(FlexGroup)`
   font-size: 24px;
   margin-bottom: 10px;
+  color: ${COLOR_LIGHTEST_GREEN};
 `;
 
 const UserCommentsContainer = styled(FlexGroup)`

@@ -57,7 +57,8 @@ const HeaderContainer = styled(FlexGroup)`
 const Header = styled.h2`
   color: ${COLOR_LIGHTEST_GREEN};
   margin-bottom: 20px;
-  font-size: 26px;
+  font-size: 28px;
+  font-weight: normal;
 `;
 
 const SlotContainer = styled(FlexGroup)`
