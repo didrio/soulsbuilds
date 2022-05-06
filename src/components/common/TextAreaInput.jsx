@@ -41,6 +41,7 @@ const Container = styled.textarea`
   text-align: ${({ centered }) => (centered ? 'center' : 'left')};
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
   font-family: garamond-premier-pro,  serif;
+  resize: none;
 `;
 
 TextAreaInput.propTypes = {

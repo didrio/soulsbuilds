@@ -33,6 +33,7 @@ import {
   COLOR_GOLD,
   COLOR_LIGHT_GREEN,
   COLOR_LIGHTEST_GREEN,
+  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
 } from '../constants';
 import {
   selectArc,
@@ -95,6 +96,7 @@ function BuildEditor() {
   const [likes, setLikes] = useState(0);
   const [loading, setLoading] = useState(true);
   const [saveLoading, setSaveLoading] = useState(false);
+  const [saveCommentLoading, setSaveCommentLoading] = useState(false);
   const [buildId, setBuildId] = useState(null);
   const [editable, setEditable] = useState(false);
   const [handlingLike, setHandlingLike] = useState(false);
@@ -342,11 +344,15 @@ function BuildEditor() {
     setCommentText(value);
   };
 
+  const isLoggedIn = auth && auth?.uid && loggedInUser;
+
   const handleSaveComment = async () => {
-    if (auth && auth?.uid && loggedInUser) {
+    if (isLoggedIn) {
+      setSaveCommentLoading(true);
       await addComment(auth.uid, buildId, commentText);
       setCommentText('');
       window.location.reload();
+      setSaveCommentLoading(false);
     }
   };
 
@@ -485,31 +491,35 @@ function BuildEditor() {
       <LowerSection
         vertical
       >
-        {editable ? (
-          <Header>
-            Description
-          </Header>
+        {description.length ? (
+          <FlexGroup
+            vertical
+          >
+            <Header>
+              Description
+            </Header>
+            <DescriptionInputContainer>
+              {editable ? (
+                <StyledMarkdownEditor
+                  height={300}
+                  onChange={handleDescriptionChange}
+                  preview="edit"
+                  previewOptions={{
+                    rehypePlugins: [[rehypeSanitize]],
+                  }}
+                  value={description}
+                />
+              ) : (
+                <DescriptionContainer>
+                  <StyledMarkdownPreview
+                    rehypePlugins={[[rehypeSanitize]]}
+                    source={description}
+                  />
+                </DescriptionContainer>
+              )}
+            </DescriptionInputContainer>
+          </FlexGroup>
         ) : null}
-        <DescriptionInputContainer>
-          {editable ? (
-            <StyledMarkdownEditor
-              height={300}
-              onChange={handleDescriptionChange}
-              preview="edit"
-              previewOptions={{
-                rehypePlugins: [[rehypeSanitize]],
-              }}
-              value={description}
-            />
-          ) : (
-            <DescriptionContainer>
-              <StyledMarkdownPreview
-                rehypePlugins={[[rehypeSanitize]]}
-                source={description}
-              />
-            </DescriptionContainer>
-          )}
-        </DescriptionInputContainer>
         {editable ? (
           <SaveContainer>
             {saveLoading ? (
@@ -518,6 +528,7 @@ function BuildEditor() {
               />
             ) : (
               <Button
+                disabled={saveLoading || !isLoggedIn}
                 onClick={handleSave}
               >
                 Save
@@ -525,61 +536,75 @@ function BuildEditor() {
             )}
           </SaveContainer>
         ) : null}
-        {(editable && tags.length > 0) ? null : (
-          <TagDisplay>
-            {tags.map((tag) => (
-              <Tag
-                key={tag}
-              >
-                {tag}
-              </Tag>
-            ))}
-          </TagDisplay>
+        {(editable || tags.length <= 0) ? null : (
+          <TagViewContainer>
+            <TagLabel>
+              Tags:
+            </TagLabel>
+            <TagDisplay>
+              {tags.map((tag) => (
+                <Tag
+                  key={tag}
+                >
+                  {tag}
+                </Tag>
+              ))}
+            </TagDisplay>
+          </TagViewContainer>
         )}
-        <CommentsContainer
-          vertical
-        >
-          <CommentsHeader>
-            Comments
-          </CommentsHeader>
-          <UserCommentsContainer
-            vertical
-          >
-            {sortedComments.map(({ comment, user }) => (
-              <UserCommentContainer
-                key={comment}
+        <CommentsContainer>
+          <CommentsView>
+            <CommentTitleContainer>
+              Comments
+            </CommentTitleContainer>
+            {sortedComments.length ? (
+              <UserCommentsContainer
                 vertical
               >
-                <UserContainer>
-                  <Link
-                    to={`/user/${user}`}
+                {sortedComments.map(({ comment, user }) => (
+                  <UserCommentContainer
+                    key={comment}
+                    vertical
                   >
-                    {commentUsers?.[user]?.name}
-                  </Link>
-                </UserContainer>
-                <FlexGroup>
-                  {comment}
-                </FlexGroup>
-              </UserCommentContainer>
-            ))}
-          </UserCommentsContainer>
-          <PostCommentContainer>
-            Post a comment
-          </PostCommentContainer>
-          <CommentTextAreaContainer>
-            <TextAreaInput
-              onChange={handleChangeComment}
-              value={commentText}
-            />
-          </CommentTextAreaContainer>
-          <SaveCommentContainer>
-            <Button
-              disabled={!commentText}
-              onClick={handleSaveComment}
-            >
-              Post
-            </Button>
-          </SaveCommentContainer>
+                    <UserContainer>
+                      <Link
+                        to={`/user/${user}`}
+                      >
+                        {commentUsers?.[user]?.name}
+                      </Link>
+                    </UserContainer>
+                    <FlexGroup>
+                      {comment}
+                    </FlexGroup>
+                  </UserCommentContainer>
+                ))}
+              </UserCommentsContainer>
+            ) : (
+              <NoCommentsContainer>
+                None for this build
+              </NoCommentsContainer>
+            )}
+          </CommentsView>
+          <CommentsPost>
+            <CommentTitleContainer>
+              Post a comment
+            </CommentTitleContainer>
+            <CommentTextAreaContainer>
+              <TextAreaInput
+                disabled={!isLoggedIn}
+                onChange={handleChangeComment}
+                value={commentText}
+              />
+            </CommentTextAreaContainer>
+            <SaveCommentContainer>
+              <Button
+                disabled={!commentText || saveCommentLoading || !isLoggedIn}
+                onClick={handleSaveComment}
+              >
+                Post
+              </Button>
+            </SaveCommentContainer>
+          </CommentsPost>
         </CommentsContainer>
       </LowerSection>
     </Container>
@@ -589,12 +614,10 @@ function BuildEditor() {
 const Container = styled(FlexGroup)`
   flex-direction: column;
   align-items: center;
-  margin-top: 40px;
 `;
 
 const TitleContainer = styled(FlexGroup)`
-  margin-bottom: 50px;
-  margin-top: -30px;
+  margin-bottom: 30px;
 `;
 
 const Header = styled(FlexGroup)`
@@ -613,7 +636,7 @@ const UpperSection = styled(FlexGroup)`
 `;
 
 const LowerSection = styled(FlexGroup)`
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   margin-bottom: 30px;
   margin-top: 20px;
@@ -672,13 +695,11 @@ const NameContainer = styled(FlexGroup)`
   color: ${COLOR_LIGHTEST_GREEN};
 `;
 
-const CommentsHeader = styled(FlexGroup)`
-  font-size: 34px;
-  justify-content: center;
-  margin-bottom: 10px;
-  margin-top: 60px;
-  color: ${COLOR_LIGHTEST_GREEN};
+const TagLabel = styled(FlexGroup)`
+  font-size: 18px;
   font-weight: bold;
+  color: ${COLOR_LIGHTEST_GREEN};
+  margin-right: 10px;
 `;
 
 const DescriptionInputContainer = styled(FlexGroup)`
@@ -686,9 +707,9 @@ const DescriptionInputContainer = styled(FlexGroup)`
   width: 100%;
 `;
 
-const DescriptionContainer = styled.h2`
-  margin: 0;
-  padding: 0;
+const DescriptionContainer = styled(FlexGroup)`
+  flex-direction: column;
+  margin-bottom: 25px;
 `;
 
 const StyledMarkdownEditor = styled(MDEditor)`
@@ -716,9 +737,10 @@ const StyledMarkdownEditor = styled(MDEditor)`
 `;
 
 const StyledMarkdownPreview = styled(MDEditor.Markdown)`
-  background-color: ${COLOR_DARK_GREEN};
-  color: ${COLOR_GOLD};
-  font-family: garamond-premier-pro,  serif;
+  background-color: ${COLOR_DARK_GREEN} !important;
+  color: ${COLOR_GOLD} !important;
+  font-family: garamond-premier-pro,  serif !important;
+  font-size: 18px !important;
 `;
 
 const LeftColumn = styled(FlexGroup)`
@@ -765,7 +787,6 @@ const Tag = styled(FlexGroup)`
   align-items: center;
   justify-content: center;
   margin-right: 10px;
-  margin-top: 10px;
   height: 30px;
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
   box-sizing: border-box;
@@ -775,11 +796,17 @@ const Tag = styled(FlexGroup)`
 
 const TagDisplay = styled(FlexGroup)`
   justify-content: center;
+`;
+
+const TagViewContainer = styled(FlexGroup)`
+  align-items: center;
   margin-bottom: 20px;
+  margin-top: 10px;
 `;
 
 const LikesContainer = styled(FlexGroup)`
   justify-content: center;
+  margin-top: 15px;
 `;
 
 const LikesTag = styled(Tag)`
@@ -790,33 +817,30 @@ const LikesTag = styled(Tag)`
   }
 `;
 
-const CommentsContainer = styled(FlexGroup)`
-  width: 100%;
-`;
-
 const SaveCommentContainer = styled(FlexGroup)`
   justify-content: center;
   margin-top: 20px;
 `;
 
-const PostCommentContainer = styled(FlexGroup)`
-  font-size: 18px;
+const CommentTitleContainer = styled(FlexGroup)`
+  font-size: 24px;
   margin-bottom: 10px;
-`;
-
-const CommentTextAreaContainer = styled(FlexGroup)`
-  height: 100px;
 `;
 
 const UserCommentsContainer = styled(FlexGroup)`
   margin-bottom: 20px;
+  margin-top: 15px;
 `;
 
 const UserCommentContainer = styled(FlexGroup)`
-  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
+  border-bottom: 1px dashed ${COLOR_LIGHT_GREEN};
   padding-bottom: 10px;
   margin-bottom: 20px;
   font-size: 18px;
+
+  &:last-child {
+    border: none;
+  }
 `;
 
 const UserContainer = styled(FlexGroup)`
@@ -825,6 +849,47 @@ const UserContainer = styled(FlexGroup)`
   font-weight: bold;
   font-size: 18px;
   margin-bottom: 10px;
+`;
+
+const CommentTextAreaContainer = styled(FlexGroup)`
+  height: 100px;
+  width: 100%;
+  margin-top: 15px;
+`;
+
+const NoCommentsContainer = styled(FlexGroup)`
+  font-size: 18px;
+`;
+
+const CommentsContainer = styled(FlexGroup)`
+  width: 100%;
+  border-top: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  padding-top: 20px;
+
+  @media only screen and (max-width: 800px) {
+    flex-direction: column;
+  }
+`;
+
+const CommentsPost = styled(FlexGroup)`
+  align-items: flex-start;
+  flex-direction: column;
+  width: 40%;
+  padding-left: 30px;
+
+  @media only screen and (max-width: 800px) {
+    width: 100%;
+    padding-left: 0px;
+  }
+`;
+
+const CommentsView = styled(FlexGroup)`
+  flex-direction: column;
+  width: 60%;
+
+  @media only screen and (max-width: 800px) {
+    width: 100%;
+  }
 `;
 
 export default BuildEditor;
