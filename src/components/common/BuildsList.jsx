@@ -6,6 +6,8 @@ import Slot from './Slot';
 import {
   COLOR_GREEN,
   COLOR_LIGHT_GREEN,
+  COLOR_GOLD,
+  COLOR_LIGHTEST_GREEN,
   SLOT_TYPE_WEAPON,
 } from '../../constants';
 import weaponsAndShields from '../../data/weaponsAndShields.json';
@@ -29,30 +31,15 @@ function BuildsList({ builds }) {
           vertical
         >
           <UpperSection>
+            <LevelContainer>
+              {`Level ${build.level}`}
+            </LevelContainer>
             <NameContainer>
-              <FlexGroup>
-                {build.name}
-              </FlexGroup>
-              {build.tags ? (
-                <TagsContainer>
-                  {build.tags.map((tag) => (
-                    <Tag
-                      key={tag}
-                    >
-                      {tag}
-                    </Tag>
-                  ))}
-                </TagsContainer>
-              ) : null}
+              {build.name}
             </NameContainer>
-            <DetailsContainer>
-              <LevelContainer>
-                {`Level ${build.level}`}
-              </LevelContainer>
-              <Chip>
-                {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
-              </Chip>
-            </DetailsContainer>
+            <LikesContainer>
+              {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
+            </LikesContainer>
           </UpperSection>
           <LowerSection>
             <Slot
@@ -108,6 +95,17 @@ function BuildsList({ builds }) {
               type={SLOT_TYPE_WEAPON}
             />
           </LowerSection>
+          {build.tags.length ? (
+            <TagsSection>
+              {build.tags.map((tag) => (
+                <Tag
+                  key={tag}
+                >
+                  {tag}
+                </Tag>
+              ))}
+            </TagsSection>
+          ) : null}
         </Build>
       ))}
     </Container>
@@ -134,15 +132,9 @@ const Build = styled(FlexGroup)`
   }
 `;
 
-const UpperSection = styled(FlexGroup)`
-  align-items: center;
-  justify-content: space-between;
-  height: 50px;
-  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
-`;
-
 const LowerSection = styled(FlexGroup)`
   align-items: center;
+  justify-content: center;
   height: 80px;
   margin: 10px 0;
 
@@ -151,31 +143,38 @@ const LowerSection = styled(FlexGroup)`
   }
 `;
 
-const Chip = styled(FlexGroup)`
-  background-color: ${COLOR_GREEN};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
+const UpperSection = styled(FlexGroup)`
   align-items: center;
-  justify-content: center;
-  height: 30px;
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
-  cursor: pointer;
-  box-sizing: border-box;
-  padding: 0 10px;
-  font-size: 14px;
-`;
-
-const DetailsContainer = styled(FlexGroup)`
-  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0px;
+  width: 100%;
+  font-size: 16px;
+  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
 `;
 
 const LevelContainer = styled(FlexGroup)`
-  font-size: 16px;
-  margin-right: 20px;
-  margin-bottom: -3px;
+  width: 25%;
+  justify-content: flex-start;
 `;
 
-const TagsContainer = styled(FlexGroup)`
-  margin-left: 20px;
+const LikesContainer = styled(FlexGroup)`
+  width: 25%;
+  justify-content: flex-end;
+`;
+
+const NameContainer = styled(FlexGroup)`
+  width: 50%;
+  justify-content: center;
+  font-size: 20px;
+  font-family: "OptimusPrincepsSemiBold", serif;
+  text-shadow: 0px 0px 7px ${COLOR_GOLD};
+  color: ${COLOR_LIGHTEST_GREEN};
+`;
+
+const TagsSection = styled(FlexGroup)`
+  justify-content: center;
+  padding: 10px 0;
+  border-top: 1px solid ${COLOR_LIGHT_GREEN};
 `;
 
 const Tag = styled(FlexGroup)`
@@ -189,10 +188,6 @@ const Tag = styled(FlexGroup)`
   box-sizing: border-box;
   padding: 0 10px;
   font-size: 14px;
-`;
-
-const NameContainer = styled(FlexGroup)`
-  align-items: center;
 `;
 
 BuildsList.propTypes = {

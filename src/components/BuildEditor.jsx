@@ -1,4 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import {
+  useState, useEffect, useMemo, useCallback,
+} from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch, batch } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -142,7 +144,7 @@ function BuildEditor() {
   const weapons = useSelector(selectWeapons);
   const weaponSkills = useSelector(selectWeaponSkills);
 
-  useEffect(() => {
+  const clearState = useCallback(() => {
     batch(() => {
       dispatch(clearApp());
       dispatch(clearEquipment());
@@ -151,6 +153,10 @@ function BuildEditor() {
       dispatch(clearTears());
     });
   }, [dispatch]);
+
+  useEffect(() => {
+    clearState();
+  }, [dispatch, clearState]);
 
   const handleNameChange = (value) => {
     setName(value);
@@ -177,6 +183,7 @@ function BuildEditor() {
 
   useEffect(() => {
     if (buildId !== null && buildId !== 'new' && loading) {
+      clearState();
       const run = async () => {
         const data = await getBuild(buildId);
         if (data) {
@@ -282,7 +289,7 @@ function BuildEditor() {
     } else if (buildId === 'new') {
       setLoading(false);
     }
-  }, [buildId, dispatch, loading, auth]);
+  }, [buildId, dispatch, loading, auth, clearState]);
 
   const handleSave = async () => {
     setSaveLoading(true);
@@ -318,6 +325,8 @@ function BuildEditor() {
     if (auth?.uid) {
       const { success, savedBuildId } = await saveBuild(buildId, build, newId, auth?.uid);
       if (success && savedBuildId) {
+        setBuildId(savedBuildId);
+        setLoading(true);
         navigate(`/build/${savedBuildId}`);
       }
     }
@@ -514,35 +523,36 @@ function BuildEditor() {
       <LowerSection
         vertical
       >
-        {description.length ? (
-          <DescriptionSectionContainer
-            vertical
-          >
+        <DescriptionSectionContainer
+          vertical
+        >
+          {(editable || description.length) ? (
             <Header>
               Description
             </Header>
-            <DescriptionInputContainer>
-              {editable ? (
-                <StyledMarkdownEditor
-                  height={300}
-                  onChange={handleDescriptionChange}
-                  preview="edit"
-                  previewOptions={{
-                    rehypePlugins: [[rehypeSanitize]],
-                  }}
-                  value={description}
+          ) : null}
+          <DescriptionInputContainer>
+            {editable ? (
+              <StyledMarkdownEditor
+                height={300}
+                onChange={handleDescriptionChange}
+                preview="edit"
+                previewOptions={{
+                  rehypePlugins: [[rehypeSanitize]],
+                }}
+                value={description}
+              />
+            ) : null}
+            {!editable && description.length ? (
+              <DescriptionContainer>
+                <StyledMarkdownPreview
+                  rehypePlugins={[[rehypeSanitize]]}
+                  source={description}
                 />
-              ) : (
-                <DescriptionContainer>
-                  <StyledMarkdownPreview
-                    rehypePlugins={[[rehypeSanitize]]}
-                    source={description}
-                  />
-                </DescriptionContainer>
-              )}
-            </DescriptionInputContainer>
-          </DescriptionSectionContainer>
-        ) : null}
+              </DescriptionContainer>
+            ) : null}
+          </DescriptionInputContainer>
+        </DescriptionSectionContainer>
         {(editable || tags.length <= 0) ? null : (
           <TagViewContainer>
             <TagLabel>
@@ -753,6 +763,10 @@ const StyledMarkdownEditor = styled(MDEditor)`
   max-width: 100%;
   width: 100%;
   font-family: garamond-premier-pro,  serif;
+
+  & .w-md-editor-text-input {
+    font-size: 20px;
+  }
 
   & .w-md-editor-toolbar {
     background-color: ${COLOR_DARKER_GREEN};
