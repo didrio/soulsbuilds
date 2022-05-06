@@ -26,6 +26,7 @@ import weaponsAndShieldsData from '../data/weaponsAndShields.json';
 import spellsData from '../data/spells.json';
 import talismansData from '../data/talismans.json';
 import tearsData from '../data/tears.json';
+import { clearApp } from '../store/app';
 import {
   COLOR_DARK_GREEN,
   COLOR_DARKER_GREEN,
@@ -57,6 +58,7 @@ import {
   selectWeaponSkills,
 } from '../store/selectors';
 import {
+  clearStats,
   updateArc,
   updateDex,
   updateEnd,
@@ -67,6 +69,7 @@ import {
   updateVigor,
 } from '../store/stats';
 import {
+  clearEquipment,
   updateHelm,
   updateLeg,
   updateChest,
@@ -77,8 +80,14 @@ import {
   updateWeapon,
   updateWeaponSkill,
 } from '../store/equipment';
-import { updateSpell } from '../store/spells';
-import { updateTear } from '../store/tears';
+import {
+  clearSpells,
+  updateSpell,
+} from '../store/spells';
+import {
+  clearTears,
+  updateTear,
+} from '../store/tears';
 import {
   addComment,
   getBuild,
@@ -105,6 +114,7 @@ function BuildEditor() {
   const [comments, setComments] = useState([]);
   const [commentUsers, setCommentUsers] = useState({});
   const [buildUser, setBuildUser] = useState({});
+  const [userOwnsBuild, setUserOwnsBuild] = useState(false);
 
   const auth = useAuth();
   const loggedInUser = useUser();
@@ -131,6 +141,16 @@ function BuildEditor() {
   const tals = useSelector(selectTals);
   const weapons = useSelector(selectWeapons);
   const weaponSkills = useSelector(selectWeaponSkills);
+
+  useEffect(() => {
+    batch(() => {
+      dispatch(clearApp());
+      dispatch(clearEquipment());
+      dispatch(clearSpells());
+      dispatch(clearStats());
+      dispatch(clearTears());
+    });
+  }, [dispatch]);
 
   const handleNameChange = (value) => {
     setName(value);
@@ -188,9 +208,7 @@ function BuildEditor() {
             gauntlet: savedGauntlet,
           } = data;
           if (user === auth?.uid) {
-            setEditable(true);
-          } else {
-            setEditable(false);
+            setUserOwnsBuild(true);
           }
           setName(savedName);
           setDescription(savedDescription);
@@ -303,6 +321,7 @@ function BuildEditor() {
         navigate(`/build/${savedBuildId}`);
       }
     }
+    setEditable(false);
     setSaveLoading(false);
   };
 
@@ -378,6 +397,10 @@ function BuildEditor() {
     if (buildUser.id) {
       navigate(`/user/${buildUser.id}`);
     }
+  };
+
+  const handleEdit = () => {
+    setEditable(true);
   };
 
   if (auth === null) {
@@ -492,7 +515,7 @@ function BuildEditor() {
         vertical
       >
         {description.length ? (
-          <FlexGroup
+          <DescriptionSectionContainer
             vertical
           >
             <Header>
@@ -518,23 +541,7 @@ function BuildEditor() {
                 </DescriptionContainer>
               )}
             </DescriptionInputContainer>
-          </FlexGroup>
-        ) : null}
-        {editable ? (
-          <SaveContainer>
-            {saveLoading ? (
-              <LoadingAnimation
-                size={30}
-              />
-            ) : (
-              <Button
-                disabled={saveLoading || !isLoggedIn}
-                onClick={handleSave}
-              >
-                Save
-              </Button>
-            )}
-          </SaveContainer>
+          </DescriptionSectionContainer>
         ) : null}
         {(editable || tags.length <= 0) ? null : (
           <TagViewContainer>
@@ -552,60 +559,87 @@ function BuildEditor() {
             </TagDisplay>
           </TagViewContainer>
         )}
-        <CommentsContainer>
-          <CommentsView>
-            <CommentTitleContainer>
-              Comments
-            </CommentTitleContainer>
-            {sortedComments.length ? (
-              <UserCommentsContainer
-                vertical
-              >
-                {sortedComments.map(({ comment, user }) => (
-                  <UserCommentContainer
-                    key={comment}
-                    vertical
-                  >
-                    <UserContainer>
-                      <Link
-                        to={`/user/${user}`}
-                      >
-                        {commentUsers?.[user]?.name}
-                      </Link>
-                    </UserContainer>
-                    <FlexGroup>
-                      {comment}
-                    </FlexGroup>
-                  </UserCommentContainer>
-                ))}
-              </UserCommentsContainer>
-            ) : (
-              <NoCommentsContainer>
-                None for this build
-              </NoCommentsContainer>
-            )}
-          </CommentsView>
-          <CommentsPost>
-            <CommentTitleContainer>
-              Post a comment
-            </CommentTitleContainer>
-            <CommentTextAreaContainer>
-              <TextAreaInput
-                disabled={!isLoggedIn}
-                onChange={handleChangeComment}
-                value={commentText}
+        {editable ? (
+          <SaveContainer>
+            {saveLoading ? (
+              <LoadingAnimation
+                size={30}
               />
-            </CommentTextAreaContainer>
-            <SaveCommentContainer>
+            ) : (
               <Button
-                disabled={!commentText || saveCommentLoading || !isLoggedIn}
-                onClick={handleSaveComment}
+                disabled={saveLoading || !isLoggedIn}
+                onClick={handleSave}
               >
-                Post
+                Save
               </Button>
-            </SaveCommentContainer>
-          </CommentsPost>
-        </CommentsContainer>
+            )}
+          </SaveContainer>
+        ) : null}
+        {(!editable && userOwnsBuild) ? (
+          <EditContainer>
+            <Button
+              onClick={handleEdit}
+            >
+              Edit
+            </Button>
+          </EditContainer>
+        ) : null}
+        {editable ? null : (
+          <CommentsContainer>
+            <CommentsView>
+              <CommentTitleContainer>
+                Comments
+              </CommentTitleContainer>
+              {sortedComments.length ? (
+                <UserCommentsContainer
+                  vertical
+                >
+                  {sortedComments.map(({ comment, user, date }) => (
+                    <UserCommentContainer
+                      key={`${comment}${date}`}
+                      vertical
+                    >
+                      <UserContainer>
+                        <Link
+                          to={`/user/${user}`}
+                        >
+                          {commentUsers?.[user]?.name}
+                        </Link>
+                      </UserContainer>
+                      <FlexGroup>
+                        {comment}
+                      </FlexGroup>
+                    </UserCommentContainer>
+                  ))}
+                </UserCommentsContainer>
+              ) : (
+                <NoCommentsContainer>
+                  None for this build
+                </NoCommentsContainer>
+              )}
+            </CommentsView>
+            <CommentsPost>
+              <CommentTitleContainer>
+                Post a comment
+              </CommentTitleContainer>
+              <CommentTextAreaContainer>
+                <TextAreaInput
+                  disabled={!isLoggedIn}
+                  onChange={handleChangeComment}
+                  value={commentText}
+                />
+              </CommentTextAreaContainer>
+              <SaveCommentContainer>
+                <Button
+                  disabled={!commentText || saveCommentLoading || !isLoggedIn}
+                  onClick={handleSaveComment}
+                >
+                  Post
+                </Button>
+              </SaveCommentContainer>
+            </CommentsPost>
+          </CommentsContainer>
+        )}
       </LowerSection>
     </Container>
   );
@@ -675,6 +709,7 @@ const LoadingContainer = styled(FlexGroup)`
 
 const NameInputContainer = styled(FlexGroup)`
   width: 400px;
+  margin-top: 5px;
 
   @media only screen and (max-width: 1400px) {
     width: 300px;
@@ -769,6 +804,17 @@ const SaveContainer = styled(EditorContainer)`
   justify-content: center;
   margin-top: 50px;
   margin-bottom: -10px;
+  width: 100%;
+  
+  & > button {
+    width: 250px;
+  }
+`;
+
+const EditContainer = styled(EditorContainer)`
+  justify-content: center;
+  margin-top: 20px;
+  width: 100%;
   
   & > button {
     width: 250px;
@@ -890,6 +936,10 @@ const CommentsView = styled(FlexGroup)`
   @media only screen and (max-width: 800px) {
     width: 100%;
   }
+`;
+
+const DescriptionSectionContainer = styled(FlexGroup)`
+  width: 100%;
 `;
 
 export default BuildEditor;

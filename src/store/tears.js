@@ -22,9 +22,16 @@ const tears = createSlice({
           break;
       }
     },
+    clearTears: (state) => {
+      state.tear1 = null;
+      state.tear2 = null;
+    },
   },
 });
 
-export const { updateTear } = tears.actions;
+export const {
+  clearTears,
+  updateTear,
+} = tears.actions;
 
 export default tears.reducer;

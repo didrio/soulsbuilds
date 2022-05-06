@@ -54,9 +54,24 @@ const spells = createSlice({
           break;
       }
     },
+    clearSpells: (state) => {
+      state.spell1 = null;
+      state.spell2 = null;
+      state.spell3 = null;
+      state.spell4 = null;
+      state.spell5 = null;
+      state.spell6 = null;
+      state.spell7 = null;
+      state.spell8 = null;
+      state.spell9 = null;
+      state.spell10 = null;
+    },
   },
 });
 
-export const { updateSpell } = spells.actions;
+export const {
+  clearSpells,
+  updateSpell,
+} = spells.actions;
 
 export default spells.reducer;

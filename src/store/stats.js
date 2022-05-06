@@ -40,10 +40,21 @@ const stats = createSlice({
     updateVigor: (state, action) => {
       state.vigor = action.payload;
     },
+    clearStats: (state) => {
+      state.arc = 10;
+      state.dex = 10;
+      state.end = 10;
+      state.fai = 10;
+      state.int = 10;
+      state.mind = 10;
+      state.str = 10;
+      state.vigor = 10;
+    },
   },
 });
 
 export const {
+  clearStats,
   updateArc,
   updateDex,
   updateEnd,

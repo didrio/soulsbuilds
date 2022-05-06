@@ -20,10 +20,16 @@ const app = createSlice({
     updateEditSubSlot: (state, action) => {
       state.editSubSlot = action.payload;
     },
+    clearApp: (state) => {
+      state.editSlot = null;
+      state.editSubSlot = null;
+      state.slotType = null;
+    },
   },
 });
 
 export const {
+  clearApp,
   updateEditSlot,
   updateSlotType,
   updateEditSubSlot,

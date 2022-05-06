@@ -22,7 +22,7 @@ function BuildsList({ builds }) {
     <Container
       vertical
     >
-      {builds.map((build) => (
+      {builds.filter(({ name }) => name).map((build) => (
         <Build
           key={build.name}
           onClick={handleSelectBuild(build.id)}

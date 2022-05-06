@@ -174,10 +174,47 @@ const equipment = createSlice({
           break;
       }
     },
+    clearEquipment: (state) => {
+      state.helm = null;
+      state.leg = null;
+      state.chest = null;
+      state.gauntlet = null;
+      state.arrow1 = null;
+      state.arrow2 = null;
+      state.arrow3 = null;
+      state.arrow4 = null;
+      state.con1 = null;
+      state.con2 = null;
+      state.con3 = null;
+      state.con4 = null;
+      state.con5 = null;
+      state.con6 = null;
+      state.con7 = null;
+      state.con8 = null;
+      state.con9 = null;
+      state.con10 = null;
+      state.tal1 = null;
+      state.tal2 = null;
+      state.tal3 = null;
+      state.tal4 = null;
+      state.weapon1 = null;
+      state.weapon2 = null;
+      state.weapon3 = null;
+      state.weapon4 = null;
+      state.weapon5 = null;
+      state.weapon6 = null;
+      state.weaponSkill1 = null;
+      state.weaponSkill2 = null;
+      state.weaponSkill3 = null;
+      state.weaponSkill4 = null;
+      state.weaponSkill5 = null;
+      state.weaponSkill6 = null;
+    },
   },
 });
 
 export const {
+  clearEquipment,
   updateHelm,
   updateLeg,
   updateChest,
