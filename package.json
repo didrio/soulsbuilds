@@ -11,6 +11,8 @@
     "cheerio": "^1.0.0-rc.10",
     "firebase": "^9.6.11",
     "firestore-export-import": "^1.1.0",
+    "imagemin": "^8.0.1",
+    "imagemin-pngquant": "^9.0.2",
     "lodash": "^4.17.21",
     "nanoid": "^3.3.3",
     "node-fetch": "^3.2.3",

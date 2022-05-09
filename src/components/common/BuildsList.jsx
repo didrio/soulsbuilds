@@ -128,8 +128,9 @@ const Build = styled(FlexGroup)`
   border-radius: 4px;
   font-weight: bold;
   font-size: 18px;
-  margin-bottom: 15px;
+  margin-bottom: 25px;
   transition: background-color .1s ease-in-out;
+  border: 1px solid ${COLOR_LIGHT_GREEN};
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
