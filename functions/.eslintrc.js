@@ -15,5 +15,6 @@ module.exports = {
     'quotes': ['error', 'single'],
     'object-curly-spacing': 'off',
     'max-len': 'off',
+    'no-console': 'off',
   },
 };

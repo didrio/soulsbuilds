@@ -16,9 +16,11 @@ import {
   updateEditSlot,
   updateSlotType,
   updateEditSubSlot,
+  updateEditAffinitySlot,
 } from '../../store/app';
 import FlexGroup from './FlexGroup';
 import {
+  selectWeaponAffinities,
   selectWeaponSkills,
 } from '../../store/selectors';
 import skillsData from '../../data/skillsIndexed.json';
@@ -29,6 +31,8 @@ const SLOT_SIZE_XSMALL = '50px';
 const SLOT_SIZE_XXSMALL = '40px';
 
 function Slot({
+  affinity,
+  affinityId,
   background,
   disabled,
   id,
@@ -41,7 +45,9 @@ function Slot({
 }) {
   const dispatch = useDispatch();
   const weaponSkills = useSelector(selectWeaponSkills);
+  const weaponAffinities = useSelector(selectWeaponAffinities);
 
+  const [showWeaponAffinity, setShowWeaponAffinity] = useState(false);
   const [showWeaponSkill, setShowWeaponSkill] = useState(false);
 
   const hasItem = item !== null;
@@ -52,6 +58,9 @@ function Slot({
     if (!disabled && !hasItem) {
       dispatch(updateEditSlot(id));
       dispatch(updateSlotType(type));
+      if (affinityId) {
+        dispatch(updateEditAffinitySlot(affinityId));
+      }
       if (subId) {
         dispatch(updateEditSubSlot(subId));
       }
@@ -93,6 +102,39 @@ function Slot({
     return skill;
   }, [subId, weaponSkills, subItem]);
 
+  const weaponAffinity = useMemo(() => {
+    let currentAffinity = null;
+    if (affinity) {
+      return affinity;
+    }
+    if (!affinityId) {
+      return currentAffinity;
+    }
+    switch (affinityId) {
+      case 'weaponAffinity1':
+        currentAffinity = weaponAffinities[0];
+        break;
+      case 'weaponAffinity2':
+        currentAffinity = weaponAffinities[1];
+        break;
+      case 'weaponAffinity3':
+        currentAffinity = weaponAffinities[2];
+        break;
+      case 'weaponAffinity4':
+        currentAffinity = weaponAffinities[3];
+        break;
+      case 'weaponAffinity5':
+        currentAffinity = weaponAffinities[4];
+        break;
+      case 'weaponAffinity6':
+        currentAffinity = weaponAffinities[5];
+        break;
+      default:
+        break;
+    }
+    return currentAffinity;
+  }, [affinity, affinityId, weaponAffinities]);
+
   const weaponSkill = skillsData[weaponSkillName];
 
   const handleShowWeaponSkill = () => {
@@ -101,6 +143,14 @@ function Slot({
 
   const handleHideWeaponSkill = () => {
     setShowWeaponSkill(false);
+  };
+
+  const handleShowWeaponAffinity = () => {
+    setShowWeaponAffinity(true);
+  };
+
+  const handleHideWeaponAffinity = () => {
+    setShowWeaponAffinity(false);
   };
 
   return (
@@ -124,6 +174,14 @@ function Slot({
           {item.name}
         </NameContainer>
       )}
+      {weaponAffinity ? (
+        <WeaponAffinityIconContainer
+          onMouseEnter={handleShowWeaponAffinity}
+          onMouseLeave={handleHideWeaponAffinity}
+        >
+          A
+        </WeaponAffinityIconContainer>
+      ) : null}
       {weaponSkill ? (
         <WeaponSkillIconContainer
           onMouseEnter={handleShowWeaponSkill}
@@ -158,6 +216,20 @@ function Slot({
             </WeaponSkillLabel>
             <WeaponSkillValue>
               {weaponSkill.fp}
+            </WeaponSkillValue>
+          </FlexGroup>
+        </WeaponSkillContainer>
+      ) : null}
+      {(weaponAffinity && showWeaponAffinity) ? (
+        <WeaponSkillContainer
+          vertical
+        >
+          <FlexGroup>
+            <WeaponSkillLabel>
+              Weapon Affinity:
+            </WeaponSkillLabel>
+            <WeaponSkillValue>
+              {weaponAffinity}
             </WeaponSkillValue>
           </FlexGroup>
         </WeaponSkillContainer>
@@ -247,6 +319,10 @@ const WeaponSkillIconContainer = styled(FlexGroup)`
   }
 `;
 
+const WeaponAffinityIconContainer = styled(WeaponSkillIconContainer)`
+  left: 2px;
+`;
+
 const WeaponSkillContainer = styled(FlexGroup)`
   position: absolute;
   right: -253px;
@@ -273,6 +349,8 @@ const WeaponSkillValue = styled(FlexGroup)`
 `;
 
 Slot.propTypes = {
+  affinity: PropTypes.string,
+  affinityId: PropTypes.string,
   background: PropTypes.string,
   disabled: PropTypes.bool,
   id: PropTypes.string,
@@ -285,6 +363,8 @@ Slot.propTypes = {
 };
 
 Slot.defaultProps = {
+  affinity: '',
+  affinityId: '',
   background: '',
   disabled: false,
   id: '',

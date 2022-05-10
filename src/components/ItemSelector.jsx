@@ -11,6 +11,7 @@ import {
   updateEditSlot,
   updateSlotType,
   updateEditSubSlot,
+  updateEditAffinitySlot,
 } from '../store/app';
 import {
   updateHelm,
@@ -21,14 +22,17 @@ import {
   updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponAffinity,
   updateWeaponSkill,
 } from '../store/equipment';
 import { updateSpell } from '../store/spells';
 import { updateTear } from '../store/tears';
 import {
+  selectEditAffinitySlot,
   selectEditSlot,
   selectSlotType,
   selectEditSubSlot,
+  selectEditWeaponAffinity,
   selectEditWeaponSkill,
 } from '../store/selectors';
 import {
@@ -54,21 +58,26 @@ import talismans from '../data/talismans.json';
 import spells from '../data/spells.json';
 import tears from '../data/tears.json';
 import skills from '../data/skillsIndexed.json';
+import affinitiesData from '../data/affinities.json';
 
 const skillsOptions = Object.values(skills).map(({ name }) => name).sort();
+const { affinities } = affinitiesData;
 
 function ItemSelector() {
   const [searchText, setSearchText] = useState('');
 
   const dispatch = useDispatch();
+  const editAffinitySlot = useSelector(selectEditAffinitySlot);
   const editSlot = useSelector(selectEditSlot);
   const editSubSlot = useSelector(selectEditSubSlot);
   const editWeaponSkill = useSelector(selectEditWeaponSkill);
+  const editWeaponAffinity = useSelector(selectEditWeaponAffinity);
   const slotType = useSelector(selectSlotType);
 
   const handleClose = () => {
     dispatch(updateEditSlot(null));
     dispatch(updateEditSubSlot(null));
+    dispatch(updateEditAffinitySlot(null));
     dispatch(updateSlotType(null));
   };
 
@@ -163,6 +172,14 @@ function ItemSelector() {
     dispatch(updateWeaponSkill({ id: editSubSlot, item: value }));
   };
 
+  const handleAffinityChange = (value) => {
+    console.log('editAffinitySlot', editAffinitySlot);
+    console.log('value', value);
+    dispatch(updateWeaponAffinity({ id: editAffinitySlot, item: value }));
+  };
+
+  console.log('editWeaponAffinity', editWeaponAffinity);
+
   const getItem = (item) => (
     <RowContainer
       key={item.name}
@@ -203,6 +220,17 @@ function ItemSelector() {
       </TopBar>
       {slotType === SLOT_TYPE_WEAPON ? (
         <SkillContainer>
+          <SkillLabel>
+            Add Affinity
+          </SkillLabel>
+          <SkillDropDown>
+            <DropDown
+              onChange={handleAffinityChange}
+              options={affinities}
+              placeholder="-- Choose an Affinity --"
+              value={editWeaponAffinity || ''}
+            />
+          </SkillDropDown>
           <SkillLabel>
             Add Skill
           </SkillLabel>
@@ -245,6 +273,7 @@ const SkillLabel = styled(FlexGroup)`
 `;
 
 const SkillDropDown = styled(FlexGroup)`
+  margin-right: 20px;
   width: 200px;
 `;
 

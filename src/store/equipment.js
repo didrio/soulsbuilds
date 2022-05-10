@@ -174,6 +174,30 @@ const equipment = createSlice({
           break;
       }
     },
+    updateWeaponAffinity: (state, action) => {
+      switch (action.payload.id) {
+        case 'weaponAffinity1':
+          state.weaponAffinity1 = action.payload.item;
+          break;
+        case 'weaponAffinity2':
+          state.weaponAffinity2 = action.payload.item;
+          break;
+        case 'weaponAffinity3':
+          state.weaponAffinity3 = action.payload.item;
+          break;
+        case 'weaponAffinity4':
+          state.weaponAffinity4 = action.payload.item;
+          break;
+        case 'weaponAffinity5':
+          state.weaponAffinity5 = action.payload.item;
+          break;
+        case 'weaponAffinity6':
+          state.weaponAffinity6 = action.payload.item;
+          break;
+        default:
+          break;
+      }
+    },
     clearEquipment: (state) => {
       state.helm = null;
       state.leg = null;
@@ -209,6 +233,12 @@ const equipment = createSlice({
       state.weaponSkill4 = null;
       state.weaponSkill5 = null;
       state.weaponSkill6 = null;
+      state.weaponAffinity1 = null;
+      state.weaponAffinity2 = null;
+      state.weaponAffinity3 = null;
+      state.weaponAffinity4 = null;
+      state.weaponAffinity5 = null;
+      state.weaponAffinity6 = null;
     },
   },
 });
@@ -223,6 +253,7 @@ export const {
   updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponAffinity,
   updateWeaponSkill,
 } = equipment.actions;
 

@@ -1,4 +1,4 @@
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, batch } from 'react-redux';
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
@@ -53,6 +53,8 @@ import {
   // updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponAffinity,
+  updateWeaponSkill,
 } from '../store/equipment';
 
 function EquipmentEditor({ editable }) {
@@ -96,7 +98,45 @@ function EquipmentEditor({ editable }) {
   };
 
   const handleRemoveWeapon = (id) => () => {
-    dispatch(updateWeapon({ id, item: null }));
+    let affinityId;
+    let skillId;
+    switch (id) {
+      case 'weapon1':
+        affinityId = 'weaponAffinity1';
+        skillId = 'weaponSkill1';
+        break;
+      case 'weapon2':
+        affinityId = 'weaponAffinity2';
+        skillId = 'weaponSkill2';
+        break;
+      case 'weapon3':
+        affinityId = 'weaponAffinity3';
+        skillId = 'weaponSkill3';
+        break;
+      case 'weapon4':
+        affinityId = 'weaponAffinity4';
+        skillId = 'weaponSkill4';
+        break;
+      case 'weapon5':
+        affinityId = 'weaponAffinity5';
+        skillId = 'weaponSkill5';
+        break;
+      case 'weapon6':
+        affinityId = 'weaponAffinity6';
+        skillId = 'weaponSkill6';
+        break;
+      default:
+        break;
+    }
+    batch(() => {
+      dispatch(updateWeapon({ id, item: null }));
+      if (affinityId) {
+        dispatch(updateWeaponAffinity({ id: affinityId, item: null }));
+      }
+      if (skillId) {
+        dispatch(updateWeaponSkill({ id: skillId, item: null }));
+      }
+    });
   };
 
   const handleRemoveHelm = () => {
@@ -131,6 +171,7 @@ function EquipmentEditor({ editable }) {
       </HeaderContainer>
       <SlotContainer>
         <Slot
+          affinityId="weaponAffinity1"
           background="weapon"
           disabled={!editable}
           id="weapon1"
@@ -140,6 +181,7 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          affinityId="weaponAffinity2"
           background="weapon"
           disabled={!editable}
           id="weapon2"
@@ -149,6 +191,7 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          affinityId="weaponAffinity3"
           background="weapon"
           disabled={!editable}
           id="weapon3"
@@ -181,6 +224,7 @@ function EquipmentEditor({ editable }) {
       </HeaderContainer>
       <SlotContainer>
         <Slot
+          affinityId="weaponAffinity4"
           background="shield"
           disabled={!editable}
           id="weapon4"
@@ -190,6 +234,7 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          affinityId="weaponAffinity5"
           background="shield"
           disabled={!editable}
           id="weapon5"
@@ -199,6 +244,7 @@ function EquipmentEditor({ editable }) {
           type={SLOT_TYPE_WEAPON}
         />
         <Slot
+          affinityId="weaponAffinity6"
           background="shield"
           disabled={!editable}
           id="weapon6"

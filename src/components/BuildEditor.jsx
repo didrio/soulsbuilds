@@ -57,6 +57,7 @@ import {
   selectCons,
   selectTals,
   selectWeapons,
+  selectWeaponAffinities,
   selectWeaponSkills,
 } from '../store/selectors';
 import {
@@ -80,6 +81,7 @@ import {
   updateCon,
   updateTal,
   updateWeapon,
+  updateWeaponAffinity,
   updateWeaponSkill,
 } from '../store/equipment';
 import {
@@ -143,6 +145,7 @@ function BuildEditor() {
   const tals = useSelector(selectTals);
   const weapons = useSelector(selectWeapons);
   const weaponSkills = useSelector(selectWeaponSkills);
+  const weaponAffinities = useSelector(selectWeaponAffinities);
 
   const clearState = useCallback(() => {
     batch(() => {
@@ -206,6 +209,7 @@ function BuildEditor() {
             cons: savedCons = [],
             tals: savedTals = [],
             weapons: savedWeapons = [],
+            weaponAffinities: savedWeaponAffinities = [],
             weaponSkills: savedWeaponSkills = [],
             spells: savedSpells = [],
             tears: savedTears = [],
@@ -262,6 +266,11 @@ function BuildEditor() {
               const id = i + 1;
               dispatch(updateWeapon({ item, id: `weapon${id}` }));
             });
+            savedWeaponAffinities.forEach((savedWeaponAffinityName, i) => {
+              const item = savedWeaponAffinityName;
+              const id = i + 1;
+              dispatch(updateWeaponAffinity({ item, id: `weaponAffinity${id}` }));
+            });
             savedWeaponSkills.forEach((savedWeaponSkillName, i) => {
               const item = savedWeaponSkillName;
               const id = i + 1;
@@ -305,6 +314,7 @@ function BuildEditor() {
       cons,
       tals,
       weapons,
+      weaponAffinities,
       weaponSkills,
       spells,
       tears,

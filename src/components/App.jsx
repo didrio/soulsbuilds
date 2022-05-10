@@ -24,6 +24,7 @@ import {
   updateEditSlot,
   updateSlotType,
   updateEditSubSlot,
+  updateEditAffinitySlot,
 } from '../store/app';
 
 const GlobalStyle = createGlobalStyle`
@@ -48,6 +49,7 @@ function App() {
   const handleHideModal = () => {
     dispatch(updateEditSlot(null));
     dispatch(updateEditSubSlot(null));
+    dispatch(updateEditAffinitySlot(null));
     dispatch(updateSlotType(null));
   };
 

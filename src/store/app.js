@@ -2,6 +2,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
+  editAffinitySlot: null,
   editSlot: null,
   editSubSlot: null,
   slotType: null,
@@ -11,6 +12,9 @@ const app = createSlice({
   name: 'app',
   initialState,
   reducers: {
+    updateEditAffinitySlot: (state, action) => {
+      state.editAffinitySlot = action.payload;
+    },
     updateEditSlot: (state, action) => {
       state.editSlot = action.payload;
     },
@@ -30,8 +34,10 @@ const app = createSlice({
 
 export const {
   clearApp,
+  updateAffinitySlot,
   updateEditSlot,
   updateSlotType,
+  updateEditAffinitySlot,
   updateEditSubSlot,
 } = app.actions;
 

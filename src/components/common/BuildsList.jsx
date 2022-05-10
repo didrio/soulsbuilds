@@ -44,6 +44,7 @@ function BuildsList({ builds }) {
           <LowerSection>
             <EquipmentContainer>
               <Slot
+                affinity={build?.weaponAffinities?.[0] || null}
                 background="weapon"
                 disabled
                 item={weaponsAndShields[build?.weapons?.[0]] || null}
@@ -51,6 +52,7 @@ function BuildsList({ builds }) {
                 type={SLOT_TYPE_WEAPON}
               />
               <Slot
+                affinity={build?.weaponAffinities?.[1] || null}
                 background="weapon"
                 disabled
                 item={weaponsAndShields[build?.weapons?.[1]] || null}
@@ -58,6 +60,7 @@ function BuildsList({ builds }) {
                 type={SLOT_TYPE_WEAPON}
               />
               <Slot
+                affinity={build?.weaponAffinities?.[3] || null}
                 background="shield"
                 disabled
                 item={weaponsAndShields[build?.weapons?.[3]] || null}
@@ -65,6 +68,7 @@ function BuildsList({ builds }) {
                 type={SLOT_TYPE_WEAPON}
               />
               <Slot
+                affinity={build?.weaponAffinities?.[4] || null}
                 background="shield"
                 disabled
                 item={weaponsAndShields[build?.weapons?.[4]] || null}

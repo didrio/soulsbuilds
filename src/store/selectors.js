@@ -2,6 +2,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import compact from 'lodash/compact';
 
+export const selectEditAffinitySlot = (state) => state.app.editAffinitySlot;
 export const selectEditSlot = (state) => state.app.editSlot;
 export const selectEditSubSlot = (state) => state.app.editSubSlot;
 export const selectSlotType = (state) => state.app.slotType;
@@ -180,6 +181,31 @@ export const selectWeaponSkills = createSelector(
     weaponSkill6,
   ]),
 );
+
+export const selectWeaponAffinity1 = (state) => state.equipment.weaponAffinity1;
+export const selectWeaponAffinity2 = (state) => state.equipment.weaponAffinity2;
+export const selectWeaponAffinity3 = (state) => state.equipment.weaponAffinity3;
+export const selectWeaponAffinity4 = (state) => state.equipment.weaponAffinity4;
+export const selectWeaponAffinity5 = (state) => state.equipment.weaponAffinity5;
+export const selectWeaponAffinity6 = (state) => state.equipment.weaponAffinity6;
+export const selectWeaponAffinities = createSelector(
+  selectWeaponAffinity1,
+  selectWeaponAffinity2,
+  selectWeaponAffinity3,
+  selectWeaponAffinity4,
+  selectWeaponAffinity5,
+  selectWeaponAffinity6,
+  // eslint-disable-next-line max-len
+  (weaponAffinity1, weaponAffinity2, weaponAffinity3, weaponAffinity4, weaponAffinity5, weaponAffinity6) => ([
+    weaponAffinity1,
+    weaponAffinity2,
+    weaponAffinity3,
+    weaponAffinity4,
+    weaponAffinity5,
+    weaponAffinity6,
+  ]),
+);
+
 export const selectEditWeaponSkill = createSelector(
   selectEditSubSlot,
   selectWeaponSkills,
@@ -211,5 +237,39 @@ export const selectEditWeaponSkill = createSelector(
         break;
     }
     return skill;
+  },
+);
+
+export const selectEditWeaponAffinity = createSelector(
+  selectEditAffinitySlot,
+  selectWeaponAffinities,
+  (editAffinitySlot, weaponAffinities) => {
+    let affinity = null;
+    if (!editAffinitySlot) {
+      return affinity;
+    }
+    switch (editAffinitySlot) {
+      case 'weaponAffinity1':
+        affinity = weaponAffinities[0];
+        break;
+      case 'weaponAffinity2':
+        affinity = weaponAffinities[1];
+        break;
+      case 'weaponAffinity3':
+        affinity = weaponAffinities[2];
+        break;
+      case 'weaponAffinity4':
+        affinity = weaponAffinities[3];
+        break;
+      case 'weaponAffinity5':
+        affinity = weaponAffinities[4];
+        break;
+      case 'weaponAffinity6':
+        affinity = weaponAffinities[5];
+        break;
+      default:
+        break;
+    }
+    return affinity;
   },
 );
