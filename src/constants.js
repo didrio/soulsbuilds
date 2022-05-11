@@ -12,7 +12,7 @@ export const COLOR_WHITE = '#ffffff';
 
 export const COLOR_LIGHT_GOLD = 'rgb(185, 149, 100)';
 export const COLOR_LIGHT_GOLD_LOW_OPACITY = 'rgba(185, 149, 100, .6)';
-export const COLOR_GOLD = 'rgb(185, 149, 100)';
+export const COLOR_GOLD = 'rgb(195, 164, 121)';
 export const COLOR_DARK_GOLD = 'rgb(114, 92, 57)';
 // export const COLOR_DARKER_GOLD = 'rgb(136, 92, 42)';
 
