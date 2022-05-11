@@ -1,16 +1,16 @@
 {
   "affinities": [
-    "Standard",
+    "Blood",
+    "Fire",
+    "Frost",
     "Heavy",
     "Keen",
-    "Quality",
-    "Magic",
-    "Sacred",
-    "Fire",
     "Lightning",
-    "Frost",
-    "Blood",
+    "Magic",
     "Occult",
-    "Poison"
+    "Poison",
+    "Quality",
+    "Sacred",
+    "Standard"
   ]
 }
