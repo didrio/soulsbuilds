@@ -34,7 +34,7 @@
     "deploy": "npm run build && firebase deploy --only hosting",
     "deploy-all": "npm run build && firebase deploy",
     "eject": "react-scripts eject",
-    "local": "firebase emulators:start --only functions",
+    
     "start": "react-scripts start",
     "test": "react-scripts test"
   },
