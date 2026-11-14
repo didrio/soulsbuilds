@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run check *)",
+      "Bash(npm run typecheck *)",
+      "Bash(npm run lint *)",
+      "Bash(npm run lint:fix *)",
+      "Bash(npm run format *)",
+      "Bash(npm run format:check *)",
+      "Bash(npm test *)",
+      "Bash(npm run test *)",
+      "Bash(npm run build *)",
+      "Bash(npm run doctor *)",
+      "Bash(npm run screenshot *)",
+      "Bash(npm run seed *)",
+      "Bash(npx vitest *)",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(npx prettier *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)"
+    ],
+    "ask": [
+      "Bash(npm run deploy *)",
+      "Bash(node scripts/firebase.mjs deploy *)",
+      "Bash(npx firebase deploy *)",
+      "Bash(npx firebase-tools deploy *)",
+      "Bash(firebase deploy *)",
+      "Bash(* --project soulsbuilds *)",
+      "Bash(git push *)"
+    ],
+    "deny": ["Read(./package-lock.json)", "Read(./dist/**)"]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format-file.mjs\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

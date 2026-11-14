@@ -1,70 +1,37 @@
-# Getting Started with Create React App
+# Souls Builds
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Create, share and discover **Elden Ring** character builds: stats, weapons with affinities and Ashes of War,
+armor, talismans, spells, flask tears, tags and a markdown write-up. Browse everyone's builds, like them and
+comment. React 19 + Vite + Redux Toolkit + styled-components on Firebase (Auth, Firestore, Hosting).
 
-## Available Scripts
+**Status:** being modernized and finished for a public relaunch. The backlog is in [TICKETS.md](TICKETS.md).
 
-In the project directory, you can run:
+## Quick start
 
-### `npm start`
+Needs Node 24 (`.nvmrc`), Java 21+ (for the Firebase emulators) and Google Chrome (for screenshots).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+npm ci
+npm run doctor   # what this machine can run
+npm run dev      # Firebase emulators + seed data + Vite at http://127.0.0.1:5180
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Local dev never touches production: it runs on the Firebase emulators (project `demo-soulsbuilds`) with seeded
+users and builds (accounts in `scripts/seed.mjs`). Emulator UI: http://127.0.0.1:4005.
 
-### `npm test`
+## Everyday commands
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| Command                                    | What it does                                           |
+| ------------------------------------------ | ------------------------------------------------------ |
+| `npm run check`                            | Typecheck, lint, format check, tests, production build |
+| `npm test` / `npm run test:watch`          | Vitest                                                 |
+| `npm run screenshot -- <route> [--mobile]` | PNG of a page of the running app (prints the path)     |
+| `npm run format` / `npm run lint:fix`      | Fix formatting / lint                                  |
+| `npm run deploy`                           | Check, then deploy hosting to production (owner only)  |
 
-### `npm run build`
+## Working on it (humans and agents)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [AGENTS.md](AGENTS.md): rules, commands, project map, conventions, gotchas. Claude Code also reads
+  [CLAUDE.md](CLAUDE.md).
+- [TICKETS.md](TICKETS.md): one ticket per session: `/start T2` → work → `/wrap`.
+- [docs/](docs/): `architecture.md`, `firebase.md`, `data.md`, `decisions.md`.
