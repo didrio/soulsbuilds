@@ -7,7 +7,13 @@ import {
 } from 'firebase/auth';
 import { getAnalytics } from 'firebase/analytics';
 import {
-  getFirestore, setDoc, collection, doc, getDoc, getDocs, updateDoc,
+  getFirestore,
+  setDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
 } from 'firebase/firestore';
 
 const config = {
@@ -120,7 +126,7 @@ export const handleUserLike = async (userId, buildId, shouldAdd = true) => {
   const userSnapshot = await getDoc(userRef);
   const buildSnapshot = await getDoc(buildRef);
   const { likes = 0 } = buildSnapshot.data();
-  let newLikes = shouldAdd ? (Number(likes) + 1) : (Number(likes) - 1);
+  let newLikes = shouldAdd ? Number(likes) + 1 : Number(likes) - 1;
   if (newLikes < 0) {
     newLikes = 0;
   }
@@ -145,9 +151,6 @@ export const addComment = async (userId, buildId, comment) => {
   const buildSnapshot = await getDoc(buildRef);
   const { comments = [] } = buildSnapshot.data();
   await updateDoc(buildRef, {
-    comments: [
-      ...comments,
-      { user: userId, comment, date: Date.now() },
-    ],
+    comments: [...comments, { user: userId, comment, date: Date.now() }],
   });
 };

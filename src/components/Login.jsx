@@ -42,11 +42,14 @@ function Login({ onSubmit }) {
     run();
   }, [email, password, onSubmit]);
 
-  const handleKeyDown = useCallback(({ code }) => {
-    if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
-      handleLogin();
-    }
-  }, [handleLogin, email, password]);
+  const handleKeyDown = useCallback(
+    ({ code }) => {
+      if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
+        handleLogin();
+      }
+    },
+    [handleLogin, email, password],
+  );
 
   useEffect(() => {
     if (document) {
@@ -68,30 +71,15 @@ function Login({ onSubmit }) {
   return (
     <Container>
       <Input>
-        <Label>
-          Email
-        </Label>
-        <TextInput
-          onChange={handleEmailChange}
-          type="email"
-          value={email}
-        />
+        <Label>Email</Label>
+        <TextInput onChange={handleEmailChange} type="email" value={email} />
       </Input>
       <Input>
-        <Label>
-          Password
-        </Label>
+        <Label>Password</Label>
 
-        <TextInput
-          onChange={handlePasswordChange}
-          type="password"
-          value={password}
-        />
+        <TextInput onChange={handlePasswordChange} type="password" value={password} />
       </Input>
-      <RegisterButton
-        disabled={!canRegister}
-        onClick={handleLogin}
-      >
+      <RegisterButton disabled={!canRegister} onClick={handleLogin}>
         Login
       </RegisterButton>
     </Container>

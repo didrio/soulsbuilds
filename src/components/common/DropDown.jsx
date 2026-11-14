@@ -1,18 +1,8 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_GOLD,
-  COLOR_DARK_GREEN,
-} from '../../constants';
+import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN } from '../../constants';
 
-function DropDown({
-  onChange,
-  options,
-  placeholder,
-  value,
-}) {
+function DropDown({ onChange, options, placeholder, value }) {
   const handleChange = (e) => {
     const { value: newValue } = e.target;
     if (newValue) {
@@ -21,20 +11,10 @@ function DropDown({
   };
 
   return (
-    <Container
-      onChange={handleChange}
-      value={value}
-    >
-      <Option
-        value=""
-      >
-        {placeholder}
-      </Option>
+    <Container onChange={handleChange} value={value}>
+      <Option value="">{placeholder}</Option>
       {options.map((option) => (
-        <Option
-          key={option}
-          value={option}
-        >
+        <Option key={option} value={option}>
           {option}
         </Option>
       ))}
@@ -52,7 +32,7 @@ const Container = styled.select`
   background-color: ${COLOR_GREEN};
   color: ${COLOR_GOLD};
   font-size: 16px;
-  font-family: garamond-premier-pro,  serif;
+  font-family: garamond-premier-pro, serif;
   box-shadow: inset 0 0 3px ${COLOR_DARK_GREEN};
   cursor: pointer;
 `;

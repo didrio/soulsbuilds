@@ -2,19 +2,9 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import noop from 'lodash/noop';
 
-const getFlexDirection = ({ vertical }) => (
-  vertical ? 'column' : 'row'
-);
+const getFlexDirection = ({ vertical }) => (vertical ? 'column' : 'row');
 
-function FlexGroup({
-  basis,
-  children,
-  className,
-  onClick,
-  onMouseEnter,
-  onMouseLeave,
-  vertical,
-}) {
+function FlexGroup({ basis, children, className, onClick, onMouseEnter, onMouseLeave, vertical }) {
   const handleClick = () => {
     onClick();
   };
@@ -34,8 +24,7 @@ function FlexGroup({
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      vertical={vertical}
-    >
+      vertical={vertical}>
       {children}
     </Container>
   );

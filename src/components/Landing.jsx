@@ -27,9 +27,7 @@ function Landing() {
   }, []);
 
   const handleAddTag = (tag) => {
-    setTags((prevState) => (
-      compact([...prevState, tag])
-    ));
+    setTags((prevState) => compact([...prevState, tag]));
   };
 
   const handleRemoveTag = (value) => {
@@ -37,11 +35,11 @@ function Landing() {
   };
 
   const handleChangeMinRange = (value) => {
-    setLevelRange((prevState) => ([value, prevState[1]]));
+    setLevelRange((prevState) => [value, prevState[1]]);
   };
 
   const handleChangeMaxRange = (value) => {
-    setLevelRange((prevState) => ([prevState[0], value]));
+    setLevelRange((prevState) => [prevState[0], value]);
   };
 
   const handleRangeClickOutside = () => {
@@ -65,78 +63,44 @@ function Landing() {
   };
 
   const buildResults = useMemo(() => {
-    let filteredBuilds = builds
-      .filter((build) => (
-        Number(build.level) >= levelRange[0] && Number(build.level) <= levelRange[1]
-      ));
+    let filteredBuilds = builds.filter(
+      (build) => Number(build.level) >= levelRange[0] && Number(build.level) <= levelRange[1],
+    );
     if (tags.length > 0) {
-      filteredBuilds = builds
-        .filter((build) => containsAll(tags, build.tags));
+      filteredBuilds = builds.filter((build) => containsAll(tags, build.tags));
     }
     filteredBuilds = sortBy(filteredBuilds, ({ likes = 0 }) => likes * -1);
     return filteredBuilds;
   }, [builds, tags, levelRange]);
 
   return (
-    <Container
-      vertical
-    >
+    <Container vertical>
       <Filters>
-        <TagContainer
-          vertical
-        >
-          <SubHeader>
-            Filter by Tags
-          </SubHeader>
+        <TagContainer vertical>
+          <SubHeader>Filter by Tags</SubHeader>
           <FlexGroup>
-            <Chips
-              onAdd={handleAddTag}
-              onRemove={handleRemoveTag}
-              values={tags}
-            />
+            <Chips onAdd={handleAddTag} onRemove={handleRemoveTag} values={tags} />
           </FlexGroup>
         </TagContainer>
-        <LevelRangeContainer
-          vertical
-        >
-          <SubHeader>
-            Filter by Level Range
-          </SubHeader>
+        <LevelRangeContainer vertical>
+          <SubHeader>Filter by Level Range</SubHeader>
           <LevelRange>
             <LevelRangeInput>
-              <OutsideClickHandler
-                onOutsideClick={handleRangeClickOutside}
-              >
-                <TextInput
-                  centered
-                  onChange={handleChangeMinRange}
-                  value={levelRange[0]}
-                />
+              <OutsideClickHandler onOutsideClick={handleRangeClickOutside}>
+                <TextInput centered onChange={handleChangeMinRange} value={levelRange[0]} />
               </OutsideClickHandler>
             </LevelRangeInput>
-            <LevelSpacer>
-              -
-            </LevelSpacer>
+            <LevelSpacer>-</LevelSpacer>
             <LevelRangeInput>
-              <OutsideClickHandler
-                onOutsideClick={handleRangeClickOutside}
-              >
-                <TextInput
-                  centered
-                  onChange={handleChangeMaxRange}
-                  value={levelRange[1]}
-                />
+              <OutsideClickHandler onOutsideClick={handleRangeClickOutside}>
+                <TextInput centered onChange={handleChangeMaxRange} value={levelRange[1]} />
               </OutsideClickHandler>
             </LevelRangeInput>
           </LevelRange>
         </LevelRangeContainer>
       </Filters>
-      <Results
-        vertical
-      >
-        <BuildsList
-          builds={buildResults}
-        />
+      <Results vertical>
+        <BuildsList builds={buildResults} />
       </Results>
     </Container>
   );
@@ -165,9 +129,7 @@ const Results = styled(FlexGroup)`
   width: 95%;
 `;
 
-const TagContainer = styled(FlexGroup)`
-  
-`;
+const TagContainer = styled(FlexGroup)``;
 
 const LevelRangeContainer = styled(FlexGroup)`
   align-items: center;

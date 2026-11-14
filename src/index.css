@@ -1,13 +1,15 @@
 @font-face {
   font-family: 'OptimusPrincepsSemiBold';
-  src: local('OptimusPrincepsSemiBold'), url(./fonts/OptimusPrincepsSemiBold.ttf) format('truetype');
+  src:
+    local('OptimusPrincepsSemiBold'),
+    url(./fonts/OptimusPrincepsSemiBold.ttf) format('truetype');
   /* other formats include: 'woff2', 'truetype, 'opentype',
                             'embedded-opentype', and 'svg' */
 }
 
 body {
   margin: 0;
-  font-family: garamond-premier-pro,  serif;
+  font-family: garamond-premier-pro, serif;
   font-weight: 400;
   font-style: normal;
   -webkit-font-smoothing: antialiased;
@@ -15,8 +17,7 @@ body {
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 a {

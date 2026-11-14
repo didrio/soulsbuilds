@@ -1,17 +1,10 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './FlexGroup';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-} from '../../constants';
+import { COLOR_GREEN, COLOR_LIGHT_GREEN } from '../../constants';
 
 function Chip({ children }) {
-  return (
-    <Container>
-      {children}
-    </Container>
-  );
+  return <Container>{children}</Container>;
 }
 
 Chip.propTypes = {

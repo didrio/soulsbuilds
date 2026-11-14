@@ -46,18 +46,7 @@ function SpellEditor({ editable }) {
     count += spell9 ? Number(spell9.slot) : 0;
     count += spell10 ? Number(spell10.slot) : 0;
     return count;
-  }, [
-    spell1,
-    spell2,
-    spell3,
-    spell4,
-    spell5,
-    spell6,
-    spell7,
-    spell8,
-    spell9,
-    spell10,
-  ]);
+  }, [spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, spell9, spell10]);
 
   const disabled = !editable;
 
@@ -66,17 +55,11 @@ function SpellEditor({ editable }) {
   };
 
   return (
-    <FlexGroup
-      vertical
-    >
+    <FlexGroup vertical>
       <HeaderContainer>
-        <Header>
-          Spells
-        </Header>
+        <Header>Spells</Header>
       </HeaderContainer>
-      <Count>
-        {`${slotPoints}/10 Points Allocated`}
-      </Count>
+      <Count>{`${slotPoints}/10 Points Allocated`}</Count>
       <SlotContainer>
         <Slot
           disabled={disabled}

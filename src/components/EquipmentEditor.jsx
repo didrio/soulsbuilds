@@ -156,18 +156,12 @@ function EquipmentEditor({ editable }) {
   };
 
   return (
-    <Container
-      vertical
-    >
+    <Container vertical>
       <HeaderContainer>
-        <Header>
-          Equipment
-        </Header>
+        <Header>Equipment</Header>
       </HeaderContainer>
       <HeaderContainer>
-        <SubHeader>
-          Main Hand
-        </SubHeader>
+        <SubHeader>Main Hand</SubHeader>
       </HeaderContainer>
       <SlotContainer>
         <Slot
@@ -218,9 +212,7 @@ function EquipmentEditor({ editable }) {
         />
       </SlotContainer>
       <HeaderContainer>
-        <SubHeader>
-          Off Hand
-        </SubHeader>
+        <SubHeader>Off Hand</SubHeader>
       </HeaderContainer>
       <SlotContainer>
         <Slot
@@ -271,9 +263,7 @@ function EquipmentEditor({ editable }) {
         />
       </SlotContainer>
       <HeaderContainer>
-        <SubHeader>
-          Gear
-        </SubHeader>
+        <SubHeader>Gear</SubHeader>
       </HeaderContainer>
       <SlotContainer>
         <Slot
@@ -310,9 +300,7 @@ function EquipmentEditor({ editable }) {
         />
       </SlotContainer>
       <HeaderContainer>
-        <SubHeader>
-          Talismans
-        </SubHeader>
+        <SubHeader>Talismans</SubHeader>
       </HeaderContainer>
       <SlotContainer>
         <Slot

@@ -1,29 +1,15 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_GOLD,
-} from '../../constants';
+import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD } from '../../constants';
 
-function TextAreaInput({
-  disabled,
-  onChange,
-  value,
-}) {
+function TextAreaInput({ disabled, onChange, value }) {
   const handleChange = (e) => {
     const { value: inputValue } = e.target;
     onChange(inputValue, e);
   };
 
   return (
-    <Container
-      disabled={disabled}
-      onChange={handleChange}
-      rows="5"
-      type="textarea"
-      value={value}
-    />
+    <Container disabled={disabled} onChange={handleChange} rows="5" type="textarea" value={value} />
   );
 }
 
@@ -40,7 +26,7 @@ const Container = styled.textarea`
   font-size: 16px;
   text-align: ${({ centered }) => (centered ? 'center' : 'left')};
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
-  font-family: garamond-premier-pro,  serif;
+  font-family: garamond-premier-pro, serif;
   resize: none;
 `;
 

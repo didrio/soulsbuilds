@@ -81,12 +81,8 @@ function App() {
       <GlobalStyle />
       {slotType === null ? null : (
         <ModalContainer>
-          <OutsideClickHandler
-            onOutsideClick={handleHideModal}
-          >
-            <Modal
-              top={top}
-            >
+          <OutsideClickHandler onOutsideClick={handleHideModal}>
+            <Modal top={top}>
               <ItemSelector />
             </Modal>
           </OutsideClickHandler>
@@ -95,24 +91,15 @@ function App() {
       <Container>
         <GameSelector />
         <HeaderContainer>
-          <Header
-            onShowLogin={handleShowLogin}
-            onShowRegister={handleShowRegister}
-          />
+          <Header onShowLogin={handleShowLogin} onShowRegister={handleShowRegister} />
         </HeaderContainer>
-        <HiddenContainer
-          visible={showHiddenContainer}
-        >
+        <HiddenContainer visible={showHiddenContainer}>
           {hiddenContainerContent === CONTENT_TYPE_LOGIN ? (
-            <Login
-              onSubmit={handleCloseHiddenContainer}
-            />
+            <Login onSubmit={handleCloseHiddenContainer} />
           ) : null}
           {hiddenContainerContent === CONTENT_TYPE_REGISTER ? (
             <div>
-              <SignUp
-                onSubmit={handleCloseHiddenContainer}
-              />
+              <SignUp onSubmit={handleCloseHiddenContainer} />
             </div>
           ) : null}
         </HiddenContainer>
@@ -137,7 +124,7 @@ const HeaderContainer = styled(FlexGroup)`
 const HiddenContainer = styled(FlexGroup)`
   height: ${({ visible }) => (visible ? '100px' : '0px')};
   margin-bottom: ${({ visible }) => (visible ? '40px' : '0px')};
-  transition: all .4s ease-in-out;
+  transition: all 0.4s ease-in-out;
   background-color: ${COLOR_GREEN};
   overflow: hidden;
   align-items: center;
@@ -188,7 +175,7 @@ const Content = styled(FlexGroup)`
 const ModalContainer = styled(FlexGroup)`
   position: absolute;
   justify-content: center;
-  background-color: rgba(0,0,0,0.6);
+  background-color: rgba(0, 0, 0, 0.6);
   left: 0;
   right: 0;
   top: 0;

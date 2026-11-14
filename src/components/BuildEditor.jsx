@@ -1,6 +1,4 @@
-import {
-  useState, useEffect, useMemo, useCallback,
-} from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch, batch } from 'react-redux';
 import { useParams, useNavigate, Link } from 'react-router-dom';
@@ -84,21 +82,9 @@ import {
   updateWeaponAffinity,
   updateWeaponSkill,
 } from '../store/equipment';
-import {
-  clearSpells,
-  updateSpell,
-} from '../store/spells';
-import {
-  clearTears,
-  updateTear,
-} from '../store/tears';
-import {
-  addComment,
-  getBuild,
-  getUser,
-  handleUserLike,
-  saveBuild,
-} from '../firebase';
+import { clearSpells, updateSpell } from '../store/spells';
+import { clearTears, updateTear } from '../store/tears';
+import { addComment, getBuild, getUser, handleUserLike, saveBuild } from '../firebase';
 
 const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
 
@@ -169,10 +155,24 @@ function BuildEditor() {
     setDescription(value);
   };
 
-  const level = useMemo(() => (
-    String(Math.max((Number(arc) + Number(dex) + Number(end) + Number(fai)
-    + Number(int) + Number(mind) + Number(str) + Number(vigor)) - 79, 1))
-  ), [arc, dex, end, fai, int, mind, str, vigor]);
+  const level = useMemo(
+    () =>
+      String(
+        Math.max(
+          Number(arc) +
+            Number(dex) +
+            Number(end) +
+            Number(fai) +
+            Number(int) +
+            Number(mind) +
+            Number(str) +
+            Number(vigor) -
+            79,
+          1,
+        ),
+      ),
+    [arc, dex, end, fai, int, mind, str, vigor],
+  );
 
   useEffect(() => {
     const savedBuildId = params?.buildId ?? 'new';
@@ -232,32 +232,29 @@ function BuildEditor() {
           const gauntletObj = armorData.gauntlets[savedGauntlet];
           batch(() => {
             savedArrows.forEach((savedArrowName, i) => {
-              const item = arrowsAndBoltsData
-                .find(({ name: arrowName }) => arrowName === savedArrowName);
+              const item = arrowsAndBoltsData.find(
+                ({ name: arrowName }) => arrowName === savedArrowName,
+              );
               const id = i + 1;
               dispatch(updateArrow({ item, id: `arrow${id}` }));
             });
             savedCons.forEach((savedConName, i) => {
-              const item = consumablesData
-                .find(({ name: conName }) => conName === savedConName);
+              const item = consumablesData.find(({ name: conName }) => conName === savedConName);
               const id = i + 1;
               dispatch(updateCon({ item, id: `con${id}` }));
             });
             savedTals.forEach((savedTalName, i) => {
-              const item = talismansData
-                .find(({ name: talName }) => talName === savedTalName);
+              const item = talismansData.find(({ name: talName }) => talName === savedTalName);
               const id = i + 1;
               dispatch(updateTal({ item, id: `tal${id}` }));
             });
             savedSpells.forEach((savedSpellName, i) => {
-              const item = spellsData
-                .find(({ name: spellName }) => spellName === savedSpellName);
+              const item = spellsData.find(({ name: spellName }) => spellName === savedSpellName);
               const id = i + 1;
               dispatch(updateSpell({ item, id: `spell${id}` }));
             });
             savedTears.forEach((savedTearName, i) => {
-              const item = tearsData
-                .find(({ name: tearName }) => tearName === savedTearName);
+              const item = tearsData.find(({ name: tearName }) => tearName === savedTearName);
               const id = i + 1;
               dispatch(updateTear({ item, id: `tear${id}` }));
             });
@@ -345,9 +342,7 @@ function BuildEditor() {
   };
 
   const handleAddTag = (tag) => {
-    setTags((prevTags) => (
-      compact([...prevTags, tag])
-    ));
+    setTags((prevTags) => compact([...prevTags, tag]));
   };
 
   const handleRemoveTag = (value) => {
@@ -368,7 +363,7 @@ function BuildEditor() {
       } else {
         setLikedBuilds(likedBuilds.filter((id) => id !== buildId));
       }
-      setLikes((prevLikes) => (shouldAdd ? (prevLikes + 1) : (prevLikes - 1)));
+      setLikes((prevLikes) => (shouldAdd ? prevLikes + 1 : prevLikes - 1));
       try {
         await handleUserLike(auth.uid, buildId, shouldAdd);
         setHandlingLike(false);
@@ -396,9 +391,7 @@ function BuildEditor() {
 
   useEffect(() => {
     const run = async () => {
-      const result = await Promise.all(comments.map(({ user: userId }) => (
-        getUser(userId)
-      )));
+      const result = await Promise.all(comments.map(({ user: userId }) => getUser(userId)));
       const users = {};
       result.forEach((user) => {
         users[user.id] = user;
@@ -408,9 +401,10 @@ function BuildEditor() {
     run();
   }, [comments]);
 
-  const sortedComments = useMemo(() => (
-    sortBy(comments, ({ date = -Infinity }) => date).reverse()
-  ), [comments]);
+  const sortedComments = useMemo(
+    () => sortBy(comments, ({ date = -Infinity }) => date).reverse(),
+    [comments],
+  );
 
   const handleNavigateUser = () => {
     if (buildUser.id) {
@@ -429,9 +423,7 @@ function BuildEditor() {
   if (loading) {
     return (
       <LoadingContainer>
-        <LoadingAnimation
-          size={50}
-        />
+        <LoadingAnimation size={50} />
       </LoadingContainer>
     );
   }
@@ -439,108 +431,60 @@ function BuildEditor() {
   return (
     <Container>
       {editable ? null : (
-        <TitleContainer
-          vertical
-        >
-          <NameContainer>
-            {name}
-          </NameContainer>
+        <TitleContainer vertical>
+          <NameContainer>{name}</NameContainer>
           {buildUser?.name ? (
             <CreatedByContainer>
               Created by:
-              <CreatedBy
-                onClick={handleNavigateUser}
-              >
-                {buildUser?.name}
-              </CreatedBy>
+              <CreatedBy onClick={handleNavigateUser}>{buildUser?.name}</CreatedBy>
             </CreatedByContainer>
           ) : null}
           <LikesContainer>
-            {(auth && loggedInUser) ? (
-              <LikesTag
-                onClick={handleLike}
-              >
+            {auth && loggedInUser ? (
+              <LikesTag onClick={handleLike}>
                 {`${likes} ${likes === 1 ? 'Like' : 'Likes'}`}
               </LikesTag>
             ) : (
-              <Tag>
-                {`${likes} ${likes === 1 ? 'Like' : 'Likes'}`}
-              </Tag>
+              <Tag>{`${likes} ${likes === 1 ? 'Like' : 'Likes'}`}</Tag>
             )}
           </LikesContainer>
         </TitleContainer>
       )}
       <UpperSection>
-        <LeftColumn
-          vertical
-        >
+        <LeftColumn vertical>
           {editable ? (
-            <HeaderContainer
-              vertical
-            >
-              <Header>
-                Build Name
-              </Header>
+            <HeaderContainer vertical>
+              <Header>Build Name</Header>
               <NameInputContainer>
-                <TextInput
-                  onChange={handleNameChange}
-                  value={name}
-                />
+                <TextInput onChange={handleNameChange} value={name} />
               </NameInputContainer>
             </HeaderContainer>
           ) : null}
           {editable ? (
-            <TagContainer
-              vertical
-            >
-              <Header>
-                Tags
-              </Header>
-              <Chips
-                onAdd={handleAddTag}
-                onRemove={handleRemoveTag}
-                values={tags}
-              />
+            <TagContainer vertical>
+              <Header>Tags</Header>
+              <Chips onAdd={handleAddTag} onRemove={handleRemoveTag} values={tags} />
             </TagContainer>
           ) : null}
           <EditorContainer>
-            <EquipmentEditor
-              editable={editable}
-            />
+            <EquipmentEditor editable={editable} />
           </EditorContainer>
         </LeftColumn>
-        <RightColumn
-          vertical
-        >
+        <RightColumn vertical>
           <EditorContainer>
-            <StatEditor
-              editable={editable}
-              level={level}
-            />
+            <StatEditor editable={editable} level={level} />
           </EditorContainer>
           <EditorContainer>
-            <TearEditor
-              editable={editable}
-            />
+            <TearEditor editable={editable} />
           </EditorContainer>
           <EditorContainer>
-            <SpellEditor
-              editable={editable}
-            />
+            <SpellEditor editable={editable} />
           </EditorContainer>
         </RightColumn>
       </UpperSection>
-      <LowerSection
-        vertical
-      >
-        <DescriptionSectionContainer
-          vertical
-        >
-          {(editable || description.length) ? (
-            <Header>
-              Description
-            </Header>
-          ) : null}
+      <LowerSection vertical>
+        <DescriptionSectionContainer vertical>
+          {editable || description.length ? <Header>Description</Header> : null}
           <DescriptionInputContainer>
             {editable ? (
               <StyledMarkdownEditor
@@ -555,26 +499,17 @@ function BuildEditor() {
             ) : null}
             {!editable && description.length ? (
               <DescriptionContainer>
-                <StyledMarkdownPreview
-                  rehypePlugins={[[rehypeSanitize]]}
-                  source={description}
-                />
+                <StyledMarkdownPreview rehypePlugins={[[rehypeSanitize]]} source={description} />
               </DescriptionContainer>
             ) : null}
           </DescriptionInputContainer>
         </DescriptionSectionContainer>
-        {(editable || tags.length <= 0) ? null : (
+        {editable || tags.length <= 0 ? null : (
           <TagViewContainer>
-            <TagLabel>
-              Tags:
-            </TagLabel>
+            <TagLabel>Tags:</TagLabel>
             <TagDisplay>
               {tags.map((tag) => (
-                <Tag
-                  key={tag}
-                >
-                  {tag}
-                </Tag>
+                <Tag key={tag}>{tag}</Tag>
               ))}
             </TagDisplay>
           </TagViewContainer>
@@ -582,66 +517,40 @@ function BuildEditor() {
         {editable ? (
           <SaveContainer>
             {saveLoading ? (
-              <LoadingAnimation
-                size={30}
-              />
+              <LoadingAnimation size={30} />
             ) : (
-              <Button
-                disabled={saveLoading || !isLoggedIn}
-                onClick={handleSave}
-              >
+              <Button disabled={saveLoading || !isLoggedIn} onClick={handleSave}>
                 Save
               </Button>
             )}
           </SaveContainer>
         ) : null}
-        {(!editable && userOwnsBuild) ? (
+        {!editable && userOwnsBuild ? (
           <EditContainer>
-            <Button
-              onClick={handleEdit}
-            >
-              Edit
-            </Button>
+            <Button onClick={handleEdit}>Edit</Button>
           </EditContainer>
         ) : null}
         {editable ? null : (
           <CommentsContainer>
             <CommentsView>
-              <CommentTitleContainer>
-                Comments
-              </CommentTitleContainer>
+              <CommentTitleContainer>Comments</CommentTitleContainer>
               {sortedComments.length ? (
-                <UserCommentsContainer
-                  vertical
-                >
+                <UserCommentsContainer vertical>
                   {sortedComments.map(({ comment, user, date }) => (
-                    <UserCommentContainer
-                      key={`${comment}${date}`}
-                      vertical
-                    >
+                    <UserCommentContainer key={`${comment}${date}`} vertical>
                       <UserContainer>
-                        <Link
-                          to={`/user/${user}`}
-                        >
-                          {commentUsers?.[user]?.name}
-                        </Link>
+                        <Link to={`/user/${user}`}>{commentUsers?.[user]?.name}</Link>
                       </UserContainer>
-                      <FlexGroup>
-                        {comment}
-                      </FlexGroup>
+                      <FlexGroup>{comment}</FlexGroup>
                     </UserCommentContainer>
                   ))}
                 </UserCommentsContainer>
               ) : (
-                <NoCommentsContainer>
-                  None for this build
-                </NoCommentsContainer>
+                <NoCommentsContainer>None for this build</NoCommentsContainer>
               )}
             </CommentsView>
             <CommentsPost>
-              <CommentTitleContainer>
-                Post a comment
-              </CommentTitleContainer>
+              <CommentTitleContainer>Post a comment</CommentTitleContainer>
               <CommentTextAreaContainer>
                 <TextAreaInput
                   disabled={!isLoggedIn}
@@ -652,8 +561,7 @@ function BuildEditor() {
               <SaveCommentContainer>
                 <Button
                   disabled={!commentText || saveCommentLoading || !isLoggedIn}
-                  onClick={handleSaveComment}
-                >
+                  onClick={handleSaveComment}>
                   Post
                 </Button>
               </SaveCommentContainer>
@@ -744,7 +652,7 @@ const NameContainer = styled(FlexGroup)`
   justify-content: center;
   margin-top: 10px;
   margin-bottom: 10px;
-  font-family: "OptimusPrincepsSemiBold", serif;
+  font-family: 'OptimusPrincepsSemiBold', serif;
   text-shadow: 0px 0px 4px ${COLOR_GOLD};
   color: ${COLOR_LIGHTEST_GREEN};
 `;
@@ -770,7 +678,7 @@ const StyledMarkdownEditor = styled(MDEditor)`
   color: ${COLOR_GOLD};
   max-width: 100%;
   width: 100%;
-  font-family: garamond-premier-pro,  serif;
+  font-family: garamond-premier-pro, serif;
 
   & .w-md-editor-text-input {
     font-size: 20px;
@@ -779,7 +687,7 @@ const StyledMarkdownEditor = styled(MDEditor)`
   & .w-md-editor-toolbar {
     background-color: ${COLOR_DARKER_GREEN};
     color: ${COLOR_GOLD};
-    font-family: garamond-premier-pro,  serif;
+    font-family: garamond-premier-pro, serif;
 
     & svg {
       color: ${COLOR_GOLD};
@@ -789,14 +697,14 @@ const StyledMarkdownEditor = styled(MDEditor)`
   & .w-md-editor-preview {
     background-color: ${COLOR_DARK_GREEN};
     color: ${COLOR_GOLD};
-    font-family: garamond-premier-pro,  serif;
+    font-family: garamond-premier-pro, serif;
   }
 `;
 
 const StyledMarkdownPreview = styled(MDEditor.Markdown)`
   background-color: ${COLOR_DARK_GREEN} !important;
   color: ${COLOR_GOLD} !important;
-  font-family: garamond-premier-pro,  serif !important;
+  font-family: garamond-premier-pro, serif !important;
   font-size: 18px !important;
 `;
 
@@ -827,7 +735,7 @@ const SaveContainer = styled(EditorContainer)`
   margin-top: 50px;
   margin-bottom: -10px;
   width: 100%;
-  
+
   & > button {
     width: 250px;
   }
@@ -837,7 +745,7 @@ const EditContainer = styled(EditorContainer)`
   justify-content: center;
   margin-top: 20px;
   width: 100%;
-  
+
   & > button {
     width: 250px;
   }

@@ -1,15 +1,14 @@
 import { useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-function ImageInput({
-  className,
-  disabled,
-  onChange,
-}) {
-  const handleChange = useCallback((e) => {
-    const image = e.target.files[0];
-    onChange(image);
-  }, [onChange]);
+function ImageInput({ className, disabled, onChange }) {
+  const handleChange = useCallback(
+    (e) => {
+      const image = e.target.files[0];
+      onChange(image);
+    },
+    [onChange],
+  );
 
   return (
     <input

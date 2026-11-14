@@ -19,10 +19,7 @@ import {
   updateEditAffinitySlot,
 } from '../../store/app';
 import FlexGroup from './FlexGroup';
-import {
-  selectWeaponAffinities,
-  selectWeaponSkills,
-} from '../../store/selectors';
+import { selectWeaponAffinities, selectWeaponSkills } from '../../store/selectors';
 import skillsData from '../../data/skillsIndexed.json';
 
 const SLOT_SIZE = '80px';
@@ -161,76 +158,47 @@ function Slot({
       hasItem={hasItem}
       hoverColor={hoverColor}
       onClick={handleClick}
-      size={size}
-    >
+      size={size}>
       {!hasItem ? null : (
         // eslint-disable-next-line jsx-a11y/alt-text
-        <img
-          src={`/assets/${item.imageUrl}`}
-        />
+        <img src={`/assets/${item.imageUrl}`} />
       )}
-      {!hasItem ? null : (
-        <NameContainer>
-          {item.name}
-        </NameContainer>
-      )}
+      {!hasItem ? null : <NameContainer>{item.name}</NameContainer>}
       {weaponAffinity ? (
         <WeaponAffinityIconContainer
           onMouseEnter={handleShowWeaponAffinity}
-          onMouseLeave={handleHideWeaponAffinity}
-        >
+          onMouseLeave={handleHideWeaponAffinity}>
           A
         </WeaponAffinityIconContainer>
       ) : null}
       {weaponSkill ? (
         <WeaponSkillIconContainer
           onMouseEnter={handleShowWeaponSkill}
-          onMouseLeave={handleHideWeaponSkill}
-        >
+          onMouseLeave={handleHideWeaponSkill}>
           S
         </WeaponSkillIconContainer>
       ) : null}
-      {(weaponSkill && showWeaponSkill) ? (
-        <WeaponSkillContainer
-          vertical
-        >
+      {weaponSkill && showWeaponSkill ? (
+        <WeaponSkillContainer vertical>
           <FlexGroup>
-            <WeaponSkillLabel>
-              Weapon Skill:
-            </WeaponSkillLabel>
-            <WeaponSkillValue>
-              {weaponSkill.name}
-            </WeaponSkillValue>
+            <WeaponSkillLabel>Weapon Skill:</WeaponSkillLabel>
+            <WeaponSkillValue>{weaponSkill.name}</WeaponSkillValue>
           </FlexGroup>
           <FlexGroup>
-            <WeaponSkillLabel>
-              Effect:
-            </WeaponSkillLabel>
-            <WeaponSkillValue>
-              {weaponSkill.effect}
-            </WeaponSkillValue>
+            <WeaponSkillLabel>Effect:</WeaponSkillLabel>
+            <WeaponSkillValue>{weaponSkill.effect}</WeaponSkillValue>
           </FlexGroup>
           <FlexGroup>
-            <WeaponSkillLabel>
-              FP:
-            </WeaponSkillLabel>
-            <WeaponSkillValue>
-              {weaponSkill.fp}
-            </WeaponSkillValue>
+            <WeaponSkillLabel>FP:</WeaponSkillLabel>
+            <WeaponSkillValue>{weaponSkill.fp}</WeaponSkillValue>
           </FlexGroup>
         </WeaponSkillContainer>
       ) : null}
-      {(weaponAffinity && showWeaponAffinity) ? (
-        <WeaponSkillContainer
-          vertical
-        >
+      {weaponAffinity && showWeaponAffinity ? (
+        <WeaponSkillContainer vertical>
           <FlexGroup>
-            <WeaponSkillLabel>
-              Weapon Affinity:
-            </WeaponSkillLabel>
-            <WeaponSkillValue>
-              {weaponAffinity}
-            </WeaponSkillValue>
+            <WeaponSkillLabel>Weapon Affinity:</WeaponSkillLabel>
+            <WeaponSkillValue>{weaponAffinity}</WeaponSkillValue>
           </FlexGroup>
         </WeaponSkillContainer>
       ) : null}
@@ -247,10 +215,10 @@ const Container = styled(FlexGroup)`
   height: ${({ size }) => (size === null ? SLOT_SIZE : size)};
   width: ${({ size }) => (size === null ? SLOT_SIZE : size)};
   position: relative;
-  transition: background-color .1s ease-in-out;
+  transition: background-color 0.1s ease-in-out;
 
   &::before {
-    content: "";
+    content: '';
     position: absolute;
     top: 0px;
     right: 0px;
@@ -295,7 +263,7 @@ const NameContainer = styled.div`
   font-weight: bold;
   font-size: 12px;
   text-align: center;
-  text-shadow: 0px 0px 5px rgba(0,0,0,1);
+  text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
   z-index: 1;
 `;
 

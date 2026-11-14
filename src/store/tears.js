@@ -29,9 +29,6 @@ const tears = createSlice({
   },
 });
 
-export const {
-  clearTears,
-  updateTear,
-} = tears.actions;
+export const { clearTears, updateTear } = tears.actions;
 
 export default tears.reducer;

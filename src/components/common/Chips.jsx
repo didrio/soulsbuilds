@@ -5,18 +5,10 @@ import OutsideClickHandler from 'react-outside-click-handler';
 import flatten from 'lodash/flatten';
 import TextInput from './TextInput';
 import FlexGroup from './FlexGroup';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_LIGHTEST_GREEN,
-} from '../../constants';
+import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '../../constants';
 import tags from '../../data/tags.json';
 
-function Chips({
-  onAdd,
-  onRemove,
-  values,
-}) {
+function Chips({ onAdd, onRemove, values }) {
   const [selectedKey, setSelectedKey] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -36,9 +28,7 @@ function Chips({
   };
 
   const handleSelectKey = (key) => () => {
-    setSelectedKey((prevKey) => (
-      prevKey === key ? null : key
-    ));
+    setSelectedKey((prevKey) => (prevKey === key ? null : key));
   };
 
   const handleAddValue = (value) => () => {
@@ -51,85 +41,47 @@ function Chips({
     setSelectedKey(null);
   };
 
-  const searchResults = useMemo(() => (
-    flatten(Object.values(tags)).filter((tag) => (
-      tag.toLowerCase().includes(searchText)
-    ))
-  ), [searchText]);
+  const searchResults = useMemo(
+    () => flatten(Object.values(tags)).filter((tag) => tag.toLowerCase().includes(searchText)),
+    [searchText],
+  );
 
   return (
     <Container>
       <ChipContainer>
         {values.map((value) => (
-          <Chip
-            key={value}
-            onClick={removeTag(value)}
-          >
+          <Chip key={value} onClick={removeTag(value)}>
             {value}
           </Chip>
         ))}
         <AddContainer>
-
-          <Chip
-            onClick={handleShowDropdown}
-          >
-            + Add Tag
-          </Chip>
+          <Chip onClick={handleShowDropdown}>+ Add Tag</Chip>
           {showDropdown ? (
-            <OutsideClickHandler
-              onOutsideClick={handleHideDropdown}
-            >
-              <Dropdown
-                vertical
-              >
+            <OutsideClickHandler onOutsideClick={handleHideDropdown}>
+              <Dropdown vertical>
                 <SearchContainer>
-                  <TextInput
-                    onChange={handleSearchChange}
-                    value={searchText}
-                  />
+                  <TextInput onChange={handleSearchChange} value={searchText} />
                 </SearchContainer>
                 {searchText ? (
-                  <ValuesContainer
-                    vertical
-                  >
+                  <ValuesContainer vertical>
                     {searchResults.map((value) => (
-                      <ValueContainer
-                        key={value}
-                        onClick={handleAddValue(value)}
-                      >
+                      <ValueContainer key={value} onClick={handleAddValue(value)}>
                         {value}
                       </ValueContainer>
                     ))}
                   </ValuesContainer>
                 ) : (
-                  <FlexGroup
-                    vertical
-                  >
+                  <FlexGroup vertical>
                     {Object.keys(tags).map((key) => (
-                      <FlexGroup
-                        key={key}
-                        vertical
-                      >
-                        <KeyContainer
-                          key={key}
-                          onClick={handleSelectKey(key)}
-                        >
-                          <FlexGroup>
-                            {key}
-                          </FlexGroup>
-                          <Caret>
-                            {selectedKey === key ? 'v' : '>'}
-                          </Caret>
+                      <FlexGroup key={key} vertical>
+                        <KeyContainer key={key} onClick={handleSelectKey(key)}>
+                          <FlexGroup>{key}</FlexGroup>
+                          <Caret>{selectedKey === key ? 'v' : '>'}</Caret>
                         </KeyContainer>
                         {selectedKey === key ? (
-                          <ValuesContainer
-                            vertical
-                          >
+                          <ValuesContainer vertical>
                             {Object.values(tags[key]).map((value) => (
-                              <ValueContainer
-                                key={value}
-                                onClick={handleAddValue(value)}
-                              >
+                              <ValueContainer key={value} onClick={handleAddValue(value)}>
                                 {value}
                               </ValueContainer>
                             ))}

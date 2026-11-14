@@ -1,19 +1,8 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_GOLD,
-  COLOR_DARK_GREEN,
-} from '../../constants';
+import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN } from '../../constants';
 
-function TextInput({
-  centered,
-  disabled,
-  onChange,
-  type,
-  value,
-}) {
+function TextInput({ centered, disabled, onChange, type, value }) {
   const handleChange = (e) => {
     const { value: inputValue } = e.target;
     onChange(inputValue, e);
@@ -42,7 +31,7 @@ const Container = styled.input`
   color: ${COLOR_GOLD};
   font-size: 16px;
   text-align: ${({ centered }) => (centered ? 'center' : 'left')};
-  font-family: garamond-premier-pro,  serif;
+  font-family: garamond-premier-pro, serif;
   box-shadow: inset 0 0 3px ${COLOR_DARK_GREEN};
 `;
 

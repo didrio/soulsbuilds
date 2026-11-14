@@ -4,18 +4,9 @@ import styled from 'styled-components';
 const getAlignSelf = ({ alignSelf }) => alignSelf;
 const getFlexBasis = ({ basis }) => basis;
 
-function FlexItem({
-  alignSelf,
-  basis,
-  children,
-  className,
-}) {
+function FlexItem({ alignSelf, basis, children, className }) {
   return (
-    <Container
-      alignSelf={alignSelf}
-      basis={basis}
-      className={className}
-    >
+    <Container alignSelf={alignSelf} basis={basis} className={className}>
       {children}
     </Container>
   );

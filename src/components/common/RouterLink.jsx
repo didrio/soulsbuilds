@@ -3,20 +3,10 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { COLOR_BLACK } from '../../constants';
 
-function RouterLink({
-  className,
-  children,
-  to,
-}) {
+function RouterLink({ className, children, to }) {
   return (
-    <Container
-      className={className}
-    >
-      <Link
-        to={to}
-      >
-        {children}
-      </Link>
+    <Container className={className}>
+      <Link to={to}>{children}</Link>
     </Container>
   );
 }

@@ -9,18 +9,9 @@ import {
   COLOR_GREEN,
 } from '../../constants';
 
-function Button({
-  className,
-  children,
-  disabled,
-  onClick,
-}) {
+function Button({ className, children, disabled, onClick }) {
   return (
-    <Container
-      className={className}
-      disabled={disabled}
-      onClick={onClick}
-    >
+    <Container className={className} disabled={disabled} onClick={onClick}>
       {children}
     </Container>
   );
@@ -39,19 +30,20 @@ const Container = styled.button`
   transition: all 0.3s ease;
   position: relative;
   display: inline-block;
-  box-shadow:inset 2px 2px 2px 0px ${COLOR_LIGHT_GOLD},
-  7px 7px 20px 0px rgba(0,0,0,.1),
-  4px 4px 5px 0px rgba(0,0,0,.1);
+  box-shadow:
+    inset 2px 2px 2px 0px ${COLOR_LIGHT_GOLD},
+    7px 7px 20px 0px rgba(0, 0, 0, 0.1),
+    4px 4px 5px 0px rgba(0, 0, 0, 0.1);
   outline: none;
   background-color: ${COLOR_GOLD};
   background-image: linear-gradient(315deg, ${COLOR_GOLD} 0%, ${COLOR_DARK_GOLD} 74%);
   border: none;
   z-index: 1;
-  font-family: garamond-premier-pro,  serif;
+  font-family: garamond-premier-pro, serif;
 
   &:after {
     position: absolute;
-    content: "";
+    content: '';
     width: 100%;
     height: 0;
     bottom: 0;
@@ -79,7 +71,7 @@ const Container = styled.button`
 
   &:disabled {
     cursor: auto;
-    opacity: .4;
+    opacity: 0.4;
   }
 `;
 

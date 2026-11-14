@@ -21,101 +21,89 @@ function BuildsList({ builds }) {
   };
 
   return (
-    <Container
-      vertical
-    >
-      {builds.filter(({ name }) => name).map((build) => (
-        <Build
-          key={build.name}
-          onClick={handleSelectBuild(build.id)}
-          vertical
-        >
-          <UpperSection>
-            <LikesContainer>
-              {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
-            </LikesContainer>
-            <NameContainer>
-              {build.name}
-            </NameContainer>
-            <LevelContainer>
-              {`Level ${build.level}`}
-            </LevelContainer>
-          </UpperSection>
-          <LowerSection>
-            <EquipmentContainer>
-              <Slot
-                affinity={build?.weaponAffinities?.[0] || null}
-                background="weapon"
-                disabled
-                item={weaponsAndShields[build?.weapons?.[0]] || null}
-                subItem={build?.weaponSkills?.[0] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-              <Slot
-                affinity={build?.weaponAffinities?.[1] || null}
-                background="weapon"
-                disabled
-                item={weaponsAndShields[build?.weapons?.[1]] || null}
-                subItem={build?.weaponSkills?.[1] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-              <Slot
-                affinity={build?.weaponAffinities?.[3] || null}
-                background="shield"
-                disabled
-                item={weaponsAndShields[build?.weapons?.[3]] || null}
-                subItem={build?.weaponSkills?.[3] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-              <Slot
-                affinity={build?.weaponAffinities?.[4] || null}
-                background="shield"
-                disabled
-                item={weaponsAndShields[build?.weapons?.[4]] || null}
-                subItem={build?.weaponSkills?.[4] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-            </EquipmentContainer>
-            <GearContainer>
-              <Slot
-                background="helm"
-                disabled
-                item={armorData.helms[build?.helm] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-              <Slot
-                background="chest"
-                disabled
-                item={armorData.chests[build?.chest] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-              <Slot
-                background="gauntlet"
-                disabled
-                item={armorData.gauntlets[build?.gauntlet] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-              <Slot
-                background="leg"
-                disabled
-                item={armorData.legs[build?.leg] || null}
-                type={SLOT_TYPE_WEAPON}
-              />
-            </GearContainer>
-          </LowerSection>
-          {build.tags.length ? (
-            <TagsSection>
-              {build.tags.map((tag) => (
-                <Tag
-                  key={tag}
-                >
-                  {tag}
-                </Tag>
-              ))}
-            </TagsSection>
-          ) : null}
-        </Build>
-      ))}
+    <Container vertical>
+      {builds
+        .filter(({ name }) => name)
+        .map((build) => (
+          <Build key={build.name} onClick={handleSelectBuild(build.id)} vertical>
+            <UpperSection>
+              <LikesContainer>
+                {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
+              </LikesContainer>
+              <NameContainer>{build.name}</NameContainer>
+              <LevelContainer>{`Level ${build.level}`}</LevelContainer>
+            </UpperSection>
+            <LowerSection>
+              <EquipmentContainer>
+                <Slot
+                  affinity={build?.weaponAffinities?.[0] || null}
+                  background="weapon"
+                  disabled
+                  item={weaponsAndShields[build?.weapons?.[0]] || null}
+                  subItem={build?.weaponSkills?.[0] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  affinity={build?.weaponAffinities?.[1] || null}
+                  background="weapon"
+                  disabled
+                  item={weaponsAndShields[build?.weapons?.[1]] || null}
+                  subItem={build?.weaponSkills?.[1] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  affinity={build?.weaponAffinities?.[3] || null}
+                  background="shield"
+                  disabled
+                  item={weaponsAndShields[build?.weapons?.[3]] || null}
+                  subItem={build?.weaponSkills?.[3] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  affinity={build?.weaponAffinities?.[4] || null}
+                  background="shield"
+                  disabled
+                  item={weaponsAndShields[build?.weapons?.[4]] || null}
+                  subItem={build?.weaponSkills?.[4] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+              </EquipmentContainer>
+              <GearContainer>
+                <Slot
+                  background="helm"
+                  disabled
+                  item={armorData.helms[build?.helm] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  background="chest"
+                  disabled
+                  item={armorData.chests[build?.chest] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  background="gauntlet"
+                  disabled
+                  item={armorData.gauntlets[build?.gauntlet] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  background="leg"
+                  disabled
+                  item={armorData.legs[build?.leg] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+              </GearContainer>
+            </LowerSection>
+            {build.tags.length ? (
+              <TagsSection>
+                {build.tags.map((tag) => (
+                  <Tag key={tag}>{tag}</Tag>
+                ))}
+              </TagsSection>
+            ) : null}
+          </Build>
+        ))}
     </Container>
   );
 }
@@ -133,7 +121,7 @@ const Build = styled(FlexGroup)`
   font-weight: bold;
   font-size: 18px;
   margin-bottom: 25px;
-  transition: background-color .1s ease-in-out;
+  transition: background-color 0.1s ease-in-out;
   border: 1px solid ${COLOR_LIGHT_GREEN};
 
   &:hover {
@@ -186,7 +174,7 @@ const NameContainer = styled(FlexGroup)`
   width: 50%;
   justify-content: center;
   font-size: 20px;
-  font-family: "OptimusPrincepsSemiBold", serif;
+  font-family: 'OptimusPrincepsSemiBold', serif;
   text-shadow: 0px 0px 3px ${COLOR_GOLD};
   color: ${COLOR_LIGHTEST_GREEN};
 `;

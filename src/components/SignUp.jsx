@@ -7,9 +7,7 @@ import TextInput from './common/TextInput';
 import Button from './common/Button';
 import FlexGroup from './common/FlexGroup';
 import LoadingAnimation from './common/LoadingAnimation';
-import {
-  DEFAULT_USER_DATA,
-} from '../constants';
+import { DEFAULT_USER_DATA } from '../constants';
 import { createUser } from '../firebase';
 import useAuth from '../hooks/useAuth';
 
@@ -58,11 +56,14 @@ function SignUp({ onSubmit }) {
     run();
   }, [email, password, name, onSubmit]);
 
-  const handleKeyDown = useCallback(({ code }) => {
-    if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
-      handleSignUp();
-    }
-  }, [handleSignUp, email, password]);
+  const handleKeyDown = useCallback(
+    ({ code }) => {
+      if (code === 'Enter' && !isEmpty(email) && !isEmpty(password)) {
+        handleSignUp();
+      }
+    },
+    [handleSignUp, email, password],
+  );
 
   useEffect(() => {
     if (document) {
@@ -84,9 +85,7 @@ function SignUp({ onSubmit }) {
   if (isSubmitting) {
     return (
       <LoadingContainer>
-        <LoadingAnimation
-          size={40}
-        />
+        <LoadingAnimation size={40} />
       </LoadingContainer>
     );
   }
@@ -94,38 +93,18 @@ function SignUp({ onSubmit }) {
   return (
     <Container>
       <Input>
-        <Label>
-          Email
-        </Label>
-        <TextInput
-          onChange={handleEmailChange}
-          type="email"
-          value={email}
-        />
+        <Label>Email</Label>
+        <TextInput onChange={handleEmailChange} type="email" value={email} />
       </Input>
       <Input>
-        <Label>
-          Password
-        </Label>
-        <TextInput
-          onChange={handlePasswordChange}
-          type="password"
-          value={password}
-        />
+        <Label>Password</Label>
+        <TextInput onChange={handlePasswordChange} type="password" value={password} />
       </Input>
       <Input>
-        <Label>
-          Display Name
-        </Label>
-        <TextInput
-          onChange={handleNameChange}
-          value={name}
-        />
+        <Label>Display Name</Label>
+        <TextInput onChange={handleNameChange} value={name} />
       </Input>
-      <RegisterButton
-        disabled={!canRegister}
-        onClick={handleSignUp}
-      >
+      <RegisterButton disabled={!canRegister} onClick={handleSignUp}>
         Register
       </RegisterButton>
     </Container>
@@ -157,7 +136,7 @@ const Input = styled(FlexGroup)`
   flex-direction: column;
   margin-right: 20px;
   width: 200px;
-  
+
   @media only screen and (max-width: 800px) {
     margin-top: 10px;
   }

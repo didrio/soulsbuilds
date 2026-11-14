@@ -9,13 +9,8 @@ export const selectSlotType = (state) => state.app.slotType;
 
 export const selectTear1 = (state) => state.tears.tear1;
 export const selectTear2 = (state) => state.tears.tear2;
-export const selectTears = createSelector(
-  selectTear1,
-  selectTear2,
-  (tear1, tear2) => (compact([
-    tear1?.name ?? null,
-    tear2?.name ?? null,
-  ])),
+export const selectTears = createSelector(selectTear1, selectTear2, (tear1, tear2) =>
+  compact([tear1?.name ?? null, tear2?.name ?? null]),
 );
 
 export const selectSpell1 = (state) => state.spells.spell1;
@@ -39,18 +34,19 @@ export const selectSpells = createSelector(
   selectSpell8,
   selectSpell9,
   selectSpell10,
-  (spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, spell9, spell10) => (compact([
-    spell1?.name ?? null,
-    spell2?.name ?? null,
-    spell3?.name ?? null,
-    spell4?.name ?? null,
-    spell5?.name ?? null,
-    spell6?.name ?? null,
-    spell7?.name ?? null,
-    spell8?.name ?? null,
-    spell9?.name ?? null,
-    spell10?.name ?? null,
-  ])),
+  (spell1, spell2, spell3, spell4, spell5, spell6, spell7, spell8, spell9, spell10) =>
+    compact([
+      spell1?.name ?? null,
+      spell2?.name ?? null,
+      spell3?.name ?? null,
+      spell4?.name ?? null,
+      spell5?.name ?? null,
+      spell6?.name ?? null,
+      spell7?.name ?? null,
+      spell8?.name ?? null,
+      spell9?.name ?? null,
+      spell10?.name ?? null,
+    ]),
 );
 
 export const selectArc = (state) => state.stats.arc;
@@ -76,12 +72,12 @@ export const selectArrows = createSelector(
   selectArrow2,
   selectArrow3,
   selectArrow4,
-  (arrow1, arrow2, arrow3, arrow4) => ([
+  (arrow1, arrow2, arrow3, arrow4) => [
     arrow1?.name ?? null,
     arrow2?.name ?? null,
     arrow3?.name ?? null,
     arrow4?.name ?? null,
-  ]),
+  ],
 );
 
 export const selectCon1 = (state) => state.equipment.con1;
@@ -105,18 +101,19 @@ export const selectCons = createSelector(
   selectCon8,
   selectCon9,
   selectCon10,
-  (con1, con2, con3, con4, con5, con6, con7, con8, con9, con10) => (compact([
-    con1?.name ?? null,
-    con2?.name ?? null,
-    con3?.name ?? null,
-    con4?.name ?? null,
-    con5?.name ?? null,
-    con6?.name ?? null,
-    con7?.name ?? null,
-    con8?.name ?? null,
-    con9?.name ?? null,
-    con10?.name ?? null,
-  ])),
+  (con1, con2, con3, con4, con5, con6, con7, con8, con9, con10) =>
+    compact([
+      con1?.name ?? null,
+      con2?.name ?? null,
+      con3?.name ?? null,
+      con4?.name ?? null,
+      con5?.name ?? null,
+      con6?.name ?? null,
+      con7?.name ?? null,
+      con8?.name ?? null,
+      con9?.name ?? null,
+      con10?.name ?? null,
+    ]),
 );
 
 export const selectTal1 = (state) => state.equipment.tal1;
@@ -128,12 +125,8 @@ export const selectTals = createSelector(
   selectTal2,
   selectTal3,
   selectTal4,
-  (tal1, tal2, tal3, tal4) => (compact([
-    tal1?.name ?? null,
-    tal2?.name ?? null,
-    tal3?.name ?? null,
-    tal4?.name ?? null,
-  ])),
+  (tal1, tal2, tal3, tal4) =>
+    compact([tal1?.name ?? null, tal2?.name ?? null, tal3?.name ?? null, tal4?.name ?? null]),
 );
 
 export const selectWeapon1 = (state) => state.equipment.weapon1;
@@ -149,14 +142,14 @@ export const selectWeapons = createSelector(
   selectWeapon4,
   selectWeapon5,
   selectWeapon6,
-  (weapon1, weapon2, weapon3, weapon4, weapon5, weapon6) => ([
+  (weapon1, weapon2, weapon3, weapon4, weapon5, weapon6) => [
     weapon1?.name ?? null,
     weapon2?.name ?? null,
     weapon3?.name ?? null,
     weapon4?.name ?? null,
     weapon5?.name ?? null,
     weapon6?.name ?? null,
-  ]),
+  ],
 );
 
 export const selectWeaponSkill1 = (state) => state.equipment.weaponSkill1;
@@ -172,14 +165,14 @@ export const selectWeaponSkills = createSelector(
   selectWeaponSkill4,
   selectWeaponSkill5,
   selectWeaponSkill6,
-  (weaponSkill1, weaponSkill2, weaponSkill3, weaponSkill4, weaponSkill5, weaponSkill6) => ([
+  (weaponSkill1, weaponSkill2, weaponSkill3, weaponSkill4, weaponSkill5, weaponSkill6) => [
     weaponSkill1,
     weaponSkill2,
     weaponSkill3,
     weaponSkill4,
     weaponSkill5,
     weaponSkill6,
-  ]),
+  ],
 );
 
 export const selectWeaponAffinity1 = (state) => state.equipment.weaponAffinity1;
@@ -196,14 +189,21 @@ export const selectWeaponAffinities = createSelector(
   selectWeaponAffinity5,
   selectWeaponAffinity6,
   // eslint-disable-next-line max-len
-  (weaponAffinity1, weaponAffinity2, weaponAffinity3, weaponAffinity4, weaponAffinity5, weaponAffinity6) => ([
+  (
     weaponAffinity1,
     weaponAffinity2,
     weaponAffinity3,
     weaponAffinity4,
     weaponAffinity5,
     weaponAffinity6,
-  ]),
+  ) => [
+    weaponAffinity1,
+    weaponAffinity2,
+    weaponAffinity3,
+    weaponAffinity4,
+    weaponAffinity5,
+    weaponAffinity6,
+  ],
 );
 
 export const selectEditWeaponSkill = createSelector(

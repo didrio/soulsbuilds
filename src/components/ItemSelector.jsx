@@ -60,7 +60,9 @@ import tears from '../data/tears.json';
 import skills from '../data/skillsIndexed.json';
 import affinitiesData from '../data/affinities.json';
 
-const skillsOptions = Object.values(skills).map(({ name }) => name).sort();
+const skillsOptions = Object.values(skills)
+  .map(({ name }) => name)
+  .sort();
 const { affinities } = affinitiesData;
 
 function ItemSelector() {
@@ -119,9 +121,9 @@ function ItemSelector() {
     }
     let sortedItems = sortBy(items, ({ name }) => name);
     if (searchText) {
-      sortedItems = sortedItems.filter(({ name }) => (
-        name.toLowerCase().includes(searchText.toLowerCase())
-      ));
+      sortedItems = sortedItems.filter(({ name }) =>
+        name.toLowerCase().includes(searchText.toLowerCase()),
+      );
     }
     return sortedItems;
   }, [slotType, searchText]);
@@ -181,26 +183,15 @@ function ItemSelector() {
   console.log('editWeaponAffinity', editWeaponAffinity);
 
   const getItem = (item) => (
-    <RowContainer
-      key={item.name}
-      onClick={handleSelectItem(item)}
-    >
+    <RowContainer key={item.name} onClick={handleSelectItem(item)}>
       <RowName>
         <ImageContainer>
           {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <img
-            src={`/assets/${item.imageUrl}`}
-          />
+          <img src={`/assets/${item.imageUrl}`} />
         </ImageContainer>
-        <FlexItem>
-          {item.name}
-        </FlexItem>
+        <FlexItem>{item.name}</FlexItem>
       </RowName>
-      {!item.slot ? null : (
-        <SlotContainer>
-          {item.slot}
-        </SlotContainer>
-      )}
+      {!item.slot ? null : <SlotContainer>{item.slot}</SlotContainer>}
     </RowContainer>
   );
 
@@ -208,21 +199,13 @@ function ItemSelector() {
     <Container>
       <TopBar>
         <SearchContainer>
-          <TextInput
-            onChange={handleSearch}
-            placeholder="Search"
-            value={searchText}
-          />
+          <TextInput onChange={handleSearch} placeholder="Search" value={searchText} />
         </SearchContainer>
-        <CloseButton
-          onClick={handleClose}
-        />
+        <CloseButton onClick={handleClose} />
       </TopBar>
       {slotType === SLOT_TYPE_WEAPON ? (
         <SkillContainer>
-          <SkillLabel>
-            Add Affinity
-          </SkillLabel>
+          <SkillLabel>Add Affinity</SkillLabel>
           <SkillDropDown>
             <DropDown
               onChange={handleAffinityChange}
@@ -231,9 +214,7 @@ function ItemSelector() {
               value={editWeaponAffinity || ''}
             />
           </SkillDropDown>
-          <SkillLabel>
-            Add Skill
-          </SkillLabel>
+          <SkillLabel>Add Skill</SkillLabel>
           <SkillDropDown>
             <DropDown
               onChange={handleSkillChange}
@@ -244,9 +225,7 @@ function ItemSelector() {
           </SkillDropDown>
         </SkillContainer>
       ) : null}
-      <Contents>
-        {options.map((option) => getItem(option))}
-      </Contents>
+      <Contents>{options.map((option) => getItem(option))}</Contents>
     </Container>
   );
 }

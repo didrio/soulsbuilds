@@ -1,23 +1,14 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import FlexGroup from './FlexGroup';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-} from '../../constants';
+import { COLOR_GREEN, COLOR_LIGHT_GREEN } from '../../constants';
 
 function CloseButton({ onClick }) {
   const handleClose = () => {
     onClick();
   };
 
-  return (
-    <Container
-      onClick={handleClose}
-    >
-      X
-    </Container>
-  );
+  return <Container onClick={handleClose}>X</Container>;
 }
 
 const Container = styled(FlexGroup)`

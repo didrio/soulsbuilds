@@ -3,9 +3,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
-import {
-  COLOR_LIGHTEST_GREEN,
-} from '../constants';
+import { COLOR_LIGHTEST_GREEN } from '../constants';
 import {
   selectArc,
   selectDex,
@@ -72,147 +70,75 @@ function StatEditor({ editable, level }) {
   };
 
   return (
-    <FlexGroup
-      vertical
-    >
+    <FlexGroup vertical>
       <HeaderContainer>
-        <Header>
-          Stats
-        </Header>
-        <Level>
-          Level
-          {' '}
-          {level}
-        </Level>
+        <Header>Stats</Header>
+        <Level>Level {level}</Level>
       </HeaderContainer>
       <StatsContainer>
         <Stat>
-          <StatName>
-            ARC
-          </StatName>
+          <StatName>ARC</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleArcChange}
-                  value={arc}
-                />
-              ) : arc}
+              {editable ? <TextInput centered onChange={handleArcChange} value={arc} /> : arc}
             </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
-          <StatName>
-            DEX
-          </StatName>
+          <StatName>DEX</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleDexChange}
-                  value={dex}
-                />
-              ) : dex}
+              {editable ? <TextInput centered onChange={handleDexChange} value={dex} /> : dex}
             </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
-          <StatName>
-            END
-          </StatName>
+          <StatName>END</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleEndChange}
-                  value={end}
-                />
-              ) : end}
+              {editable ? <TextInput centered onChange={handleEndChange} value={end} /> : end}
             </StatContainer>
           </StatInput>
         </Stat>
         <StatNoMargin>
-          <StatName>
-            FAI
-          </StatName>
+          <StatName>FAI</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleFaiChange}
-                  value={fai}
-                />
-              ) : fai}
+              {editable ? <TextInput centered onChange={handleFaiChange} value={fai} /> : fai}
             </StatContainer>
           </StatInput>
         </StatNoMargin>
       </StatsContainer>
       <StatsContainer>
         <Stat>
-          <StatName>
-            INT
-          </StatName>
+          <StatName>INT</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleIntChange}
-                  value={int}
-                />
-              ) : int}
+              {editable ? <TextInput centered onChange={handleIntChange} value={int} /> : int}
             </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
-          <StatName>
-            MIN
-          </StatName>
+          <StatName>MIN</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleMindChange}
-                  value={mind}
-                />
-              ) : mind}
+              {editable ? <TextInput centered onChange={handleMindChange} value={mind} /> : mind}
             </StatContainer>
           </StatInput>
         </Stat>
         <Stat>
-          <StatName>
-            STR
-          </StatName>
+          <StatName>STR</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleStrChange}
-                  value={str}
-                />
-              ) : str}
+              {editable ? <TextInput centered onChange={handleStrChange} value={str} /> : str}
             </StatContainer>
           </StatInput>
         </Stat>
         <StatNoMargin>
-          <StatName>
-            VIG
-          </StatName>
+          <StatName>VIG</StatName>
           <StatInput>
             <StatContainer>
-              {editable ? (
-                <TextInput
-                  centered
-                  onChange={handleVigorChange}
-                  value={vigor}
-                />
-              ) : vigor}
+              {editable ? <TextInput centered onChange={handleVigorChange} value={vigor} /> : vigor}
             </StatContainer>
           </StatInput>
         </StatNoMargin>

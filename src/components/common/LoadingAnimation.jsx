@@ -6,9 +6,7 @@ const getSize = ({ size }) => `${size}px`;
 
 function LoadingAnimation({ size }) {
   return (
-    <Container
-      size={size}
-    >
+    <Container size={size}>
       <div />
       <div />
       <div />

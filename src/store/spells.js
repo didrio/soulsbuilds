@@ -69,9 +69,6 @@ const spells = createSlice({
   },
 });
 
-export const {
-  clearSpells,
-  updateSpell,
-} = spells.actions;
+export const { clearSpells, updateSpell } = spells.actions;
 
 export default spells.reducer;

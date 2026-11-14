@@ -1,6 +1,4 @@
 {
-  "extends": ["airbnb", "airbnb/hooks", "plugin:react/jsx-runtime"],
-  "rules": {
-    "no-console": "off"
-  }
+  'extends': ['airbnb', 'airbnb/hooks', 'plugin:react/jsx-runtime'],
+  'rules': { 'no-console': 'off' },
 }

@@ -1,11 +1,7 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import FlexGroup from './common/FlexGroup';
-import {
-  COLOR_DARKER_GREEN,
-  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
-  COLOR_GREEN,
-} from '../constants';
+import { COLOR_DARKER_GREEN, COLOR_LIGHTEST_GREEN_LOW_OPACITY, COLOR_GREEN } from '../constants';
 
 const TIMEOUT_LENGTH = 1500;
 
@@ -64,38 +60,18 @@ function GameSelector() {
 
   return (
     <Container>
-      <Game>
-        Elden Ring
-      </Game>
-      <Game
-        onClick={handleShowFirstComingSoon}
-      >
+      <Game>Elden Ring</Game>
+      <Game onClick={handleShowFirstComingSoon}>
         Dark Souls
-        <ComingSoon
-          visible={showFirstComingSoon}
-        >
-          Coming soon!
-        </ComingSoon>
+        <ComingSoon visible={showFirstComingSoon}>Coming soon!</ComingSoon>
       </Game>
-      <Game
-        onClick={handleShowSecondComingSoon}
-      >
+      <Game onClick={handleShowSecondComingSoon}>
         Dark Souls II
-        <ComingSoon
-          visible={showSecondComingSoon}
-        >
-          Coming soon!
-        </ComingSoon>
+        <ComingSoon visible={showSecondComingSoon}>Coming soon!</ComingSoon>
       </Game>
-      <Game
-        onClick={handleShowThirdComingSoon}
-      >
+      <Game onClick={handleShowThirdComingSoon}>
         Dark Souls III
-        <ComingSoon
-          visible={showThirdComingSoon}
-        >
-          Coming soon!
-        </ComingSoon>
+        <ComingSoon visible={showThirdComingSoon}>Coming soon!</ComingSoon>
       </Game>
     </Container>
   );

@@ -18,13 +18,9 @@ function TearEditor({ editable }) {
   };
 
   return (
-    <Container
-      vertical
-    >
+    <Container vertical>
       <HeaderContainer>
-        <Header>
-          Flask of Wondrous Physick
-        </Header>
+        <Header>Flask of Wondrous Physick</Header>
       </HeaderContainer>
       <SlotContainer>
         <Slot

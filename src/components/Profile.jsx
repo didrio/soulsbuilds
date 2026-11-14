@@ -5,9 +5,7 @@ import FlexGroup from './common/FlexGroup';
 import BuildsList from './common/BuildsList';
 import Button from './common/Button';
 import { getBuild, getUser } from '../firebase';
-import {
-  COLOR_LIGHTEST_GREEN,
-} from '../constants';
+import { COLOR_LIGHTEST_GREEN } from '../constants';
 import useAuth from '../hooks/useAuth';
 
 function Profile() {
@@ -40,9 +38,7 @@ function Profile() {
   useEffect(() => {
     if (user && Array.isArray(user.builds) && user.builds.length > 0) {
       const run = async () => {
-        const result = await Promise.all(user.builds.map((buildId) => (
-          getBuild(buildId)
-        )));
+        const result = await Promise.all(user.builds.map((buildId) => getBuild(buildId)));
         setBuilds(result);
       };
       run();
@@ -56,41 +52,23 @@ function Profile() {
   const isCurrentUser = userId && auth?.uid === userId;
 
   return (
-    <Container
-      vertical
-    >
-      <HeaderContainer
-        vertical
-      >
-        <Header>
-          {user?.name || ''}
-        </Header>
+    <Container vertical>
+      <HeaderContainer vertical>
+        <Header>{user?.name || ''}</Header>
       </HeaderContainer>
       {builds.length > 0 ? (
-        <BuildListContainer
-          vertical
-        >
-          <SubHeader>
-            Builds
-          </SubHeader>
+        <BuildListContainer vertical>
+          <SubHeader>Builds</SubHeader>
           <BuildsListContainer>
-            <BuildsList
-              builds={builds}
-            />
+            <BuildsList builds={builds} />
           </BuildsListContainer>
         </BuildListContainer>
       ) : (
-        <SubHeader>
-          This user has no builds
-        </SubHeader>
+        <SubHeader>This user has no builds</SubHeader>
       )}
       {isCurrentUser ? (
         <NewBuildContainer>
-          <Button
-            onClick={handleNavigateNewBuild}
-          >
-            + Create New Build
-          </Button>
+          <Button onClick={handleNavigateNewBuild}>+ Create New Build</Button>
         </NewBuildContainer>
       ) : null}
     </Container>
