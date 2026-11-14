@@ -1,6 +1,6 @@
 ---
 name: wrap
-description: End a work session — final quality pass, update TICKETS.md (outcomes, handoff notes, new or reordered tickets, next pick with recommended model/effort/plan mode), update docs, commit, and print the steps for the next session. Only when the user types /wrap.
+description: End a work session — final quality pass, update TICKETS.md (outcomes, handoff notes, new or reordered tickets, next pick with recommended model/effort/plan mode), update docs, commit and push, and print the steps for the next session. Only when the user types /wrap.
 disable-model-invocation: true
 ---
 
@@ -47,21 +47,25 @@ Goal: the best ratio of quality to cost and time. Pick the **cheapest row that w
 - Torn between two rows: go higher for things that are expensive to change later (Firestore model, rules, item
   IDs, auth, routes), lower for everything else.
 
-## 3. Commit
+## 3. Commit and push
 
 - Stage everything that belongs to the session's work (`git status` must end clean, apart from intentionally
   untracked local files).
 - Message: `T5: <summary>` (several tickets: `T5, T6: …`; no ticket: a plain summary), then short bullets of what
   changed, then the attribution trailer your harness asks for.
-- Commit on the current branch. **Pushing asks first** (the repo is public and CI runs on push). If the owner
-  makes pushing on wrap a standing call, record it with a date in AGENTS.md "Working with the owner".
+- Commit on the current branch (normally `main`), then **push it**: `git push`, or `git push -u origin <branch>`
+  when it has no upstream yet. This is a standing approval (owner's call, 2026-11-14): don't ask first.
+- **Never force-push.** If the push is rejected (remote has new commits, auth fails), stop and tell the user what
+  happened; don't rebase, merge or retry with force on your own.
+- After pushing to `main`, note the CI run (`gh run list --branch main --limit 1`); if it's still running, say
+  so in the hand-off rather than waiting on it.
 
 ## 4. Hand off
 
 End your reply with exactly this shape (fill in the values):
 
 ```
-✓ Wrapped T5 — <title> (<short hash>)
+✓ Wrapped T5 — <title> (<short hash>, pushed to <branch>; CI <passed|running|failed>)
 
 Next session:
 1. /clear
@@ -69,5 +73,6 @@ Next session:
 3. /start T6 — <title>
 ```
 
-Add at most two lines for anything the user must do before then (e.g. a console setting only they can change).
-Then stop: the session is over.
+The settings in line 2 come from the next ticket's **Session** line (effort = thinking level). Add at most two
+lines for anything the user must do before then (e.g. a console setting only they can change). Then stop: the
+session is over.

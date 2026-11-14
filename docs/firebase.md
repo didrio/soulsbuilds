@@ -44,8 +44,8 @@ public by design; security rules protect the data.
 ## Credentials and admin scripts
 
 - **No service-account keys in the repo or in CI secrets.** In 2022 `serviceAccount.json` (an Admin SDK key) was
-  committed to this public repo; it was removed in T1 and must be **revoked** in Google Cloud Console → IAM →
-  Service Accounts → `firebase-adminsdk-…` → Keys (key id starting `c33393`).
+  committed to this public repo; it was removed in T1 and **revoked** by the owner on 2026-11-14 (Google
+  Cloud Console → IAM → Service Accounts → `firebase-adminsdk-…` → Keys, key id starting `c33393`).
 - Admin scripts (migrations, exports) use Application Default Credentials: the owner runs
   `gcloud auth application-default login` and the script uses `initializeApp({ projectId: 'soulsbuilds' })`.
   Scripts default to dry-run and say exactly what they'd change.

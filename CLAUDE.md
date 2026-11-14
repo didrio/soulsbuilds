@@ -17,4 +17,5 @@
   front, keep the plan short (what changes, where, how it's verified). If the plan spans sessions, write it as
   tickets in `TICKETS.md`: the plan file doesn't survive `/clear`.
 - Permissions: routine checks are pre-allowed in `.claude/settings.json`; deploys, anything with
-  `--project soulsbuilds`, and `git push` always ask.
+  `--project soulsbuilds`, and `git push` show a permission prompt. `/wrap` still pushes without asking in chat
+  (owner's call): the prompt is the only confirmation. Never force-push.

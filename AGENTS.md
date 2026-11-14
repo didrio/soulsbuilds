@@ -76,7 +76,8 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
   briefly in web-dev terms; skip basics.
 - Pushback welcome: give an honest opinion, propose the simpler option when there is one, say where you deviated.
 - Done properly, but time and tokens matter: read narrowly, one ticket per session, docs ready for a fresh session.
-- Commit only as part of `/wrap` or when asked; **pushing always asks** (public repo).
+- **`/wrap` commits and pushes** the current branch (owner's call, 2026-11-14); otherwise commit or push only
+  when asked. Work happens on `main`. Never force-push.
 - End every reply that finishes a step with a short **Next for you** line: the exact command to type, a question
   to answer, or "nothing, I'm continuing".
 
