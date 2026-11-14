@@ -4,7 +4,7 @@ import { COLOR_LIGHT_GRAY } from '../../constants';
 
 const getSize = ({ size }) => `${size}px`;
 
-function LoadingAnimation({ size }) {
+function LoadingAnimation({ size = 20 }) {
   return (
     <Container size={size}>
       <div />
@@ -57,10 +57,6 @@ const Container = styled.div`
 
 LoadingAnimation.propTypes = {
   size: PropTypes.oneOfType([PropTypes.number, PropTypes.bool]),
-};
-
-LoadingAnimation.defaultProps = {
-  size: 20,
 };
 
 export default LoadingAnimation;

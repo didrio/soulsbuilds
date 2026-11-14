@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 import { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
@@ -28,16 +27,16 @@ const SLOT_SIZE_XSMALL = '50px';
 const SLOT_SIZE_XXSMALL = '40px';
 
 function Slot({
-  affinity,
-  affinityId,
-  background,
-  disabled,
-  id,
-  item,
-  onRemove,
-  size,
-  subId,
-  subItem,
+  affinity = '',
+  affinityId = '',
+  background = '',
+  disabled = false,
+  id = '',
+  item = null,
+  onRemove = noop,
+  size = null,
+  subId = '',
+  subItem = null,
   type,
 }) {
   const dispatch = useDispatch();
@@ -328,19 +327,6 @@ Slot.propTypes = {
   subId: PropTypes.string,
   subItem: PropTypes.string,
   type: PropTypes.oneOf(SLOT_TYPES).isRequired,
-};
-
-Slot.defaultProps = {
-  affinity: '',
-  affinityId: '',
-  background: '',
-  disabled: false,
-  id: '',
-  item: null,
-  onRemove: noop,
-  subId: '',
-  subItem: null,
-  size: null,
 };
 
 export default Slot;

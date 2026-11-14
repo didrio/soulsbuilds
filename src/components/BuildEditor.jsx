@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch, batch } from 'react-redux';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 import MDEditor from '@uiw/react-md-editor';
@@ -26,6 +26,7 @@ import weaponsAndShieldsData from '../data/weaponsAndShields.json';
 import spellsData from '../data/spells.json';
 import talismansData from '../data/talismans.json';
 import tearsData from '../data/tears.json';
+import { calculateLevel } from '../lib/buildMath';
 import { clearApp } from '../store/app';
 import {
   COLOR_DARK_GREEN,
@@ -156,21 +157,7 @@ function BuildEditor() {
   };
 
   const level = useMemo(
-    () =>
-      String(
-        Math.max(
-          Number(arc) +
-            Number(dex) +
-            Number(end) +
-            Number(fai) +
-            Number(int) +
-            Number(mind) +
-            Number(str) +
-            Number(vigor) -
-            79,
-          1,
-        ),
-      ),
+    () => String(calculateLevel({ arc, dex, end, fai, int, mind, str, vigor })),
     [arc, dex, end, fai, int, mind, str, vigor],
   );
 

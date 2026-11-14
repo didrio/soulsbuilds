@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import isEmpty from 'lodash/isEmpty';
 import styled from 'styled-components';
 import TextInput from './common/TextInput';

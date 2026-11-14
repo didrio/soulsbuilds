@@ -4,7 +4,15 @@ import noop from 'lodash/noop';
 
 const getFlexDirection = ({ vertical }) => (vertical ? 'column' : 'row');
 
-function FlexGroup({ basis, children, className, onClick, onMouseEnter, onMouseLeave, vertical }) {
+function FlexGroup({
+  basis = '1',
+  children,
+  className = '',
+  onClick = noop,
+  onMouseEnter = noop,
+  onMouseLeave = noop,
+  vertical = false,
+}) {
   const handleClick = () => {
     onClick();
   };
@@ -44,15 +52,6 @@ FlexGroup.propTypes = {
   onMouseEnter: PropTypes.func,
   onMouseLeave: PropTypes.func,
   vertical: PropTypes.bool,
-};
-
-FlexGroup.defaultProps = {
-  basis: '1',
-  className: '',
-  onClick: noop,
-  onMouseEnter: noop,
-  onMouseLeave: noop,
-  vertical: false,
 };
 
 export default FlexGroup;

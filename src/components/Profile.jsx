@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import styled from 'styled-components';
 import FlexGroup from './common/FlexGroup';
 import BuildsList from './common/BuildsList';

@@ -1,12 +1,14 @@
 import { initializeApp } from 'firebase/app';
 import {
+  connectAuthEmulator,
   createUserWithEmailAndPassword,
   getAuth,
   signInWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { getAnalytics } from 'firebase/analytics';
+import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import {
+  connectFirestoreEmulator,
   getFirestore,
   setDoc,
   collection,
@@ -16,7 +18,19 @@ import {
   updateDoc,
 } from 'firebase/firestore';
 
-const config = {
+// Local dev (`npm run dev`) and tests always talk to the Firebase emulators under the `demo-soulsbuilds`
+// project. A `demo-` project has no real backend, so local work can never touch production.
+// Production builds (`vite build`, also what `npm run preview` serves) use the real project below.
+// The web config is public by design (it identifies the project; security rules protect the data).
+export const USE_EMULATORS = import.meta.env.DEV;
+
+// Keep in sync with "emulators" in firebase.json.
+export const EMULATOR_PROJECT_ID = 'demo-soulsbuilds';
+const EMULATOR_HOST = '127.0.0.1';
+const AUTH_EMULATOR_PORT = 9099;
+const FIRESTORE_EMULATOR_PORT = 8085;
+
+const productionConfig = {
   apiKey: 'AIzaSyB2A_BSdKqYsLDe2jPSKbnMyu8JxhJFtow',
   authDomain: 'soulsbuilds.firebaseapp.com',
   projectId: 'soulsbuilds',
@@ -26,10 +40,27 @@ const config = {
   measurementId: 'G-EXTD6Y44QT',
 };
 
-const firebaseApp = initializeApp(config);
+const emulatorConfig = {
+  apiKey: 'demo-api-key',
+  authDomain: `${EMULATOR_PROJECT_ID}.firebaseapp.com`,
+  projectId: EMULATOR_PROJECT_ID,
+};
+
+const firebaseApp = initializeApp(USE_EMULATORS ? emulatorConfig : productionConfig);
 export const auth = getAuth(firebaseApp);
-export const analytics = getAnalytics(firebaseApp);
 export const firestore = getFirestore(firebaseApp);
+
+if (USE_EMULATORS) {
+  connectAuthEmulator(auth, `http://${EMULATOR_HOST}:${AUTH_EMULATOR_PORT}`, {
+    disableWarnings: true,
+  });
+  connectFirestoreEmulator(firestore, EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
+} else {
+  // Analytics only in production, and only where the browser supports it. (Consent: T12.)
+  isAnalyticsSupported().then((supported) => {
+    if (supported) getAnalytics(firebaseApp);
+  });
+}
 
 export const login = async (email, password) => {
   let success = true;

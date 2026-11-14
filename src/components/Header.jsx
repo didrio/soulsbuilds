@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import FlexGroup from './common/FlexGroup';
 import { logout } from '../firebase';
 import useAuth from '../hooks/useAuth';

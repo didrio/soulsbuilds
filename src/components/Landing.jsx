@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import compact from 'lodash/compact';
 import sortBy from 'lodash/sortBy';
 import styled from 'styled-components';
-import OutsideClickHandler from 'react-outside-click-handler';
+import OutsideClickHandler from './common/OutsideClickHandler';
 import FlexGroup from './common/FlexGroup';
 import TextInput from './common/TextInput';
 import Chips from './common/Chips';

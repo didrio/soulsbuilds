@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import FlexGroup from './FlexGroup';
 import Slot from './Slot';
 import {
@@ -13,7 +13,8 @@ import {
 import weaponsAndShields from '../../data/weaponsAndShields.json';
 import armorData from '../../data/armorIndexed.json';
 
-function BuildsList({ builds }) {
+/** @param {{ builds?: Array<Record<string, any>> }} props (typed properly in T2) */
+function BuildsList({ builds = [] }) {
   const navigate = useNavigate();
 
   const handleSelectBuild = (id) => () => {
@@ -200,10 +201,6 @@ const Tag = styled(FlexGroup)`
 
 BuildsList.propTypes = {
   builds: PropTypes.arrayOf(PropTypes.objectOf(PropTypes.any)),
-};
-
-BuildsList.defaultProps = {
-  builds: [],
 };
 
 export default BuildsList;

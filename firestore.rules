@@ -1,9 +1,42 @@
 rules_version = '2';
+
+// INTERIM RULES (T1) for the local emulators only. NOT deployed: production still has the
+// expired 2022 test-mode rules, which deny everything. T3 replaces this file with the real
+// rules for data model v2, plus rules tests. Don't deploy this file.
+//
+// They match the current (v1) data model so local dev works:
+//   users/{uid}:   { admin, email, name, builds: [buildId], likedBuilds: [buildId] }
+//   builds/{id}:   { user: uid, name, ..., likes: number, comments: [{ user, comment, date }] }
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if
-          request.time < timestamp.date(2022, 5, 17);
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function onlyChanges(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if signedIn() && request.auth.uid == userId
+        && request.resource.data.admin == false;
+      // A user edits their own doc, but never their admin flag.
+      allow update: if signedIn() && request.auth.uid == userId
+        && request.resource.data.admin == resource.data.admin;
+      allow delete: if false;
+    }
+
+    match /builds/{buildId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.user == request.auth.uid;
+      // The owner edits everything (except ownership); anyone signed in may like or comment.
+      allow update: if signedIn() && (
+        (resource.data.user == request.auth.uid
+          && request.resource.data.user == resource.data.user)
+        || onlyChanges(['likes', 'comments'])
+      );
+      allow delete: if signedIn() && resource.data.user == request.auth.uid;
     }
   }
 }

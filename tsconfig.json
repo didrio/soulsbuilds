@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    // T1: the app is still JavaScript. allowJs lets TS/tests import it; checkJs stays off until
+    // T2 converts each file to .ts/.tsx (then remove both lines).
+    "allowJs": true,
+    "checkJs": false,
+    "types": ["vite/client", "node"]
+  },
+  "include": ["src", "scripts", "vite.config.ts", "eslint.config.js"],
+  "exclude": ["scripts/legacy-data", "dist", "node_modules"]
+}

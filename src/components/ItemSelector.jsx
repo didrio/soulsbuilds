@@ -175,12 +175,8 @@ function ItemSelector() {
   };
 
   const handleAffinityChange = (value) => {
-    console.log('editAffinitySlot', editAffinitySlot);
-    console.log('value', value);
     dispatch(updateWeaponAffinity({ id: editAffinitySlot, item: value }));
   };
-
-  console.log('editWeaponAffinity', editWeaponAffinity);
 
   const getItem = (item) => (
     <RowContainer key={item.name} onClick={handleSelectItem(item)}>

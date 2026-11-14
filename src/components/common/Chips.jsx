@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
-import OutsideClickHandler from 'react-outside-click-handler';
+import OutsideClickHandler from './OutsideClickHandler';
 import flatten from 'lodash/flatten';
 import TextInput from './TextInput';
 import FlexGroup from './FlexGroup';

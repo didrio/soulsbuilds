@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD } from '../../constants';
 
-function TextAreaInput({ disabled, onChange, value }) {
+function TextAreaInput({ disabled = false, onChange, value }) {
   const handleChange = (e) => {
     const { value: inputValue } = e.target;
     onChange(inputValue, e);
@@ -34,10 +34,6 @@ TextAreaInput.propTypes = {
   disabled: PropTypes.bool,
   onChange: PropTypes.func.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-};
-
-TextAreaInput.defaultProps = {
-  disabled: false,
 };
 
 export default TextAreaInput;

@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring */
 import { createSelector } from '@reduxjs/toolkit';
 import compact from 'lodash/compact';
 
@@ -188,7 +187,7 @@ export const selectWeaponAffinities = createSelector(
   selectWeaponAffinity4,
   selectWeaponAffinity5,
   selectWeaponAffinity6,
-  // eslint-disable-next-line max-len
+
   (
     weaponAffinity1,
     weaponAffinity2,

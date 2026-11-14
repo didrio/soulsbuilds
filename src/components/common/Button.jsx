@@ -9,7 +9,7 @@ import {
   COLOR_GREEN,
 } from '../../constants';
 
-function Button({ className, children, disabled, onClick }) {
+function Button({ className = '', children, disabled = false, onClick }) {
   return (
     <Container className={className} disabled={disabled} onClick={onClick}>
       {children}
@@ -80,11 +80,6 @@ Button.propTypes = {
   className: PropTypes.string,
   disabled: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
-};
-
-Button.defaultProps = {
-  className: '',
-  disabled: false,
 };
 
 export default Button;

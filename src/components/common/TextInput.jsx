@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN } from '../../constants';
 
-function TextInput({ centered, disabled, onChange, type, value }) {
+function TextInput({ centered = false, disabled = false, onChange, type = 'text', value }) {
   const handleChange = (e) => {
     const { value: inputValue } = e.target;
     onChange(inputValue, e);
@@ -41,12 +41,6 @@ TextInput.propTypes = {
   onChange: PropTypes.func.isRequired,
   type: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-};
-
-TextInput.defaultProps = {
-  centered: false,
-  disabled: false,
-  type: 'text',
 };
 
 export default TextInput;

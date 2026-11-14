@@ -1,66 +1,75 @@
 {
   "name": "soulsbuilds",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "dependencies": {
-    "@reduxjs/toolkit": "^1.8.1",
-    "@testing-library/jest-dom": "^5.16.4",
-    "@testing-library/react": "^13.1.1",
-    "@testing-library/user-event": "^13.5.0",
-    "@uiw/react-md-editor": "^3.12.1",
-    "cheerio": "^1.0.0-rc.10",
-    "firebase": "^9.6.11",
-    "firestore-export-import": "^1.1.0",
-    "imagemin": "^8.0.1",
-    "imagemin-pngquant": "^9.0.2",
-    "lodash": "^4.17.21",
-    "nanoid": "^3.3.3",
-    "node-fetch": "^3.2.3",
-    "prop-types": "^15.8.1",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-outside-click-handler": "^1.3.0",
-    "react-redux": "^8.0.0",
-    "react-router-dom": "^6.3.0",
-    "react-scripts": "5.0.1",
-    "redux": "^4.1.2",
-    "rehype-sanitize": "^5.0.1",
-    "request": "^2.88.2",
-    "styled-components": "^5.3.5",
-    "web-vitals": "^2.1.4"
+  "type": "module",
+  "engines": {
+    "node": ">=24"
   },
   "scripts": {
-    "build": "react-scripts build",
-    "deploy": "npm run build && firebase deploy --only hosting",
-    "deploy-all": "npm run build && firebase deploy",
-    "eject": "react-scripts eject",
-    "start": "react-scripts start",
-    "test": "react-scripts test"
+    "dev": "node scripts/firebase.mjs emulators:exec --project demo-soulsbuilds --only auth,firestore --ui \"node scripts/seed.mjs && vite\"",
+    "dev:vite": "vite",
+    "emulators": "node scripts/firebase.mjs emulators:start --project demo-soulsbuilds --only auth,firestore",
+    "seed": "node scripts/seed.mjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "screenshot": "node scripts/screenshot.mjs",
+    "doctor": "node scripts/doctor.mjs",
+    "deploy": "npm run check && node scripts/firebase.mjs deploy --project soulsbuilds --only hosting"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@emotion/is-prop-valid": "^1.4.0",
+    "@reduxjs/toolkit": "^2.14.0",
+    "@uiw/react-md-editor": "^4.2.3",
+    "firebase": "^12.19.0",
+    "lodash": "^4.18.1",
+    "nanoid": "^5.1.16",
+    "prop-types": "^15.8.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-redux": "^9.3.1",
+    "react-router": "^7.18.5",
+    "rehype-sanitize": "^6.0.0",
+    "styled-components": "^6.6.0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "allowScripts": {
+    "@firebase/util": false,
+    "protobufjs": false,
+    "re2": false,
+    "fsevents": false
   },
   "devDependencies": {
-    "eslint": "^8.13.0",
-    "eslint-config-airbnb": "^19.0.4",
-    "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-jsx-a11y": "^6.5.1",
-    "eslint-plugin-react": "^7.29.4",
-    "eslint-plugin-react-hooks": "^4.4.0"
+    "@eslint/js": "^9.39.5",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
+    "@types/lodash": "^4.17.27",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "firebase-admin": "^14.5.1",
+    "firebase-tools": "^15.36.0",
+    "globals": "^17.14.0",
+    "jsdom": "^31.0.1",
+    "playwright-core": "^1.65.1",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.72.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
   }
 }

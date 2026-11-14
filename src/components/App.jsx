@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import { useDispatch, useSelector } from 'react-redux';
-import { Routes, Route } from 'react-router-dom';
-import OutsideClickHandler from 'react-outside-click-handler';
+import { Routes, Route } from 'react-router';
+import OutsideClickHandler from './common/OutsideClickHandler';
 import FlexGroup from './common/FlexGroup';
 import Header from './Header';
 import BuildEditor from './BuildEditor';

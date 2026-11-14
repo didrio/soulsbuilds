@@ -1,0 +1,3 @@
+# Formatting-only commits (git config blame.ignoreRevsFile .git-blame-ignore-revs)
+# Prettier reformat, 2026-11-14
+e401e57ca0aa897f068d4a40c4cfda3f86df5921
