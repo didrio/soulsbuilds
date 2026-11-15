@@ -12,6 +12,10 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
+    // scripts/data/*.ts run directly under Node 24 (type stripping): imports keep their .ts extension
+    // and only erasable syntax is allowed (no enums, namespaces or parameter properties).
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {

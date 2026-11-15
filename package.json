@@ -11,6 +11,7 @@
     "dev:vite": "vite",
     "emulators": "node scripts/firebase.mjs emulators:start --project demo-soulsbuilds --only auth,firestore",
     "seed": "node scripts/seed.mjs",
+    "data": "node scripts/data/build.ts",
     "build": "vite build",
     "preview": "vite preview",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run test && npm run build",
@@ -72,9 +73,11 @@
     "jsdom": "^31.0.1",
     "playwright-core": "^1.65.1",
     "prettier": "^3.10.1",
+    "sharp": "^0.35.5",
     "typescript": "~6.0",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.8",
-    "vitest": "^5.1.0"
+    "vitest": "^5.1.0",
+    "zod": "^4.6.7"
   }
 }

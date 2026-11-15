@@ -85,7 +85,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['scripts/**/*.{js,mjs}', '*.config.{js,ts}', '.claude/**/*.{js,mjs}'],
+    files: ['scripts/**/*.{js,mjs,ts}', '*.config.{js,ts}', '.claude/**/*.{js,mjs}'],
     languageOptions: { globals: globals.node },
     rules: { 'no-console': 'off' },
   },

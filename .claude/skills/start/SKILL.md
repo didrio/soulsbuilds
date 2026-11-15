@@ -18,7 +18,7 @@ spend this session's context on the work, not on re-investigating the project.
 - `git status --short`, `git branch --show-current` and `git log --oneline -5`. Uncommitted changes mean a
   previous session didn't wrap: ask whether they belong to this ticket before touching anything.
 - Don't explore the codebase broadly. Read only what the ticket's **Context** points to, plus what the work
-  turns out to need. Never Read `src/data/*.json` whole (grep / `node -e` instead).
+  turns out to need. Never Read `src/data/**/*.json` whole (grep / `node -e` instead).
 
 ## 2. Pick the ticket
 

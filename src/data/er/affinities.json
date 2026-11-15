@@ -1,0 +1,15 @@
+[
+  {"key":"standard","name":"Standard","offset":0},
+  {"key":"heavy","name":"Heavy","offset":100},
+  {"key":"keen","name":"Keen","offset":200},
+  {"key":"quality","name":"Quality","offset":300},
+  {"key":"fire","name":"Fire","offset":400},
+  {"key":"flame-art","name":"Flame Art","offset":500},
+  {"key":"lightning","name":"Lightning","offset":600},
+  {"key":"sacred","name":"Sacred","offset":700},
+  {"key":"magic","name":"Magic","offset":800},
+  {"key":"cold","name":"Cold","offset":900},
+  {"key":"poison","name":"Poison","offset":1000},
+  {"key":"blood","name":"Blood","offset":1100},
+  {"key":"occult","name":"Occult","offset":1200}
+]

@@ -42,3 +42,8 @@ pnpm-lock.yaml
 
 # Personal Claude Code settings
 .claude/settings.local.json
+
+# The owner's game-data export (FromSoftware's files, ~3 GB) lives outside the repo at
+# ~/Documents/soulsbuilds-gamedata; these catch it if it's ever unzipped here by mistake. Never commit it.
+/soulsbuilds-gamedata/
+/soulsbuilds-export/

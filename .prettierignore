@@ -14,3 +14,7 @@ public/
 
 # 2022 reference scripts, kept as they were
 scripts/legacy-data/
+
+# Machine-written by npm run data (T7)
+src/data/er/
+scripts/data/name-aliases.json

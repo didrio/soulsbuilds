@@ -1,0 +1,334 @@
+// A tiny, hand-made export for the pipeline's tests: a few rows per param in Smithbox's CSV format and
+// a text index, shaped like the real thing (docs/game-data-extraction.md). IDs follow the game's
+// numbering (weapon +0 rows are multiples of 10000, affinities +100…+1200).
+import { AFFINITY_KEYS } from '../../src/data/schema.ts';
+import { GEM_MOUNT_FLAGS } from './constants.ts';
+import { parseParamCsv, type TextEntry, type TextIndex } from './export.ts';
+import type { ExportData } from './extract.ts';
+import { DLC_BOSSES } from './tags.ts';
+
+/** Builds a Smithbox CSV: `ID,Name,<columns>` with every unspecified cell 0. */
+export function csv(columns: string[], rows: Record<string, string | number>[]): string {
+  const header = ['ID', 'Name', ...columns];
+  const lines = rows.map((row) => header.map((column) => row[column] ?? 0).join(','));
+  return [header.join(','), ...lines].join('\n');
+}
+
+const WEAPON_COLUMNS = [
+  'iconId',
+  'wepType',
+  'weight',
+  'gemMountType',
+  'swordArtsParamId',
+  'attackBasePhysics',
+  'attackBaseMagic',
+  'attackBaseFire',
+  'attackBaseThunder',
+  'attackBaseDark',
+  'correctStrength',
+  'correctAgility',
+  'correctMagic',
+  'correctFaith',
+  'correctLuck',
+  'properStrength',
+  'properAgility',
+  'properMagic',
+  'properFaith',
+  'properLuck',
+  'isNormalAttackType',
+  'isBlowAttackType',
+  'isSlashAttackType',
+  'isThrustAttackType',
+];
+const AFFINITY_COLUMNS = AFFINITY_KEYS.map(
+  (_, i) => `configurableWepAttr${String(i).padStart(2, '0')}`,
+);
+const CUT_RATES = [
+  'neutralDamageCutRate',
+  'blowDamageCutRate',
+  'slashDamageCutRate',
+  'thrustDamageCutRate',
+  'magicDamageCutRate',
+  'fireDamageCutRate',
+  'thunderDamageCutRate',
+  'darkDamageCutRate',
+];
+const allCut = (rate: number) => Object.fromEntries(CUT_RATES.map((column) => [column, rate]));
+
+const dagger = {
+  iconId: 1,
+  wepType: 1,
+  weight: 1.5,
+  gemMountType: 2,
+  swordArtsParamId: 100,
+  attackBasePhysics: 75,
+  correctStrength: 35,
+  correctAgility: 55,
+  properStrength: 5,
+  properAgility: 9,
+  isSlashAttackType: 1,
+  isThrustAttackType: 1,
+};
+
+export function fixtureParams(): ExportData['params'] {
+  return {
+    EquipParamWeapon: parseParamCsv(
+      csv(WEAPON_COLUMNS, [
+        { ID: 1000000, Name: 'Dagger', ...dagger },
+        { ID: 1000001, Name: 'Dagger +1', ...dagger }, // upgrade level: not an item
+        { ID: 1000100, Name: 'Heavy Dagger', ...dagger },
+        { ID: 1000500, Name: 'Flame Art Dagger', ...dagger },
+        { ID: 1000900, Name: 'Cold Dagger', ...dagger },
+        { ID: 1010000, Name: 'Unnamed in the text', ...dagger },
+        {
+          ID: 9060000,
+          Name: 'Moonveil',
+          iconId: 2,
+          wepType: 13,
+          weight: 6.5,
+          gemMountType: 0,
+          swordArtsParamId: 300,
+          attackBasePhysics: 73,
+          attackBaseMagic: 87,
+          properMagic: 23,
+          isSlashAttackType: 1,
+        },
+        {
+          ID: 23510000,
+          Name: 'Milady',
+          iconId: 3,
+          wepType: 93,
+          weight: 5,
+          gemMountType: 2,
+          swordArtsParamId: 110,
+          attackBasePhysics: 110,
+          isNormalAttackType: 1,
+        },
+        { ID: 50000000, Name: 'Arrow', iconId: 4, wepType: 81, attackBasePhysics: 25 },
+        { ID: 110000, Name: 'Unarmed', iconId: 6, wepType: 33 }, // excluded: bare hands
+        {
+          ID: 33000000,
+          Name: 'Glintstone Staff', // marked changeable, but no Ash fits staffs
+          iconId: 5,
+          wepType: 57,
+          gemMountType: 2,
+          swordArtsParamId: 10,
+        },
+      ]),
+    ),
+    SwordArtsParam: parseParamCsv(
+      csv(
+        ['textId', 'useMagicPoint_L1', 'useMagicPoint_L2', 'useMagicPoint_R1', 'useMagicPoint_R2'],
+        [
+          { ID: 10, Name: 'No Skill' },
+          { ID: 100, Name: 'Quickstep', useMagicPoint_L2: 3 },
+          { ID: 120, Name: 'Bloody Slash', useMagicPoint_L2: 9 },
+          { ID: 110, Name: 'DLC skill', useMagicPoint_L2: -1, useMagicPoint_R2: 12 },
+          { ID: 300, Name: 'Transient Moonlight', useMagicPoint_L2: 18 },
+        ],
+      ),
+    ),
+    EquipParamGem: parseParamCsv(
+      csv(
+        ['iconId', 'swordArtsParamId', ...Object.keys(GEM_MOUNT_FLAGS), ...AFFINITY_COLUMNS],
+        [
+          {
+            ID: 10000,
+            Name: 'Ash of War: Quickstep',
+            iconId: 10,
+            swordArtsParamId: 100,
+            canMountWep_Dagger: 1,
+            canMountWep_LightGreatsword: 1,
+            canMountWep_SpearLarge: 1, // no ER weapon type: dropped
+            configurableWepAttr01: 1,
+            configurableWepAttr05: 1,
+            configurableWepAttr09: 1,
+          },
+          {
+            ID: 10100,
+            Name: 'Ash of War: Bloody Slash',
+            iconId: 13,
+            swordArtsParamId: 120,
+            canMountWep_Dagger: 1,
+            canMountWep_katana: 1,
+            configurableWepAttr11: 1,
+          },
+          { ID: 20000, Name: 'No name in the text', iconId: 11, swordArtsParamId: 100 },
+          {
+            ID: 30900,
+            Name: 'Ash of War: No Skill',
+            iconId: 12,
+            swordArtsParamId: 10,
+            canMountWep_ShieldSmall: 1,
+            configurableWepAttr00: 1,
+          },
+        ],
+      ),
+    ),
+    EquipParamProtector: parseParamCsv(
+      csv(
+        [
+          'protectorCategory',
+          'iconIdM',
+          'weight',
+          'toughnessCorrectRate',
+          ...CUT_RATES,
+          'resistPoison',
+          'resistBlood',
+          'resistSleep',
+          'resistCurse',
+        ],
+        [
+          {
+            ID: 40000,
+            Name: 'Iron Helmet',
+            protectorCategory: 0,
+            iconIdM: 20,
+            weight: 4.1,
+            toughnessCorrectRate: 0.004,
+            ...allCut(0.95),
+            resistPoison: 20,
+            resistBlood: 21,
+            resistSleep: 22,
+            resistCurse: 23,
+          },
+          {
+            ID: 40100,
+            Name: 'Iron Armor',
+            protectorCategory: 1,
+            iconIdM: 21,
+            weight: 9,
+            ...allCut(0.9),
+          },
+          { ID: 90000, Name: 'Hair', protectorCategory: 4, iconIdM: 22, ...allCut(1) },
+        ],
+      ),
+    ),
+    EquipParamAccessory: parseParamCsv(
+      csv(
+        ['iconId', 'weight', 'accessoryGroup'],
+        [
+          {
+            ID: 1000,
+            Name: 'Crimson Amber Medallion',
+            iconId: 30,
+            weight: 0.3,
+            accessoryGroup: 100,
+          },
+        ],
+      ),
+    ),
+    EquipParamGoods: parseParamCsv(
+      csv(
+        ['goodsType', 'iconId', 'sortGroupId'],
+        [
+          { ID: 4000, Name: 'Glintstone Pebble', goodsType: 5, iconId: 40 },
+          { ID: 6000, Name: 'Heal', goodsType: 16, iconId: 41 },
+          { ID: 11000, Name: 'Crimsonspill Crystal Tear', goodsType: 10, iconId: 42 },
+          { ID: 191, Name: "Godrick's Great Rune", goodsType: 15, iconId: 43 },
+          { ID: 200000, Name: 'Black Knife Tiche', goodsType: 8, iconId: 44 },
+          { ID: 200001, Name: 'Black Knife Tiche +1', goodsType: 8, iconId: 44 },
+          { ID: 1050, Name: 'Throwing Dagger', goodsType: 0, iconId: 45 },
+          { ID: 8000, Name: 'A key item', goodsType: 1, iconId: 46 },
+          { ID: 9000, Name: 'Bow', goodsType: 0, iconId: 47, sortGroupId: 250 }, // a gesture
+          { ID: 250, Name: 'Flask of Wondrous Physick', goodsType: 9, iconId: 48 },
+        ],
+      ),
+    ),
+    Magic: parseParamCsv(
+      csv(
+        [
+          'mp',
+          'stamina',
+          'slotLength',
+          'requirementIntellect',
+          'requirementFaith',
+          'requirementLuck',
+        ],
+        [
+          { ID: 4000, Name: 'Glintstone Pebble', mp: 7, slotLength: 1, requirementIntellect: 10 },
+          { ID: 6000, Name: 'Heal', mp: 25, slotLength: 1, requirementFaith: 12 },
+        ],
+      ),
+    ),
+  };
+}
+
+/** Text index entries: `[id, text]` (base game) or `[id, text, dlc]`. */
+type Entries = [number, string, number?][];
+const fmg = (entries: Entries) =>
+  new Map<number, TextEntry>(entries.map(([id, text, dlc = 0]) => [id, { text, dlc }]));
+
+export function fixtureText(): TextIndex {
+  return new Map([
+    [
+      'WeaponName',
+      fmg([
+        [1000000, 'Dagger'],
+        [9060000, 'Moonveil'],
+        [23510000, 'Milady', 2],
+        [50000000, 'Arrow'],
+        [110000, 'Unarmed'],
+        [33000000, 'Glintstone Staff'],
+      ]),
+    ],
+    [
+      'ArtsName',
+      fmg([
+        [10, 'No Skill'],
+        [100, 'Quickstep'],
+        [120, 'Bloody Slash'],
+        [110, 'Unending Dance', 2],
+        [300, 'Transient Moonlight'],
+      ]),
+    ],
+    [
+      'GemName',
+      fmg([
+        [10000, 'Ash of War: Quickstep'],
+        [10100, 'Ash of War: Bloody Slash'],
+        [30900, 'Ash of War: No Skill'],
+      ]),
+    ],
+    [
+      'ProtectorName',
+      fmg([
+        [40000, 'Iron Helmet'],
+        [40100, 'Iron Armor'],
+        [90000, 'Hair'],
+      ]),
+    ],
+    ['AccessoryName', fmg([[1000, 'Crimson Amber Medallion']])],
+    ['AccessoryInfo', fmg([[1000, 'Raises maximum HP']])],
+    [
+      'GoodsName',
+      fmg([
+        [4000, 'Glintstone Pebble'],
+        [6000, 'Heal'],
+        [11000, 'Crimsonspill Crystal Tear'],
+        [191, "Godrick's Great Rune"],
+        [200000, 'Black Knife Tiche'],
+        [200001, 'Black Knife Tiche + 1'],
+        [1050, 'Throwing Dagger'],
+        [8000, 'Some Key'],
+        [9000, 'Bow'],
+        [250, 'Flask of Wondrous Physick'],
+      ]),
+    ],
+    [
+      'GR_MenuText',
+      fmg(
+        ['Dagger', 'Katana', 'Glintstone Staff', 'Arrow', 'Light Greatsword'].map(
+          (name, i): [number, string] => [60000 + i, name],
+        ),
+      ),
+    ],
+    ['GoodsInfo', fmg([[4000, 'Fires a glintstone pebble']])],
+    [
+      'NpcName',
+      fmg(DLC_BOSSES.map((boss, i): [number, string, number] => [i, `${boss}, the Test`, 2])),
+    ],
+  ]);
+}
+
+export const fixtureExport = (): ExportData => ({ params: fixtureParams(), text: fixtureText() });

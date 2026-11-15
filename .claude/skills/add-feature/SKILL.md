@@ -20,7 +20,7 @@ TanStack Query hooks and one `AuthProvider` (T4).
 | A Firestore/Auth call             | A function in `src/lib/firebase/<area>.ts` (only that folder imports the SDK; lint enforces it)                  |
 | Server data in a component        | A TanStack Query hook in `src/features/<feature>/queries.ts`, keyed by `src/lib/queryKeys.ts`. Never Redux       |
 | The signed-in user                | `useAuth()` from `@/features/auth/useAuth` (`{ loading, user, uid }`); profile via `useUserProfile(uid)`         |
-| Game data (items, spells, tags…)  | Read through `@/data` accessors (`getWeapon(name)`, `armorList(kind)`…). JSON is read-only; T7 owns changes      |
+| Game data (items, spells, tags…)  | Read through `@/data` accessors (`getWeapon(name)`, `armorList(kind)`…). JSON is machine-written: `npm run data` |
 | Pure calculations (stats, weight) | `src/lib/buildMath.ts` (or a new `src/lib/*.ts`), with a colocated test                                          |
 | Colors, fonts, breakpoints        | `@/theme` (`COLOR_*`, `FONT_*`, `BELOW_*`). ESLint rejects hex literals outside `src/theme/`                     |
 

@@ -1,0 +1,8 @@
+[
+  {"id":191,"name":"Godrick's Great Rune","icon":3201,"dlc":false,"effect":"Raises all attributes"},
+  {"id":192,"name":"Radahn's Great Rune","icon":3204,"dlc":false,"effect":"Raises maximum HP, FP and stamina"},
+  {"id":193,"name":"Morgott's Great Rune","icon":3200,"dlc":false,"effect":"Greatly raises maximum HP"},
+  {"id":194,"name":"Rykard's Great Rune","icon":3203,"dlc":false,"effect":"Restores HP upon defeating enemies"},
+  {"id":195,"name":"Mohg's Great Rune","icon":3205,"dlc":false,"effect":"Grants a blessing of blood to phantoms"},
+  {"id":196,"name":"Malenia's Great Rune","icon":3206,"dlc":false,"effect":"Attacks recover HP after damage is taken"}
+]

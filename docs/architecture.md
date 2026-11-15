@@ -43,8 +43,8 @@ that opens whenever Redux `app.slotType` is set.
   no load race. Save (`selectBuildFields` + draft → `createBuild`/`updateBuild`) only writes the owner-editable
   fields; a failed save shows the error and keeps the editor open. Cancel reloads the saved build.
 - **Game data** is static JSON in `src/data/`, bundled, read through typed accessors in `src/data/index.ts`
-  (see `docs/data.md`). Builds store item **names** (T7 moves to IDs); names that no longer exist leave the
-  slot empty and are dropped on the next save.
+  (see `docs/data.md`). Builds store item **names** (T13 moves to the game IDs of T7's data in
+  `src/data/er/`); names that no longer exist leave the slot empty and are dropped on the next save.
 
 ## Firestore model (v2)
 
@@ -65,7 +65,7 @@ builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED
   tags: string[]                  ≤ 20, boss names from src/data/tags.json
   level: int                      sum of stats − 79, min 1 (rules check the formula)
   stats: { vigor, mind, end, str, dex, int, fai, arc }   ints 1–99
-  equipment: {                    item names (T7: IDs)
+  equipment: {                    item names (T13: game IDs)
     weapons, weaponAffinities, weaponSkills: (name|null)[6]   positional: 1–3 main hand, 4–6 off hand
     arrows: (name|null)[4]                                    positional
     talismans ≤4, spells ≤10, tears ≤2, consumables ≤10: name[]   compacted
@@ -108,8 +108,8 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
 - Landing filters: only the first tag is a Firestore query; further tags and the level range filter the loaded
   pages, so a narrow filter can show few results per page ("Load more" fetches more). Search is a name prefix
   match only, and ignores sort and the server-side tag [T9].
-- Game data (~650 KB of JSON) is in the main bundle because the landing cards use it [T7/T11].
-- Builds reference items by name; renamed items silently drop [T7].
+- Game data (~650 KB of JSON) is in the main bundle because the landing cards use it [T11, after T13].
+- Builds reference items by name; renamed items silently drop [T13].
 - App Check is on in production builds (reCAPTCHA Enterprise key in `src/lib/firebase/app.ts`); enforcement
   waits for T12 (`docs/firebase.md`).
 - No admin UI: reports are reviewed with `scripts/admin.mjs` (backlog).
