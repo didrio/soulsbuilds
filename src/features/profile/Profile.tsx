@@ -10,7 +10,7 @@ import TextInput from '@/components/ui/TextInput';
 import useAuth from '@/features/auth/useAuth';
 import BuildsList from '@/features/builds/BuildsList';
 import { useUserBuilds } from '@/features/builds/queries';
-import { errorMessage } from '@/lib/firebase';
+import { errorMessage, resendVerificationEmail } from '@/lib/firebase';
 import { LIMITS, type UserProfile } from '@/lib/models';
 import {
   COLOR_GOLD,
@@ -27,7 +27,7 @@ type Tab = 'builds' | 'liked';
 /** `/user/:userId`: display name (editable by its owner), and tabs for their builds and likes. */
 function Profile() {
   const { userId = '' } = useParams();
-  const { uid } = useAuth();
+  const { uid, user } = useAuth();
   const profile = useUserProfile(userId);
   const [tab, setTab] = useState<Tab>('builds');
   const isOwner = uid === userId;
@@ -53,6 +53,7 @@ function Profile() {
   return (
     <Container vertical>
       <ProfileHeader profile={profile.data} editable={isOwner} />
+      {isOwner && user && !user.emailVerified ? <VerifyEmailNotice /> : null}
       <Tabs role="tablist" aria-label="Profile">
         {(['builds', 'liked'] as Tab[]).map((value) => (
           <TabButton
@@ -128,6 +129,38 @@ function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: 
   );
 }
 
+/** Shown to the owner until their email is verified (send-only: nothing is gated on it). */
+function VerifyEmailNotice() {
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
+  const [error, setError] = useState('');
+
+  const resend = async () => {
+    setStatus('sending');
+    setError('');
+    try {
+      await resendVerificationEmail();
+      setStatus('sent');
+    } catch (err) {
+      setError(errorMessage(err));
+      setStatus('idle');
+    }
+  };
+
+  return (
+    <Notice role="status">
+      <span>
+        {status === 'sent'
+          ? 'Verification email sent. Check your inbox.'
+          : 'Verify your email: we sent you a link when you signed up.'}
+      </span>
+      <TextButton type="button" disabled={status === 'sending'} onClick={() => void resend()}>
+        Resend email
+      </TextButton>
+      <ErrorMessage>{error}</ErrorMessage>
+    </Notice>
+  );
+}
+
 function OwnBuilds({ userId, isOwner }: { userId: string; isOwner: boolean }) {
   const builds = useUserBuilds(userId);
   return (
@@ -200,6 +233,17 @@ const TextButton = styled.button`
   font: inherit;
   font-size: 14px;
   text-decoration: underline;
+`;
+
+const Notice = styled.div`
+  align-items: center;
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM} ${SPACE_LG};
+  justify-content: center;
+  margin-bottom: ${SPACE_LG};
+  padding: ${SPACE_SM} ${SPACE_LG};
 `;
 
 const RenameForm = styled.form`

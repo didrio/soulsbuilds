@@ -2,6 +2,7 @@
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -33,6 +34,8 @@ export async function signUp(
   const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
   await updateProfile(user, { displayName: name });
   await createUserProfile(user.uid, name);
+  // Send-only verification: posting doesn't require it, so a failure here must not fail sign-up.
+  await sendEmailVerification(user).catch(() => undefined);
   return user.uid;
 }
 
@@ -42,6 +45,12 @@ export async function signOut(): Promise<void> {
 
 export async function sendPasswordReset(email: string): Promise<void> {
   await sendPasswordResetEmail(auth, email.trim());
+}
+
+/** Sends the signed-in user a verification email (the profile's "Resend" button). */
+export async function resendVerificationEmail(): Promise<void> {
+  if (!auth.currentUser) throw new FirebaseError('auth/user-not-found', 'Not signed in');
+  await sendEmailVerification(auth.currentUser);
 }
 
 const AUTH_MESSAGES: Record<string, string> = {

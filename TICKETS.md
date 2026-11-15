@@ -7,16 +7,18 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T13
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T6 once the owner answers its two questions (email verification, consumables) · Sonnet · medium ·
-plan mode off. Or T7 once the owner picks a data source. T12 is the relaunch, with the owner.
+**Next:** T11's remainder (fonts and icons: approved) · Sonnet · medium · plan mode off. Then T7 (data source
+decided; confirm PC ownership at the start), then T12, the relaunch.
 
-**Owner to-dos tracked in tickets:** T6 (two decisions), T7 (data/icon source), T11 (icon; fonts), T12 (App
-Check key and enforcement, your admin claim, the production cutover).
+**Owner to-dos tracked in tickets:** T7 (confirm you own ER + SotE on PC), T12 (GitHub secret scanning, App
+Check key and enforcement, your admin claim, keep or drop the 2022 data, the production cutover). All other
+owner decisions were made on 2026-11-15 and are in `docs/decisions.md`.
 
-**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T5 and T10 done (typed code,
-safe data model, data layer, 2022 bugs, moderation). Left: T6 remainder (two owner calls), T7–T9 make it worth
+**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T6 and T10 done (typed code,
+safe data model, data layer, 2022 bugs, moderation). Left: T7–T9 make it worth
 visiting (DLC data, build math, discovery remainder); T11 polish remainder and T12 deploy make it ready to open.
-The critical path to relaunch is **T12**; whether T7–T9 come before or after the relaunch is the owner's call.
+The critical path to relaunch is **T12**. Owner's call (2026-11-15): relaunch **after T7**; T8 and T9 may
+follow the launch.
 
 ## In progress
 
@@ -24,26 +26,9 @@ The critical path to relaunch is **T12**; whether T7–T9 come before or after t
 
 ## Up next
 
-### T6 — Missing core features (remainder)
-
-- **Status:** ready; two owner decisions first
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Finish the features 2022 never got to.
-- **Done when:**
-  - [x] Delete build (owner, confirm step; likes/comments cleaned up). Cancel edit. Change an item in place
-        (a filled slot opens the picker: change the item, affinity or skill, or "Remove"). Password reset
-        ("Forgot password?") and readable auth errors. Profile rename, Builds/Liked tabs, not-found user. 404.
-  - [ ] **Owner:** email verification — send-only (a notice + resend on the profile), or also required to post
-        (rules check `request.auth.token.email_verified`, which needs a rules test)? Then build it.
-  - [ ] **Owner:** consumables — restore the commented-out UI in `EquipmentEditor` (the model already has
-        `equipment.consumables`, ≤ 10) or drop them from the model, the editor store and the rules.
-  - [ ] e2e covers rename and password reset (the auth emulator accepts reset requests).
-- **Context:** `src/features/profile/Profile.tsx` (`ProfileHeader`), `src/features/auth/Login.tsx`,
-  `src/lib/firebase/auth.ts`, `EquipmentEditor` consumables block, `tests/e2e/build-flow.spec.ts`.
-
 ### T11 — Performance and polish (remainder)
 
-- **Status:** in part blocked: icons and fonts need the owner's OK; the bundle split waits for T7
+- **Status:** ready (icons and fonts approved 2026-11-15); the bundle split waits for T7
 - **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** Fast first load and a finished look on phones.
 - **Done when:**
@@ -60,29 +45,31 @@ The critical path to relaunch is **T12**; whether T7–T9 come before or after t
         error red, liked button, slot names); item icons decorative by design. `FocusScope`: the item picker
         is a focus-trapped dialog with Escape; the login panel and report form take focus, close on Escape
         and hand focus back. Spacing scale `SPACE_*` in `src/theme/`, used by the shell and main pages.
-  - [ ] **Owner:** favicon, app icons (`manifest.json` has none yet) and an `og:image`: supply an icon or
-        approve a simple generated one.
+  - [ ] Favicon, app icons (`manifest.json` has none yet) and an `og:image`: a simple generated icon, a gold
+        mark on the dark green (owner, 2026-11-15; replaceable later). SVG favicon + PNG sizes for the manifest.
   - [ ] Main `Button` text is AA only around its middle (dark text on the gold→dark-gold gradient drops to
         2.9:1 at the dark end); fine as is, revisit if the button style changes.
   - [ ] Move the remaining literal margins/paddings (editor sections, picker, cards) to `SPACE_*` as files
         are touched.
-  - [ ] Fonts: replace the Adobe Typekit kit (`garamond-premier-pro`, tied to the owner's Adobe account) with a
-        self-hosted open font (e.g. EB Garamond); check the OptimusPrinceps license or replace it. **Owner OK
-        first** (new asset source).
+  - [ ] Fonts (owner, 2026-11-15): replace the Adobe Typekit kit (`garamond-premier-pro`, `index.html`) with
+        self-hosted **EB Garamond** and OptimusPrinceps (`src/index.css`, `FONT_DISPLAY`) with **Cinzel**, both
+        OFL (e.g. `@fontsource/*` packages); delete the `.ttf`. Screenshot before/after.
   - [ ] A spacing scale in `src/theme/` used by the layout.
 - **Context:** `index.html`, `src/index.css`, `vite.config.ts`, `src/features/editor/Slot.tsx`, `ItemSelector`,
   `App.tsx` (modal, panel). Screenshot before/after, desktop and `--mobile`.
 
 ### T7 — Game data v2 + Shadow of the Erdtree
 
-- **Status:** blocked — owner picks the data/image source (licensing) at the start of the session
+- **Status:** ready; source decided 2026-11-15 (`docs/decisions.md`): first ask the owner whether they own
+  ER + SotE on PC
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** A re-runnable, typed, validated game-data pipeline with stable item IDs, covering the base game and
   the Shadow of the Erdtree DLC.
 - **Done when:**
-  - [ ] Source chosen with the owner: e.g. data extracted from the game's params by community tools, a
-        maintained open dataset, or a wiki with a compatible license. Same for icons. Record it in
-        `docs/decisions.md`. The 2022 rankedboost scrape is not reused.
+  - [ ] Source (owner, 2026-11-15): data extracted from the game's own files with community tools if the owner
+        owns ER + SotE on PC, else the Elden Ring Fandom wiki (CC BY-SA: attribution, share-alike). Icons from
+        the game files, plus a "not affiliated with FromSoftware" footer. Re-check the tools' and sources'
+        licenses before writing code; update the `docs/decisions.md` row. The 2022 scrape is not reused.
   - [ ] `scripts/data/` pipeline (Node, re-runnable) → `src/data/` JSON with **stable IDs**, zod schemas, and
         validation tests (every reference resolves; counts; images exist). `src/data/data.test.ts`'s
         `it.fails` cases become passing `it`s.
@@ -131,7 +118,7 @@ The critical path to relaunch is **T12**; whether T7–T9 come before or after t
 
 ### T12 — Deploy pipeline and relaunch
 
-- **Status:** ready (ideally after T6–T9)
+- **Status:** ready after T7 (owner's call, 2026-11-15; T8/T9 may follow the launch)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Ship it: repeatable deploys and a safe production cutover.
 - **Done when:**
@@ -144,7 +131,10 @@ The critical path to relaunch is **T12**; whether T7–T9 come before or after t
 firestore:rules,firestore:indexes`) and wait for the indexes to build; run the migration with
         `--write`; deploy hosting; smoke-test the live site (sign up, create, like, comment). Rules and the
         migration must go together: the v2 rules reject v1 docs.
-  - [ ] Analytics: consent banner or drop Analytics. Privacy policy and terms pages.
+  - [ ] **Drop Analytics** (owner, 2026-11-15): remove `getAnalytics` from `src/lib/firebase/app.ts` and the
+        `measurementId` if unused. Privacy policy (Auth stores emails) and terms pages.
+  - [ ] **Owner, from T1:** turn on GitHub secret scanning + push protection for didrio/soulsbuilds (the repo
+        is public, and this ticket adds CI credentials).
   - [ ] **Owner, from T10:** App Check. Create the reCAPTCHA Enterprise key, register the web app, put the
         site key in `APP_CHECK_SITE_KEY` (`src/lib/firebase/app.ts`), deploy, watch the metrics, then enforce
         for Firestore and Auth. Exact steps: `docs/firebase.md` "App Check".
@@ -190,3 +180,5 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
   "Report" buttons), `scripts/admin.mjs` (reports, remove with JSON backup, dismiss, grant/revoke admin; tested
   on the emulators), App Check code (off until the owner's key: moved to T12). Delete, not hide
   (`docs/decisions.md`); no admin UI (backlog).
+- T6 — Missing core features — 2026-11-15 — delete/cancel/change item in place, password reset, profile rename
+  and tabs, 404s, send-only email verification (notice + resend), consumables restored; e2e covers them.

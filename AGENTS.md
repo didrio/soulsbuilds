@@ -14,10 +14,10 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T3–T5 and T10 done, most of T6/T9/T11): Vite 8 + React 19 (React Compiler) + RTK 2 +
+As of 2026-11-15 (T3–T6 and T10 done, most of T9/T11): Vite 8 + React 19 (React Compiler) + RTK 2 +
 TanStack Query 5 + styled-components 6 + Firebase 12, strict TypeScript. Firestore model v2 with tested security
 rules and a v1→v2 migration; one `AuthProvider`; loading/error/empty/not-found states; search, delete, rename,
-change items in place; reports + `scripts/admin.mjs` moderation; Playwright e2e. `npm run check`, `test:rules`
+change items in place, consumables, send-only email verification; reports + `scripts/admin.mjs` moderation; Playwright e2e. `npm run check`, `test:rules`
 and `e2e` are green and run in CI. **Production is dark**: it still holds v1 data under the expired 2022 rules
 (deny all); T12 deploys the v2 rules + indexes, runs the migration and turns on App Check, with the owner.
 Game data is base game only until T7.

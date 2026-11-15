@@ -4,8 +4,10 @@ import { useAppSelector } from '@/app/hooks';
 import { COLOR_LIGHTEST_GREEN } from '@/theme';
 import Slot from '../Slot';
 import {
+  CONSUMABLE_SLOTS,
   SLOT_TYPE_ARROW,
   SLOT_TYPE_CHEST,
+  SLOT_TYPE_CON,
   SLOT_TYPE_GAUNTLET,
   SLOT_TYPE_HELM,
   SLOT_TYPE_LEG,
@@ -19,8 +21,6 @@ import {
   type WeaponSlot,
 } from '../slots';
 import { selectEquipment } from '../store/selectors';
-
-// Consumables have state and a picker but no UI (commented out in 2022; T6 decides).
 
 /** Weapon slot n (1–6) and the affinity/skill slots that belong to it. */
 const weaponSlotIds = (index: number) => ({
@@ -137,6 +137,21 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
         {talismanSlot('tal2')}
         {talismanSlot('tal3')}
         {talismanSlot('tal4')}
+      </SlotContainer>
+      <HeaderContainer>
+        <SubHeader>Consumables</SubHeader>
+      </HeaderContainer>
+      <SlotContainer>
+        {CONSUMABLE_SLOTS.map((id) => (
+          <Slot
+            background="consumable"
+            disabled={!editable}
+            id={id}
+            item={equipment[id]}
+            key={id}
+            type={SLOT_TYPE_CON}
+          />
+        ))}
       </SlotContainer>
     </Container>
   );

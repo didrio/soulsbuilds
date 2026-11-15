@@ -139,3 +139,45 @@ test('report a build once; the login panel closes with Escape', async ({ page })
   await page.getByRole('button', { name: 'Send report' }).click();
   await expect(page.getByText('You already reported this build.')).toBeVisible();
 });
+
+test('rename, password reset, verification notice and consumables', async ({ page }) => {
+  const resetEmail = `t6-${unique}@example.test`;
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Register' }).click();
+  const form = page.getByRole('form', { name: 'Register' });
+  await form.getByLabel('Email').fill(resetEmail);
+  await form.getByLabel('Password').fill(password);
+  await form.getByLabel('Display name').fill(`T6 ${unique}`);
+  await form.getByRole('button', { name: 'Register' }).click();
+  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+
+  // Profile: unverified notice with resend, and rename.
+  await page.getByRole('link', { name: 'Profile' }).click();
+  await expect(page.getByText(/Verify your email/)).toBeVisible();
+  await page.getByRole('button', { name: 'Resend email' }).click();
+  await expect(page.getByText('Verification email sent. Check your inbox.')).toBeVisible();
+  await page.getByRole('button', { name: 'Change name' }).click();
+  await page.getByRole('textbox', { name: 'Display name' }).fill(`Renamed ${unique}`);
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('heading', { name: `Renamed ${unique}` })).toBeVisible();
+
+  // Consumables: pick one, save, and see it in view mode.
+  await page.getByRole('link', { name: '+ Create New Build' }).click();
+  await page.getByLabel('Build Name').fill(`T6 Build ${unique}`);
+  await page.getByRole('button', { name: 'Choose item' }).first().click();
+  await page.getByLabel('Search items').fill('Acid Spraymist');
+  await page.getByRole('button', { name: /^Acid Spraymist/ }).click();
+  await expect(page.getByRole('button', { name: 'Change Acid Spraymist' })).toBeVisible();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
+  await page.reload();
+  await expect(page.getByText('Consumables')).toBeVisible();
+
+  // Password reset from the login panel.
+  await page.getByRole('button', { name: 'Logout' }).click();
+  await page.getByRole('button', { name: 'Login' }).click();
+  const login = page.getByRole('form', { name: 'Log in' });
+  await login.getByLabel('Email').fill(resetEmail);
+  await login.getByRole('button', { name: 'Forgot password?' }).click();
+  await expect(page.getByText(/a reset link is on its way/)).toBeVisible();
+});

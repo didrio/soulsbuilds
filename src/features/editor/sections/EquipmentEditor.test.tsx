@@ -43,6 +43,17 @@ describe('EquipmentEditor + item picker', () => {
     expect(screen.queryByRole('button', { name: /^Change Moonveil/ })).not.toBeInTheDocument();
   });
 
+  it('has ten consumable slots and fills one from the picker', async () => {
+    const { user, store } = renderWithProviders(<EditorWithPicker />);
+    expect(screen.getByRole('heading', { name: 'Consumables' })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: 'Choose item' })).toHaveLength(10);
+
+    await user.click(screen.getAllByRole('button', { name: 'Choose item' })[0]!);
+    await user.type(screen.getByLabelText('Search items'), 'Acid Spraymist');
+    await user.click(screen.getByRole('button', { name: /^Acid Spraymist/ }));
+    expect(store.getState().equipment.con1?.name).toBe('Acid Spraymist');
+  });
+
   it('read-only slots are not buttons', () => {
     renderWithProviders(<EquipmentEditor editable={false} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
