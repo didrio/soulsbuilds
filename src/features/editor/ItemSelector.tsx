@@ -33,6 +33,9 @@ import {
   BELOW_750,
   BELOW_1000,
   COLOR_LIGHTEST_GREEN,
+  SPACE_LG,
+  SPACE_MD,
+  SPACE_SM,
 } from '@/theme';
 import {
   ARROW_SLOTS,
@@ -120,6 +123,8 @@ const slotsText = (spell: Spell) => `${spell.slots} ${spell.slots === 1 ? 'slot'
  */
 function ItemSelector() {
   const [searchText, setSearchText] = useState('');
+  // The weapon list alone has ~490 rows: render a page at a time (a search narrows it first).
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const dispatch = useAppDispatch();
   const editSlot = useAppSelector(selectEditSlot);
@@ -234,7 +239,10 @@ function ItemSelector() {
         <SearchContainer>
           <TextInput
             aria-label="Search items"
-            onChange={setSearchText}
+            onChange={(text) => {
+              setSearchText(text);
+              setVisibleCount(PAGE_SIZE);
+            }}
             placeholder="Search"
             value={searchText}
           />
@@ -247,10 +255,20 @@ function ItemSelector() {
         <CloseButton onClick={handleClose} />
       </TopBar>
       {slotType === SLOT_TYPE_WEAPON ? <WeaponOptions /> : null}
-      <Contents>{options.map((option) => getItem(option))}</Contents>
+      <Contents>
+        {options.slice(0, visibleCount).map((option) => getItem(option))}
+        {options.length > visibleCount ? (
+          <ShowMore type="button" onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}>
+            Show more ({options.length - visibleCount} left)
+          </ShowMore>
+        ) : null}
+      </Contents>
     </Container>
   );
 }
+
+/** Rows rendered at a time. */
+const PAGE_SIZE = 80;
 
 const Container = styled(FlexGroup)`
   color: ${COLOR_GOLD};
@@ -259,14 +277,34 @@ const Container = styled(FlexGroup)`
   font-size: 14px;
 `;
 
+const ShowMore = styled.button`
+  background: none;
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  margin: ${SPACE_SM} 0;
+  padding: ${SPACE_SM} ${SPACE_LG};
+  width: 100%;
+
+  &:hover {
+    background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
+  }
+`;
+
 const RemoveButton = styled.button`
   background: none;
   border: 1px solid ${COLOR_LIGHT_GREEN};
   color: inherit;
   cursor: pointer;
   font: inherit;
-  margin-right: 15px;
+  margin-right: ${SPACE_MD};
+  max-width: 100%;
+  overflow: hidden;
   padding: 6px 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
@@ -276,8 +314,10 @@ const RemoveButton = styled.button`
 
 const TopBar = styled(FlexGroup)`
   align-items: center;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM} 0;
   justify-content: center;
-  margin-bottom: 10px;
+  margin-bottom: ${SPACE_SM};
   width: 100%;
 `;
 
@@ -354,15 +394,17 @@ const Contents = styled(FlexGroup)`
 `;
 
 const SearchContainer = styled(FlexGroup)`
-  margin-right: 20px;
+  margin-right: ${SPACE_LG};
   width: 450px;
 
   @media ${BELOW_1000} {
     width: 350px;
   }
 
+  /* Phone: the search box takes its own line; Remove and Close share the next one. */
   @media ${BELOW_750} {
-    width: 230px;
+    margin-right: 0;
+    width: 100%;
   }
 `;
 

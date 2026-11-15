@@ -10,9 +10,9 @@ import {
   weaponSkill,
   type AffinityKey,
   type AshOfWar,
-  type SlotItem,
-  type Weapon,
-} from '@/data';
+  type CardWeapon,
+  type SlotDisplayItem,
+} from '@/data/core';
 import {
   COLOR_LIGHT_GOLD,
   COLOR_DARK_GOLD,
@@ -67,14 +67,15 @@ interface SlotProps {
   disabled?: boolean;
   /** Editor slot the picker writes to. */
   id?: ItemSlot | '';
-  item?: SlotItem | null;
+  item?: SlotDisplayItem | null;
   size?: string | null;
   /** Editor Ash of War slot this weapon slot reads and the picker edits. */
   subId?: WeaponSkillSlot | '';
   type: SlotType;
 }
 
-const isWeapon = (item: SlotItem | null): item is Weapon => item !== null && 'ashesOfWar' in item;
+const isWeapon = (item: SlotDisplayItem | null): item is CardWeapon =>
+  item !== null && 'ashesOfWar' in item;
 
 type Tip = 'affinity' | 'skill';
 

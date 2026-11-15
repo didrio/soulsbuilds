@@ -1,4 +1,3 @@
-// Font stacks. Body: Adobe Typekit kit loaded in index.html. Display: local TTF (src/index.css).
-// T11 replaces both with self-hosted open fonts.
-export const FONT_BODY = 'garamond-premier-pro, serif';
-export const FONT_DISPLAY = "'OptimusPrincepsSemiBold', serif";
+// Font stacks, both self-hosted and OFL-licensed (@fontsource, imported in src/index.css).
+export const FONT_BODY = "'EB Garamond', serif";
+export const FONT_DISPLAY = "'Cinzel', serif";

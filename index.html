@@ -7,8 +7,8 @@
     <meta
       name="description"
       content="Create, share and discover Elden Ring character builds: stats, weapons, armor, talismans and spells." />
-    <!-- Site-level share previews. Per-build previews would need server rendering (backlog). An og:image
-         waits for the site icon (T11, owner's OK). -->
+    <!-- Site-level share previews. Per-build previews would need server rendering (backlog). The og:image is
+         absolute (crawlers need that); T12 moves it to the custom domain with og:url. -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Souls Builds" />
     <meta property="og:title" content="Souls Builds" />
@@ -16,13 +16,15 @@
       property="og:description"
       content="Create, share and discover Elden Ring character builds." />
     <meta property="og:url" content="https://soulsbuilds.web.app/" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://soulsbuilds.web.app/icons/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="manifest" href="/manifest.json" />
-    <!-- No favicon yet (T11); an empty one stops the browser's /favicon.ico 404. -->
-    <link rel="icon" href="data:," />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/favicon-48.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>Souls Builds</title>
-    <!-- Adobe Fonts kit for garamond-premier-pro (tied to the owner's Adobe account; T11 self-hosts a replacement) -->
-    <link rel="stylesheet" href="https://use.typekit.net/ulf1zxt.css" />
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

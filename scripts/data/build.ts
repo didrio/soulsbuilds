@@ -13,7 +13,7 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { DATA_FILES, tagsSchema } from '../../src/data/schema.ts';
+import { DATA_FILES, makeCards, tagsSchema } from '../../src/data/schema.ts';
 import { readIcons, readParam, readText } from './export.ts';
 import { extract, PARAM_NAMES, type GameData, type ParamName } from './extract.ts';
 import { writeIcons } from './icons.ts';
@@ -25,6 +25,14 @@ export function formatJson(value: unknown): string {
   if (Array.isArray(value))
     return `[\n${value.map((item) => `  ${JSON.stringify(item)}`).join(',\n')}\n]\n`;
   return `${JSON.stringify(value, null, 2)}\n`;
+}
+
+/** cards.json: one entry per line, like the other files. */
+export function formatCards(data: Pick<GameData, 'weapons' | 'armor'>): string {
+  const cards = makeCards(data.weapons, data.armor);
+  const lines = (items: unknown[]) =>
+    items.map((item) => `    ${JSON.stringify(item)}`).join(',\n');
+  return `{\n  "weapons": [\n${lines(cards.weapons)}\n  ],\n  "armor": [\n${lines(cards.armor)}\n  ]\n}\n`;
 }
 
 /** File name in src/data/er/ → its data. */
@@ -142,7 +150,8 @@ async function main() {
   for (const [file, items] of Object.entries(dataFiles(data)))
     writeFileSync(join(outDir, file), formatJson(items));
   writeFileSync(join(outDir, 'tags.json'), formatJson(data.tags));
-  console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 1} files to ${outDir}`);
+  writeFileSync(join(outDir, 'cards.json'), formatCards(data));
+  console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 2} files to ${outDir}`);
 
   const icons = await writeIcons(usedIcons(data), iconFiles, opts.iconDir, {
     force: opts.forceIcons,

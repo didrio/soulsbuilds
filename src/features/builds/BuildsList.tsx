@@ -10,7 +10,7 @@ import {
   SLOT_TYPE_LEG,
   SLOT_TYPE_WEAPON,
 } from '@/features/editor/slots';
-import { getArmor, getWeapon } from '@/data';
+import { getCardArmor, getCardWeapon } from '@/data/core';
 import type { Build } from '@/lib/models';
 import {
   COLOR_GREEN,
@@ -61,7 +61,7 @@ function BuildsList({ builds }: { builds: Build[] }) {
                       ash={equipment.weaponSkills[index] ?? null}
                       background={background}
                       disabled
-                      item={getWeapon(equipment.weapons[index]) ?? null}
+                      item={getCardWeapon(equipment.weapons[index]) ?? null}
                       type={SLOT_TYPE_WEAPON}
                     />
                   ))}
@@ -72,7 +72,7 @@ function BuildsList({ builds }: { builds: Build[] }) {
                       key={slot}
                       background={slot}
                       disabled
-                      item={getArmor(equipment[slot], armorSlot) ?? null}
+                      item={getCardArmor(equipment[slot], armorSlot) ?? null}
                       type={type}
                     />
                   ))}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
 import FocusScope from '@/components/ui/FocusScope';
@@ -6,7 +6,6 @@ import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
 import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
 import useAuth from '@/features/auth/useAuth';
-import ItemSelector from '@/features/editor/ItemSelector';
 import { closePicker } from '@/features/editor/store/app';
 import { selectSlotType } from '@/features/editor/store/selectors';
 import {
@@ -29,6 +28,9 @@ import GameSelector from './GameSelector';
 import Header from './Header';
 import { useAppDispatch, useAppSelector } from './hooks';
 import AppRoutes from './routes';
+
+// The picker holds the full game data (~1 MB), so it loads when a slot is first opened.
+const ItemSelector = lazy(() => import('@/features/editor/ItemSelector'));
 
 const GlobalStyle = createGlobalStyle`
   body {
@@ -79,7 +81,9 @@ function App() {
           <OutsideClickHandler onOutsideClick={handleHideModal}>
             <Modal $top={top} role="dialog" aria-modal="true" aria-label="Choose an item">
               <ModalFocusScope trap onEscape={handleHideModal}>
-                <ItemSelector />
+                <Suspense fallback={null}>
+                  <ItemSelector />
+                </Suspense>
               </ModalFocusScope>
             </Modal>
           </OutsideClickHandler>

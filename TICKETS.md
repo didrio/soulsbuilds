@@ -7,8 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T14
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T11 (performance and polish remainder: game data split, fonts, icons) · Sonnet · medium · plan mode
-off. Then T12, the relaunch.
+**Next:** T12, the relaunch · Opus · high · plan mode on.
 
 **Owner to-dos tracked in tickets:** T12
 (GCP setup for CI deploys, App Check enforcement, your admin claim, approving each production step). Done
@@ -16,9 +15,9 @@ off. Then T12, the relaunch.
 the 2022 builds, the game data export (redo it after a game patch: `docs/game-data-extraction.md`). Owner decisions are in
 `docs/decisions.md`.
 
-**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T7, T10 and T13 done (typed
+**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T7, T10, T11 and T13 done (typed
 code, safe data model, data layer, 2022 bugs, moderation, game data v2 with the DLC, builds by game ID). Left:
-T11 polish remainder and T12 deploy make it ready to open; T8 (build math) and T9 (discovery remainder) make it
+T12 deploy makes it ready to open; T8 (build math) and T9 (discovery remainder) make it
 richer and may follow the launch (owner's call, 2026-11-15).
 
 ## In progress
@@ -26,40 +25,6 @@ richer and may follow the launch (owner's call, 2026-11-15).
 (none)
 
 ## Up next
-
-### T11 — Performance and polish (remainder)
-
-- **Status:** ready (icons and fonts approved 2026-11-15; T13 done, so the data split can go ahead)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Fast first load and a finished look on phones.
-- **Done when:**
-  - [x] Lazy routes for `/build/*` and `/user/*`; the markdown editor in its own chunk (main bundle 738 → 347 KB
-        gzipped). Long build titles wrap; build cards and the game tabs fit a 390 px phone; slot names hidden
-        on phone-sized slots; the item picker's dropdowns wrap. Buttons/links instead of clickable divs in the
-        header, cards, game tabs, slots and picker; labels on inputs; focus styles on inputs and buttons.
-  - [ ] Game data (~1.2 MB JSON, 294 KB gzipped, in the `Slot` chunk since T13; the landing cards need it):
-        load it per route or ship a slim index (id, name, icon) for the cards. The weapon picker renders all 487
-        rows (slow in jsdom tests, fine in Chrome): consider windowing. Consider a lighter markdown renderer for
-        view mode (the full editor package is 365 KB gzipped just to render).
-  - [ ] Picker top bar on phones: the "Remove <item>" button wraps to three lines next to the search box.
-  - [x] (2026-11-15) Meta description, Open Graph/Twitter tags (site-level), manifest and theme colors.
-        Weapon affinity/skill badges usable on touch and keyboard in view mode (pinned to the screen bottom
-        on phones); slot names include affinity/skill for screen readers. WCAG AA contrast pass (hover text,
-        error red, liked button, slot names); item icons decorative by design. `FocusScope`: the item picker
-        is a focus-trapped dialog with Escape; the login panel and report form take focus, close on Escape
-        and hand focus back. Spacing scale `SPACE_*` in `src/theme/`, used by the shell and main pages.
-  - [ ] Favicon, app icons (`manifest.json` has none yet) and an `og:image`: a simple generated icon, a gold
-        mark on the dark green (owner, 2026-11-15; replaceable later). SVG favicon + PNG sizes for the manifest.
-  - [ ] Main `Button` text is AA only around its middle (dark text on the gold→dark-gold gradient drops to
-        2.9:1 at the dark end); fine as is, revisit if the button style changes.
-  - [ ] Move the remaining literal margins/paddings (editor sections, picker, cards) to `SPACE_*` as files
-        are touched.
-  - [ ] Fonts (owner, 2026-11-15): replace the Adobe Typekit kit (`garamond-premier-pro`, `index.html`) with
-        self-hosted **EB Garamond** and OptimusPrinceps (`src/index.css`, `FONT_DISPLAY`) with **Cinzel**, both
-        OFL (e.g. `@fontsource/*` packages); delete the `.ttf`. Screenshot before/after.
-  - [ ] A spacing scale in `src/theme/` used by the layout.
-- **Context:** `index.html`, `src/index.css`, `vite.config.ts`, `src/features/editor/Slot.tsx`, `ItemSelector`,
-  `App.tsx` (modal, panel). Screenshot before/after, desktop and `--mobile`.
 
 ### T12 — Deploy pipeline and relaunch
 
@@ -129,6 +94,9 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
 
 ## Backlog
 
+- Polish leftovers from T11: the main `Button` text is AA only around its middle (2.9:1 at the dark gold end; revisit if the
+  button style changes); move remaining literal margins/paddings (editor sections, cards) to `SPACE_*` as files are
+  touched; eyeball the item picker on a phone (the top bar was reflowed but not screenshotted).
 - Other games (Dark Souls 1–3, Sekiro, Elden Ring Nightreign) on top of T3's `game` field: data per game, game
   selector routes (`/ds3/...`), per-game tags.
 - Per-build share previews (Open Graph image/title per build): needs SSR or a Cloud Function (Blaze plan).
@@ -172,3 +140,6 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
   of War/affinity/talisman rules), builds store game IDs + great rune and spirit ash slots, picker follows the
   game's rules, rules type-check within Firestore's expression budget, names→IDs folded into the v1→v2
   migration, "Great Hammer" tag, footer; 2022 data and icons deleted.
+- T11 — Performance and polish — 2026-11-15 — lazy routes and editor chunk, a11y/contrast/focus pass, meta and OG tags,
+  self-hosted EB Garamond + Cinzel, generated icons and og:image, `core.ts` + `cards.json` data split (full data lazy),
+  paged picker, light markdown view, spacing scale.

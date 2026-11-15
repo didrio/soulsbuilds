@@ -6,6 +6,8 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
   armorSchema,
+  cardsSchema,
+  makeCards,
   arrowSchema,
   ashOfWarSchema,
   affinitySchema,
@@ -194,5 +196,15 @@ describe('game data v2', () => {
     expect(tags['Melee Weapons']).toContain('Great Hammer'); // 2022 "Warhammer", renamed in T13
     expect(tags['Melee Weapons']).not.toContain('Warhammer');
     expect(tags['Melee Weapons']).toContain('Great Katana');
+  });
+
+  it('has cards.json (the light data the landing page loads) matching the full files', () => {
+    const cards = cardsSchema.parse(JSON.parse(readFileSync(join(DIR, 'cards.json'), 'utf8')));
+    expect(cards).toEqual(makeCards(weapons, armor));
+  });
+
+  it('keeps core.ts, which every page loads, from importing the full data (T11)', () => {
+    const core = readFileSync(join(import.meta.dirname, 'core.ts'), 'utf8');
+    expect(core).not.toMatch(/from '\.\/(index|er\/(weapons|armor|arrows|spells|talismans|tears))/);
   });
 });

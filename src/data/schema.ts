@@ -163,6 +163,41 @@ export const spellSchema = z.strictObject({
 export const goodsSchema = z.strictObject({ ...item, effect });
 
 /** Tag group ("Bosses", "Melee Weapons", …) → tag names. Tags are plain strings on builds. */
+/**
+ * The small subset of weapons and armor a build card or a slot needs to show an item (name, icon, skill
+ * badge). `cards.json` is derived from weapons.json and armor.json by the pipeline, so the landing page
+ * doesn't download the full 400 KB of stats (T11).
+ */
+export const cardWeaponSchema = weaponSchema.pick({
+  id: true,
+  name: true,
+  icon: true,
+  skill: true,
+  ashesOfWar: true,
+});
+export const cardArmorSchema = armorSchema.pick({ id: true, name: true, icon: true, slot: true });
+export const cardsSchema = z.strictObject({
+  weapons: z.array(cardWeaponSchema),
+  armor: z.array(cardArmorSchema),
+});
+
+/** weapons.json + armor.json → cards.json. */
+export function makeCards(
+  weapons: z.infer<typeof weaponSchema>[],
+  armor: z.infer<typeof armorSchema>[],
+): z.infer<typeof cardsSchema> {
+  return {
+    weapons: weapons.map(({ id, name, icon, skill, ashesOfWar }) => ({
+      id,
+      name,
+      icon,
+      skill,
+      ashesOfWar,
+    })),
+    armor: armor.map(({ id, name, icon, slot }) => ({ id, name, icon, slot })),
+  };
+}
+
 export const tagsSchema = z.record(name, z.array(name).min(1));
 
 export type AffinityKey = z.infer<typeof affinityKeySchema>;
@@ -177,6 +212,9 @@ export type Talisman = z.infer<typeof talismanSchema>;
 export type Spell = z.infer<typeof spellSchema>;
 export type Goods = z.infer<typeof goodsSchema>;
 export type Tags = z.infer<typeof tagsSchema>;
+export type CardWeapon = z.infer<typeof cardWeaponSchema>;
+export type CardArmor = z.infer<typeof cardArmorSchema>;
+export type Cards = z.infer<typeof cardsSchema>;
 
 /** Every file in src/data/er/ and the schema of one entry (tags.json is a single object). */
 export const DATA_FILES = {

@@ -79,4 +79,17 @@ describe('ItemSelector', () => {
     await user.click(screen.getByRole('button', { name: "Erdtree's Favor +1" }));
     expect(store.getState().equipment.tal1?.name).toBe("Erdtree's Favor +1");
   });
+
+  it('renders the long weapon list a page at a time', async () => {
+    const { user } = renderWithProviders(<EditorWithPicker />);
+    await user.click(screen.getAllByRole('button', { name: 'Choose weapon' })[0]!);
+    const rows = () =>
+      screen.getAllByRole('button', { name: /^(?!Choose|Close|Show more)/ }).length;
+    const before = rows();
+    await user.click(screen.getByRole('button', { name: /^Show more \(\d+ left\)$/ }));
+    expect(rows()).toBeGreaterThan(before);
+    // A search narrows the whole list first: a short result has no "Show more".
+    await searchItems(user, 'Uchigatana');
+    expect(screen.queryByRole('button', { name: /^Show more/ })).not.toBeInTheDocument();
+  });
 });

@@ -4,7 +4,7 @@ import OutsideClickHandler from './OutsideClickHandler';
 import TextInput from './TextInput';
 import FlexGroup from './FlexGroup';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '@/theme';
-import { tagGroups } from '@/data';
+import { tagGroups } from '@/data/core';
 
 interface ChipsProps {
   onAdd: (tag: string) => void;

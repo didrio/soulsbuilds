@@ -4,13 +4,11 @@ import FlexGroup from '@/components/ui/FlexGroup';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { SectionHeader } from '../styles';
 
-// The markdown editor is large: load it only when a description is shown or edited.
+// The markdown editor is large: load it only when a description is edited (view mode has a light renderer).
 const MarkdownEditor = lazy(() =>
   import('./Markdown').then((module) => ({ default: module.MarkdownEditor })),
 );
-const MarkdownView = lazy(() =>
-  import('./Markdown').then((module) => ({ default: module.MarkdownView })),
-);
+const MarkdownView = lazy(() => import('./MarkdownView'));
 
 interface DescriptionSectionProps {
   description: string;

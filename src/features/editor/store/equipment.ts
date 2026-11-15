@@ -13,7 +13,7 @@ import {
   type Goods,
   type Talisman,
   type Weapon,
-} from '@/data';
+} from '@/data/core';
 import {
   ARROW_SLOTS,
   CONSUMABLE_SLOTS,

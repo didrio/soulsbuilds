@@ -131,8 +131,8 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
 
 styled-components with no `ThemeProvider`; tokens are plain constants in `src/theme/` (`COLOR_*` dark greens and
 golds, `FONT_*`, `BELOW_*` media queries; ESLint rejects hex literals elsewhere); one `createGlobalStyle` in
-`src/app/App.tsx`. Fonts: OptimusPrinceps SemiBold (local TTF, headings) and
-`garamond-premier-pro` from an Adobe Typekit kit in `index.html`. Responsive layout is ad-hoc `max-width`
+`src/app/App.tsx`. Fonts: self-hosted OFL **Cinzel** (headings) and **EB Garamond**
+(body) from `@fontsource`, imported in `src/index.css`. Responsive layout is ad-hoc `max-width`
 media queries (400–1400 px). Spacing: `SPACE_*` tokens (5px steps, plus `SPACE_GUTTER` 16px) in
 `src/theme/spacing.ts`, used by the shell and the pages touched since T11; older margins are still literal.
 Contrast: gold and light-green text pass WCAG AA on the greens, except on `COLOR_LIGHT_GREEN`, so hover states

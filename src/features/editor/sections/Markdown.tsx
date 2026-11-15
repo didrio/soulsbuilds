@@ -1,6 +1,6 @@
-// The markdown editor and renderer (@uiw/react-md-editor, the biggest dependency). DescriptionSection
-// loads this module lazily, so it is its own chunk, fetched only when a description is shown/edited.
-// User markdown always renders through rehype-sanitize.
+// The markdown editor (@uiw/react-md-editor, the biggest dependency). DescriptionSection loads this
+// module lazily, so it is its own chunk, fetched only when a description is edited; view mode uses the
+// much lighter ./MarkdownView. User markdown always renders through rehype-sanitize.
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
@@ -23,10 +23,6 @@ export function MarkdownEditor({
       value={value}
     />
   );
-}
-
-export function MarkdownView({ source }: { source: string }) {
-  return <StyledMarkdownPreview rehypePlugins={[[rehypeSanitize]]} source={source} />;
 }
 
 const StyledMarkdownEditor = styled(MDEditor)`
@@ -55,11 +51,4 @@ const StyledMarkdownEditor = styled(MDEditor)`
     color: ${COLOR_GOLD};
     font-family: ${FONT_BODY};
   }
-`;
-
-const StyledMarkdownPreview = styled(MDEditor.Markdown)`
-  background-color: ${COLOR_DARK_GREEN} !important;
-  color: ${COLOR_GOLD} !important;
-  font-family: ${FONT_BODY} !important;
-  font-size: 18px !important;
 `;

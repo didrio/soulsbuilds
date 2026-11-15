@@ -14,7 +14,7 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T3–T7, T10, T13 done, most of T9/T11): Vite 8, React 19 (React Compiler), RTK 2,
+As of 2026-11-15 (T3–T7, T10, T11, T13 done, most of T9): Vite 8, React 19 (React Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 12, strict TypeScript. Firestore model v2 with tested rules
 and a v1→v2 migration (2022 names → game IDs); one `AuthProvider`; page states; search, delete, rename, change
 items in place, consumables, great rune and spirit ash, send-only email verification; reports +
@@ -186,7 +186,8 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Firestore rules have an expression budget** (~1,000 per request; every field access counts, and function
   arguments are re-evaluated at each use). Past it, writes fail with a bare `PERMISSION_DENIED`. Keep
   `validEquipment` cheap; the full-equipment test in `tests/rules/` guards the worst case.
-- **Game rules live in `src/data/rules.ts`** (which Ash fits, which affinity, talisman groups). Scripts import
+- **Code that runs on every page imports `@/data/core`, not `@/data`** (the full data is ~1 MB and loads with
+  the picker/editor only; docs/data.md). **Game rules live in `src/data/rules.ts`** (which Ash fits, which affinity, talisman groups). Scripts import
   it directly (`../src/data/rules.ts`, Node strips the types), so it keeps type-only imports.
 - **`scripts/data/*.ts` run directly under Node 24** (type stripping): relative imports keep `.ts`, and only
   erasable syntax works (no enums). `src/data/er/` and `scripts/data/name-aliases.json` are machine-written

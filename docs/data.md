@@ -12,6 +12,11 @@ node -e 'console.log(require("./src/data/er/spells.json").filter(s=>/Heal/.test(
 
 Extracted from the owner's own copy of the game (regulation 1.17.3, exported 2026-11-15) and written by
 `npm run data`. The app reads it through `src/data/index.ts` (`@/data`): lists (`weapons`, `armorList(slot)`,
+**Light vs full data (T11):** `src/data/core.ts` is what every page loads: affinities, skills, Ashes of War, tags
+and `er/cards.json` (id, name, icon, skill for weapons; id, name, icon, slot for armor, derived from the full
+files by `npm run data`). `src/data/index.ts` re-exports it and adds the full lists (stats, spells…, ~1 MB), which
+only the item picker and the editor page load. Build cards, `Slot` and the Redux store import `@/data/core`,
+never `@/data` (a test guards `core.ts`).
 `greatRunes`…), lookups by ID (`getWeapon(id)`, `getArmor(id, slot)`, `getAsh(id)`…, `undefined` for an
 unknown ID), `iconUrl(icon)`, display helpers (`affinityName`, `ashLabel`, `weaponSkill`). Shapes: zod schemas
 in `src/data/schema.ts` (app code imports their types only, so zod stays out of the bundle).
