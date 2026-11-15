@@ -4,10 +4,10 @@ Read this before touching auth, Firestore, rules, emulators or deploys.
 
 ## Projects
 
-| Project            | What                                                                                      |
-| ------------------ | ----------------------------------------------------------------------------------------- |
-| `demo-soulsbuilds` | Local emulators only. A `demo-` project has no real backend: nothing can reach production |
-| `soulsbuilds`      | Production (Firebase Hosting at soulsbuilds.web.app, Firestore, Auth, Analytics)          |
+| Project            | What                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| `demo-soulsbuilds` | Local emulators only. A `demo-` project has no real backend: nothing can reach production    |
+| `soulsbuilds`      | Production, Spark plan: Hosting (soulsbuilds.com; default domains redirect), Firestore, Auth |
 
 `src/lib/firebase.ts` picks the project: `import.meta.env.DEV` (Vite dev server and Vitest) → emulators;
 production builds (`npm run build`, `npm run preview`, deploys) → `soulsbuilds`. The web config in that file is
@@ -31,13 +31,13 @@ public by design; security rules protect the data.
 
 ## Security rules
 
-- **Production** still has the 2022 test-mode rules, which expired on 2022-05-17: every read and write is
-  denied, so the live site shows no data. That's the safe state until relaunch.
-- **`firestore.rules` is the real v2 ruleset** (T3; model in `docs/architecture.md`), tested by
-  `npm run test:rules`. The emulators load it. It is **not deployed yet**: production still holds v1 data, so
-  deploying rules, indexes and running the migration happen together in T12, with the owner.
+- **`firestore.rules` is the v2 ruleset** (T3; model in `docs/architecture.md`), tested by `npm run test:rules`.
+  The emulators load it, and production has run it since the T12 cutover (2026-11-15, with the v1→v2 migration).
+  It now ships with every approved production deploy from CI.
 - `firestore.indexes.json` has the composite indexes the queries need (builds by game + likes/date, by tag, by
-  owner; likes by user). Production builds its indexes when T12 deploys them.
+  owner; likes by user). A new index takes minutes to build in production; queries that need it fail until then.
+- Production also holds an unused 2022 doc, `app/tags` (the old boss-tag list). No rule matches it, so clients
+  can't read it; it's in the T12 backup.
 
 ## Migrating production (T12, owner-approved)
 
@@ -50,6 +50,8 @@ node scripts/migrate-v1-to-v2.mjs                           # dry run against th
 node scripts/migrate-v1-to-v2.mjs --project soulsbuilds     # dry run against production (read-only)
 node scripts/migrate-v1-to-v2.mjs --project soulsbuilds --write   # apply (after rules/indexes deploy)
 ```
+
+Take a backup first (`node scripts/admin.mjs export --project soulsbuilds`, see "Backups").
 
 What it changes: builds get `ownerId`, `game`, numeric stats (clamped 1–99, recomputed level), an `equipment`
 map, timestamps from the docs' own create/update times; `comments[]` → comments subcollection;
@@ -77,6 +79,7 @@ node scripts/admin.mjs remove <buildId> [commentId] --write      # delete it, re
 node scripts/admin.mjs dismiss <buildId> [commentId] --write     # keep it, resolve its reports
 node scripts/admin.mjs grant you@example.com --write             # admin claim (revoke to undo)
 node scripts/admin.mjs reports --project soulsbuilds             # production (ADC, owner only)
+node scripts/admin.mjs export [--project soulsbuilds]            # JSON backup of every document
 ```
 
 - **Delete, not hide** (`docs/decisions.md`). `remove` first saves what it deletes (the build with its comments
@@ -109,12 +112,79 @@ or the live site breaks):
 
 ## Deploys (owner-approved only)
 
-- `npm run deploy` = `npm run check` then `firebase deploy --project soulsbuilds --only hosting`. It needs
-  `npx firebase login` (the owner) and always asks first (`.claude/settings.json`). Hosting serves `dist/` with
-  an SPA rewrite to `index.html`.
-- Never `firebase deploy` without `--only`. Rules, indexes and the migration go out together (T12).
-- T12 replaces manual deploys with GitHub Actions (preview channels per PR, approved production deploys,
-  Workload Identity Federation instead of keys).
+- **The normal path is CI** (`.github/workflows/ci.yml`, after the checks pass):
+  - Every PR from this repo → Hosting preview channel `pr-<number>` (expires in 7 days) and a PR comment with its
+    URL, updated on each push. Previews use the **production backend** (real data); once App Check is enforced
+    they can't reach Firestore or Auth (preview domains aren't on the reCAPTCHA key), so they're for the UI.
+  - Every push to `main` → the `deploy` job waits for the owner's approval (GitHub `production` environment:
+    the run's page → **Review deployments**), then deploys `hosting,firestore:rules,firestore:indexes`.
+    Rejecting or ignoring it deploys nothing (pending approvals expire after 30 days).
+- **By hand** (owner; the commands ask first): `npm run deploy` (checks, then hosting only), or
+  `node scripts/firebase.mjs deploy --project soulsbuilds --only firestore:rules,firestore:indexes`. Needs
+  `node scripts/firebase.mjs login` once.
+- Never `firebase deploy` without `--only`. Hosting serves `dist/` with an SPA rewrite to `index.html`.
+- `index.html` sends `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` to `soulsbuilds.com` (same path).
+  Preview channels and Firebase's `/__/auth/*` pages (email verification and password reset links) are unaffected.
+
+## CI deploys: Workload Identity Federation (set up 2026-11-15)
+
+GitHub's OIDC token is exchanged for short-lived credentials of `github-deploy@soulsbuilds.iam.gserviceaccount.com`
+(`google-github-actions/auth`). Only workflows in this repository (by numeric ID, so a renamed or re-created repo
+doesn't match) can use it. No keys exist. To recreate it (`gcloud auth login` first):
+
+```bash
+gcloud services enable iamcredentials.googleapis.com sts.googleapis.com --project soulsbuilds
+gcloud iam workload-identity-pools create github --project soulsbuilds --location global --display-name "GitHub Actions"
+gcloud iam workload-identity-pools providers create-oidc github --project soulsbuilds --location global \
+  --workload-identity-pool github --display-name "GitHub" --issuer-uri https://token.actions.githubusercontent.com \
+  --attribute-mapping "google.subject=assertion.sub,attribute.repository_id=assertion.repository_id" \
+  --attribute-condition "assertion.repository_id == '762413644'"
+gcloud iam service-accounts create github-deploy --project soulsbuilds --display-name "GitHub Actions deploys"
+gcloud iam service-accounts add-iam-policy-binding github-deploy@soulsbuilds.iam.gserviceaccount.com \
+  --project soulsbuilds --role roles/iam.workloadIdentityUser \
+  --member "principalSet://iam.googleapis.com/projects/981152509260/locations/global/workloadIdentityPools/github/attribute.repository_id/762413644"
+for role in firebasehosting.admin firebaseauth.admin firebaserules.admin datastore.indexAdmin \
+  serviceusage.apiKeysViewer serviceusage.serviceUsageConsumer; do
+  gcloud projects add-iam-policy-binding soulsbuilds --condition None \
+    --member serviceAccount:github-deploy@soulsbuilds.iam.gserviceaccount.com --role "roles/$role"
+done
+```
+
+Roles: Hosting Admin (deploys, channels), Firebase Authentication Admin (the CLI adds each preview domain to
+Auth's authorized domains), Rules Admin and Datastore Index Admin (production deploys), API Keys Viewer and
+Service Usage Consumer (the CLI's project checks). One service account serves both jobs: fine for a
+single-maintainer repo, since anyone who can push a branch could edit the workflow anyway.
+
+The GitHub side: environment `production` with the owner as required reviewer, deployable from `main` only
+(repo Settings → Environments, or `gh api repos/didrio/soulsbuilds/environments/production`).
+
+## Backups (Spark plan)
+
+Spark has no managed backups, point-in-time recovery or scheduled exports (all need Blaze). Instead:
+
+```bash
+node scripts/admin.mjs export --project soulsbuilds   # every document as JSON in .admin-backups/ (read-only)
+```
+
+Run it **before anything risky** (a migration, a rules change that rewrites data, bulk moderation). It walks every
+collection and subcollection; restoring is by hand (a small Admin SDK script over the `docs` map). `.admin-backups/`
+is gitignored: keep a copy somewhere safe. Moving to Blaze would allow PITR (7 days) and daily managed backups.
+
+## Relaunch checklist (production)
+
+- [ ] Backup: `admin.mjs export --project soulsbuilds` taken before the migration.
+- [ ] Rules and indexes deployed; every index READY; migration written; a second dry run finds no v1 docs.
+- [ ] Hosting deployed; smoke test on soulsbuilds.com: sign up, create, like, comment, delete; the default domains
+      redirect.
+- [ ] App Check: metrics show nearly all requests verified, then **enforced** for Firestore and Auth (below).
+- [ ] Auth providers: Email/Password only (Console → Authentication → Sign-in method); email enumeration
+      protection on (Settings → User actions).
+- [ ] Authorized domains: `soulsbuilds.com`, `soulsbuilds.web.app`, `soulsbuilds.firebaseapp.com` (plus the
+      preview domains the CI adds); remove `localhost` (local work uses the emulators).
+- [ ] Email templates (Authentication → Templates): sender name "Souls Builds", the verification and reset texts.
+- [ ] Analytics: none in the code; unlink Google Analytics in Project settings → Integrations if it's linked.
+- [ ] Billing: Spark can't bill, so no budget alert is needed. If the project ever moves to Blaze, add one first.
+- [ ] The owner has the admin claim (`admin.mjs grant`), and `admin.mjs reports --project soulsbuilds` works.
 
 ## Credentials and admin scripts
 
@@ -123,5 +193,8 @@ or the live site breaks):
   Cloud Console → IAM → Service Accounts → `firebase-adminsdk-…` → Keys, key id starting `c33393`).
 - Admin scripts (migrations, exports) use Application Default Credentials: the owner runs
   `gcloud auth application-default login` and the script uses `initializeApp({ projectId: 'soulsbuilds' })`.
+  With user credentials the Auth admin API also needs a quota project: `admin.mjs` sets
+  `GOOGLE_CLOUD_QUOTA_PROJECT` to the `--project` it's given (without it, `grant` fails with an
+  `adc-troubleshooting/user-creds` error). Other scripts that call Auth need the same.
   Scripts default to dry-run and say exactly what they'd change.
 - Cloud Functions are not used (they need the paid Blaze plan). Prefer rules-validated transactions.

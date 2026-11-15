@@ -108,8 +108,8 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
   The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
-  `comments[]`, item **names**) only exists in production, which is dark until T12 runs the migration with the
-  owner. Item names become game IDs on the way (`scripts/lib/names-to-ids.mjs` with
+  `comments[]`, item **names**) existed only in production, migrated at T12 (2026-11-15); the script stays for
+  the record and its tests. Item names become game IDs on the way (`scripts/lib/names-to-ids.mjs` with
   `scripts/data/name-aliases.json`), dropping, with a note each, names the game data doesn't have and
   Ash/affinity/talisman combinations the game doesn't allow; the tag "Warhammer" becomes "Great Hammer".
 
@@ -124,7 +124,7 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   talisman/spell/tear/consumable lists (Firestore's per-request expression budget; `firestore.rules`). The app
   ignores IDs it doesn't know.
 - App Check is on in production builds (reCAPTCHA Enterprise key in `src/lib/firebase/app.ts`); enforcement
-  waits for T12 (`docs/firebase.md`).
+  follows once its metrics look right (`docs/firebase.md`).
 - No admin UI: reports are reviewed with `scripts/admin.mjs` (backlog).
 
 ## Styling

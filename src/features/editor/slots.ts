@@ -1,5 +1,15 @@
 // Editor slot ids and types. Every slot in the editor has an id (the Redux key it writes to) and a
 // type (which item list the picker shows).
+import { iconUrl } from '@/data/core';
+
+/**
+ * An empty slot's placeholder image: a faded game icon when given one, else the 2022 menu icon
+ * (public/assets/menu/<background>.png), else none (tears and spells have no placeholder).
+ */
+export function placeholderUrl(background?: string, backgroundIcon?: number): string | null {
+  if (backgroundIcon !== undefined) return iconUrl(backgroundIcon);
+  return background ? `/assets/menu/${background}.png` : null;
+}
 
 export const SLOT_TYPE_ARROW = 'SLOT_TYPE_ARROW';
 export const SLOT_TYPE_CHEST = 'SLOT_TYPE_CHEST';

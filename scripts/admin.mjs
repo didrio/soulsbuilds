@@ -11,6 +11,9 @@
 //   node scripts/admin.mjs dismiss <buildId> [commentId]  resolve its open reports as "dismissed"
 //   node scripts/admin.mjs grant <uid|email>              set the `admin` custom claim
 //   node scripts/admin.mjs revoke <uid|email>             clear it
+//   node scripts/admin.mjs export                         back up every document (all collections and
+//                                                         subcollections) as JSON; read-only (T12: the
+//                                                         Spark plan has no managed backups or PITR)
 //   ... --project soulsbuilds --write                     production (owner only), applied
 //
 // Moderation is delete, not hide (docs/decisions.md): before deleting, `remove` saves what it deletes
@@ -18,7 +21,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { DocumentReference, FieldValue, Timestamp } from 'firebase-admin/firestore';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -87,9 +90,46 @@ async function resolveReports(db, reports, status) {
 const toJson = (value) =>
   JSON.stringify(
     value,
-    (_key, v) => (v instanceof Timestamp ? { timestamp: v.toDate().toISOString() } : v),
+    (_key, v) => {
+      if (v instanceof Timestamp) return { timestamp: v.toDate().toISOString() };
+      if (v instanceof DocumentReference) return { ref: v.path };
+      return v;
+    },
     2,
   );
+
+const stampNow = () => new Date().toISOString().replace(/[:.]/g, '-');
+
+/**
+ * Reads every document in the database, subcollections included, into one JSON file in `dir`:
+ * `{ exportedAt, projectId, docs: { 'builds/B1': {...}, 'builds/B1/comments/c1': {...} } }`.
+ * Walks `listDocuments()`, so subcollections under a missing parent doc are found too. Only reads.
+ * Resolves to the file path and the document count per collection path (ids replaced by `*`).
+ */
+export async function exportAll(db, { dir = join(root, '.admin-backups'), projectId = null } = {}) {
+  const docs = {};
+  const counts = {};
+  const walk = async (collections) => {
+    for (const collection of collections) {
+      const refs = await collection.listDocuments();
+      for (let i = 0; i < refs.length; i += 300) {
+        const snapshots = refs.length ? await db.getAll(...refs.slice(i, i + 300)) : [];
+        for (const snapshot of snapshots) {
+          if (!snapshot.exists) continue;
+          docs[snapshot.ref.path] = snapshot.data();
+          const key = snapshot.ref.parent.path.replace(/\/[^/]+\//g, '/*/');
+          counts[key] = (counts[key] ?? 0) + 1;
+        }
+      }
+      for (const ref of refs) await walk(await ref.listCollections());
+    }
+  };
+  await walk(await db.listCollections());
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, `export_${projectId ?? 'db'}_${stampNow()}.json`);
+  writeFileSync(file, toJson({ exportedAt: new Date().toISOString(), projectId, docs }));
+  return { file, counts, total: Object.keys(docs).length };
+}
 
 /**
  * Deletes a build (with its likes and comments) or a single comment (and moves the build's
@@ -120,8 +160,7 @@ export async function removeContent(
       backup.likes = likes.docs.map((d) => ({ id: d.id, ...d.data() }));
     }
     mkdirSync(backupDir, { recursive: true });
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    result.backup = join(backupDir, `${stamp}_${ref.path.replaceAll('/', '_')}.json`);
+    result.backup = join(backupDir, `${stampNow()}_${ref.path.replaceAll('/', '_')}.json`);
     writeFileSync(result.backup, toJson(backup));
 
     if (commentId) {
@@ -172,7 +211,8 @@ const USAGE = `Usage: node scripts/admin.mjs <command> [args] [--project <id>] [
   remove <buildId> [commentId]   delete the build or comment, resolve its reports
   dismiss <buildId> [commentId]  resolve its reports, keep the content
   grant <uid|email>              make a user an admin
-  revoke <uid|email>             remove admin`;
+  revoke <uid|email>             remove admin
+  export                         save every document as JSON in .admin-backups/ (read-only)`;
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
@@ -182,6 +222,9 @@ async function main() {
     return;
   }
   let projectId = opts.project;
+  // With user ADC (`gcloud auth application-default login`) the Auth admin API needs a quota
+  // project, or grant/revoke fail with an "adc-troubleshooting/user-creds" error.
+  if (projectId) process.env.GOOGLE_CLOUD_QUOTA_PROJECT ??= projectId;
   if (!projectId) {
     const { emulators } = JSON.parse(readFileSync(join(root, 'firebase.json'), 'utf8'));
     process.env.FIRESTORE_EMULATOR_HOST ??= `${emulators.firestore.host}:${emulators.firestore.port}`;
@@ -246,6 +289,13 @@ async function main() {
       'The user must sign out and in again (or wait up to an hour) to get the new claim.',
     );
     dryRunNote();
+  } else if (command === 'export') {
+    console.log(`Export (read-only): ${where}\n`);
+    const result = await exportAll(db, { projectId });
+    for (const [path, count] of Object.entries(result.counts).sort()) {
+      console.log(`  ${path}: ${count}`);
+    }
+    console.log(`\n${result.total} documents → ${result.file}`);
   } else {
     console.log(USAGE);
     process.exitCode = 1;

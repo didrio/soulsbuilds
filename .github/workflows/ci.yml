@@ -7,7 +7,18 @@ on:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR runs are cancelled; runs on main are not (a production deploy mustn't stop halfway).
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+# Deploys (T12) authenticate with Workload Identity Federation: GitHub's OIDC token is exchanged for
+# short-lived credentials of the deploy service account. No JSON keys anywhere. Neither value is a
+# secret. Setup and roles: docs/firebase.md "CI deploys".
+env:
+  GCP_WIF_PROVIDER: projects/981152509260/locations/global/workloadIdentityPools/github/providers/github
+  GCP_DEPLOY_SA: github-deploy@soulsbuilds.iam.gserviceaccount.com
 
 jobs:
   check:
@@ -67,4 +78,95 @@ jobs:
           path: .artifacts/e2e
           retention-days: 7
 
-      # T12 adds deploys to Firebase Hosting preview channels / production.
+  # Every PR from this repo gets a Hosting preview channel (7 days) and a comment with its URL. Previews
+  # use the PRODUCTION backend (real data); once App Check is enforced they can't reach Firestore or
+  # Auth (their domains aren't on the reCAPTCHA key), so they're for reviewing the UI. Fork PRs are
+  # skipped: they get no OIDC token.
+  preview:
+    name: Preview channel
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [check, emulator-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: soulsbuilds
+          workload_identity_provider: ${{ env.GCP_WIF_PROVIDER }}
+          service_account: ${{ env.GCP_DEPLOY_SA }}
+
+      - id: deploy
+        run: |
+          node scripts/firebase.mjs hosting:channel:deploy "pr-${{ github.event.pull_request.number }}" \
+            --expires 7d --project soulsbuilds --json > deploy.json
+          node -e "const r = require('./deploy.json'); console.log('url=' + Object.values(r.result)[0].url)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/github-script@v9
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.url }}
+        with:
+          script: |
+            const marker = '<!-- firebase-preview -->';
+            const body = `${marker}\nPreview: ${process.env.PREVIEW_URL} (${context.payload.pull_request.head.sha.slice(0, 7)}, expires in 7 days)\n\n` +
+              'Uses the production backend: real data. UI review only once App Check is enforced.';
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find((c) => c.body?.startsWith(marker));
+            if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            else await github.rest.issues.createComment({ owner, repo, issue_number, body });
+
+  # Pushes to main deploy hosting, rules and indexes after the owner approves the run (the
+  # `production` environment has a required reviewer). Rules and indexes ship with the code that
+  # needs them; both are tested above.
+  deploy:
+    name: Deploy to production
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [check, emulator-tests]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://soulsbuilds.com
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: soulsbuilds
+          workload_identity_provider: ${{ env.GCP_WIF_PROVIDER }}
+          service_account: ${{ env.GCP_DEPLOY_SA }}
+
+      - run: >-
+          node scripts/firebase.mjs deploy --project soulsbuilds --non-interactive
+          --only hosting,firestore:rules,firestore:indexes

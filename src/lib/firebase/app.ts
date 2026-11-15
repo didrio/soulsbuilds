@@ -2,7 +2,6 @@
 import { initializeApp } from 'firebase/app';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
-import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
 
 // Local dev (`npm run dev`) and tests always talk to the Firebase emulators under the `demo-soulsbuilds`
@@ -24,7 +23,6 @@ const productionConfig = {
   storageBucket: 'soulsbuilds.appspot.com',
   messagingSenderId: '981152509260',
   appId: '1:981152509260:web:a637087018de332b29b3e9',
-  measurementId: 'G-EXTD6Y44QT',
 };
 
 const emulatorConfig = {
@@ -66,9 +64,4 @@ if (USE_EMULATORS) {
     disableWarnings: true,
   });
   connectFirestoreEmulator(firestore, EMULATOR_HOST, FIRESTORE_EMULATOR_PORT);
-} else {
-  // Analytics only in production, and only where the browser supports it. (Consent: T12.)
-  isAnalyticsSupported().then((supported) => {
-    if (supported) getAnalytics(firebaseApp);
-  });
 }

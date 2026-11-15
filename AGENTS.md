@@ -14,14 +14,12 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T3–T7, T10, T11, T13 done, most of T9): Vite 8, React 19 (React Compiler), RTK 2,
-TanStack Query 5, styled-components 6, Firebase 12, strict TypeScript. Firestore model v2 with tested rules
-and a v1→v2 migration (2022 names → game IDs); one `AuthProvider`; page states; search, delete, rename, change
-items in place, consumables, great rune and spirit ash, send-only email verification; reports +
-`scripts/admin.mjs` moderation; Playwright e2e; all green in CI. Game data v2 (base + DLC, from the game
-files) in `src/data/er/`; builds store game IDs; the picker follows the game's Ash of War/affinity rules.
-**Production is dark** (v1 data under the expired 2022 rules); T12 deploys rules, indexes, the migration and
-App Check with the owner.
+As of 2026-11-15 (T1–T7, T10–T13 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
+v2 with tested rules (2022 data migrated); one `AuthProvider`; page states; search, likes, comments, reports +
+`scripts/admin.mjs` moderation; privacy/terms pages; Playwright e2e. Game data v2 (base + DLC, from the game files)
+in `src/data/er/`; builds store game IDs. CI: checks, a preview channel per PR, production deploys on `main` after
+the owner approves (Workload Identity, no keys). Left from T12: the owner enforces App Check.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -64,12 +62,13 @@ App Check with the owner.
 | Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                         |
 | Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                         |
 | Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)      |
-| v1→v2 migration (dry run; prod = T12 only)  | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`               |
+| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`               |
 | Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`  |
+| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`  |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--full]` → PNG path   |
 | Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)         |
 | Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                   |
-| Deploy hosting (owner only, asks)           | `npm run deploy`                                                             |
+| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"        |
 
 ## How work flows: tickets and sessions
 
@@ -97,12 +96,14 @@ index.html                 Vite entry (Adobe Typekit font kit + favicon placehol
 src/
   main.tsx                 createRoot + <AppProviders><App/>
   app/                     App (shell: header, login/register slide-down panel, item-picker modal, footer),
-                           routes.tsx (/, /build/:buildId, /user/:userId, 404), AppProviders (Query, Auth,
-                           Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch), Header
+                           routes.tsx (/, /build/:buildId, /user/:userId, /privacy, /terms, 404), AppProviders
+                           (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
+                           Header
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
   features/builds/         Landing (sort, tag/level filters in the URL, load more), BuildsList (build cards),
                            filters.ts, queries.ts (useBuilds, useUserBuilds)
   features/profile/        Profile (rename, Builds/Liked tabs), queries.ts (useUserProfile(s), useLikedBuilds…)
+  features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete) + useBuildEditor; queries.ts (useBuild,
                            useSaveBuild, likes, comments); sections/ (BuildTitle with like button, BuildDetailsForm,
@@ -132,8 +133,8 @@ scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, scre
                            wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript) +
                            name-aliases.json (2022 names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
-firestore.rules            v2 security rules (not deployed until T12); firestore.indexes.json
-docs/                      architecture, firebase, data, decisions
+firestore.rules            v2 security rules (deployed by CI with hosting); firestore.indexes.json
+docs/                      architecture, firebase, data, decisions, game-data-extraction, tickets-archive
 TICKETS.md                 Ordered backlog; one ticket per session
 ```
 
@@ -177,8 +178,8 @@ TICKETS.md                 Ordered backlog; one ticket per session
   jsx-a11y plugins don't support ESLint 10 yet). Revisit when they do.
 - **npm `allowScripts`**: install scripts are off unless listed. `@firebase/util`, `protobufjs`, `re2` and
   `fsevents` are deliberately denied (not needed here).
-- **Never deploy rules or indexes on their own**: production still holds v1 data, which the v2 rules reject.
-  Rules, indexes and the migration go out together in T12, with the owner.
+- **Production deploys go through CI** (approved runs on `main`: hosting, rules and indexes together). A rules
+  change that needs data rewritten needs a migration script, a backup (`admin.mjs export`) and the owner first.
 - **`serverTimestamp()` reads back as an estimate** until the server confirms (`toBuild` and friends pass
   `serverTimestamps: 'estimate'`), so a just-written doc never has a null `createdAt`.
 - **`npm run seed` wipes the emulator's Firestore** before seeding, and so does importing `scripts/seed.mjs`

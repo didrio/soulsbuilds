@@ -1,5 +1,5 @@
 // scripts/admin.mjs against the emulators: reports listing, remove (with backups and counters),
-// dismiss, and the admin claim. `npm run test:rules`.
+// dismiss, the admin claim, and export. `npm run test:rules`.
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -7,7 +7,13 @@ import { deleteApp, initializeApp, type App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { dismissReports, listOpenReports, removeContent, setAdmin } from '../../scripts/admin.mjs';
+import {
+  dismissReports,
+  exportAll,
+  listOpenReports,
+  removeContent,
+  setAdmin,
+} from '../../scripts/admin.mjs';
 
 const PROJECT_ID = 'demo-soulsbuilds-test';
 let app: App;
@@ -125,5 +131,31 @@ describe('admin script', () => {
     expect((await auth.getUser(user.uid)).customClaims).toEqual({ beta: true, admin: true });
     await setAdmin(auth, user.uid, false, { write: true });
     expect((await auth.getUser(user.uid)).customClaims).toEqual({ beta: true });
+  });
+});
+
+describe('exportAll', () => {
+  it('saves every document, subcollections included, with readable timestamps', async () => {
+    // A subcollection under a parent doc that doesn't exist must still be found.
+    await db.doc('builds/GHOST/comments/c9').set({ authorId: 'erin', text: 'orphan' });
+    const dir = mkdtempSync(join(tmpdir(), 'soulsbuilds-export-'));
+    const result = await exportAll(db, { dir, projectId: PROJECT_ID });
+    const { docs, projectId } = JSON.parse(readFileSync(result.file, 'utf8'));
+
+    expect(projectId).toBe(PROJECT_ID);
+    expect(docs['builds/B1']).toEqual({ ownerId: 'alice', name: 'Spam build', commentCount: 2 });
+    expect(docs['builds/B1/comments/c2']).toEqual({ authorId: 'carol', text: 'nice' });
+    expect(docs['builds/B1/likes/bob']).toEqual({
+      userId: 'bob',
+      createdAt: { timestamp: '2026-11-01T00:00:00.000Z' },
+    });
+    expect(docs['builds/GHOST']).toBeUndefined();
+    expect(docs['builds/GHOST/comments/c9']).toEqual({ authorId: 'erin', text: 'orphan' });
+    expect(docs['reports/c1_dave']).toMatchObject({ reason: 'spam', status: 'open' });
+
+    expect(result.counts['builds']).toBe(2);
+    expect(result.counts['builds/*/comments']).toBe(3);
+    expect(result.counts['reports']).toBe(3);
+    expect(result.total).toBe(Object.keys(docs).length);
   });
 });

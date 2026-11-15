@@ -2,23 +2,29 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T14**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T19**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T12, the relaunch · Opus · high · plan mode on.
+**Next:** T16, the redesign · Opus · high · plan mode on.
 
-**Owner to-dos tracked in tickets:** T12
-(GCP setup for CI deploys, App Check enforcement, your admin claim, approving each production step). Done
-2026-11-15: secret scanning + push protection on, App Check key created and registered, gcloud ADC set up, keep
-the 2022 builds, the game data export (redo it after a game patch: `docs/game-data-extraction.md`). Owner decisions are in
-`docs/decisions.md`.
+**Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
-**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T7, T10, T11 and T13 done (typed
-code, safe data model, data layer, 2022 bugs, moderation, game data v2 with the DLC, builds by game ID). Left:
-T12 deploy makes it ready to open; T8 (build math) and T9 (discovery remainder) make it
-richer and may follow the launch (owner's call, 2026-11-15).
+- Approve the first CI production run (Actions → the run → Review deployments); it proves Workload Identity end to
+  end. Open a throwaway PR once to see the preview comment.
+- In a day or two: App Check → APIs, check that nearly all requests are verified, then **Enforce** for Firestore
+  and Auth (`docs/firebase.md` "App Check" step 4).
+- Console: delete the disposable test account "claude" (Authentication → Users); unlink Google Analytics if it's
+  linked (Project settings → Integrations); set the email templates' sender name to "Souls Builds".
+- Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). T18 adds an admin rename.
+- Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
+
+**Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
+(T16 design system and shell, T17 the remaining pages), then the headline feature, "How to get this build" (T14
+acquisition data, T15 route + UI), then T8 and T9. The redesign comes first so that T15's and T8's new UI is built
+once, in the new design. T14 is data only and could run before or alongside the redesign. T18 (account deletion)
+can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
 
 ## In progress
 
@@ -26,38 +32,114 @@ richer and may follow the launch (owner's call, 2026-11-15).
 
 ## Up next
 
-### T12 — Deploy pipeline and relaunch
+### T16 — Redesign: direction, design system, shell and browse pages
 
-- **Status:** ready (T13 done; owner's call, 2026-11-15: T8/T9 may follow the launch)
+- **Status:** ready (T12 done: the site is live, so redesign work ships through CI previews)
 - **Session:** Opus · high effort · plan mode on
-- **Goal:** Ship it: repeatable deploys and a safe production cutover.
+- **Goal:** Replace the clunky 2022 look with a modern, easy, accessible UI that still feels like Elden Ring:
+  roughly 90% clean modern product UI, 10% in-world character.
 - **Done when:**
-  - [ ] GitHub Actions: Firebase Hosting **preview channel** per PR (comment with the URL), production deploy
-        on `main` behind a manual approval (GitHub environment). Auth via Workload Identity Federation (no
-        JSON keys in secrets). Owner sets up the GCP side; the ticket writes exact steps.
-  - [ ] Owner-approved production steps, each asked for, in this order: dry-run
-        `scripts/migrate-v1-to-v2.mjs --project soulsbuilds` and review the report with the owner (owner's call, 2026-11-15: **keep the 2022 builds** unless the report
-        shows a problem; it also turns item names into game IDs since T13; read the "Names not in the game data" summary at the end); deploy rules + indexes (`--only
-firestore:rules,firestore:indexes`) and wait for the indexes to build; run the migration with
-        `--write`; deploy hosting; smoke-test the live site (sign up, create, like, comment). Rules and the
-        migration must go together: the v2 rules reject v1 docs.
-  - [ ] **Drop Analytics** (owner, 2026-11-15): remove `getAnalytics` from `src/lib/firebase/app.ts` and the
-        `measurementId` if unused. Privacy policy (Auth stores emails) and terms pages.
-  - [x] **Owner, from T1:** GitHub secret scanning + push protection for didrio/soulsbuilds (on 2026-11-15,
-        checked via the API). Expect an alert for the revoked 2022 key in history: close it as "Revoked".
-  - [ ] **Owner, from T10:** App Check. Done 2026-11-15: reCAPTCHA Enterprise key created (3 domains), in
-        `APP_CHECK_SITE_KEY` and registered in Firebase App Check. Left: deploy, watch the metrics, then
-        enforce for Firestore and Auth. Exact steps: `docs/firebase.md` "App Check".
-  - [ ] **Owner, from T10:** (gcloud ADC set up 2026-11-15) make yourself admin in production:
-        `node scripts/admin.mjs grant <your email> --project soulsbuilds --write`, then check
-        `node scripts/admin.mjs reports --project soulsbuilds` works with ADC.
-  - [ ] Custom domain: `soulsbuilds.com` resolves to Firebase Hosting (199.36.158.100, checked 2026-11-15);
-        it's the owner's custom domain (confirmed 2026-11-15; already on the reCAPTCHA key with both default
-        domains). Add it to Auth's authorized domains and use it in `index.html`'s `og:url` (now
-        `soulsbuilds.web.app`). Ask whether the default domains should redirect to it.
-  - [ ] Relaunch checklist in `docs/firebase.md` (backups/PITR, budget alerts, App Check enforced, auth
-        providers, authorized domains).
-- **Context:** `docs/firebase.md`, `firebase.json`, `.github/workflows/ci.yml`, `npm run deploy`.
+  - [ ] **Direction first, approved by the owner before building:** screenshot the current pages (desktop and
+        `--mobile`), list what's clunky (layout, hierarchy, density, controls), and propose one direction with a
+        static mockup of the landing page and a build page (an HTML mockup or a quick branch, the session's
+        choice). The owner gave a free hand (2026-11-15): whole sections may change, move or go.
+  - [ ] Design tokens rewritten in `src/theme/`: a neutral dark base instead of literal game greens, one
+        restrained gold accent, a type scale (Cinzel for display headings only, EB Garamond or a clean UI sans
+        for body/controls: decide and say why), spacing (`SPACE_*`), radii, elevation, motion with
+        `prefers-reduced-motion`. WCAG AA contrast for all text and focus rings; update the contrast notes in
+        `colors.ts`.
+  - [ ] `components/ui/` rebuilt on the tokens (Button, inputs, DropDown, Chips/Tag, PageMessage,
+        ErrorMessage, cards) with visible focus, 44 px touch targets and real labels.
+  - [ ] App shell redone: header/nav, login/register (the slide-down panel may become a dialog or a page),
+        footer; landing (filters, sort, search, build cards) and profile pages in the new design.
+  - [ ] The in-world 10%: a few deliberate touches (display type, thin ornamental dividers, the item icons as
+        the visual hero, maybe a subtle grace-glow accent), never at the cost of legibility or speed.
+  - [ ] e2e and component tests still pass (update selectors only where the markup really changed);
+        screenshots of every changed page, desktop and mobile; `docs/decisions.md` row for the new direction.
+- **Context:** `src/theme/`, `src/components/ui/`, `src/app/` (App, Header), `src/features/builds/`,
+  `src/features/profile/`, `src/features/legal/` (privacy/terms pages), `index.html` (fonts, meta theme-color). Keep styled-components (decision, owner's
+  call 2026-11-14); no new UI library without asking. T11's a11y pass and the Backlog's "polish leftovers" fold
+  into this. Self-hosted OFL fonts only (no new font source without the owner's OK).
+
+### T17 — Redesign: build page, editor and item picker
+
+- **Status:** ready (after T16)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** Bring the most-used and most complex screens onto T16's design system, and fix their UX.
+- **Done when:**
+  - [ ] Build view: a clear hierarchy (title, author, likes, tags, then equipment, stats, description,
+        comments); equipment as a scannable grid with icons and names; the space reserved for T15's "How to
+        get this build" section.
+  - [ ] Editor: create/edit flow reworked for ease (slot grid, weapon options for Ash of War and affinity, stats,
+        tears, spells, tags, markdown write-up), mobile-first, keyboard-usable.
+  - [ ] Item picker modal: search, categories, paging, selected state; `FocusScope` trap kept.
+  - [ ] Comments, report and like controls restyled; no leftover 2022 styles (grep for old tokens, delete
+        unused ones).
+  - [ ] All tests green (`npm run check`, `npm run e2e`); screenshots of view, edit, picker and comments, desktop
+        and mobile.
+- **Context:** `src/features/editor/` (`BuildEditorPage`, `sections/`, `Slot`, `ItemSelector`,
+  `WeaponOptions`), `src/features/reports/`. T16's tokens and components; don't reintroduce one-off styles.
+
+### T14 — Acquisition data (where every item comes from)
+
+- **Status:** ready (data only; any time after T12, before T15)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** Know how to get every pickable item from a fresh save, as data `npm run data` produces. First half
+  of the headline feature "How to get this build" (owner's idea, 2026-11-15): from a fresh save, a short guide
+  to every item in the build, in an efficient order.
+- **Done when:**
+  - [ ] `npm run data` also writes `src/data/er/acquisition.json`: for each item ID (weapons, armor, talismans,
+        spells, Ashes of War, spirit ashes, tears, great runes, consumables, arrows) a list of **sources**
+        `{ kind: pickup | boss | enemy | shop | remembrance | quest | start | alteration, location, detail, cost? }`;
+        **locations** `{ id, name, region, grace?, requires: gateId[], order }`; and **gates**
+        `{ id, label, requires }` (e.g. `stormveil`, `two-great-runes`, `academy-key`, `haligtree-medallion`,
+        `dlc` = Mohg + Radahn, `spirit-bell`, the affinity whetblades).
+  - [ ] Derived from the params: map lots → map tile → region + nearest grace (BonfireWarpParam positions and
+        text); row-name brackets as the place/boss hint; shops → merchant (a small hand-written merchant →
+        location table); remembrance trades → their boss; enemy drops → enemy (+ a hand-written farm spot for
+        the ones a build might need).
+  - [ ] Hand-written inputs in `scripts/data/` (e.g. `progression.ts`: locations, gates and their canonical
+        route order; `quest-items.json`: quest and event rewards). `src/data/er/` stays machine-written.
+  - [ ] Validation: every pickable item has a source (the pipeline fails on a gap unless it's on an explicit
+        allow-list); location and gate references resolve; the gate graph is acyclic. Pipeline tests on
+        `test-fixtures.ts`; `src/data/data.test.ts` pins coverage and checks ~20 known items (e.g. Moonveil →
+        Gael Tunnel, Magma Wyrm; Ash of War: Loretta's Slash → Loretta's remembrance).
+  - [ ] The owner spot-checks ~30 random items with their sources (the session prints them).
+- **Context:** **Deterministic, no AI** (owner's call, 2026-11-15; `docs/decisions.md`): data per item + a
+  small gate graph, and T15's pure function composes the route for any build. Read `docs/data.md`,
+  `scripts/data/{export,extract,build}.ts`, `src/data/schema.ts`. Checked 2026-11-15 in the export:
+  `ItemLotParam_map` (5,592 rows, 2,342 with `[Place - Detail]` names, e.g.
+  `[Gael Tunnel - Magma Wyrm] Moonveil`), `ItemLotParam_enemy` (5,135, named by enemy), `ShopLineupParam`
+  (1,297, `[Merchant] Item`), `BonfireWarpParam` (area, grid, position, text ID), `WorldMapPlaceNameParam`.
+  Map lot IDs seem to encode the tile (`1041550010` → m60_41_55; `20…` → DLC m61): verify against named rows
+  first. Coverage: weapons 477/487 have a lot or shop source, armor 722/728, and talismans, spells, Ashes of
+  War, spirit ashes and tears all of them; the gaps are quest rewards (Nagakiba, Rogier's Rapier, Dryleaf
+  Arts, Ragged set…). Row names are Smithbox/Paramdex community labels, allowed as **hints** (owner's call).
+  Size: acquisition data loads with the build page's full data only, never in `@/data/core`.
+
+### T15 — "How to get this build" on the build page
+
+- **Status:** ready (after T14 and T17)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** A short, numbered route from a fresh save to the whole build, in an efficient order. Plain,
+  scannable steps: where to go, in what order, not a walkthrough.
+- **Done when:**
+  - [ ] Pure solver (`src/lib/route.ts`, or under `src/features/editor/guide/`): build equipment → for each
+        item the source that's reachable earliest; add the gates it implies (the affinity's whetblade, the
+        Spirit Calling Bell for an ash, the Divine Tower for a great rune, DLC entry…); topological sort with
+        the canonical route order as the tie-breaker; merge items at the same location; group by region.
+        "Efficient" = a sensible earliest-first order through the usual progression, not a proven shortest
+        path (say so in a comment).
+  - [ ] Table-driven tests: gates respected, earliest source chosen, shared locations merged, DLC items after
+        Mohg + Radahn, starting-class gear shown as "start as X".
+  - [ ] "How to get this build" section on the build view: numbered one-line steps (region, grace, what to do:
+        beat X, buy from Y for N runes, pick up) with item icons; collapsible by region on mobile; real
+        heading and list markup.
+  - [ ] Component test + an e2e check on a seeded build; desktop and `--mobile` screenshots.
+  - [ ] Backlog entries for what's out of scope: upgrade materials (builds don't store upgrade levels), rune
+        farming to the build's level, a suggested starting class (needs T8's class data).
+- **Context:** T14's `acquisition.json` + accessors in `src/data/index.ts`; `BuildEditorPage` (view mode)
+  and `sections/` in T17's design; `add-feature` skill.
 
 ### T8 — Build math
 
@@ -92,11 +174,32 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
   (`listBuilds`, `searchBuilds`), `firestore.indexes.json`. If the owner wants real full-text search, that's a
   new service (Algolia/Typesense): ask.
 
+### T18 — Account deletion (in-app) and admin rename
+
+- **Status:** ready
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** Let users delete their account themselves, and let admins fix a display name, so the privacy policy's
+  "open a GitHub issue" path becomes a fallback.
+- **Done when:**
+  - [ ] Profile (owner only): "Delete account", with a confirm step that says what goes (account, builds with
+        their likes and comments, your comments and likes elsewhere, your reports). Re-authentication if Auth asks
+        for it (`auth/requires-recent-login`).
+  - [ ] Data removal without Cloud Functions (Spark): client-side batches under rules that allow an owner to delete
+        their own docs, and the counters (`likeCount`, `commentCount`) on other people's builds kept right in the
+        same batches; then `deleteUser`. Decide and document what happens if it fails halfway (re-runnable).
+  - [ ] `scripts/admin.mjs rename <uid> <name> [--write]` (display name moderation) and `delete-user <uid>`
+        (the same removal via the Admin SDK, with a JSON backup like `remove`).
+  - [ ] Rules tests for every new delete path; e2e: sign up, create, comment, delete account, the build is gone.
+  - [ ] Privacy page updated (delete it yourself from your profile; GitHub issue as a fallback).
+- **Context:** `firestore.rules` (expression budget: keep it cheap), `tests/rules/`, `src/lib/firebase/`
+  (`builds.ts`, `likes.ts`, `comments.ts`, `users.ts`, `auth.ts`), `src/features/profile/Profile.tsx`,
+  `scripts/admin.mjs` (`removeContent` is the pattern), `src/features/legal/Privacy.tsx`. Counters change in
+  the same batch as the doc they count (AGENTS.md).
+
 ## Backlog
 
-- Polish leftovers from T11: the main `Button` text is AA only around its middle (2.9:1 at the dark gold end; revisit if the
-  button style changes); move remaining literal margins/paddings (editor sections, cards) to `SPACE_*` as files are
-  touched; eyeball the item picker on a phone (the top bar was reflowed but not screenshotted).
+- ~~Polish leftovers from T11~~: folded into T16 (redesign).
+- Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup).
 - Other games (Dark Souls 1–3, Sekiro, Elden Ring Nightreign) on top of T3's `game` field: data per game, game
   selector routes (`/ds3/...`), per-game tags.
 - Per-build share previews (Open Graph image/title per build): needs SSR or a Cloud Function (Blaze plan).
@@ -110,20 +213,8 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
 
 ## Done
 
-- T1 — Foundation — 2026-11-14 — leaked service-account key removed; CRA → Vite 8, React 19, RTK 2,
-  styled-components 6, Firebase 12; TS/ESLint 9/Prettier/Vitest; emulators + seed + screenshot + doctor; CI;
-  AGENTS.md, CLAUDE.md, skills, docs and this backlog.
-- T2 — Strict TypeScript + feature folders — 2026-11-14 — all of `src/` strict TS in `app/`, `features/`,
-  `components/ui/`, `lib/`, `theme/`, typed `data/` accessors, `@/` alias; BuildEditor split into page,
-  sections and hooks (`loadBuild`/`selectBuildFields`); transient `$props`; lodash/prop-types gone; hex-color
-  lint rule; React Compiler on. Spacing tokens moved to T11; screenshots pixel-identical before/after.
-- T3 — Firestore model v2, rules, rules tests — 2026-11-14 — v2 model (likes/comments subcollections, batched
-  counters checked by the rules, admin claim, no emails in Firestore), tested rules + indexes, data-layer and
-  migration tests on their own emulator (`npm run test:rules`, CI), `scripts/migrate-v1-to-v2.mjs`, v2 seed.
-  Production question (migrate or start fresh) moved to T12.
-- T4 — TanStack Query, one AuthProvider, page states, e2e — 2026-11-14 — query hooks per feature with
-  optimistic likes/comment deletes, `AuthProvider`/`useAuth`, loading/error/empty/not-found everywhere, no load
-  race or page reloads, SDK imports lint-restricted to `src/lib/firebase/`, Playwright e2e (`npm run e2e`, CI).
+Older entries: `docs/tickets-archive.md`.
+
 - T5 — 2022 UI bug batch — 2026-11-14 — filters combine, cards keyed by id with armor slot types, timers, CSS,
   placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.
 - T10 — Moderation — 2026-11-15 — reports on builds and comments (`reports/{targetId}_{uid}`, rules + tests,
@@ -143,3 +234,7 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
 - T11 — Performance and polish — 2026-11-15 — lazy routes and editor chunk, a11y/contrast/focus pass, meta and OG tags,
   self-hosted EB Garamond + Cinzel, generated icons and og:image, `core.ts` + `cards.json` data split (full data lazy),
   paged picker, light markdown view, spacing scale.
+- T12 — Deploy pipeline and relaunch — 2026-11-15 — production relaunched on soulsbuilds.com: backup, v2 rules +
+  indexes, 52 builds / 102 users migrated, smoke test passed; CI preview channels + approved production deploys via
+  Workload Identity; Analytics dropped, privacy and terms pages, default domains redirect, `admin.mjs export`,
+  Auth domains + enumeration protection, owner is admin. App Check enforcement left to the owner.

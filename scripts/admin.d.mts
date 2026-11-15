@@ -41,3 +41,9 @@ export function setAdmin(
   admin: boolean,
   options?: { write?: boolean },
 ): Promise<{ uid: string; email: string | null; before: boolean; after: boolean }>;
+
+/** Reads every document (subcollections included) into one JSON file in `dir`. */
+export function exportAll(
+  db: Firestore,
+  options?: { dir?: string; projectId?: string | null },
+): Promise<{ file: string; counts: Record<string, number>; total: number }>;

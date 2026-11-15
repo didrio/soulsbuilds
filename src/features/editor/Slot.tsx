@@ -28,7 +28,13 @@ import {
   SPACE_GUTTER,
   COLOR_LIGHTEST_GREEN,
 } from '@/theme';
-import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
+import {
+  placeholderUrl,
+  type ItemSlot,
+  type SlotType,
+  type WeaponAffinitySlot,
+  type WeaponSkillSlot,
+} from './slots';
 import { openPicker } from './store/app';
 import { selectEquipment } from './store/selectors';
 
@@ -89,7 +95,7 @@ function Slot({
   affinity = null,
   affinityId = '',
   ash = null,
-  background = '',
+  background,
   backgroundIcon,
   disabled = false,
   id = '',
@@ -189,7 +195,7 @@ function Slot({
 
   return (
     <Container
-      $background={backgroundIcon ? iconUrl(backgroundIcon) : `/assets/menu/${background}.png`}
+      $background={placeholderUrl(background, backgroundIcon)}
       $faded={backgroundIcon !== undefined}
       $backgroundColor={backgroundColor}
       $disabled={disabled}
@@ -239,8 +245,8 @@ function Slot({
 }
 
 interface ContainerProps {
-  /** Placeholder image URL for an empty slot. */
-  $background: string;
+  /** Placeholder image URL for an empty slot, or null for none. */
+  $background: string | null;
   $faded: boolean;
   $backgroundColor: string;
   $disabled: boolean;
@@ -267,7 +273,8 @@ const Container = styled(FlexGroup)<ContainerProps>`
     right: 0px;
     bottom: 0px;
     left: 0px;
-    background-image: ${({ $background, $hasItem }) => ($hasItem ? 'none' : `url("${$background}")`)};
+    background-image: ${({ $background, $hasItem }) =>
+      $hasItem || !$background ? 'none' : `url("${$background}")`};
     background-size: auto 80%;
     background-repeat: no-repeat;
     background-position: center;
