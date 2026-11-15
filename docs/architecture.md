@@ -110,7 +110,8 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   match only, and ignores sort and the server-side tag [T9].
 - Game data (~650 KB of JSON) is in the main bundle because the landing cards use it [T7/T11].
 - Builds reference items by name; renamed items silently drop [T7].
-- App Check is coded but off until the owner creates the reCAPTCHA key (`docs/firebase.md`) [T12].
+- App Check is on in production builds (reCAPTCHA Enterprise key in `src/lib/firebase/app.ts`); enforcement
+  waits for T12 (`docs/firebase.md`).
 - No admin UI: reports are reviewed with `scripts/admin.mjs` (backlog).
 
 ## Styling

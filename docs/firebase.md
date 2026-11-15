@@ -83,12 +83,14 @@ node scripts/admin.mjs reports --project soulsbuilds             # production (A
 
 ## App Check (set up at T12, owner)
 
-The code is ready (`src/lib/firebase/app.ts`): App Check turns on in production builds once
-`APP_CHECK_SITE_KEY` is filled in. It never runs against the emulators. Steps, in order (don't enforce first,
+The code is ready (`src/lib/firebase/app.ts`): App Check is on in production builds because
+`APP_CHECK_SITE_KEY` is filled in (steps 1, 2 and the code half of step 3 done 2026-11-15; the key allows
+`soulsbuilds.web.app`, `soulsbuilds.firebaseapp.com` and `soulsbuilds.com`). It never runs against the
+emulators. Steps, in order (don't enforce first,
 or the live site breaks):
 
-1. **Create the key.** Google Cloud console, project `soulsbuilds` → Security → reCAPTCHA → Create key: type
-   _Website_, domains `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` (plus any custom domain), no
+1. **Create the key.** Google Cloud console, project `soulsbuilds` → search "reCAPTCHA" in the top bar (the
+   product may be listed as **reCAPTCHA Enterprise**; enable its API if asked) → Create key: type _Website_, domains `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` (plus any custom domain), no
    checkbox challenge. Copy the site key. (The free tier covers 10,000 assessments a month; App Check caches
    tokens, so that's roughly 10,000 visits. If the console insists on a billing account and you'd rather not,
    the fallback is reCAPTCHA v3: `ReCaptchaV3Provider` in `app.ts`, a one-line change.)

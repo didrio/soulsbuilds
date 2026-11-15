@@ -35,9 +35,10 @@ const emulatorConfig = {
 
 // Firebase App Check (T10): proves requests come from this site, so the public API key can't be
 // scripted against Firestore/Auth from elsewhere. reCAPTCHA Enterprise site key, public by design
-// like the config above. Empty = App Check off; the owner creates the key and turns on
-// enforcement at T12 (steps in docs/firebase.md "App Check"). Never used with the emulators.
-const APP_CHECK_SITE_KEY = '';
+// like the config above (created 2026-11-15 for soulsbuilds.web.app, soulsbuilds.firebaseapp.com and
+// soulsbuilds.com). Empty = App Check off. Enforcement is turned on at T12 after watching the metrics
+// (steps in docs/firebase.md "App Check"). Never used with the emulators.
+const APP_CHECK_SITE_KEY = '6LfIGSEuAAAAAEib49PavJ7XuoPi1nv__TN4x5gN';
 
 declare global {
   // App Check debug mode: `true` makes the SDK print a debug token to register in the console.

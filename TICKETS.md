@@ -7,12 +7,14 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T13
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T11's remainder (fonts and icons: approved) · Sonnet · medium · plan mode off. Then T7 (data source
-decided; confirm PC ownership at the start), then T12, the relaunch.
+**Next:** T7 (game data from the game files; the owner's PC is ready) · Opus · extra high · plan mode on. Then
+T11's remainder (fonts and icons approved; needs nothing from the owner), then T12, the relaunch.
 
-**Owner to-dos tracked in tickets:** T7 (confirm you own ER + SotE on PC), T12 (GitHub secret scanning, App
-Check key and enforcement, your admin claim, keep or drop the 2022 data, the production cutover). All other
-owner decisions were made on 2026-11-15 and are in `docs/decisions.md`.
+**Owner to-dos tracked in tickets:** T7 (run the extraction steps the T7 session writes on the Windows PC, copy
+the output to the Mac), T12 (GCP setup for CI deploys, App Check enforcement, your
+admin claim, approving each production step). Done 2026-11-15: secret scanning + push protection on, App Check
+key created and registered, gcloud ADC set up, keep the 2022 builds. Owner decisions are in
+`docs/decisions.md`.
 
 **Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T6 and T10 done (typed code,
 safe data model, data layer, 2022 bugs, moderation). Left: T7–T9 make it worth
@@ -25,6 +27,40 @@ follow the launch.
 (none)
 
 ## Up next
+
+### T7 — Game data v2 + Shadow of the Erdtree
+
+- **Status:** ready; source: the game files. The owner's Windows PC is set up (2026-11-15): ER + SotE
+  installed and launched once (Steam, default location presumably: ask), Smithbox and Nuxe downloaded but
+  not configured or run yet. First step: write click-by-click Windows extraction steps for the owner (export
+  params and text with Smithbox, unpack the icon textures with Nuxe or Smithbox, copy to the Mac; a small
+  export, likely a few hundred MB); the Mac pipeline reads that export. The owner isn't a modder: be exact
+  about menus, and tell them to use Nuxe's Unpack only, never Patch.
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** A re-runnable, typed, validated game-data pipeline with stable item IDs, covering the base game and
+  the Shadow of the Erdtree DLC.
+- **Done when:**
+  - [ ] Source (owner, 2026-11-15): data and icons extracted from the game's own files with community tools
+        (owner owns ER + SotE on PC; the Fandom wiki was the fallback and is no longer needed: its images are
+        FromSoftware's art anyway, not CC BY-SA, and it lacks the exact numbers T8 needs). A "not affiliated
+        with FromSoftware" footer. Tools checked 2026-11-15 (re-check versions before writing code):
+        **Smithbox** 2.2.6 (vawser/Smithbox, GPL-3.0, .NET 10; reads the archives directly, no unpack needed
+        for params/text), **Nuxe** 1.2.1 (JKAnderson/Nuxe, GPL-3.0; unpacker Smithbox recommends; unpack only,
+        never "Patch"), WitchyBND 3.0.1 (ividyon/WitchyBND, GPL-3.0) for `.tpf`/`.dds` if needed. UXM Selective
+        Unpack has no license: not used. We run these tools, we don't ship them, so GPL doesn't touch our code.
+        Update the `docs/decisions.md` row. The 2022 scrape is not reused.
+  - [ ] `scripts/data/` pipeline (Node, re-runnable) → `src/data/` JSON with **stable IDs**, zod schemas, and
+        validation tests (every reference resolves; counts; images exist). `src/data/data.test.ts`'s
+        `it.fails` cases become passing `it`s.
+  - [ ] Correct affinities (Cold, Flame Art; per-weapon infusability), each weapon's built-in skill and which
+        Ashes of War it accepts, great runes, spirit ashes, DLC weapon types (e.g. Backhand Blade, Great
+        Katana, Light Greatsword, Beast Claw, Thrusting Shield, Throwing Blade, Perfume Bottle, Hand-to-Hand)
+        and DLC bosses as tags.
+  - [ ] Builds reference items by ID; a names→IDs migration (in the T3 migration framework) with a report of
+        anything that didn't map. The editor and seed use IDs.
+  - [ ] Images: URL-safe filenames (no spaces/apostrophes), WebP, lazy-loaded.
+- **Context:** `docs/data.md` (current files, shapes, known gaps), `scripts/legacy-data/` (how 2022 did it),
+  `src/data/data.test.ts`. Big files: query them with `node -e`, never Read whole.
 
 ### T11 — Performance and polish (remainder)
 
@@ -57,31 +93,6 @@ follow the launch.
   - [ ] A spacing scale in `src/theme/` used by the layout.
 - **Context:** `index.html`, `src/index.css`, `vite.config.ts`, `src/features/editor/Slot.tsx`, `ItemSelector`,
   `App.tsx` (modal, panel). Screenshot before/after, desktop and `--mobile`.
-
-### T7 — Game data v2 + Shadow of the Erdtree
-
-- **Status:** ready; source decided 2026-11-15 (`docs/decisions.md`): first ask the owner whether they own
-  ER + SotE on PC
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** A re-runnable, typed, validated game-data pipeline with stable item IDs, covering the base game and
-  the Shadow of the Erdtree DLC.
-- **Done when:**
-  - [ ] Source (owner, 2026-11-15): data extracted from the game's own files with community tools if the owner
-        owns ER + SotE on PC, else the Elden Ring Fandom wiki (CC BY-SA: attribution, share-alike). Icons from
-        the game files, plus a "not affiliated with FromSoftware" footer. Re-check the tools' and sources'
-        licenses before writing code; update the `docs/decisions.md` row. The 2022 scrape is not reused.
-  - [ ] `scripts/data/` pipeline (Node, re-runnable) → `src/data/` JSON with **stable IDs**, zod schemas, and
-        validation tests (every reference resolves; counts; images exist). `src/data/data.test.ts`'s
-        `it.fails` cases become passing `it`s.
-  - [ ] Correct affinities (Cold, Flame Art; per-weapon infusability), each weapon's built-in skill and which
-        Ashes of War it accepts, great runes, spirit ashes, DLC weapon types (e.g. Backhand Blade, Great
-        Katana, Light Greatsword, Beast Claw, Thrusting Shield, Throwing Blade, Perfume Bottle, Hand-to-Hand)
-        and DLC bosses as tags.
-  - [ ] Builds reference items by ID; a names→IDs migration (in the T3 migration framework) with a report of
-        anything that didn't map. The editor and seed use IDs.
-  - [ ] Images: URL-safe filenames (no spaces/apostrophes), WebP, lazy-loaded.
-- **Context:** `docs/data.md` (current files, shapes, known gaps), `scripts/legacy-data/` (how 2022 did it),
-  `src/data/data.test.ts`. Big files: query them with `node -e`, never Read whole.
 
 ### T8 — Build math
 
@@ -126,21 +137,25 @@ follow the launch.
         on `main` behind a manual approval (GitHub environment). Auth via Workload Identity Federation (no
         JSON keys in secrets). Owner sets up the GCP side; the ticket writes exact steps.
   - [ ] Owner-approved production steps, each asked for, in this order: dry-run
-        `scripts/migrate-v1-to-v2.mjs --project soulsbuilds` and review the report with the owner (does the
-        owner want the 2022 data at all, or start fresh?); deploy rules + indexes (`--only
+        `scripts/migrate-v1-to-v2.mjs --project soulsbuilds` and review the report with the owner (owner's call, 2026-11-15: **keep the 2022 builds** unless the report
+        shows a problem; after T7 they also need the names→IDs migration); deploy rules + indexes (`--only
 firestore:rules,firestore:indexes`) and wait for the indexes to build; run the migration with
         `--write`; deploy hosting; smoke-test the live site (sign up, create, like, comment). Rules and the
         migration must go together: the v2 rules reject v1 docs.
   - [ ] **Drop Analytics** (owner, 2026-11-15): remove `getAnalytics` from `src/lib/firebase/app.ts` and the
         `measurementId` if unused. Privacy policy (Auth stores emails) and terms pages.
-  - [ ] **Owner, from T1:** turn on GitHub secret scanning + push protection for didrio/soulsbuilds (the repo
-        is public, and this ticket adds CI credentials).
-  - [ ] **Owner, from T10:** App Check. Create the reCAPTCHA Enterprise key, register the web app, put the
-        site key in `APP_CHECK_SITE_KEY` (`src/lib/firebase/app.ts`), deploy, watch the metrics, then enforce
-        for Firestore and Auth. Exact steps: `docs/firebase.md` "App Check".
-  - [ ] **Owner, from T10:** make yourself admin in production:
+  - [x] **Owner, from T1:** GitHub secret scanning + push protection for didrio/soulsbuilds (on 2026-11-15,
+        checked via the API). Expect an alert for the revoked 2022 key in history: close it as "Revoked".
+  - [ ] **Owner, from T10:** App Check. Done 2026-11-15: reCAPTCHA Enterprise key created (3 domains), in
+        `APP_CHECK_SITE_KEY` and registered in Firebase App Check. Left: deploy, watch the metrics, then
+        enforce for Firestore and Auth. Exact steps: `docs/firebase.md` "App Check".
+  - [ ] **Owner, from T10:** (gcloud ADC set up 2026-11-15) make yourself admin in production:
         `node scripts/admin.mjs grant <your email> --project soulsbuilds --write`, then check
         `node scripts/admin.mjs reports --project soulsbuilds` works with ADC.
+  - [ ] Custom domain: `soulsbuilds.com` resolves to Firebase Hosting (199.36.158.100, checked 2026-11-15);
+        it's the owner's custom domain (confirmed 2026-11-15; already on the reCAPTCHA key with both default
+        domains). Add it to Auth's authorized domains and use it in `index.html`'s `og:url` (now
+        `soulsbuilds.web.app`). Ask whether the default domains should redirect to it.
   - [ ] Relaunch checklist in `docs/firebase.md` (backups/PITR, budget alerts, App Check enforced, auth
         providers, authorized domains).
 - **Context:** `docs/firebase.md`, `firebase.json`, `.github/workflows/ci.yml`, `npm run deploy`.
