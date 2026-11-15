@@ -41,6 +41,24 @@ export default tseslint.config(
     },
   },
   {
+    // Colors come from src/theme (AGENTS.md conventions): no hex literals anywhere else in src/.
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/theme/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/#[0-9a-fA-F]{3,8}\\b/]',
+          message: 'No hex colors outside src/theme: import a COLOR_* token from @/theme.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}\\b/]',
+          message: 'No hex colors outside src/theme: import a COLOR_* token from @/theme.',
+        },
+      ],
+    },
+  },
+  {
     rules: {
       '@typescript-eslint/no-unused-vars': [
         'error',

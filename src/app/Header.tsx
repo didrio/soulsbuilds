@@ -1,0 +1,125 @@
+import styled from 'styled-components';
+import { Link, useNavigate } from 'react-router';
+import FlexGroup from '@/components/ui/FlexGroup';
+import useAuth from '@/features/auth/useAuth';
+import { logout } from '@/lib/firebase';
+import {
+  COLOR_LIGHTEST_GREEN,
+  COLOR_GOLD,
+  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
+  FONT_DISPLAY,
+} from '@/theme';
+
+const FONT_SIZE_LINK = '20px';
+
+interface HeaderProps {
+  onShowLogin: () => void;
+  onShowRegister: () => void;
+}
+
+/** Logo plus Profile/Logout when signed in, Login/Register (toggle the panel) when not. */
+function Header({ onShowLogin, onShowRegister }: HeaderProps) {
+  const auth = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    window.location.reload();
+  };
+
+  const handleNavigateProfile = () => {
+    if (auth && auth.uid) {
+      navigate(`/user/${auth.uid}`);
+    }
+  };
+
+  const handleShowLogin = () => {
+    onShowLogin();
+  };
+
+  const handleShowRegister = () => {
+    onShowRegister();
+  };
+
+  return (
+    <Container>
+      <LogoContainer>
+        <Link to="/">Souls Builds</Link>
+      </LogoContainer>
+      {auth ? (
+        <FlexGroup>
+          <ProfileContainer onClick={handleNavigateProfile}>Profile</ProfileContainer>
+          <LogoutContainer onClick={handleLogout}>Logout</LogoutContainer>
+        </FlexGroup>
+      ) : (
+        <LoginContainer>
+          <LoginClicker onClick={handleShowLogin}>Login</LoginClicker>
+          <LoginClicker onClick={handleShowRegister}>Register</LoginClicker>
+        </LoginContainer>
+      )}
+    </Container>
+  );
+}
+
+const Container = styled(FlexGroup)`
+  justify-content: space-between;
+  font-size: 24px;
+  font-weight: bold;
+  width: 100%;
+  border-bottom: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  padding-bottom: 10px;
+  align-items: flex-end;
+`;
+
+const LogoContainer = styled(FlexGroup)`
+  & > a {
+    color: ${COLOR_LIGHTEST_GREEN};
+    font-size: 44px;
+  }
+
+  font-family: ${FONT_DISPLAY};
+  text-shadow: 0px 0px 7px ${COLOR_GOLD};
+
+  &:hover {
+    text-shadow: 0px 0px 11px ${COLOR_GOLD};
+  }
+
+  transition: text-shadow ease-in-out 0.1s;
+`;
+
+const LogoutContainer = styled(FlexGroup)`
+  cursor: pointer;
+  font-size: ${FONT_SIZE_LINK};
+  font-weight: bold;
+
+  &:hover {
+    color: ${COLOR_LIGHTEST_GREEN};
+  }
+`;
+
+const LoginContainer = styled(FlexGroup)`
+  & > a {
+    margin-left: 25px;
+    font-size: ${FONT_SIZE_LINK};
+    font-weight: bold;
+  }
+`;
+
+const LoginClicker = styled(FlexGroup)`
+  cursor: pointer;
+  margin-left: 25px;
+  font-size: ${FONT_SIZE_LINK};
+  font-weight: bold;
+
+  &:hover {
+    color: ${COLOR_LIGHTEST_GREEN};
+  }
+`;
+
+const ProfileContainer = styled(LogoutContainer)`
+  margin-right: 20px;
+  font-size: ${FONT_SIZE_LINK};
+  font-weight: bold;
+`;
+
+export default Header;

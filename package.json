@@ -26,13 +26,10 @@
     "deploy": "npm run check && node scripts/firebase.mjs deploy --project soulsbuilds --only hosting"
   },
   "dependencies": {
-    "@emotion/is-prop-valid": "^1.4.0",
     "@reduxjs/toolkit": "^2.14.0",
     "@uiw/react-md-editor": "^4.2.3",
     "firebase": "^12.19.0",
-    "lodash": "^4.18.1",
     "nanoid": "^5.1.16",
-    "prop-types": "^15.8.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-redux": "^9.3.1",
@@ -47,15 +44,18 @@
     "fsevents": false
   },
   "devDependencies": {
+    "@babel/core": "^7.29.13",
     "@eslint/js": "^9.39.5",
+    "@rolldown/plugin-babel": "^0.3.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.10",
-    "@types/lodash": "^4.17.27",
+    "@types/babel__core": "^7.20.5",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
+    "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-jsx-a11y": "^6.10.2",

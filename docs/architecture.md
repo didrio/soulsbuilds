@@ -1,37 +1,39 @@
 # Architecture
 
 Read this before changing routes, the editor, state or Firestore access. It describes the app **as it is now**
-(T1: the 2022 code on a 2026 toolchain). T2–T4 change it substantially; update this file with them.
+(T2: the 2022 behaviour, now strict TypeScript in feature folders). T3 (data model v2) and T4 (TanStack Query,
+one AuthProvider) change it substantially; update this file with them.
 
 ## Pages and routes
 
-`src/components/App.jsx` defines three routes, with no 404 yet (T6):
+`src/app/routes.tsx` defines three routes, with no 404 yet (T6):
 
-| Route             | Component     | What it does                                                                              |
-| ----------------- | ------------- | ----------------------------------------------------------------------------------------- |
-| `/`               | `Landing`     | Fetches **every** build, filters by tags and level range client-side, sorts by likes      |
-| `/build/:buildId` | `BuildEditor` | View, create (`/build/new`) and edit in one component, plus likes and comments            |
-| `/user/:userId`   | `Profile`     | Display name, the user's builds (one `getBuild` per id), "Create New Build" for the owner |
+| Route             | Component         | What it does                                                                              |
+| ----------------- | ----------------- | ----------------------------------------------------------------------------------------- |
+| `/`               | `Landing`         | Fetches **every** build, filters by tags and level range client-side, sorts by likes      |
+| `/build/:buildId` | `BuildEditorPage` | View, create (`/build/new`) and edit in one component, plus likes and comments            |
+| `/user/:userId`   | `Profile`         | Display name, the user's builds (one `getBuild` per id), "Create New Build" for the owner |
 
-Login and Register are not routes: a slide-down panel in `App.jsx`, opened from `Header`. `GameSelector` is a
+Login and Register are not routes: a slide-down panel in `src/app/App.tsx`, opened from `Header`. `GameSelector` is a
 cosmetic bar ("Coming soon!" for other games). The item picker (`ItemSelector`) is a modal that opens whenever
 Redux `app.slotType` is set.
 
 ## State and data flow
 
-- **Redux** (`src/store/`) holds only the build being edited: `app` (which slot the picker edits), `equipment`
+- **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited: `app` (which slot the picker edits), `equipment`
   (weapon1–6, weaponSkill1–6, weaponAffinity1–6, arrow1–4, tal1–4, con1–10, helm/chest/gauntlet/leg),
-  `spells` (spell1–10), `stats` (8 stats, default 10), `tears` (tear1–2). `selectors.js` maps that state to the
-  arrays that get saved.
+  `spells` (spell1–10), `stats` (8 stats, default 10), `tears` (tear1–2). Slot ids are literal types in
+  `features/editor/slots.ts`. `selectors.ts` maps that state to the arrays that get saved.
 - **Everything else** (builds list, users, comments, likes) is component `useState`, loaded through functions
-  in `src/firebase.js`. Auth is per component: `useAuth` (an `onAuthStateChanged` listener) and `useUser`
+  in `src/lib/firebase.ts`, typed by `src/lib/models.ts`. Auth is per component: `useAuth` (an `onAuthStateChanged` listener) and `useUser`
   (fetches the signed-in user's doc), each registered separately wherever used. T4 replaces this with TanStack
   Query and one `AuthProvider`.
-- **Game data** is static JSON in `src/data/`, imported straight into the bundle (see `docs/data.md`).
-- **Load a build** (`BuildEditor` effect): `getBuild(id)` → for each saved item **name**, look it up in the JSON
-  → dispatch into Redux slots → `getUser(build.user)` for "Created by". Names that no longer exist resolve to
-  `undefined` and are dropped on the next save.
-- **Save** (`handleSave`): selectors → a build object → `saveBuild` (`setDoc` for new with a 12-char nanoid,
+- **Game data** is static JSON in `src/data/`, bundled, read through typed accessors in `src/data/index.ts`
+  (see `docs/data.md`).
+- **Load a build** (`useBuildEditor` effect): `getBuild(id)` → the `loadBuild` thunk
+  (`features/editor/store/build.ts`) looks each saved item **name** up and fills the Redux slots → `getUser(build.user)` for "Created by". Names that no longer exist leave the slot
+  empty and are dropped on the next save.
+- **Save** (`useBuildEditor.handleSave`): `selectBuildFields` + name/description/tags → a `BuildDoc` → `saveBuild` (`setDoc` for new with a 12-char nanoid,
   then append the id to `users/{uid}.builds`; `updateDoc` for edits) → navigate to `/build/{id}`.
 
 ## Firestore model (v1, 2022)
@@ -59,7 +61,7 @@ builds/{id}               // id: 12 chars [0-9A-Z]
 ```
 
 Weapon slots 1–3 are the main hand, 4–6 the off hand (the UI shows 2 more placeholder slots per hand for
-arrows/bolts). All reads and writes are in `src/firebase.js` (`useUser` adds one direct `getDoc`). There are
+arrows/bolts). All reads and writes are in `src/lib/firebase.ts` (`useUser` adds one direct `getDoc`). There are
 no queries (`where`/`orderBy`/`limit`), transactions or batches, so no indexes yet.
 
 ## Known problems (fixed by the ticket in brackets)
@@ -77,7 +79,8 @@ no queries (`where`/`orderBy`/`limit`), transactions or batches, so no indexes y
 
 ## Styling
 
-styled-components with no `ThemeProvider`; colors are `COLOR_*` constants in `src/constants.js` (dark greens,
-golds); one `createGlobalStyle` in `App.jsx`. Fonts: OptimusPrinceps SemiBold (local TTF, headings) and
+styled-components with no `ThemeProvider`; tokens are plain constants in `src/theme/` (`COLOR_*` dark greens and
+golds, `FONT_*`, `BELOW_*` media queries; ESLint rejects hex literals elsewhere); one `createGlobalStyle` in
+`src/app/App.tsx`. Fonts: OptimusPrinceps SemiBold (local TTF, headings) and
 `garamond-premier-pro` from an Adobe Typekit kit in `index.html`. Responsive layout is ad-hoc `max-width`
-media queries (400–1400 px). Tooltips are hover-only. T2 adds `src/theme/` tokens; T11 polishes mobile and fonts.
+media queries (400–1400 px). Tooltips are hover-only. No spacing scale yet (2022 margins are ad hoc); T11 polishes mobile and fonts.

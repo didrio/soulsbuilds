@@ -14,9 +14,9 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-14 (T1): Vite 8 + React 19 + RTK 2 + styled-components 6 + Firebase 12, still JavaScript
-(TypeScript configured with `allowJs`). Local dev runs entirely on the Firebase emulators with seed data.
-`npm run check` is green; first tests cover level math, selectors, data integrity and BuildsList.
+As of 2026-11-14 (T2): Vite 8 + React 19 (React Compiler on) + RTK 2 + styled-components 6 + Firebase 12,
+all strict TypeScript in feature folders with an `@/` alias. Local dev runs entirely on the Firebase emulators
+with seed data. `npm run check` is green; tests cover level math, selectors, build load/save, data accessors.
 **Production is dark**: its Firestore rules (2022 test mode) expired, so the live site can't read or write data
 until T3's real rules are deployed in T12. Game data is base game only (no Shadow of the Erdtree) until T7.
 **Next:** see `TICKETS.md`.
@@ -32,7 +32,7 @@ until T3's real rules are deployed in T12. Game data is base game only (no Shado
    against real data: **ask the owner first**, every time.
 3. **No secrets in the repo, ever.** No service-account keys (one leaked in 2022 and had to be revoked). Admin
    scripts against production use Application Default Credentials (`gcloud auth application-default login`).
-   The Firebase _web_ config in `src/firebase.js` is public by design; that's fine.
+   The Firebase _web_ config in `src/lib/firebase.ts` is public by design; that's fine.
 4. **Never Read `src/data/*.json` whole** (30–220 KB each). Grep, or `node -e` against them, or read the code
    that uses them. Don't read `package-lock.json`, `dist/` or `public/assets/` wholesale either.
 5. **No new data or image sources without the owner's OK** (licensing). The 2022 data and icons came from
@@ -84,23 +84,30 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
 ## Project map
 
 ```
-index.html                 Vite entry (Adobe Typekit font kit + favicon placeholder)
+index.html                 Vite entry (Adobe Typekit font kit + favicon placeholder) → src/main.tsx
 src/
-  index.jsx                Providers: styled-components prop filter, Redux store, BrowserRouter
-  firebase.js              ALL Auth/Firestore access + emulator wiring (dev = demo-soulsbuilds)
-  components/App.jsx       Routes: / (Landing), /build/:buildId (BuildEditor), /user/:userId (Profile);
-                           login/register slide-down panel; item-picker modal (ItemSelector)
-  components/              Pages + editor sections. BuildEditor.jsx (~950 lines) = view/create/edit,
-                           likes and comments in one; Equipment/Stat/Spell/TearEditor; Header; GameSelector
-  components/common/       Shared UI: Slot (item slot), BuildsList, Chips (tags), Button, inputs,
-                           FlexGroup/FlexItem, DropDown, OutsideClickHandler, LoadingAnimation
-  store/                   Redux Toolkit: ONLY the build being edited (app = picker state, equipment,
-                           spells, stats, tears); selectors.js maps state → the arrays that get saved
-  hooks/                   useAuth (auth listener), useUser (signed-in user's doc)
-  lib/buildMath.js         Pure build math (level; T8 adds requirements, equip load, poise…)
-  data/*.json              Static Elden Ring data (base game, 2022). Big: never Read whole. docs/data.md
-  constants.js             COLOR_* palette, slot types, user defaults
-  test/                    Vitest setup + renderWithProviders (store + router + styled shim)
+  main.tsx                 createRoot + <AppProviders><App/>
+  app/                     App (shell: header, login/register slide-down panel, item-picker modal),
+                           routes.tsx (/, /build/:buildId, /user/:userId), AppProviders (Redux + router),
+                           store.ts (makeStore, RootState, AppDispatch), hooks.ts (useAppSelector/Dispatch),
+                           Header, GameSelector
+  features/auth/           useAuth (auth listener), useUser (signed-in user's doc), Login, SignUp
+  features/builds/         Landing (all builds, tag/level filters), BuildsList (build cards)
+  features/profile/        Profile
+  features/editor/         BuildEditorPage (view/create/edit + likes + comments) and its hooks:
+                           useBuildEditor (load/save), useLikeBuild, useBuildComments; sections/ (BuildTitle,
+                           BuildDetailsForm, Equipment/Stat/Tear/SpellEditor, DescriptionSection, BuildTags,
+                           CommentsSection); Slot, ItemSelector (picker), slots.ts (slot ids/types);
+                           store/ = Redux slices for the build being edited + selectors + build.ts
+                           (loadBuild thunk / selectBuildFields: Firestore doc ⇄ editor state)
+  components/ui/           Shared UI: FlexGroup/FlexItem, Button, TextInput/TextAreaInput, DropDown, Chips
+                           (tag picker), Tag, CloseButton, LoadingAnimation, OutsideClickHandler, ErrorMessage
+  lib/                     firebase.ts (ALL Auth/Firestore access + emulator wiring), models.ts (v1 Build/User
+                           doc types), buildMath.ts (level; T8 adds more), array.ts (compact, sortBy)
+  theme/                   Tokens: COLOR_* (colors.ts), FONT_* (fonts.ts), BELOW_* media queries (media.ts)
+  data/                    *.json static Elden Ring data (base game, 2022; never Read whole) + index.ts
+                           typed accessors (getWeapon(name), armorList(kind)…) + types.ts. docs/data.md
+  test/                    Vitest setup + renderWithProviders (store + router)
 public/assets/             ~1,400 item icons by category (armor, weapons, spells, items, talismans, menu)
 scripts/                   seed, screenshot, doctor, firebase (Java wrapper), lib/; legacy-data/ = 2022
                            scrapers kept for reference only (excluded from lint/format/typecheck)
@@ -111,14 +118,18 @@ TICKETS.md                 Ordered backlog; one ticket per session
 
 ## Conventions
 
-- **Language**: JavaScript today; TypeScript is set up (`allowJs`) and T2 converts everything. New _modules_
-  may be `.ts`; don't convert existing files outside T2.
-- **Styling**: styled-components, defined at the bottom of the file. Colors only from `COLOR_*` in
-  `constants.js` (no new hex). Style-only props are transient (`$active`), so they never reach the DOM.
-- **State**: the build being edited → Redux slices + selectors. Server data (builds, users, comments) → today
-  component state via `src/firebase.js`; from T4, TanStack Query. Never copy server data into Redux.
-- **Firestore**: only `src/firebase.js` imports from `firebase/firestore` / `firebase/auth` (besides the two
-  hooks). Builds reference items **by name** today (renames silently drop items: T7 moves to IDs).
+- **Language**: strict TypeScript, no JavaScript in `src/`. No `any`: at a JSON/Firestore boundary, cast to a
+  named type with a comment (see `src/data/index.ts`, `src/lib/firebase.ts`). Import across folders with `@/`.
+- **Layout**: a feature's pages, sections, hooks and state live in `src/features/<feature>/`; generic UI in
+  `src/components/ui/`; framework-free code in `src/lib/`. See the `add-feature` skill.
+- **Styling**: styled-components, defined at the bottom of the file. Colors, fonts and breakpoints only from
+  `@/theme` (ESLint rejects hex literals outside `src/theme/`). Style-only props are transient (`$active`).
+- **State**: the build being edited → Redux slices + selectors (`useAppSelector`/`useAppDispatch`). Server
+  data (builds, users, comments) → today component state via `src/lib/firebase.ts`; from T4, TanStack Query.
+  Never copy server data into Redux.
+- **Game data**: import from `@/data` (typed accessors), never the JSON files directly (tests excepted).
+- **Firestore**: only `src/lib/firebase.ts` imports from `firebase/firestore` / `firebase/auth` (besides
+  `useAuth`/`useUser`). Builds reference items **by name** today (renames silently drop items: T7 moves to IDs).
 - **Markdown** from users renders through `rehype-sanitize`. Never `dangerouslySetInnerHTML`.
 - **Tests** are colocated `*.test.ts(x)`, Vitest + Testing Library. Components render with
   `renderWithProviders`; query by role/text. Known data gaps are `it.fails` in `src/data/data.test.ts`.
@@ -127,8 +138,11 @@ TICKETS.md                 Ordered backlog; one ticket per session
 ## Gotchas
 
 - **React 19 ignores `defaultProps` on function components**: use default parameters.
-- **styled-components 6 forwards every prop to the DOM.** `src/index.jsx` (and `renderWithProviders`) install
-  a v5-style filter for the 2022 components; new code uses `$transient` props. T2 removes the shim.
+- **styled-components 6 forwards every prop to the DOM** (no filter installed): style-only props must be
+  `$transient`, typed on the styled call (`styled.div<{ $open: boolean }>`).
+- **React Compiler is on** (`@rolldown/plugin-babel` + `reactCompilerPreset()` in `vite.config.ts`; plugin-react
+  v6 has no `babel` option). It memoizes components, so new code doesn't need `useMemo`/`useCallback` for
+  performance, but must follow the Rules of React (no mutating props/state, no reading refs during render).
 - **Firestore keeps a streaming connection open**, so Playwright's `networkidle` never fires. Wait for `load`
   plus a delay (the screenshot script does).
 - **Vite binds `127.0.0.1:5180`** (strict). Use that, not `localhost` (which may resolve to IPv6 `::1`).

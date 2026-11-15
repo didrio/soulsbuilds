@@ -1,0 +1,191 @@
+import styled from 'styled-components';
+import { useNavigate } from 'react-router';
+import FlexGroup from '@/components/ui/FlexGroup';
+import Tag from '@/components/ui/Tag';
+import Slot from '@/features/editor/Slot';
+import { SLOT_TYPE_WEAPON } from '@/features/editor/slots';
+import { getArmor, getWeapon } from '@/data';
+import type { Build } from '@/lib/models';
+import {
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
+  COLOR_GOLD,
+  COLOR_LIGHTEST_GREEN,
+  FONT_DISPLAY,
+} from '@/theme';
+
+/** Build cards: likes, name, level, two weapons per hand, armor and tags. Click opens the build. */
+function BuildsList({ builds = [] }: { builds?: Build[] }) {
+  const navigate = useNavigate();
+
+  const handleSelectBuild = (id: string) => () => {
+    navigate(`/build/${id}`);
+  };
+
+  // The armor slots pass SLOT_TYPE_WEAPON and the key is the name, not the id (T5).
+  return (
+    <Container vertical>
+      {builds
+        .filter(({ name }) => name)
+        .map((build) => (
+          <Build key={build.name} onClick={handleSelectBuild(build.id)} vertical>
+            <UpperSection>
+              <LikesContainer>
+                {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
+              </LikesContainer>
+              <NameContainer>{build.name}</NameContainer>
+              <LevelContainer>{`Level ${build.level}`}</LevelContainer>
+            </UpperSection>
+            <LowerSection>
+              <EquipmentContainer>
+                <Slot
+                  affinity={build?.weaponAffinities?.[0] || null}
+                  background="weapon"
+                  disabled
+                  item={getWeapon(build?.weapons?.[0]) || null}
+                  subItem={build?.weaponSkills?.[0] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  affinity={build?.weaponAffinities?.[1] || null}
+                  background="weapon"
+                  disabled
+                  item={getWeapon(build?.weapons?.[1]) || null}
+                  subItem={build?.weaponSkills?.[1] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  affinity={build?.weaponAffinities?.[3] || null}
+                  background="shield"
+                  disabled
+                  item={getWeapon(build?.weapons?.[3]) || null}
+                  subItem={build?.weaponSkills?.[3] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  affinity={build?.weaponAffinities?.[4] || null}
+                  background="shield"
+                  disabled
+                  item={getWeapon(build?.weapons?.[4]) || null}
+                  subItem={build?.weaponSkills?.[4] || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+              </EquipmentContainer>
+              <GearContainer>
+                <Slot
+                  background="helm"
+                  disabled
+                  item={getArmor('helms', build?.helm) || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  background="chest"
+                  disabled
+                  item={getArmor('chests', build?.chest) || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  background="gauntlet"
+                  disabled
+                  item={getArmor('gauntlets', build?.gauntlet) || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+                <Slot
+                  background="leg"
+                  disabled
+                  item={getArmor('legs', build?.leg) || null}
+                  type={SLOT_TYPE_WEAPON}
+                />
+              </GearContainer>
+            </LowerSection>
+            {build.tags.length ? (
+              <TagsSection>
+                {build.tags.map((tag) => (
+                  <Tag key={tag}>{tag}</Tag>
+                ))}
+              </TagsSection>
+            ) : null}
+          </Build>
+        ))}
+    </Container>
+  );
+}
+
+const Container = styled(FlexGroup)`
+  width: 100%;
+`;
+
+const Build = styled(FlexGroup)`
+  background-color: ${COLOR_GREEN};
+  width: 100%;
+  cursor: pointer;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-weight: bold;
+  font-size: 18px;
+  margin-bottom: 25px;
+  transition: background-color 0.1s ease-in-out;
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+
+  &:hover {
+    background-color: ${COLOR_LIGHT_GREEN};
+  }
+`;
+
+const LowerSection = styled(FlexGroup)`
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  margin: 10px 0;
+`;
+
+const EquipmentContainer = styled(FlexGroup)`
+  border-right: 1px solid ${COLOR_LIGHT_GREEN};
+
+  & > div {
+    margin-right: 20px;
+  }
+`;
+
+const GearContainer = styled(FlexGroup)`
+  & > div {
+    margin-left: 20px;
+  }
+`;
+
+const UpperSection = styled(FlexGroup)`
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0px;
+  width: 100%;
+  font-size: 18px;
+  font-weight: bold;
+  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
+`;
+
+const LevelContainer = styled(FlexGroup)`
+  width: 25%;
+  justify-content: flex-end;
+`;
+
+const LikesContainer = styled(FlexGroup)`
+  width: 25%;
+  justify-content: flex-start;
+`;
+
+const NameContainer = styled(FlexGroup)`
+  width: 50%;
+  justify-content: center;
+  font-size: 20px;
+  font-family: ${FONT_DISPLAY};
+  text-shadow: 0px 0px 3px ${COLOR_GOLD};
+  color: ${COLOR_LIGHTEST_GREEN};
+`;
+
+const TagsSection = styled(FlexGroup)`
+  justify-content: center;
+  padding: 10px 0;
+  border-top: 1px solid ${COLOR_LIGHT_GREEN};
+`;
+
+export default BuildsList;

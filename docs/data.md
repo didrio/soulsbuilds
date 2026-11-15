@@ -1,7 +1,9 @@
 # Game data
 
 Read this before touching `src/data/`, item lookups, images or the seed. **The JSON files are large (30–220 KB):
-never Read them whole.** Query them instead, e.g.:
+never Read them whole.** The app reads them only through `src/data/index.ts` (typed accessors such as
+`getWeapon(name)`, `getArmor(kind, name)`, `armorList(kind)`, `skillNames`; shapes in `src/data/types.ts`).
+Query the JSON from the shell instead, e.g.:
 
 ```
 node -e 'const w=require("./src/data/weaponsAndShields.json"); console.log(w["Moonveil"])'
@@ -14,7 +16,7 @@ node -e 'console.log(require("./src/data/spells.json").filter(s=>/Heal/.test(s.n
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------- |
 | `weaponsAndShields.json`                                                                 | `{ [name]: weapon }` (374): type, skill, weight, scaling letters, `strReq`… (strings) | yes (editor, slots, item picker) |
 | `armorIndexed.json`                                                                      | `{ helms, chests, gauntlets, legs }` each `{ [name]: piece }` (491 total)             | yes                              |
-| `armor.json`                                                                             | same pieces as arrays (bundled twice: T11)                                            | yes (item picker)                |
+| `armor.json`                                                                             | same pieces as arrays, same order as `armorIndexed.json`                              | no (since T2)                    |
 | `skillsIndexed.json`                                                                     | `{ [name]: skill }`                                                                   | yes (Ash of War dropdown)        |
 | `affinities.json`                                                                        | `{ affinities: string[] }` (wrong: "Frost", no Flame Art)                             | yes                              |
 | `talismans.json`, `spells.json`, `tears.json`, `arrowsAndBolts.json`, `consumables.json` | arrays of `{ name, imageUrl, effect, … }`                                             | yes                              |

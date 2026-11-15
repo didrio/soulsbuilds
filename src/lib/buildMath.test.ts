@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculateLevel } from './buildMath';
+import { calculateLevel, type Stats } from './buildMath';
 
 const stats = (overrides: Record<string, number | string> = {}) => ({
   vigor: 10,
@@ -31,7 +31,7 @@ describe('calculateLevel', () => {
   });
 
   it('reaches 713 with every stat at 99', () => {
-    const maxed = Object.fromEntries(Object.keys(stats()).map((key) => [key, 99]));
+    const maxed = Object.fromEntries(Object.keys(stats()).map((key) => [key, 99])) as Stats;
     expect(calculateLevel(maxed)).toBe(713);
   });
 });

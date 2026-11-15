@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T13
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T2 — Strict TypeScript + feature folders · Opus · high · plan mode off
+**Next:** T3 — Firestore data model v2, real security rules, rules tests · Opus · extra high · plan mode on
 
 **Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2 → T3 → T4 make the code
 typed and the data safe; T5–T6 finish what 2022 left; T7–T9 make it worth visiting (DLC data, build math,
@@ -19,38 +19,9 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
 
 ## Up next
 
-### T2 — Strict TypeScript + feature folders
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode off
-- **Goal:** Convert all of `src/` to strict TypeScript and reorganize into feature folders, so later tickets
-  (T3 data model, T4 data layer) change typed code. Behaviour stays identical.
-- **Done when:**
-  - [ ] Every `src/**/*.{js,jsx}` is `.ts/.tsx`; `allowJs`/`checkJs` removed from `tsconfig.json`; no `any`
-        except at JSON boundaries with a comment.
-  - [ ] Layout: `src/app/` (App, routes, providers), `src/features/{builds,editor,auth,profile}/`,
-        `src/components/ui/` (today's `common/`), `src/lib/` (firebase, buildMath), `src/theme/` (tokens from
-        `constants.js` COLOR\_\*, spacing, fonts), `src/data/` (JSON + typed accessors `getWeapon(name)` etc.).
-        Use an `@/` path alias (tsconfig + vite). Update AGENTS.md "Project map" and the `add-feature` skill.
-  - [ ] `BuildEditor.jsx` (~950 lines) split into page + sections (header/likes, equipment, stats,
-        description/tags, comments) with the load/save logic in hooks. No behaviour change.
-  - [ ] Types for game data items, the v1 Firestore `Build`/`User` docs, Redux state (`RootState`,
-        `AppDispatch`, typed `useAppSelector`/`useAppDispatch`). `prop-types` removed.
-  - [ ] styled-components: style-only props → transient `$props`; delete the `StyleSheetManager` shim in
-        `src/index.*` and `src/test/render.tsx`, and `@emotion/is-prop-valid`.
-  - [ ] ESLint guardrail: no hex color literals outside `src/theme/` (`no-restricted-syntax` on
-        `/#[0-9a-f]{3,8}\b/i` in template literals/strings). React Compiler on
-        (`babel-plugin-react-compiler` via `@vitejs/plugin-react`) if it builds cleanly; otherwise a ticket.
-  - [ ] `npm run check` green; existing tests pass unchanged (move them with their modules); screenshots of
-        `/`, `/build/SEEDBLEED001`, `/build/new` (signed in), `/user/seed-ranni` look the same as before.
-- **Context:** Read `AGENTS.md` conventions, `docs/architecture.md`, then the files as you convert them. Don't
-  fix the bugs listed in T5 here (keep the diff a pure refactor), except where types force it; note those in the
-  handoff. Lodash is used for 5 tiny helpers (compact, flatten, isEmpty, noop, sortBy): replace with native
-  code and drop the dependency. Keep `react-hooks/set-state-in-effect` as a warning (T4 fixes those effects).
-
 ### T3 — Firestore data model v2, real security rules, rules tests
 
-- **Status:** ready (T2 first)
+- **Status:** ready
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** A data model that's safe to open to the public, enforced by real rules with tests, plus a migration
   for whatever exists in production.
@@ -72,12 +43,13 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
   - [ ] Rules tests with `@firebase/rules-unit-testing` in `tests/rules/`, run by `npm run test:rules` via
         `node scripts/firebase.mjs emulators:exec`; a CI job runs them (needs `actions/setup-java` 21).
         Definition of done in AGENTS.md mentions it.
-  - [ ] `src/firebase.js` (or `src/lib/firebase/`) writes and reads v2; likes/comments use transactions or
+  - [ ] `src/lib/firebase.ts` (or `src/lib/firebase/`) writes and reads v2; likes/comments use transactions or
         batched writes; `scripts/seed.mjs` writes v2.
   - [ ] `scripts/migrate-v1-to-v2.mjs`: dry-run by default, reads with ADC (no keys), idempotent; run against
         the emulator with v1 seed data in a test. **Not** run against production (T12 does, with the owner).
 - **Context:** `docs/architecture.md` "Firestore model (v1)" and "Known problems"; `firestore.rules` (interim);
-  `src/firebase.js`; `BuildEditor` save/load (after T2: `src/features/editor/`). Bugs this fixes by design:
+  `src/lib/firebase.ts`, `src/lib/models.ts` (v1 types); save/load in `src/features/editor/useBuildEditor.ts` and
+  `store/build.ts` (`loadBuild`, `selectBuildFields`, with a round-trip test). Bugs this fixes by design:
   editing resets likes/comments (v1 `handleSave` writes `likes: 0, comments: []`), racy likes, client-set
   `admin`, public emails. Keep the `demo-` emulator project.
 
@@ -99,11 +71,12 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
         Today `/build/<id that doesn't exist>` crashes the page (`getBuild` returns `{ id }`, then
         `description.length` on undefined in BuildEditor): found in T1, needs a test.
   - [ ] `react-hooks/set-state-in-effect` back to `error` in `eslint.config.js`; the `console.log`s in
-        `src/firebase.js` gone (errors surface to the UI).
+        `src/lib/firebase.ts` gone (errors surface to the UI).
   - [ ] Playwright e2e on the emulators (`tests/e2e/`, `npm run e2e`): sign up → create build → like →
         comment → profile → logout; in CI.
-- **Context:** `src/hooks/*`, `src/firebase.js`, `BuildEditor` load/save effects, `Profile.jsx`,
-  `Landing.jsx`. Server data never goes into Redux (AGENTS.md conventions).
+- **Context:** `src/features/auth/useAuth.ts` + `useUser.ts`, `src/lib/firebase.ts`, the effects in
+  `src/features/editor/useBuildEditor.ts` / `useLikeBuild.ts` / `useBuildComments.ts`,
+  `src/features/profile/Profile.tsx`, `src/features/builds/Landing.tsx`. Server data never goes into Redux (AGENTS.md conventions).
 
 ### T5 — UI bug batch from the 2022 review
 
@@ -118,13 +91,12 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
   - [ ] GameSelector: `clearTimeout(fn)` is passed the function, not the timer id; two CSS rules missing colons.
   - [ ] `TextInput` drops the `placeholder` prop ("Search" never shows).
   - [ ] Affinity can't be cleared (`DropDown`); picking an affinity/skill then closing the picker without a
-        weapon leaves them on an empty slot; `clearApp` doesn't reset `editAffinitySlot`;
-        `store/app` exports a non-existent `updateAffinitySlot`.
+        weapon leaves them on an empty slot; `clearApp` doesn't reset `editAffinitySlot`.
   - [ ] Like button stays locked forever after an error (if T4 hasn't already fixed it).
   - [ ] SignUp `canRegister` checks the password twice and never the name; Login's global `keydown` Enter
         handler on `document` → a real `<form onSubmit>`.
   - [ ] Stats: clamp 1–99, numbers only (today "abc" shows level NaN).
-- **Context:** The files named above (after T2, under `src/features/`). Agent review notes are summarized in
+- **Context:** The files named above (under `src/features/` and `src/components/ui/`; each bug has a `(T5)` comment). Agent review notes are summarized in
   `docs/architecture.md` "Known problems".
 
 ### T6 — Missing core features
@@ -180,7 +152,7 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
         the minimum stats.
   - [ ] Spell slots from memory stones / Moon of Nokstella (+2); spells beyond the slots are flagged.
   - [ ] All in `src/lib/buildMath.*` as pure functions with table-driven tests against known in-game values.
-- **Context:** T7's data (weights, requirements, scaling). `src/lib/buildMath.js`, `StatEditor`,
+- **Context:** T7's data (weights, requirements, scaling). `src/lib/buildMath.ts`, `StatEditor`,
   `SpellEditor`. Get formulas from a source the owner trusts; cite it in a comment.
 
 ### T9 — Browse and discovery
@@ -214,8 +186,7 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
 - **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** Fast first load and a finished look on phones.
 - **Done when:**
-  - [ ] Bundle: the 2.5 MB main chunk split; game data JSON and the markdown editor lazy-loaded per route/use
-        (armor is bundled twice today: `armor.json` and `armorIndexed.json`).
+  - [ ] Bundle: the 2.4 MB main chunk split; game data JSON and the markdown editor lazy-loaded per route/use.
   - [ ] Favicon, app icons, `manifest.json` icons, meta description and Open Graph tags (site-level).
   - [ ] Tooltips usable on touch (they're hover-only); long build titles wrap with padding on mobile.
   - [ ] Phones (390 px): the landing/profile build cards' equipment row (8 slots in a centered flex row,
@@ -224,6 +195,7 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
   - [ ] Accessibility pass: clickable `div`s → buttons/links, labels on inputs, focus styles, contrast.
   - [ ] Fonts: replace the Adobe Typekit kit (`garamond-premier-pro`, tied to the owner's Adobe account) with
         a self-hosted open font (e.g. EB Garamond); check the OptimusPrinceps license or replace it.
+  - [ ] A spacing scale in `src/theme/` used by the layout (T2 shipped colors, fonts, breakpoints only).
 - **Context:** `index.html`, `src/index.css`, `vite.config.ts`, the components named. Screenshot before/after.
 
 ### T12 — Deploy pipeline and relaunch
@@ -255,3 +227,7 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
 - T1 — Foundation — 2026-11-14 — leaked service-account key removed; CRA → Vite 8, React 19, RTK 2,
   styled-components 6, Firebase 12; TS/ESLint 9/Prettier/Vitest; emulators + seed + screenshot + doctor; CI;
   AGENTS.md, CLAUDE.md, skills, docs and this backlog.
+- T2 — Strict TypeScript + feature folders — 2026-11-14 — all of `src/` strict TS in `app/`, `features/`,
+  `components/ui/`, `lib/`, `theme/`, typed `data/` accessors, `@/` alias; BuildEditor split into page,
+  sections and hooks (`loadBuild`/`selectBuildFields`); transient `$props`; lodash/prop-types gone; hex-color
+  lint rule; React Compiler on. Spacing tokens moved to T11; screenshots pixel-identical before/after.

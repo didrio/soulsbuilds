@@ -9,7 +9,7 @@ Read this before touching auth, Firestore, rules, emulators or deploys.
 | `demo-soulsbuilds` | Local emulators only. A `demo-` project has no real backend: nothing can reach production |
 | `soulsbuilds`      | Production (Firebase Hosting at soulsbuilds.web.app, Firestore, Auth, Analytics)          |
 
-`src/firebase.js` picks the project: `import.meta.env.DEV` (Vite dev server and Vitest) → emulators;
+`src/lib/firebase.ts` picks the project: `import.meta.env.DEV` (Vite dev server and Vitest) → emulators;
 production builds (`npm run build`, `npm run preview`, deploys) → `soulsbuilds`. The web config in that file is
 public by design; security rules protect the data.
 
@@ -17,7 +17,7 @@ public by design; security rules protect the data.
 
 - `npm run dev` = `node scripts/firebase.mjs emulators:exec --only auth,firestore --ui "node scripts/seed.mjs && vite"`.
   Data lives in memory and resets on every start. `npm run emulators` runs them alone; `npm run seed` re-seeds.
-- Ports (`firebase.json`; keep `src/firebase.js` in sync): auth **9099**, firestore **8085**, Emulator UI
+- Ports (`firebase.json`; keep `src/lib/firebase.ts` in sync): auth **9099**, firestore **8085**, Emulator UI
   **4005** (http://127.0.0.1:4005), hub 4405, logging 4505. Vite: **5180**.
 - **Java 21+** is required by firebase-tools. `scripts/firebase.mjs` finds one (JAVA_HOME, PATH, macOS
   `java_home`, Homebrew `openjdk` kegs) and puts it on PATH for the CLI. `npm run doctor` shows which.
