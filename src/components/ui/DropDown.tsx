@@ -3,23 +3,23 @@ import styled from 'styled-components';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN, FONT_BODY } from '@/theme';
 
 interface DropDownProps {
-  onChange: (value: string) => void;
+  /** Accessible name of the select. */
+  label: string;
+  /** The chosen option, or null when the placeholder ("none") is chosen. */
+  onChange: (value: string | null) => void;
   options: readonly string[];
   placeholder: string;
   value: string;
 }
 
-/** A `<select>` with a placeholder option. Choosing the placeholder doesn't fire `onChange` (T5). */
-function DropDown({ onChange, options, placeholder, value }: DropDownProps) {
+/** A `<select>` with a placeholder option, which clears the value. */
+function DropDown({ label, onChange, options, placeholder, value }: DropDownProps) {
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-    const { value: newValue } = e.target;
-    if (newValue) {
-      onChange(newValue);
-    }
+    onChange(e.target.value || null);
   };
 
   return (
-    <Container onChange={handleChange} value={value}>
+    <Container aria-label={label} onChange={handleChange} value={value}>
       <Option value="">{placeholder}</Option>
       {options.map((option) => (
         <Option key={option} value={option}>

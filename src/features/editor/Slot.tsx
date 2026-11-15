@@ -15,12 +15,7 @@ import {
   BELOW_1400,
 } from '@/theme';
 import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
-import {
-  updateEditSlot,
-  updateSlotType,
-  updateEditSubSlot,
-  updateEditAffinitySlot,
-} from './store/app';
+import { openPicker } from './store/app';
 import { selectEquipment } from './store/selectors';
 
 /** What each slot type holds, for screen-reader labels ("Choose talisman"). */
@@ -91,14 +86,14 @@ function Slot({
 
   const handleClick = () => {
     if (!disabled && !hasItem) {
-      dispatch(updateEditSlot(id || null));
-      dispatch(updateSlotType(type));
-      if (affinityId) {
-        dispatch(updateEditAffinitySlot(affinityId));
-      }
-      if (subId) {
-        dispatch(updateEditSubSlot(subId));
-      }
+      dispatch(
+        openPicker({
+          slotType: type,
+          editSlot: id || null,
+          editAffinitySlot: affinityId || null,
+          editSubSlot: subId || null,
+        }),
+      );
     } else if (!disabled && hasItem) {
       onRemove();
     }

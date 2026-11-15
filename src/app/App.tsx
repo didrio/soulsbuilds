@@ -6,12 +6,7 @@ import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
 import useAuth from '@/features/auth/useAuth';
 import ItemSelector from '@/features/editor/ItemSelector';
-import {
-  updateEditSlot,
-  updateSlotType,
-  updateEditSubSlot,
-  updateEditAffinitySlot,
-} from '@/features/editor/store/app';
+import { closePicker } from '@/features/editor/store/app';
 import { selectSlotType } from '@/features/editor/store/selectors';
 import {
   COLOR_BACKDROP,
@@ -53,10 +48,7 @@ function App() {
   const top = (document.documentElement.scrollTop || document.body.scrollTop || 0) + 120;
 
   const handleHideModal = () => {
-    dispatch(updateEditSlot(null));
-    dispatch(updateEditSubSlot(null));
-    dispatch(updateEditAffinitySlot(null));
-    dispatch(updateSlotType(null));
+    dispatch(closePicker());
   };
 
   const handleCloseHiddenContainer = () => {

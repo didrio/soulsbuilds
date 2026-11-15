@@ -47,12 +47,7 @@ import {
   isSlot,
   type SlotType,
 } from './slots';
-import {
-  updateEditSlot,
-  updateSlotType,
-  updateEditSubSlot,
-  updateEditAffinitySlot,
-} from './store/app';
+import { closePicker } from './store/app';
 import {
   updateHelm,
   updateLeg,
@@ -119,10 +114,7 @@ function ItemSelector() {
   const slotType = useAppSelector(selectSlotType);
 
   const handleClose = () => {
-    dispatch(updateEditSlot(null));
-    dispatch(updateEditSubSlot(null));
-    dispatch(updateEditAffinitySlot(null));
-    dispatch(updateSlotType(null));
+    dispatch(closePicker());
   };
 
   const options = useMemo(() => {
@@ -184,11 +176,11 @@ function ItemSelector() {
     handleClose();
   };
 
-  const handleSkillChange = (value: string) => {
+  const handleSkillChange = (value: string | null) => {
     if (editSubSlot) dispatch(updateWeaponSkill({ id: editSubSlot, item: value }));
   };
 
-  const handleAffinityChange = (value: string) => {
+  const handleAffinityChange = (value: string | null) => {
     if (editAffinitySlot) dispatch(updateWeaponAffinity({ id: editAffinitySlot, item: value }));
   };
 
@@ -232,6 +224,7 @@ function ItemSelector() {
           <SkillLabel>Add Affinity</SkillLabel>
           <SkillDropDown>
             <DropDown
+              label="Affinity"
               onChange={handleAffinityChange}
               options={affinities}
               placeholder="-- Choose an Affinity --"
@@ -241,6 +234,7 @@ function ItemSelector() {
           <SkillLabel>Add Skill</SkillLabel>
           <SkillDropDown>
             <DropDown
+              label="Weapon skill"
               onChange={handleSkillChange}
               options={skillNames}
               placeholder="-- Choose a Skill --"

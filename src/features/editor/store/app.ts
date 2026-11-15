@@ -1,7 +1,21 @@
 // Item picker state: which slot the picker (ItemSelector) is editing. The picker is open while
 // `slotType` is set.
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from '../slots';
+import {
+  createSlice,
+  type PayloadAction,
+  type ThunkAction,
+  type UnknownAction,
+} from '@reduxjs/toolkit';
+import type { RootState } from '@/app/store';
+import {
+  isSlot,
+  WEAPON_SLOTS,
+  type ItemSlot,
+  type SlotType,
+  type WeaponAffinitySlot,
+  type WeaponSkillSlot,
+} from '../slots';
+import { updateWeaponAffinity, updateWeaponSkill } from './equipment';
 
 export interface AppState {
   editAffinitySlot: WeaponAffinitySlot | null;
@@ -21,33 +35,40 @@ const app = createSlice({
   name: 'app',
   initialState,
   reducers: {
-    updateEditAffinitySlot: (state, action: PayloadAction<WeaponAffinitySlot | null>) => {
-      state.editAffinitySlot = action.payload;
-    },
-    updateEditSlot: (state, action: PayloadAction<ItemSlot | null>) => {
-      state.editSlot = action.payload;
-    },
-    updateSlotType: (state, action: PayloadAction<SlotType | null>) => {
-      state.slotType = action.payload;
-    },
-    updateEditSubSlot: (state, action: PayloadAction<WeaponSkillSlot | null>) => {
-      state.editSubSlot = action.payload;
-    },
-    // Doesn't reset editAffinitySlot (T5).
-    clearApp: (state) => {
-      state.editSlot = null;
-      state.editSubSlot = null;
-      state.slotType = null;
-    },
+    /** Opens the picker for a slot (and, for weapons, its affinity and skill slots). */
+    openPicker: (
+      _state,
+      action: PayloadAction<{
+        slotType: SlotType;
+        editSlot: ItemSlot | null;
+        editAffinitySlot?: WeaponAffinitySlot | null;
+        editSubSlot?: WeaponSkillSlot | null;
+      }>,
+    ) => ({
+      slotType: action.payload.slotType,
+      editSlot: action.payload.editSlot,
+      editAffinitySlot: action.payload.editAffinitySlot ?? null,
+      editSubSlot: action.payload.editSubSlot ?? null,
+    }),
+    clearApp: () => initialState,
   },
 });
 
-export const {
-  clearApp,
-  updateEditSlot,
-  updateSlotType,
-  updateEditAffinitySlot,
-  updateEditSubSlot,
-} = app.actions;
+export const { clearApp, openPicker } = app.actions;
+
+/**
+ * Closes the picker. If it was open for an empty weapon slot (no weapon chosen), the affinity and
+ * skill picked for that slot are dropped, so they never sit on an empty slot.
+ */
+export const closePicker =
+  (): ThunkAction<void, RootState, unknown, UnknownAction> => (dispatch, getState) => {
+    const { app: picker, equipment } = getState();
+    if (isSlot(WEAPON_SLOTS, picker.editSlot) && equipment[picker.editSlot] === null) {
+      if (picker.editAffinitySlot)
+        dispatch(updateWeaponAffinity({ id: picker.editAffinitySlot, item: null }));
+      if (picker.editSubSlot) dispatch(updateWeaponSkill({ id: picker.editSubSlot, item: null }));
+    }
+    dispatch(clearApp());
+  };
 
 export default app.reducer;

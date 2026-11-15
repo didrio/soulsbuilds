@@ -1,133 +1,103 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
-import { COLOR_DARKER_GREEN, COLOR_LIGHTEST_GREEN_LOW_OPACITY, COLOR_GREEN } from '@/theme';
+import {
+  COLOR_DARKER_GREEN,
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
+  BELOW_500,
+} from '@/theme';
 
 const TIMEOUT_LENGTH = 1500;
+const COMING_SOON = ['Dark Souls', 'Dark Souls II', 'Dark Souls III'] as const;
 
-/** Cosmetic game tabs: Elden Ring, plus "Coming soon!" for the other games. */
+/** Game tabs: Elden Ring, plus "Coming soon!" (for 1.5 s) when another game is chosen. */
 function GameSelector() {
-  const [showFirstComingSoon, setShowFirstComingSoon] = useState(false);
-  const [showSecondComingSoon, setShowSecondComingSoon] = useState(false);
-  const [showThirdComingSoon, setShowThirdComingSoon] = useState(false);
-
-  const handleShowFirstComingSoon = () => {
-    setShowFirstComingSoon(true);
-  };
-
-  const handleShowSecondComingSoon = () => {
-    setShowSecondComingSoon(true);
-  };
-
-  const handleShowThirdComingSoon = () => {
-    setShowThirdComingSoon(true);
-  };
-
-  // The cleanups pass the function, not the timer id, so they never clear anything (T5).
-  useEffect(() => {
-    const timeoutFunc = () => {
-      setShowFirstComingSoon(false);
-    };
-    if (showFirstComingSoon) {
-      setTimeout(timeoutFunc, TIMEOUT_LENGTH);
-    }
-    return () => {
-      clearTimeout(timeoutFunc as unknown as number);
-    };
-  }, [showFirstComingSoon]);
+  const [comingSoon, setComingSoon] = useState<string | null>(null);
 
   useEffect(() => {
-    const timeoutFunc = () => {
-      setShowSecondComingSoon(false);
-    };
-    if (showSecondComingSoon) {
-      setTimeout(timeoutFunc, TIMEOUT_LENGTH);
-    }
-    return () => {
-      clearTimeout(timeoutFunc as unknown as number);
-    };
-  }, [showSecondComingSoon]);
-
-  useEffect(() => {
-    const timeoutFunc = () => {
-      setShowThirdComingSoon(false);
-    };
-    if (showThirdComingSoon) {
-      setTimeout(timeoutFunc, TIMEOUT_LENGTH);
-    }
-    return () => {
-      clearTimeout(timeoutFunc as unknown as number);
-    };
-  }, [showThirdComingSoon]);
+    if (comingSoon === null) return undefined;
+    const timer = setTimeout(() => setComingSoon(null), TIMEOUT_LENGTH);
+    return () => clearTimeout(timer);
+  }, [comingSoon]);
 
   return (
-    <Container>
-      <Game>Elden Ring</Game>
-      <Game onClick={handleShowFirstComingSoon}>
-        Dark Souls
-        <ComingSoon $visible={showFirstComingSoon}>Coming soon!</ComingSoon>
+    <Container aria-label="Games">
+      <Game type="button" aria-current="page" $current>
+        Elden Ring
       </Game>
-      <Game onClick={handleShowSecondComingSoon}>
-        Dark Souls II
-        <ComingSoon $visible={showSecondComingSoon}>Coming soon!</ComingSoon>
-      </Game>
-      <Game onClick={handleShowThirdComingSoon}>
-        Dark Souls III
-        <ComingSoon $visible={showThirdComingSoon}>Coming soon!</ComingSoon>
-      </Game>
+      {COMING_SOON.map((game) => (
+        <Game key={game} type="button" onClick={() => setComingSoon(game)}>
+          {game}
+          <ComingSoon role="status" $visible={comingSoon === game}>
+            {comingSoon === game ? 'Coming soon!' : ''}
+          </ComingSoon>
+        </Game>
+      ))}
     </Container>
   );
 }
 
-// Two rules below are missing their colon (`border-top 1px…`, `border 1px…`), so browsers drop
-// them (T5).
-const Container = styled(FlexGroup)`
+const Container = styled.nav`
+  background-color: ${COLOR_DARKER_GREEN};
+  display: flex;
   font-size: 18px;
   height: 34px;
-  width: 100%;
-  background-color: ${COLOR_DARKER_GREEN};
   margin-bottom: 15px;
+  width: 100%;
 
-  & > div {
-    border-right: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
-    border-bottom: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
-    border-top 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
-  }
-
-  & > div:last-child {
-    border-right: none;
-  }
-
-  & > div:first-child {
-    background-color: ${COLOR_GREEN};
+  @media ${BELOW_500} {
+    font-size: 14px;
   }
 `;
 
-const Game = styled(FlexGroup)`
+const Game = styled.button<{ $current?: boolean }>`
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  width: 25%;
+  background-color: ${({ $current }) => ($current ? COLOR_GREEN : 'transparent')};
+  border: none;
+  border-bottom: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  border-right: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  border-top: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  color: ${COLOR_GOLD};
   cursor: pointer;
+  display: flex;
+  font: inherit;
+  height: 100%;
+  justify-content: center;
+  padding: 0 4px;
   position: relative;
+  white-space: nowrap;
+  width: 25%;
+
+  &:last-child {
+    border-right: none;
+  }
 
   &:hover {
     background-color: ${COLOR_GREEN};
   }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_GOLD};
+    outline-offset: -2px;
+  }
 `;
 
-const ComingSoon = styled(FlexGroup)<{ $visible: boolean }>`
-  position: absolute;
-  padding: 0px 10px;
-  height: 30px;
-  top: 36px;
-  background-color: ${COLOR_DARKER_GREEN};
-  border 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
-  border-radius: 1px;
-  transition: opacity ease-in-out .1s;
-  opacity: ${({ $visible }) => ($visible ? '.9' : '0')};
-  justify-content: center;
+const ComingSoon = styled.span<{ $visible: boolean }>`
   align-items: center;
+  background-color: ${COLOR_DARKER_GREEN};
+  border: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+  border-radius: 1px;
+  display: flex;
+  height: 30px;
+  justify-content: center;
+  opacity: ${({ $visible }) => ($visible ? 0.9 : 0)};
+  padding: 0px 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 36px;
+  transition: opacity ease-in-out 0.1s;
+  z-index: 5;
 `;
 
 export default GameSelector;
