@@ -15,8 +15,15 @@ vi.mock('@/lib/firebase/app', () => ({
   },
 }));
 
-const { createBuild, deleteBuild, getBuild, listBuilds, listUserBuilds, updateBuild } =
-  await import('@/lib/firebase/builds');
+const {
+  createBuild,
+  deleteBuild,
+  getBuild,
+  listBuilds,
+  listUserBuilds,
+  searchBuilds,
+  updateBuild,
+} = await import('@/lib/firebase/builds');
 const { hasLiked, likeBuild, listLikedBuildIds, unlikeBuild } =
   await import('@/lib/firebase/likes');
 const { addComment, deleteComment, listComments } = await import('@/lib/firebase/comments');
@@ -157,6 +164,9 @@ describe('data layer against the rules', () => {
     const next = await listBuilds({ sort: 'new', pageSize: 1, cursor: page.nextCursor });
     expect(next.builds.map((b) => b.id)).toEqual([buildId]);
     expect((await listUserBuilds('alice')).map((b) => b.id)).toEqual([second, buildId]);
+    expect((await searchBuilds('  MOON ')).builds.map((b) => b.name)).toEqual(['Moon Knight']);
+    expect((await searchBuilds('sec')).builds.map((b) => b.id)).toEqual([second]);
+    expect((await searchBuilds('nothing like this')).builds).toEqual([]);
     expect(await listUserBuilds('bob')).toEqual([]);
   });
 

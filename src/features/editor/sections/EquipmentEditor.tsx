@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { useAppSelector } from '@/app/hooks';
 import { COLOR_LIGHTEST_GREEN } from '@/theme';
 import Slot from '../Slot';
 import {
@@ -19,17 +19,6 @@ import {
   type WeaponSlot,
 } from '../slots';
 import { selectEquipment } from '../store/selectors';
-import {
-  updateHelm,
-  updateLeg,
-  updateChest,
-  updateGauntlet,
-  updateArrow,
-  updateTal,
-  updateWeapon,
-  updateWeaponAffinity,
-  updateWeaponSkill,
-} from '../store/equipment';
 
 // Consumables have state and a picker but no UI (commented out in 2022; T6 decides).
 
@@ -42,39 +31,7 @@ const weaponSlotIds = (index: number) => ({
 
 /** Equipment section: main hand, off hand, gear (armor) and talisman slots. */
 function EquipmentEditor({ editable }: { editable: boolean }) {
-  const dispatch = useAppDispatch();
   const equipment = useAppSelector(selectEquipment);
-
-  const handleRemoveArrow = (id: ArrowSlot) => () => {
-    dispatch(updateArrow({ id, item: null }));
-  };
-
-  const handleRemoveTal = (id: TalismanSlot) => () => {
-    dispatch(updateTal({ id, item: null }));
-  };
-
-  const handleRemoveWeapon = (index: number) => () => {
-    const { id, affinityId, subId } = weaponSlotIds(index);
-    dispatch(updateWeapon({ id, item: null }));
-    dispatch(updateWeaponAffinity({ id: affinityId, item: null }));
-    dispatch(updateWeaponSkill({ id: subId, item: null }));
-  };
-
-  const handleRemoveHelm = () => {
-    dispatch(updateHelm(null));
-  };
-
-  const handleRemoveChest = () => {
-    dispatch(updateChest(null));
-  };
-
-  const handleRemoveGauntlet = () => {
-    dispatch(updateGauntlet(null));
-  };
-
-  const handleRemoveLeg = () => {
-    dispatch(updateLeg(null));
-  };
 
   const weaponSlot = (index: number, background: string) => {
     const ids = weaponSlotIds(index);
@@ -86,7 +43,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
         id={ids.id}
         item={equipment[ids.id]}
         key={ids.id}
-        onRemove={handleRemoveWeapon(index)}
         subId={ids.subId}
         type={SLOT_TYPE_WEAPON}
       />
@@ -100,7 +56,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
       id={id}
       item={equipment[id]}
       key={id}
-      onRemove={handleRemoveArrow(id)}
       type={SLOT_TYPE_ARROW}
     />
   );
@@ -112,7 +67,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
       id={id}
       item={equipment[id]}
       key={id}
-      onRemove={handleRemoveTal(id)}
       type={SLOT_TYPE_TAL}
     />
   );
@@ -151,7 +105,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
           disabled={!editable}
           id="helm"
           item={equipment.helm}
-          onRemove={handleRemoveHelm}
           type={SLOT_TYPE_HELM}
         />
         <Slot
@@ -159,7 +112,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
           disabled={!editable}
           id="chest"
           item={equipment.chest}
-          onRemove={handleRemoveChest}
           type={SLOT_TYPE_CHEST}
         />
         <Slot
@@ -167,7 +119,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
           disabled={!editable}
           id="gauntlet"
           item={equipment.gauntlet}
-          onRemove={handleRemoveGauntlet}
           type={SLOT_TYPE_GAUNTLET}
         />
         <Slot
@@ -175,7 +126,6 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
           disabled={!editable}
           id="leg"
           item={equipment.leg}
-          onRemove={handleRemoveLeg}
           type={SLOT_TYPE_LEG}
         />
       </SlotContainer>

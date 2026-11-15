@@ -38,13 +38,14 @@ describe('filterBuilds', () => {
 describe('URL filters', () => {
   it('round-trips through the query string, leaving out defaults', () => {
     const filters = {
+      search: 'moon',
       sort: 'new' as const,
       tags: ['Malenia', 'Mohg'],
       minLevel: 50,
       maxLevel: 150,
     };
     const params = toSearchParams(filters);
-    expect(params.toString()).toBe('sort=new&tag=Malenia&tag=Mohg&min=50&max=150');
+    expect(params.toString()).toBe('q=moon&sort=new&tag=Malenia&tag=Mohg&min=50&max=150');
     expect(parseFilters(params)).toEqual(filters);
     expect(toSearchParams(DEFAULT_FILTERS).toString()).toBe('');
   });

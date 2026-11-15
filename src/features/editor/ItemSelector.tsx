@@ -69,6 +69,7 @@ import {
   selectEditSubSlot,
   selectEditWeaponAffinity,
   selectEditWeaponSkill,
+  selectEditedItem,
 } from './store/selectors';
 
 const itemsForSlotType = (slotType: SlotType | null): readonly SlotItem[] => {
@@ -112,6 +113,7 @@ function ItemSelector() {
   const editWeaponSkill = useAppSelector(selectEditWeaponSkill);
   const editWeaponAffinity = useAppSelector(selectEditWeaponAffinity);
   const slotType = useAppSelector(selectSlotType);
+  const currentItem = useAppSelector(selectEditedItem);
 
   const handleClose = () => {
     dispatch(closePicker());
@@ -132,7 +134,8 @@ function ItemSelector() {
   };
 
   // The item list matches the slot type, so the casts below narrow to what the list holds.
-  const handleSelectItem = (item: SlotItem) => () => {
+  /** Puts `item` in the slot being edited (null empties it), then closes the picker. */
+  const handleSelectItem = (item: SlotItem | null) => () => {
     switch (slotType) {
       case SLOT_TYPE_ARROW:
         if (isSlot(ARROW_SLOTS, editSlot))
@@ -217,6 +220,11 @@ function ItemSelector() {
             value={searchText}
           />
         </SearchContainer>
+        {currentItem ? (
+          <RemoveButton type="button" onClick={handleSelectItem(null)}>
+            Remove {currentItem.name}
+          </RemoveButton>
+        ) : null}
         <CloseButton onClick={handleClose} />
       </TopBar>
       {slotType === SLOT_TYPE_WEAPON ? (
@@ -261,17 +269,47 @@ const SkillContainer = styled(FlexGroup)`
   width: 100%;
   justify-content: center;
   align-items: center;
+
+  @media ${BELOW_750} {
+    flex-wrap: wrap;
+    gap: 6px 0;
+  }
 `;
 
 const SkillLabel = styled(FlexGroup)`
   font-size: 16px;
   font-weight: bold;
   margin-right: 20px;
+
+  @media ${BELOW_750} {
+    flex: 0 0 30%;
+    margin-right: 0;
+  }
 `;
 
 const SkillDropDown = styled(FlexGroup)`
   margin-right: 20px;
   width: 200px;
+
+  @media ${BELOW_750} {
+    flex: 1 1 60%;
+    margin-right: 0;
+    width: auto;
+  }
+`;
+
+const RemoveButton = styled.button`
+  background: none;
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  margin-right: 15px;
+  padding: 6px 12px;
+
+  &:hover {
+    background-color: ${COLOR_LIGHT_GREEN};
+  }
 `;
 
 const TopBar = styled(FlexGroup)`

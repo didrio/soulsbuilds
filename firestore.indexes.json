@@ -43,6 +43,14 @@
       ]
     },
     {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "game", "order": "ASCENDING" },
+        { "fieldPath": "nameLower", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "likes",
       "queryScope": "COLLECTION_GROUP",
       "fields": [

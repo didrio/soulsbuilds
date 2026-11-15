@@ -22,14 +22,20 @@ import {
 import { useBuilds } from './queries';
 
 /**
- * `/`: Elden Ring builds, most liked or newest first, a page at a time. The first tag filters in
- * Firestore; further tags and the level range filter the loaded builds. Filters live in the URL.
+ * `/`: Elden Ring builds, most liked or newest first, a page at a time, or a search by name. The
+ * first tag filters in Firestore; further tags and the level range filter the loaded builds.
+ * Filters live in the URL.
  */
 function Landing() {
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = parseFilters(searchParams);
-  const builds = useBuilds({ sort: filters.sort, tag: filters.tags[0] });
+  const builds = useBuilds({
+    sort: filters.sort,
+    tag: filters.tags[0],
+    search: filters.search || undefined,
+  });
 
+  const [searchText, setSearchText] = useState(filters.search);
   const [minText, setMinText] = useState(String(filters.minLevel));
   const [maxText, setMaxText] = useState(String(filters.maxLevel));
 
@@ -47,27 +53,60 @@ function Landing() {
     setFilters({ minLevel: min, maxLevel: max });
   };
 
+  const applySearch = (event: FormEvent) => {
+    event.preventDefault();
+    setFilters({ search: searchText.trim() });
+  };
+
+  const clearSearch = () => {
+    setSearchText('');
+    setFilters({ search: '' });
+  };
+
   const loaded = builds.data?.pages.flatMap((page) => page.builds) ?? [];
   const shown = filterBuilds(loaded, filters);
   const filtered = toSearchParams({ ...filters, sort: 'top' }).size > 0;
 
   return (
     <Container vertical>
+      <SearchForm role="search" onSubmit={applySearch}>
+        <SearchInput>
+          <TextInput
+            aria-label="Search builds by name"
+            enterKeyHint="search"
+            maxLength={80}
+            onChange={setSearchText}
+            placeholder="Search builds by name"
+            type="search"
+            value={searchText}
+          />
+        </SearchInput>
+        <Button type="submit">Search</Button>
+        {filters.search ? (
+          <TextButton type="button" onClick={clearSearch}>
+            Clear search
+          </TextButton>
+        ) : null}
+      </SearchForm>
       <Filters>
         <FilterGroup>
           <SubHeader>Sort</SubHeader>
-          <SortToggle role="group" aria-label="Sort builds">
-            {(['top', 'new'] as BuildSort[]).map((sort) => (
-              <SortButton
-                key={sort}
-                type="button"
-                aria-pressed={filters.sort === sort}
-                $active={filters.sort === sort}
-                onClick={() => setFilters({ sort })}>
-                {sort === 'top' ? 'Most liked' : 'Newest'}
-              </SortButton>
-            ))}
-          </SortToggle>
+          {filters.search ? (
+            <SearchNote>By name, while searching</SearchNote>
+          ) : (
+            <SortToggle role="group" aria-label="Sort builds">
+              {(['top', 'new'] as BuildSort[]).map((sort) => (
+                <SortButton
+                  key={sort}
+                  type="button"
+                  aria-pressed={filters.sort === sort}
+                  $active={filters.sort === sort}
+                  onClick={() => setFilters({ sort })}>
+                  {sort === 'top' ? 'Most liked' : 'Newest'}
+                </SortButton>
+              ))}
+            </SortToggle>
+          )}
         </FilterGroup>
         <FilterGroup>
           <SubHeader>Filter by Tags</SubHeader>
@@ -118,9 +157,10 @@ function Landing() {
             {filtered ? (
               <Button
                 onClick={() => {
+                  setSearchText('');
                   setMinText('1');
                   setMaxText(String(MAX_LEVEL));
-                  setFilters({ tags: [], minLevel: 1, maxLevel: MAX_LEVEL });
+                  setFilters({ search: '', tags: [], minLevel: 1, maxLevel: MAX_LEVEL });
                 }}>
                 Clear filters
               </Button>
@@ -183,6 +223,35 @@ const FilterGroup = styled.div`
   @media ${BELOW_800} {
     align-items: center;
   }
+`;
+
+const SearchForm = styled.form`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 25px;
+  width: 95%;
+`;
+
+const SearchInput = styled.div`
+  flex: 1 1 260px;
+  max-width: 480px;
+`;
+
+const TextButton = styled.button`
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+`;
+
+const SearchNote = styled.p`
+  font-size: 16px;
+  margin: 10px 0 0;
 `;
 
 const SortToggle = styled.div`

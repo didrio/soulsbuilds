@@ -1,20 +1,14 @@
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { useAppSelector } from '@/app/hooks';
 import { COLOR_LIGHTEST_GREEN } from '@/theme';
 import Slot from '../Slot';
-import { SLOT_TYPE_TEAR, TEAR_SLOTS, type TearSlot } from '../slots';
+import { SLOT_TYPE_TEAR, TEAR_SLOTS } from '../slots';
 import { selectTearSlots } from '../store/selectors';
-import { updateTear } from '../store/tears';
 
 /** Flask of Wondrous Physick section: two crystal tear slots. */
 function TearEditor({ editable }: { editable: boolean }) {
-  const dispatch = useAppDispatch();
   const tears = useAppSelector(selectTearSlots);
-
-  const handleRemoveTear = (id: TearSlot) => () => {
-    dispatch(updateTear({ id, item: null }));
-  };
 
   return (
     <Container vertical>
@@ -23,14 +17,7 @@ function TearEditor({ editable }: { editable: boolean }) {
       </HeaderContainer>
       <SlotContainer>
         {TEAR_SLOTS.map((id) => (
-          <Slot
-            disabled={!editable}
-            id={id}
-            item={tears[id]}
-            key={id}
-            onRemove={handleRemoveTear(id)}
-            type={SLOT_TYPE_TEAR}
-          />
+          <Slot disabled={!editable} id={id} item={tears[id]} key={id} type={SLOT_TYPE_TEAR} />
         ))}
       </SlotContainer>
     </Container>

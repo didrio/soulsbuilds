@@ -107,6 +107,30 @@ export async function listBuilds({
   };
 }
 
+/**
+ * One page of Elden Ring builds whose name starts with `text` (case-insensitive), by name. Firestore
+ * has no full-text search; a prefix query on `nameLower` is the free option.
+ */
+export async function searchBuilds(
+  text: string,
+  { pageSize = 24, cursor }: { pageSize?: number; cursor?: BuildCursor | null } = {},
+): Promise<BuildPage> {
+  const prefix = text.trim().toLowerCase();
+  const constraints: QueryConstraint[] = [
+    where('game', '==', GAME_ELDEN_RING),
+    where('nameLower', '>=', prefix),
+    where('nameLower', '<=', `${prefix}\uf8ff`),
+    orderBy('nameLower'),
+  ];
+  if (cursor) constraints.push(startAfter(cursor));
+  constraints.push(limit(pageSize));
+  const snapshot = await getDocs(query(buildsCollection(), ...constraints));
+  return {
+    builds: snapshot.docs.map(toBuild),
+    nextCursor: snapshot.docs.length === pageSize ? (snapshot.docs.at(-1) ?? null) : null,
+  };
+}
+
 /** Every build a user owns, newest first. */
 export async function listUserBuilds(userId: string): Promise<Build[]> {
   const snapshot = await getDocs(

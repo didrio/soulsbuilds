@@ -33,6 +33,9 @@ that opens whenever Redux `app.slotType` is set.
   `app` (which slot the picker edits), `equipment` (weapon1–6, weaponSkill1–6, weaponAffinity1–6, arrow1–4,
   tal1–4, con1–10, helm/chest/gauntlet/leg), `spells` (spell1–10), `stats` (8 stats, integers 1–99, default
   10), `tears` (tear1–2). Slot ids are literal types in `features/editor/slots.ts`.
+- **The item picker**: a slot (empty or filled) opens `ItemSelector` via `openPicker`; it chooses, changes or
+  removes the item, and for weapons the affinity and skill. `closePicker` drops an affinity/skill left on an
+  empty weapon slot.
 - **The build page** (`useBuildEditor`): the page renders one `BuildEditor` per build id (`key`), so nothing
   leaks between builds. A layout effect loads the saved build into the Redux slots (`loadBuild`, which clears
   first) whenever it (re)loads and the owner isn't editing; `/build/new` clears them. Name, description and tags
@@ -88,8 +91,8 @@ builds/{id}/comments/{autoId}
   Deleting a build deletes the build doc first, then its likes/comments (anyone signed in may clean up children
   of a build that no longer exists).
 - **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
-  (optionally `tags array-contains`), by `ownerId` + `createdAt desc`; likes collection group by `userId` +
-  `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
+  (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`), by
+  `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
   The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
   `comments[]`) only exists in production, which is dark until T12 runs the migration with the owner.
@@ -97,7 +100,9 @@ builds/{id}/comments/{autoId}
 ## Known problems (fixed by the ticket in brackets)
 
 - Landing filters: only the first tag is a Firestore query; further tags and the level range filter the loaded
-  pages, so a narrow filter can show few results per page ("Load more" fetches more) [T9: search, level query].
+  pages, so a narrow filter can show few results per page ("Load more" fetches more). Search is a name prefix
+  match only, and ignores sort and the server-side tag [T9].
+- Game data (~650 KB of JSON) is in the main bundle because the landing cards use it [T7/T11].
 - Builds reference items by name; renamed items silently drop [T7].
 - No moderation tools beyond admin deletes; no App Check yet [T10].
 
@@ -107,4 +112,6 @@ styled-components with no `ThemeProvider`; tokens are plain constants in `src/th
 golds, `FONT_*`, `BELOW_*` media queries; ESLint rejects hex literals elsewhere); one `createGlobalStyle` in
 `src/app/App.tsx`. Fonts: OptimusPrinceps SemiBold (local TTF, headings) and
 `garamond-premier-pro` from an Adobe Typekit kit in `index.html`. Responsive layout is ad-hoc `max-width`
-media queries (400–1400 px). Tooltips are hover-only. No spacing scale yet (2022 margins are ad hoc); T11 polishes mobile and fonts.
+media queries (400–1400 px). Tooltips are hover-only. No spacing scale yet (2022 margins are ad hoc); T11 polishes the rest.
+Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
+largest dependency) loads only when a description is shown or edited.

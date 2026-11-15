@@ -7,11 +7,13 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T13
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T3 — Firestore data model v2, real security rules, rules tests · Opus · extra high · plan mode on
+**Next:** T10 — Moderation: reports, admin tools, App Check · Opus · high · plan mode on (needs the owner for
+App Check setup). Or, if the owner has picked a data source: T7.
 
-**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2 → T3 → T4 make the code
-typed and the data safe; T5–T6 finish what 2022 left; T7–T9 make it worth visiting (DLC data, build math,
-discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order matters most for T3 before T12.
+**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T5 done (typed code, safe
+data model, data layer, 2022 bugs). Left: T6 remainder (two owner calls), T7–T9 make it worth visiting (DLC
+data, build math, discovery remainder); T10–T12 make it safe to open (moderation, polish, deploy). The critical
+path to relaunch is **T10 → T12**; whether T7–T9 come before or after the relaunch is the owner's call.
 
 ## In progress
 
@@ -19,103 +21,70 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
 
 ## Up next
 
-### T3 — Firestore data model v2, real security rules, rules tests
+### T10 — Moderation: reports, admin tools, App Check
 
-- **Status:** ready
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** A data model that's safe to open to the public, enforced by real rules with tests, plus a migration
-  for whatever exists in production.
-- **Done when:**
-  - [ ] Owner has confirmed what's in production (Firebase console: number of users/builds) and whether to
-        migrate or start fresh. Ask this first.
-  - [ ] Model v2 agreed with the owner and documented in `docs/architecture.md`. Starting proposal:
-        `builds/{id}`: `ownerId`, `game: 'elden-ring'`, `name`, `description`, `tags[]`, `level: number`,
-        stats as numbers, equipment (still names until T7, but in one `equipment` map), `likeCount`,
-        `commentCount`, `createdAt`, `updatedAt`. `builds/{id}/likes/{uid}` (doc = like; counter updated in
-        the same transaction and validated by rules, no Cloud Functions: they need the paid Blaze plan).
-        `builds/{id}/comments/{id}`: `authorId`, `text` (length-limited), `createdAt`. `users/{uid}` public
-        profile (`displayName`, `createdAt`), `users/{uid}/private/account` (`email`); admin via custom claim,
-        never a client-writable field.
-  - [ ] `firestore.rules` rewritten: owners create/update/delete their builds (no changing `ownerId`/counts
-        directly), anyone reads, likes one per user, comments by signed-in users, field types and sizes
-        validated. `firestore.indexes.json` has the indexes T9's queries need (at least `game`+`likeCount`,
-        `game`+`createdAt`, `ownerId`+`createdAt`).
-  - [ ] Rules tests with `@firebase/rules-unit-testing` in `tests/rules/`, run by `npm run test:rules` via
-        `node scripts/firebase.mjs emulators:exec`; a CI job runs them (needs `actions/setup-java` 21).
-        Definition of done in AGENTS.md mentions it.
-  - [ ] `src/lib/firebase.ts` (or `src/lib/firebase/`) writes and reads v2; likes/comments use transactions or
-        batched writes; `scripts/seed.mjs` writes v2.
-  - [ ] `scripts/migrate-v1-to-v2.mjs`: dry-run by default, reads with ADC (no keys), idempotent; run against
-        the emulator with v1 seed data in a test. **Not** run against production (T12 does, with the owner).
-- **Context:** `docs/architecture.md` "Firestore model (v1)" and "Known problems"; `firestore.rules` (interim);
-  `src/lib/firebase.ts`, `src/lib/models.ts` (v1 types); save/load in `src/features/editor/useBuildEditor.ts` and
-  `store/build.ts` (`loadBuild`, `selectBuildFields`, with a round-trip test). Bugs this fixes by design:
-  editing resets likes/comments (v1 `handleSave` writes `likes: 0, comments: []`), racy likes, client-set
-  `admin`, public emails. Keep the `demo-` emulator project.
-
-### T4 — Data layer: TanStack Query, one auth provider, loading/error states, e2e
-
-- **Status:** ready (after T3)
+- **Status:** ready; App Check needs the owner in the Firebase/Google Cloud console
 - **Session:** Opus · high effort · plan mode on
-- **Goal:** Replace hand-rolled fetching with TanStack Query and a single auth context, so every page has real
-  loading, empty and error states and no effect races.
+- **Goal:** Safe to open to the public: abuse can be reported and handled.
 - **Done when:**
-  - [ ] `@tanstack/react-query` with a `QueryClientProvider`; query/mutation hooks per feature
-        (`useBuild(id)`, `useBuilds(filters)`, `useUserProfile(id)`, `useLikeBuild`, `useAddComment`…) with
-        optimistic like/comment updates (no `window.location.reload()`).
-  - [ ] One `AuthProvider` (`onAuthStateChanged` once) replaces `useAuth`/`useUser`, which today each register
-        their own listener and refetch.
-  - [ ] BuildEditor load race fixed (ownership re-checked when auth resolves); `/build/new` always starts from
-        a cleared editor; failed saves show an error and keep the editor open.
-  - [ ] Every page: loading, empty ("no builds yet"), error and not-found states. `ErrorMessage` used.
-        Today `/build/<id that doesn't exist>` crashes the page (`getBuild` returns `{ id }`, then
-        `description.length` on undefined in BuildEditor): found in T1, needs a test.
-  - [ ] `react-hooks/set-state-in-effect` back to `error` in `eslint.config.js`; the `console.log`s in
-        `src/lib/firebase.ts` gone (errors surface to the UI).
-  - [ ] Playwright e2e on the emulators (`tests/e2e/`, `npm run e2e`): sign up → create build → like →
-        comment → profile → logout; in CI.
-- **Context:** `src/features/auth/useAuth.ts` + `useUser.ts`, `src/lib/firebase.ts`, the effects in
-  `src/features/editor/useBuildEditor.ts` / `useLikeBuild.ts` / `useBuildComments.ts`,
-  `src/features/profile/Profile.tsx`, `src/features/builds/Landing.tsx`. Server data never goes into Redux (AGENTS.md conventions).
+  - [x] (T3/T4) Delete own comment; admins (custom claim `admin`) may delete any build or comment (rules +
+        tests); comment length and one-like-per-user enforced by the rules.
+  - [ ] Report a build or comment: a `reports` collection, create-only for signed-in users (reporter = auth uid,
+        target path, reason from a fixed list, optional note ≤ 500, server `createdAt`), readable by admins only;
+        one report per user per target (doc id `${targetId}_${uid}`). "Report" buttons on the build page and on
+        comments.
+  - [ ] Admin: `scripts/admin.mjs` (ADC, dry-run by default like the migration): set/unset the admin claim,
+        list open reports, delete a build/comment (with its counter batch) and resolve the report. Decide with
+        the owner whether "hide" (a `hidden` flag the rules and queries respect) is needed or delete is enough.
+        Optionally a minimal admin page if the owner wants one.
+  - [ ] Firebase App Check with reCAPTCHA Enterprise, enforced for Firestore and Auth. The owner creates the
+        site key and turns on enforcement; the code adds `initializeAppCheck` in `src/lib/firebase/app.ts` (not
+        in emulator mode; debug token for local). Write the exact console steps in `docs/firebase.md`.
+  - [ ] Rules tests for reports and admin paths in `tests/rules/`.
+- **Context:** `firestore.rules` (`isAdmin()`), `tests/rules/`, `docs/firebase.md`, `src/lib/firebase/`,
+  `scripts/migrate-v1-to-v2.mjs` (pattern for an ADC admin script).
 
-### T5 — UI bug batch from the 2022 review
+### T6 — Missing core features (remainder)
 
-- **Status:** ready (after T2; independent of T3/T4)
+- **Status:** ready; two owner decisions first
 - **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Fix the small UI bugs found in the 2022 code review. Each gets a failing test first where testable.
-- **Done when:**
-  - [ ] Landing: the tag filter starts from `builds`, discarding the level filter (`Landing` filter effect);
-        builds without `tags` crash the filter and `BuildsList`.
-  - [ ] BuildsList: `key={build.name}` → `build.id`; armor slots use armor slot types (they pass
-        `SLOT_TYPE_WEAPON`); previews show the right weapon slots.
-  - [ ] GameSelector: `clearTimeout(fn)` is passed the function, not the timer id; two CSS rules missing colons.
-  - [ ] `TextInput` drops the `placeholder` prop ("Search" never shows).
-  - [ ] Affinity can't be cleared (`DropDown`); picking an affinity/skill then closing the picker without a
-        weapon leaves them on an empty slot; `clearApp` doesn't reset `editAffinitySlot`.
-  - [ ] Like button stays locked forever after an error (if T4 hasn't already fixed it).
-  - [ ] SignUp `canRegister` checks the password twice and never the name; Login's global `keydown` Enter
-        handler on `document` → a real `<form onSubmit>`.
-  - [ ] Stats: clamp 1–99, numbers only (today "abc" shows level NaN).
-- **Context:** The files named above (under `src/features/` and `src/components/ui/`; each bug has a `(T5)` comment). Agent review notes are summarized in
-  `docs/architecture.md` "Known problems".
-
-### T6 — Missing core features
-
-- **Status:** ready (after T3 + T4)
-- **Session:** Sonnet · high effort · plan mode off
 - **Goal:** Finish the features 2022 never got to.
 - **Done when:**
-  - [ ] Delete build (owner only, confirm dialog, removes likes/comments subcollections via batched deletes).
-  - [ ] Cancel edit (restores the saved build); change a weapon in place (today clicking a filled slot removes
-        it, so you can't change affinity/skill without re-picking the weapon).
-  - [ ] Password reset and email verification (Firebase Auth); show auth errors to the user.
-  - [ ] Profile: edit display name; tabs for "Builds" and "Liked"; not-found user page.
-  - [ ] A 404 route.
-  - [ ] Consumables: decide with the owner whether to restore the commented-out UI in `EquipmentEditor` or
-        drop consumables from the model.
-  - [ ] Seed data and e2e cover the new flows.
-- **Context:** T3's model, T4's hooks. `EquipmentEditor` consumables block, `Slot` click handling,
-  `Profile`, `Login`/`SignUp`.
+  - [x] Delete build (owner, confirm step; likes/comments cleaned up). Cancel edit. Change an item in place
+        (a filled slot opens the picker: change the item, affinity or skill, or "Remove"). Password reset
+        ("Forgot password?") and readable auth errors. Profile rename, Builds/Liked tabs, not-found user. 404.
+  - [ ] **Owner:** email verification — send-only (a notice + resend on the profile), or also required to post
+        (rules check `request.auth.token.email_verified`, which needs a rules test)? Then build it.
+  - [ ] **Owner:** consumables — restore the commented-out UI in `EquipmentEditor` (the model already has
+        `equipment.consumables`, ≤ 10) or drop them from the model, the editor store and the rules.
+  - [ ] e2e covers rename and password reset (the auth emulator accepts reset requests).
+- **Context:** `src/features/profile/Profile.tsx` (`ProfileHeader`), `src/features/auth/Login.tsx`,
+  `src/lib/firebase/auth.ts`, `EquipmentEditor` consumables block, `tests/e2e/build-flow.spec.ts`.
+
+### T11 — Performance and polish (remainder)
+
+- **Status:** ready (fonts need the owner's OK)
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Fast first load and a finished look on phones.
+- **Done when:**
+  - [x] Lazy routes for `/build/*` and `/user/*`; the markdown editor in its own chunk (main bundle 738 → 347 KB
+        gzipped). Long build titles wrap; build cards and the game tabs fit a 390 px phone; slot names hidden
+        on phone-sized slots; the item picker's dropdowns wrap. Buttons/links instead of clickable divs in the
+        header, cards, game tabs, slots and picker; labels on inputs; focus styles on inputs and buttons.
+  - [ ] Game data (~650 KB JSON in the main bundle, the landing cards need it): after T7, load it per route or
+        ship a slim index for the cards. Consider a lighter markdown renderer for view mode (the full editor
+        package is 365 KB gzipped just to render).
+  - [ ] Favicon, app icons, `manifest.json`, meta description and Open Graph tags (site-level). Ask the owner
+        for an icon or approve a simple generated one.
+  - [ ] Tooltips usable on touch (weapon affinity/skill badges in `Slot` are hover-only).
+  - [ ] Accessibility: contrast check of the gold/green palette (WCAG AA), alt text strategy for item icons,
+        keyboard focus trap and Escape for the item picker modal and the login panel.
+  - [ ] Fonts: replace the Adobe Typekit kit (`garamond-premier-pro`, tied to the owner's Adobe account) with a
+        self-hosted open font (e.g. EB Garamond); check the OptimusPrinceps license or replace it. **Owner OK
+        first** (new asset source).
+  - [ ] A spacing scale in `src/theme/` used by the layout.
+- **Context:** `index.html`, `src/index.css`, `vite.config.ts`, `src/features/editor/Slot.tsx`, `ItemSelector`,
+  `App.tsx` (modal, panel). Screenshot before/after, desktop and `--mobile`.
 
 ### T7 — Game data v2 + Shadow of the Erdtree
 
@@ -155,60 +124,39 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
 - **Context:** T7's data (weights, requirements, scaling). `src/lib/buildMath.ts`, `StatEditor`,
   `SpellEditor`. Get formulas from a source the owner trusts; cite it in a comment.
 
-### T9 — Browse and discovery
+### T9 — Browse and discovery (remainder)
 
-- **Status:** ready (after T3 + T4)
-- **Session:** Sonnet · high effort · plan mode off
+- **Status:** ready (after T7 for the DLC tags)
+- **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** Make finding builds pleasant at scale.
 - **Done when:**
-  - [ ] Sort by top / new; cursor pagination (load more / infinite scroll); level range and one-tag filter as
-        Firestore queries (T3 indexes); multi-tag "all of" filtered client-side within a page.
-  - [ ] Search by build name (prefix query on a lowercase field, or a decision to add a search service: ask).
-  - [ ] Filters live in the URL (shareable); DLC bosses in tags (from T7).
-- **Context:** `Landing`, `BuildsList`, `Chips`, T3's indexes, T4's `useBuilds`.
-
-### T10 — Comments and moderation
-
-- **Status:** ready (after T3 + T4)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Safe to open to the public: abuse can be handled.
-- **Done when:**
-  - [ ] Delete own comment; report a build or comment (a `reports` collection, write-only for users).
-  - [ ] Admin (custom claim) can hide/delete builds and comments; a minimal admin view or script.
-  - [ ] Firebase App Check (reCAPTCHA Enterprise) enforced for Firestore and Auth; rate-limit friendly rules
-        (e.g. comment length, one like per user).
-  - [ ] Rules tests cover all of it.
-- **Context:** T3 rules and tests; `docs/firebase.md`.
-
-### T11 — Performance and polish
-
-- **Status:** ready (after T2)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Fast first load and a finished look on phones.
-- **Done when:**
-  - [ ] Bundle: the 2.4 MB main chunk split; game data JSON and the markdown editor lazy-loaded per route/use.
-  - [ ] Favicon, app icons, `manifest.json` icons, meta description and Open Graph tags (site-level).
-  - [ ] Tooltips usable on touch (they're hover-only); long build titles wrap with padding on mobile.
-  - [ ] Phones (390 px): the landing/profile build cards' equipment row (8 slots in a centered flex row,
-        `BuildsList` `LowerSection`/`EquipmentContainer`) overflows and is clipped on both sides; the game
-        selector's "Dark Souls III" wraps. Same CSS as 2022 (seen in T1's `--mobile` screenshots).
-  - [ ] Accessibility pass: clickable `div`s → buttons/links, labels on inputs, focus styles, contrast.
-  - [ ] Fonts: replace the Adobe Typekit kit (`garamond-premier-pro`, tied to the owner's Adobe account) with
-        a self-hosted open font (e.g. EB Garamond); check the OptimusPrinceps license or replace it.
-  - [ ] A spacing scale in `src/theme/` used by the layout (T2 shipped colors, fonts, breakpoints only).
-- **Context:** `index.html`, `src/index.css`, `vite.config.ts`, the components named. Screenshot before/after.
+  - [x] Sort by top/new; cursor pagination ("Load more"); one tag as a Firestore query, further tags
+        client-side; name search (prefix on `nameLower`, the free option); filters and search in the URL.
+  - [ ] Level range as a Firestore query instead of client-side (it filters loaded pages today, so narrow
+        ranges show sparse pages). Firestore needs `orderBy('level')` first, or the newer multi-field range
+        support: check the current docs, add the index, and a data-layer test in `tests/rules/data-layer.test.ts`.
+  - [ ] Search combined with the tag filter server-side (index `tags` CONTAINS + `game` + `nameLower`), or keep
+        it client-side and say so in the UI.
+  - [ ] DLC bosses in tags (from T7).
+- **Context:** `src/features/builds/` (`Landing`, `filters.ts`, `queries.ts`), `src/lib/firebase/builds.ts`
+  (`listBuilds`, `searchBuilds`), `firestore.indexes.json`. If the owner wants real full-text search, that's a
+  new service (Algolia/Typesense): ask.
 
 ### T12 — Deploy pipeline and relaunch
 
-- **Status:** ready (after T3, T10; ideally T4–T9)
+- **Status:** ready (after T10; ideally T6–T9)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Ship it: repeatable deploys and a safe production cutover.
 - **Done when:**
   - [ ] GitHub Actions: Firebase Hosting **preview channel** per PR (comment with the URL), production deploy
         on `main` behind a manual approval (GitHub environment). Auth via Workload Identity Federation (no
         JSON keys in secrets). Owner sets up the GCP side; the ticket writes exact steps.
-  - [ ] Owner-approved production steps, each asked for: deploy rules + indexes, run T3/T7 migrations
-        (dry-run first), deploy hosting, smoke-test the live site.
+  - [ ] Owner-approved production steps, each asked for, in this order: dry-run
+        `scripts/migrate-v1-to-v2.mjs --project soulsbuilds` and review the report with the owner (does the
+        owner want the 2022 data at all, or start fresh?); deploy rules + indexes (`--only
+firestore:rules,firestore:indexes`) and wait for the indexes to build; run the migration with
+        `--write`; deploy hosting; smoke-test the live site (sign up, create, like, comment). Rules and the
+        migration must go together: the v2 rules reject v1 docs.
   - [ ] Analytics: consent banner or drop Analytics. Privacy policy and terms pages.
   - [ ] Relaunch checklist in `docs/firebase.md` (backups/PITR, budget alerts, App Check enforced, auth
         providers, authorized domains).
@@ -221,6 +169,9 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
 - Per-build share previews (Open Graph image/title per build): needs SSR or a Cloud Function (Blaze plan).
 - Build comparison view; "copy this build" to start from someone else's.
 - Firebase MCP server for agents (local emulator use only) once its emulator support is clear.
+- Firebase JS SDK 13 (and `@firebase/rules-unit-testing` 6, which requires it): check the changelog, upgrade,
+  run all three test suites.
+- Build history / "updated" badge using `updatedAt`; edit comments (rules allow no comment updates today).
 
 ## Done
 
@@ -231,3 +182,12 @@ discovery); T10–T12 make it safe to open (moderation, polish, deploy). Order m
   `components/ui/`, `lib/`, `theme/`, typed `data/` accessors, `@/` alias; BuildEditor split into page,
   sections and hooks (`loadBuild`/`selectBuildFields`); transient `$props`; lodash/prop-types gone; hex-color
   lint rule; React Compiler on. Spacing tokens moved to T11; screenshots pixel-identical before/after.
+- T3 — Firestore model v2, rules, rules tests — 2026-11-14 — v2 model (likes/comments subcollections, batched
+  counters checked by the rules, admin claim, no emails in Firestore), tested rules + indexes, data-layer and
+  migration tests on their own emulator (`npm run test:rules`, CI), `scripts/migrate-v1-to-v2.mjs`, v2 seed.
+  Production question (migrate or start fresh) moved to T12.
+- T4 — TanStack Query, one AuthProvider, page states, e2e — 2026-11-14 — query hooks per feature with
+  optimistic likes/comment deletes, `AuthProvider`/`useAuth`, loading/error/empty/not-found everywhere, no load
+  race or page reloads, SDK imports lint-restricted to `src/lib/firebase/`, Playwright e2e (`npm run e2e`, CI).
+- T5 — 2022 UI bug batch — 2026-11-14 — filters combine, cards keyed by id with armor slot types, timers, CSS,
+  placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.

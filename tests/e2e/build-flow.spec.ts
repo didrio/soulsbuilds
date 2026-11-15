@@ -30,7 +30,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await page.getByRole('button', { name: 'Choose weapon' }).first().click();
   await page.getByLabel('Search items').fill('Moonveil');
   await page.getByRole('button', { name: /^Moonveil/ }).click();
-  await expect(page.getByRole('button', { name: 'Remove Moonveil' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Change Moonveil' })).toBeVisible();
   const vigor = page.getByLabel('Vigor');
   await vigor.fill('40');
   await vigor.blur();
@@ -70,6 +70,14 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByRole('link', { name: new RegExp(`${buildName} v2`) })).toBeVisible();
   await page.getByRole('tab', { name: 'Liked' }).click();
   await expect(page.getByRole('link', { name: new RegExp(`${buildName} v2`) })).toBeVisible();
+
+  // Search finds it by name prefix (case-insensitive), and the query stays in the URL.
+  await page.getByRole('link', { name: 'Souls Builds' }).click();
+  await page.getByRole('searchbox', { name: 'Search builds by name' }).fill(`e2e build ${unique}`);
+  await page.getByRole('button', { name: 'Search' }).click();
+  await expect(page).toHaveURL(/\?q=e2e/);
+  await expect(page.getByRole('link', { name: new RegExp(`${buildName} v2`) })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Bloodhound Samurai/ })).toHaveCount(0);
 
   // Delete.
   await page.getByRole('link', { name: new RegExp(`${buildName} v2`) }).click();

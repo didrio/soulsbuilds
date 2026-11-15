@@ -1,16 +1,36 @@
 // Server data for build lists (TanStack Query over src/lib/firebase).
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { listBuilds, listUserBuilds, type BuildCursor, type BuildSort } from '@/lib/firebase';
+import {
+  listBuilds,
+  listUserBuilds,
+  searchBuilds,
+  type BuildCursor,
+  type BuildSort,
+} from '@/lib/firebase';
 import { queryKeys } from '@/lib/queryKeys';
 
 export const BUILDS_PAGE_SIZE = 24;
 
-/** Elden Ring builds, most liked or newest first, a page at a time (`fetchNextPage`). */
-export function useBuilds({ sort, tag }: { sort: BuildSort; tag?: string }) {
+/**
+ * Elden Ring builds a page at a time (`fetchNextPage`): most liked or newest first, optionally with
+ * one tag; or, with `search`, the builds whose name starts with it (by name; `sort`/`tag` ignored).
+ */
+export function useBuilds({
+  sort,
+  tag,
+  search,
+}: {
+  sort: BuildSort;
+  tag?: string;
+  search?: string;
+}) {
+  const filters = search ? { sort, search } : { sort, tag };
   return useInfiniteQuery({
-    queryKey: queryKeys.buildList({ sort, tag }),
+    queryKey: queryKeys.buildList(filters),
     queryFn: ({ pageParam }) =>
-      listBuilds({ sort, tag, cursor: pageParam, pageSize: BUILDS_PAGE_SIZE }),
+      search
+        ? searchBuilds(search, { cursor: pageParam, pageSize: BUILDS_PAGE_SIZE })
+        : listBuilds({ sort, tag, cursor: pageParam, pageSize: BUILDS_PAGE_SIZE }),
     initialPageParam: null as BuildCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });

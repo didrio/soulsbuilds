@@ -1,9 +1,16 @@
-import MDEditor from '@uiw/react-md-editor';
-import rehypeSanitize from 'rehype-sanitize';
+import { lazy, Suspense } from 'react';
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
-import { COLOR_DARK_GREEN, COLOR_DARKER_GREEN, COLOR_GOLD, COLOR_GREEN, FONT_BODY } from '@/theme';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import { SectionHeader } from '../styles';
+
+// The markdown editor is large: load it only when a description is shown or edited.
+const MarkdownEditor = lazy(() =>
+  import('./Markdown').then((module) => ({ default: module.MarkdownEditor })),
+);
+const MarkdownView = lazy(() =>
+  import('./Markdown').then((module) => ({ default: module.MarkdownView })),
+);
 
 interface DescriptionSectionProps {
   description: string;
@@ -13,30 +20,20 @@ interface DescriptionSectionProps {
 
 /** The markdown description: an editor in edit mode, sanitized rendered markdown otherwise. */
 function DescriptionSection({ description, editable, onChange }: DescriptionSectionProps) {
-  const handleChange = (value?: string) => {
-    onChange(value as string);
-  };
-
+  if (!editable && !description) return null;
   return (
     <DescriptionSectionContainer vertical>
-      {editable || description.length ? <SectionHeader>Description</SectionHeader> : null}
+      <SectionHeader>Description</SectionHeader>
       <DescriptionInputContainer>
-        {editable ? (
-          <StyledMarkdownEditor
-            height={300}
-            onChange={handleChange}
-            preview="edit"
-            previewOptions={{
-              rehypePlugins: [[rehypeSanitize]],
-            }}
-            value={description}
-          />
-        ) : null}
-        {!editable && description.length ? (
-          <DescriptionContainer>
-            <StyledMarkdownPreview rehypePlugins={[[rehypeSanitize]]} source={description} />
-          </DescriptionContainer>
-        ) : null}
+        <Suspense fallback={<LoadingAnimation size={30} />}>
+          {editable ? (
+            <MarkdownEditor value={description} onChange={onChange} />
+          ) : (
+            <DescriptionContainer>
+              <MarkdownView source={description} />
+            </DescriptionContainer>
+          )}
+        </Suspense>
       </DescriptionInputContainer>
     </DescriptionSectionContainer>
   );
@@ -54,41 +51,6 @@ const DescriptionInputContainer = styled(FlexGroup)`
 const DescriptionContainer = styled(FlexGroup)`
   flex-direction: column;
   margin-bottom: 25px;
-`;
-
-const StyledMarkdownEditor = styled(MDEditor)`
-  background-color: ${COLOR_GREEN};
-  color: ${COLOR_GOLD};
-  max-width: 100%;
-  width: 100%;
-  font-family: ${FONT_BODY};
-
-  & .w-md-editor-text-input {
-    font-size: 20px;
-  }
-
-  & .w-md-editor-toolbar {
-    background-color: ${COLOR_DARKER_GREEN};
-    color: ${COLOR_GOLD};
-    font-family: ${FONT_BODY};
-
-    & svg {
-      color: ${COLOR_GOLD};
-    }
-  }
-
-  & .w-md-editor-preview {
-    background-color: ${COLOR_DARK_GREEN};
-    color: ${COLOR_GOLD};
-    font-family: ${FONT_BODY};
-  }
-`;
-
-const StyledMarkdownPreview = styled(MDEditor.Markdown)`
-  background-color: ${COLOR_DARK_GREEN} !important;
-  color: ${COLOR_GOLD} !important;
-  font-family: ${FONT_BODY} !important;
-  font-size: 18px !important;
 `;
 
 export default DescriptionSection;

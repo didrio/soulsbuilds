@@ -2,10 +2,12 @@
 // document stores (item names; see BuildDoc in src/lib/models.ts).
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/app/store';
+import type { SlotItem } from '@/data';
 import { compact } from '@/lib/array';
 import {
   ARROW_SLOTS,
   CONSUMABLE_SLOTS,
+  isSlot,
   SPELL_SLOTS,
   TALISMAN_SLOTS,
   TEAR_SLOTS,
@@ -76,3 +78,20 @@ export const selectEditWeaponSkill = (state: RootState) =>
 /** The affinity in the slot the picker is editing. */
 export const selectEditWeaponAffinity = (state: RootState) =>
   state.app.editAffinitySlot ? state.equipment[state.app.editAffinitySlot] : null;
+
+/** The item currently in the slot the picker is editing (null when empty or closed). */
+export const selectEditedItem = (state: RootState): SlotItem | null => {
+  const { editSlot, slotType } = state.app;
+  const { equipment } = state;
+  if (slotType === 'SLOT_TYPE_HELM') return equipment.helm;
+  if (slotType === 'SLOT_TYPE_CHEST') return equipment.chest;
+  if (slotType === 'SLOT_TYPE_GAUNTLET') return equipment.gauntlet;
+  if (slotType === 'SLOT_TYPE_LEG') return equipment.leg;
+  if (isSlot(SPELL_SLOTS, editSlot)) return state.spells[editSlot];
+  if (isSlot(TEAR_SLOTS, editSlot)) return state.tears[editSlot];
+  if (isSlot(WEAPON_SLOTS, editSlot)) return equipment[editSlot];
+  if (isSlot(ARROW_SLOTS, editSlot)) return equipment[editSlot];
+  if (isSlot(TALISMAN_SLOTS, editSlot)) return equipment[editSlot];
+  if (isSlot(CONSUMABLE_SLOTS, editSlot)) return equipment[editSlot];
+  return null;
+};

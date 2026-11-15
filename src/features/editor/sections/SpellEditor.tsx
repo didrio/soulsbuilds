@@ -1,15 +1,13 @@
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
+import { useAppSelector } from '@/app/hooks';
 import { COLOR_LIGHTEST_GREEN } from '@/theme';
 import Slot from '../Slot';
 import { SLOT_TYPE_SPELL, SPELL_SLOTS, type SpellSlot } from '../slots';
 import { selectSpellSlots } from '../store/selectors';
-import { updateSpell } from '../store/spells';
 
 /** Spells section: 10 spell slots and the memory slot points they use. */
 function SpellEditor({ editable }: { editable: boolean }) {
-  const dispatch = useAppDispatch();
   const spells = useAppSelector(selectSpellSlots);
 
   const slotPoints = SPELL_SLOTS.reduce((count, slot) => {
@@ -19,19 +17,8 @@ function SpellEditor({ editable }: { editable: boolean }) {
 
   const disabled = !editable;
 
-  const handleRemoveSpell = (id: SpellSlot) => () => {
-    dispatch(updateSpell({ id, item: null }));
-  };
-
   const spellSlot = (id: SpellSlot) => (
-    <Slot
-      disabled={disabled}
-      id={id}
-      item={spells[id]}
-      key={id}
-      onRemove={handleRemoveSpell(id)}
-      type={SLOT_TYPE_SPELL}
-    />
+    <Slot disabled={disabled} id={id} item={spells[id]} key={id} type={SLOT_TYPE_SPELL} />
   );
 
   return (

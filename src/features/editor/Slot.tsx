@@ -48,7 +48,6 @@ interface SlotProps {
   /** Editor slot the picker writes to. */
   id?: ItemSlot | '';
   item?: SlotItem | null;
-  onRemove?: () => void;
   size?: string | null;
   /** Editor weapon-skill slot this weapon slot reads and the picker edits. */
   subId?: WeaponSkillSlot | '';
@@ -58,8 +57,9 @@ interface SlotProps {
 }
 
 /**
- * One equipment/spell slot. Empty and enabled: click opens the item picker for `id`. Filled and
- * enabled: click removes the item (T6: change in place). Shows hover badges for affinity and skill.
+ * One equipment/spell slot. Enabled: click (or Enter/Space) opens the item picker for `id`, to
+ * choose, change or remove the item (and a weapon's affinity and skill). Shows hover badges for
+ * affinity and skill.
  */
 function Slot({
   affinity = '',
@@ -68,7 +68,6 @@ function Slot({
   disabled = false,
   id = '',
   item = null,
-  onRemove = () => {},
   size = null,
   subId = '',
   subItem = null,
@@ -85,18 +84,15 @@ function Slot({
   const hoverColor = hasItem ? COLOR_LIGHT_GOLD : COLOR_LIGHT_GREEN;
 
   const handleClick = () => {
-    if (!disabled && !hasItem) {
-      dispatch(
-        openPicker({
-          slotType: type,
-          editSlot: id || null,
-          editAffinitySlot: affinityId || null,
-          editSubSlot: subId || null,
-        }),
-      );
-    } else if (!disabled && hasItem) {
-      onRemove();
-    }
+    if (disabled) return;
+    dispatch(
+      openPicker({
+        slotType: type,
+        editSlot: id || null,
+        editAffinitySlot: affinityId || null,
+        editSubSlot: subId || null,
+      }),
+    );
   };
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -106,13 +102,13 @@ function Slot({
     }
   };
 
-  // Enabled slots act as buttons: choose an item when empty, remove it when filled.
+  // Enabled slots act as buttons that open the picker.
   const buttonProps = disabled
     ? {}
     : {
         role: 'button',
         tabIndex: 0,
-        'aria-label': hasItem ? `Remove ${item.name}` : `Choose ${SLOT_LABELS[type]}`,
+        'aria-label': hasItem ? `Change ${item.name}` : `Choose ${SLOT_LABELS[type]}`,
         onKeyDown: handleKeyDown,
       };
 
@@ -262,6 +258,15 @@ const NameContainer = styled.div`
   text-align: center;
   text-shadow: 0px 0px 5px ${COLOR_TEXT_SHADOW};
   z-index: 1;
+
+  /* Phone-sized slots are too small for the name: keep it for screen readers only. */
+  @media ${BELOW_500} {
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 1px;
+  }
 `;
 
 const WeaponSkillIconContainer = styled(FlexGroup)`
