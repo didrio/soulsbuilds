@@ -14,11 +14,12 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-14 (T2): Vite 8 + React 19 (React Compiler on) + RTK 2 + styled-components 6 + Firebase 12,
-all strict TypeScript in feature folders with an `@/` alias. Local dev runs entirely on the Firebase emulators
-with seed data. `npm run check` is green; tests cover level math, selectors, build load/save, data accessors.
-**Production is dark**: its Firestore rules (2022 test mode) expired, so the live site can't read or write data
-until T3's real rules are deployed in T12. Game data is base game only (no Shadow of the Erdtree) until T7.
+As of 2026-11-14 (T3–T5): Vite 8 + React 19 (React Compiler) + RTK 2 + TanStack Query 5 + styled-components 6 +
+Firebase 12, strict TypeScript in feature folders. Firestore data model v2 with real security rules, rules tests
+and a v1→v2 migration; one `AuthProvider`; every page has loading/error/empty/not-found states; Playwright e2e
+on the emulators. `npm run check`, `npm run test:rules` and `npm run e2e` are green and run in CI.
+**Production is dark**: it still holds v1 data under the expired 2022 rules (deny all); T12 deploys the v2
+rules + indexes and runs the migration, with the owner. Game data is base game only until T7.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -42,7 +43,8 @@ until T3's real rules are deployed in T12. Game data is base game only (no Shado
 7. **Definition of done** (every change, even small):
    1. `npm run check` passes (typecheck, lint, format, tests, build).
    2. Logic changes get a unit test next to the module; a bug gets a failing test first, then the fix.
-   3. Firestore rules or data-access changes: the rules tests pass (they arrive in T3).
+   3. Firestore rules or data-access changes: `npm run test:rules` passes, with tests for the new rule or
+      function. User-visible flows: `npm run e2e` passes (add to `tests/e2e/` for a new journey).
    4. Anything visible: screenshot the changed pages, desktop and `--mobile`, and look at them.
    5. Docs (this file, `docs/`, skills, `TICKETS.md`) updated in the same change.
    6. Report plainly what you verified and what you couldn't.
@@ -54,9 +56,12 @@ until T3's real rules are deployed in T12. Game data is base game only (no Shado
 | All checks (run before finishing)           | `npm run check`                                                              |
 | Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format` |
 | Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                    |
+| Rules + migration tests (own emulator)      | `npm run test:rules` (works while `npm run dev` runs)                        |
+| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                              |
 | What can this machine run?                  | `npm run doctor`                                                             |
 | Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                         |
-| Re-seed running emulators / emulators only  | `npm run seed` · `npm run emulators`                                         |
+| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                         |
+| v1→v2 migration (dry run; prod = T12 only)  | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`               |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--full]` → PNG path   |
 | Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)         |
 | Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                   |
@@ -88,30 +93,32 @@ index.html                 Vite entry (Adobe Typekit font kit + favicon placehol
 src/
   main.tsx                 createRoot + <AppProviders><App/>
   app/                     App (shell: header, login/register slide-down panel, item-picker modal),
-                           routes.tsx (/, /build/:buildId, /user/:userId), AppProviders (Redux + router),
-                           store.ts (makeStore, RootState, AppDispatch), hooks.ts (useAppSelector/Dispatch),
-                           Header, GameSelector
-  features/auth/           useAuth (auth listener), useUser (signed-in user's doc), Login, SignUp
-  features/builds/         Landing (all builds, tag/level filters), BuildsList (build cards)
-  features/profile/        Profile
-  features/editor/         BuildEditorPage (view/create/edit + likes + comments) and its hooks:
-                           useBuildEditor (load/save), useLikeBuild, useBuildComments; sections/ (BuildTitle,
-                           BuildDetailsForm, Equipment/Stat/Tear/SpellEditor, DescriptionSection, BuildTags,
-                           CommentsSection); Slot, ItemSelector (picker), slots.ts (slot ids/types);
-                           store/ = Redux slices for the build being edited + selectors + build.ts
-                           (loadBuild thunk / selectBuildFields: Firestore doc ⇄ editor state)
-  components/ui/           Shared UI: FlexGroup/FlexItem, Button, TextInput/TextAreaInput, DropDown, Chips
-                           (tag picker), Tag, CloseButton, LoadingAnimation, OutsideClickHandler, ErrorMessage
-  lib/                     firebase.ts (ALL Auth/Firestore access + emulator wiring), models.ts (v1 Build/User
-                           doc types), buildMath.ts (level; T8 adds more), array.ts (compact, sortBy)
+                           routes.tsx (/, /build/:buildId, /user/:userId, 404), AppProviders (Query, Auth,
+                           Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch), Header
+  features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
+  features/builds/         Landing (sort, tag/level filters in the URL, load more), BuildsList (build cards),
+                           filters.ts, queries.ts (useBuilds, useUserBuilds)
+  features/profile/        Profile (rename, Builds/Liked tabs), queries.ts (useUserProfile(s), useLikedBuilds…)
+  features/editor/         BuildEditorPage (view/create/edit/delete) + useBuildEditor; queries.ts (useBuild,
+                           useSaveBuild, likes, comments); sections/ (BuildTitle with like button, BuildDetailsForm,
+                           Equipment/Stat/Tear/SpellEditor, DescriptionSection, BuildTags, CommentsSection);
+                           Slot, ItemSelector (picker), slots.ts; store/ = Redux slices for the build being
+                           edited + selectors + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
+  components/ui/           Shared UI: FlexGroup, Button, TextInput/TextAreaInput, DropDown, Chips, Tag,
+                           PageMessage (loading/empty/not-found), ErrorMessage (with retry), LoadingAnimation…
+  lib/                     firebase/ (ALL Auth/Firestore access: app, auth, builds, likes, comments, users),
+                           models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping),
+                           array.ts
   theme/                   Tokens: COLOR_* (colors.ts), FONT_* (fonts.ts), BELOW_* media queries (media.ts)
   data/                    *.json static Elden Ring data (base game, 2022; never Read whole) + index.ts
                            typed accessors (getWeapon(name), armorList(kind)…) + types.ts. docs/data.md
-  test/                    Vitest setup + renderWithProviders (store + router)
+  test/                    Vitest setup, renderWithProviders (store, QueryClient, router, uid), fixtures
+tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), e2e/ (Playwright)
 public/assets/             ~1,400 item icons by category (armor, weapons, spells, items, talismans, menu)
-scripts/                   seed, screenshot, doctor, firebase (Java wrapper), lib/; legacy-data/ = 2022
-                           scrapers kept for reference only (excluded from lint/format/typecheck)
-firebase.json              Hosting (dist/), emulator ports; firestore.rules (INTERIM, local only)
+scripts/                   seed, migrate-v1-to-v2, e2e, screenshot, doctor, firebase (Java wrapper), lib/
+                           (model-v2 helpers); legacy-data/ = 2022 scrapers (reference only)
+firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
+firestore.rules            v2 security rules (not deployed until T12); firestore.indexes.json
 docs/                      architecture, firebase, data, decisions
 TICKETS.md                 Ordered backlog; one ticket per session
 ```
@@ -125,11 +132,12 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Styling**: styled-components, defined at the bottom of the file. Colors, fonts and breakpoints only from
   `@/theme` (ESLint rejects hex literals outside `src/theme/`). Style-only props are transient (`$active`).
 - **State**: the build being edited → Redux slices + selectors (`useAppSelector`/`useAppDispatch`). Server
-  data (builds, users, comments) → today component state via `src/lib/firebase.ts`; from T4, TanStack Query.
-  Never copy server data into Redux.
+  data (builds, users, likes, comments) → TanStack Query hooks in `src/features/<feature>/queries.ts`, keys in
+  `src/lib/queryKeys.ts`. The signed-in user → `useAuth()`. Never copy server data into Redux.
 - **Game data**: import from `@/data` (typed accessors), never the JSON files directly (tests excepted).
-- **Firestore**: only `src/lib/firebase.ts` imports from `firebase/firestore` / `firebase/auth` (besides
-  `useAuth`/`useUser`). Builds reference items **by name** today (renames silently drop items: T7 moves to IDs).
+- **Firestore**: only `src/lib/firebase/` imports the Firebase SDK (ESLint enforces it; type imports are
+  fine). Every write has a rule in `firestore.rules` and a test in `tests/rules/`. Counters change in the same
+  batch as the doc they count. Builds reference items **by name** today (renames drop items: T7 moves to IDs).
 - **Markdown** from users renders through `rehype-sanitize`. Never `dangerouslySetInnerHTML`.
 - **Tests** are colocated `*.test.ts(x)`, Vitest + Testing Library. Components render with
   `renderWithProviders`; query by role/text. Known data gaps are `it.fails` in `src/data/data.test.ts`.
@@ -152,8 +160,10 @@ TICKETS.md                 Ordered backlog; one ticket per session
   jsx-a11y plugins don't support ESLint 10 yet). Revisit when they do.
 - **npm `allowScripts`**: install scripts are off unless listed. `@firebase/util`, `protobufjs`, `re2` and
   `fsevents` are deliberately denied (not needed here).
-- **Never deploy `firestore.rules` before T3**: today's file is interim and lets any signed-in user edit
-  `likes`/`comments` on any build. Production still has the expired 2022 rules (deny all).
+- **Never deploy rules or indexes on their own**: production still holds v1 data, which the v2 rules reject.
+  Rules, indexes and the migration go out together in T12, with the owner.
+- **`serverTimestamp()` reads back as an estimate** until the server confirms (`toBuild` and friends pass
+  `serverTimestamps: 'estimate'`), so a just-written doc never has a null `createdAt`.
+- **`npm run seed` wipes the emulator's Firestore** before seeding.
 - **Item names in the data have scrape quirks** (`"Flame Grant me Strength"`, `"Glinstone Pebble"`): copy names
   from the JSON. `scripts/seed.mjs` validates every name it uses.
-- `react-hooks/set-state-in-effect` is a warning (not an error) until T4 rewrites the data-loading effects.

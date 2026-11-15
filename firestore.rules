@@ -1,42 +1,218 @@
 rules_version = '2';
 
-// INTERIM RULES (T1) for the local emulators only. NOT deployed: production still has the
-// expired 2022 test-mode rules, which deny everything. T3 replaces this file with the real
-// rules for data model v2, plus rules tests. Don't deploy this file.
+// Firestore security rules for data model v2 (T3). The model is documented in docs/architecture.md
+// "Firestore model (v2)"; tests/rules/ covers every rule (`npm run test:rules`).
+// Production still has the expired 2022 rules (deny all). Deploying this file is a T12 step, with
+// the owner.
 //
-// They match the current (v1) data model so local dev works:
-//   users/{uid}:   { admin, email, name, builds: [buildId], likedBuilds: [buildId] }
-//   builds/{id}:   { user: uid, name, ..., likes: number, comments: [{ user, comment, date }] }
+// Counters: `likeCount` and `commentCount` on a build only change by exactly 1, in the same batched
+// write that creates or deletes the matching like/comment doc (no Cloud Functions: they need the
+// paid Blaze plan). See likeChange() / commentChange() and the subcollection rules.
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // ---- Helpers -------------------------------------------------------------------------------
+
     function signedIn() {
       return request.auth != null;
     }
 
-    function onlyChanges(fields) {
-      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
     }
+
+    // Admins are marked with a custom claim set by an admin script, never by a client-writable field.
+    function isAdmin() {
+      return signedIn() && request.auth.token.admin == true;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function changedKeys() {
+      return request.resource.data.diff(resource.data).affectedKeys();
+    }
+
+    function hasExactly(data, keys) {
+      return data.keys().hasAll(keys) && data.keys().hasOnly(keys);
+    }
+
+    // A trimmed, non-empty string of at most `max` characters.
+    function isText(value, max) {
+      return value is string && value.size() >= 1 && value.size() <= max && value == value.trim();
+    }
+
+    function buildPath(buildId) {
+      return /databases/$(database)/documents/builds/$(buildId);
+    }
+
+    // ---- users/{uid}: public profile -----------------------------------------------------------
+    // Email stays in Firebase Auth only; nothing private is stored in Firestore.
 
     match /users/{userId} {
       allow read: if true;
-      allow create: if signedIn() && request.auth.uid == userId
-        && request.resource.data.admin == false;
-      // A user edits their own doc, but never their admin flag.
-      allow update: if signedIn() && request.auth.uid == userId
-        && request.resource.data.admin == resource.data.admin;
+      allow create: if isUser(userId)
+        && hasExactly(incoming(), ['displayName', 'createdAt'])
+        && isText(incoming().displayName, 40)
+        && incoming().createdAt == request.time;
+      allow update: if isUser(userId)
+        && changedKeys().hasOnly(['displayName'])
+        && isText(incoming().displayName, 40);
       allow delete: if false;
+    }
+
+    // ---- builds/{id} ---------------------------------------------------------------------------
+
+    function isStat(value) {
+      return value is int && value >= 1 && value <= 99;
+    }
+
+    function validStats(s) {
+      return s is map
+        && hasExactly(s, ['vigor', 'mind', 'end', 'str', 'dex', 'int', 'fai', 'arc'])
+        && isStat(s.vigor) && isStat(s.mind) && isStat(s.end) && isStat(s.str)
+        && isStat(s.dex) && isStat(s.int) && isStat(s.fai) && isStat(s.arc);
+    }
+
+    // Level = sum of the 8 stats - 79, never below 1 (src/lib/buildMath.ts calculateLevel).
+    function validLevel(level, s) {
+      return level is int && (
+        (s.vigor + s.mind + s.end + s.str + s.dex + s.int + s.fai + s.arc - 79 >= 1
+          && level == s.vigor + s.mind + s.end + s.str + s.dex + s.int + s.fai + s.arc - 79)
+        || (s.vigor + s.mind + s.end + s.str + s.dex + s.int + s.fai + s.arc - 79 < 1
+          && level == 1));
+    }
+
+    // Item names (T7 moves to IDs). Positional lists have a fixed length (null = empty slot).
+    function isItem(value) {
+      return value == null || (value is string && value.size() >= 1 && value.size() <= 100);
+    }
+
+    function validEquipment(e) {
+      return e is map
+        && hasExactly(e, ['weapons', 'weaponAffinities', 'weaponSkills', 'arrows', 'talismans',
+          'spells', 'tears', 'consumables', 'helm', 'chest', 'gauntlet', 'leg'])
+        && e.weapons is list && e.weapons.size() == 6
+        && e.weaponAffinities is list && e.weaponAffinities.size() == 6
+        && e.weaponSkills is list && e.weaponSkills.size() == 6
+        && e.arrows is list && e.arrows.size() == 4
+        && e.talismans is list && e.talismans.size() <= 4
+        && e.spells is list && e.spells.size() <= 10
+        && e.tears is list && e.tears.size() <= 2
+        && e.consumables is list && e.consumables.size() <= 10
+        && isItem(e.helm) && isItem(e.chest) && isItem(e.gauntlet) && isItem(e.leg);
+    }
+
+    // The fields the owner writes. Everything else is set on create or changed by the counters.
+    function contentKeys() {
+      return ['name', 'nameLower', 'description', 'tags', 'level', 'stats', 'equipment'];
+    }
+
+    function validContent(d) {
+      return isText(d.name, 80)
+        && d.nameLower == d.name.lower()
+        && d.description is string && d.description.size() <= 20000
+        && d.tags is list && d.tags.size() <= 20
+        && validStats(d.stats)
+        && validLevel(d.level, d.stats)
+        && validEquipment(d.equipment);
     }
 
     match /builds/{buildId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.user == request.auth.uid;
-      // The owner edits everything (except ownership); anyone signed in may like or comment.
-      allow update: if signedIn() && (
-        (resource.data.user == request.auth.uid
-          && request.resource.data.user == resource.data.user)
-        || onlyChanges(['likes', 'comments'])
-      );
-      allow delete: if signedIn() && resource.data.user == request.auth.uid;
+
+      allow create: if signedIn()
+        && hasExactly(incoming(), contentKeys().concat(
+          ['ownerId', 'game', 'likeCount', 'commentCount', 'createdAt', 'updatedAt']))
+        && incoming().ownerId == request.auth.uid
+        && incoming().game == 'elden-ring'
+        && validContent(incoming())
+        && incoming().likeCount == 0
+        && incoming().commentCount == 0
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if ownerEdit() || likeChange(buildId) || commentChange(buildId);
+
+      // Likes and comments are deleted afterwards (see the orphan rules below).
+      allow delete: if signedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
+
+      // The owner edits the content and must bump updatedAt; never ownerId, game, counts or createdAt.
+      function ownerEdit() {
+        return signedIn()
+          && resource.data.ownerId == request.auth.uid
+          && changedKeys().hasOnly(contentKeys().concat(['updatedAt']))
+          && validContent(incoming())
+          && incoming().updatedAt == request.time;
+      }
+
+      // likeCount moves by exactly 1, together with creating/deleting the caller's like doc.
+      function likeChange(buildId) {
+        let like = /databases/$(database)/documents/builds/$(buildId)/likes/$(request.auth.uid);
+        let delta = incoming().likeCount - resource.data.likeCount;
+        return signedIn()
+          && changedKeys().hasOnly(['likeCount'])
+          && ((delta == 1 && !exists(like) && existsAfter(like))
+            || (delta == -1 && exists(like) && !existsAfter(like)));
+      }
+
+      // commentCount moves by exactly 1, together with creating/deleting the comment named by
+      // lastCommentId (the comment rules check who may do that).
+      function commentChange(buildId) {
+        let id = incoming().lastCommentId;
+        let comment = /databases/$(database)/documents/builds/$(buildId)/comments/$(id);
+        let delta = incoming().commentCount - resource.data.commentCount;
+        return signedIn()
+          && changedKeys().hasOnly(['commentCount', 'lastCommentId'])
+          && id is string && id.matches('^[A-Za-z0-9_-]{1,40}$')
+          && ((delta == 1 && !exists(comment) && existsAfter(comment))
+            || (delta == -1 && exists(comment) && !existsAfter(comment)));
+      }
+
+      // builds/{id}/likes/{uid}: one like per user; the doc id is the liker's uid.
+      match /likes/{userId} {
+        allow read: if true;
+        allow create: if isUser(userId)
+          && hasExactly(incoming(), ['userId', 'createdAt'])
+          && incoming().userId == userId
+          && incoming().createdAt == request.time
+          && getAfter(buildPath(buildId)).data.likeCount
+            == get(buildPath(buildId)).data.likeCount + 1;
+        // Unlike (with the decrement), or clean up after the build was deleted.
+        allow delete: if signedIn() && (
+          !existsAfter(buildPath(buildId))
+          || (request.auth.uid == userId
+            && getAfter(buildPath(buildId)).data.likeCount
+              == get(buildPath(buildId)).data.likeCount - 1));
+        allow update: if false;
+      }
+
+      // builds/{id}/comments/{id}: signed-in users comment; authors (and admins) delete.
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && hasExactly(incoming(), ['authorId', 'text', 'createdAt'])
+          && incoming().authorId == request.auth.uid
+          && isText(incoming().text, 1000)
+          && incoming().createdAt == request.time
+          && getAfter(buildPath(buildId)).data.commentCount
+            == get(buildPath(buildId)).data.commentCount + 1
+          && getAfter(buildPath(buildId)).data.lastCommentId == commentId;
+        // Delete (with the decrement), or clean up after the build was deleted.
+        allow delete: if signedIn() && (
+          !existsAfter(buildPath(buildId))
+          || ((resource.data.authorId == request.auth.uid || isAdmin())
+            && getAfter(buildPath(buildId)).data.commentCount
+              == get(buildPath(buildId)).data.commentCount - 1
+            && getAfter(buildPath(buildId)).data.lastCommentId == commentId));
+        allow update: if false;
+      }
+    }
+
+    // "Builds this user liked" is a collection-group query over likes (by userId).
+    match /{path=**}/likes/{likeId} {
+      allow read: if true;
     }
   }
 }

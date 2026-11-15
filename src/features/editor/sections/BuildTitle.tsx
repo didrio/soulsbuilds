@@ -1,42 +1,56 @@
-import { useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import styled from 'styled-components';
+import ErrorMessage from '@/components/ui/ErrorMessage';
 import FlexGroup from '@/components/ui/FlexGroup';
 import Tag from '@/components/ui/Tag';
-import type { User } from '@/lib/models';
-import { COLOR_GOLD, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN, FONT_DISPLAY } from '@/theme';
+import useAuth from '@/features/auth/useAuth';
+import { useUserProfile } from '@/features/profile/queries';
+import { errorMessage } from '@/lib/firebase';
+import type { Build } from '@/lib/models';
+import {
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
+  COLOR_LIGHTEST_GREEN,
+  FONT_BODY,
+  FONT_DISPLAY,
+} from '@/theme';
+import { useHasLiked, useToggleLike } from '../queries';
 
-interface BuildTitleProps {
-  buildUser: Partial<User> | false;
-  /** Signed in with a loaded user doc: the like counter is a toggle. */
-  canLike: boolean;
-  likes: number;
-  name: string;
-  onLike: () => void;
-}
+export const likesLabel = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
 
-/** View mode header: build name, "Created by", and the like counter. */
-function BuildTitle({ buildUser, canLike, likes, name, onLike }: BuildTitleProps) {
-  const navigate = useNavigate();
-
-  const handleNavigateUser = () => {
-    if (buildUser && buildUser.id) {
-      navigate(`/user/${buildUser.id}`);
-    }
-  };
-
-  const likesLabel = `${likes} ${likes === 1 ? 'Like' : 'Likes'}`;
+/** View mode header: build name, "Created by", and the like button (a counter when signed out). */
+function BuildTitle({ build }: { build: Build }) {
+  const { uid } = useAuth();
+  const owner = useUserProfile(build.ownerId);
+  const liked = useHasLiked(build.id, uid);
+  const toggleLike = useToggleLike(build.id, uid);
+  const isLiked = liked.data === true;
 
   return (
     <TitleContainer vertical>
-      <NameContainer>{name}</NameContainer>
-      {buildUser && buildUser.name ? (
+      <Name>{build.name}</Name>
+      {owner.data ? (
         <CreatedByContainer>
-          Created by:
-          <CreatedBy onClick={handleNavigateUser}>{buildUser.name}</CreatedBy>
+          Created by
+          <CreatedBy to={`/user/${owner.data.id}`}>{owner.data.displayName}</CreatedBy>
         </CreatedByContainer>
       ) : null}
-      <LikesContainer>
-        {canLike ? <LikesTag onClick={onLike}>{likesLabel}</LikesTag> : <Tag>{likesLabel}</Tag>}
+      <LikesContainer vertical>
+        {uid ? (
+          <LikeButton
+            type="button"
+            aria-pressed={isLiked}
+            disabled={toggleLike.isPending || liked.isPending}
+            onClick={() => toggleLike.mutate(!isLiked)}
+            $liked={isLiked}>
+            {isLiked ? '♥ ' : '♡ '}
+            {likesLabel(build.likeCount)}
+          </LikeButton>
+        ) : (
+          <Tag>{likesLabel(build.likeCount)}</Tag>
+        )}
+        <ErrorMessage>{toggleLike.error ? errorMessage(toggleLike.error) : ''}</ErrorMessage>
       </LikesContainer>
     </TitleContainer>
   );
@@ -44,13 +58,16 @@ function BuildTitle({ buildUser, canLike, likes, name, onLike }: BuildTitleProps
 
 const TitleContainer = styled(FlexGroup)`
   margin-bottom: 30px;
+  max-width: 100%;
+  padding: 0 16px;
 `;
 
-const NameContainer = styled(FlexGroup)`
+const Name = styled.h1`
   font-size: 40px;
-  justify-content: center;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  font-weight: normal;
+  text-align: center;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
   font-family: ${FONT_DISPLAY};
   text-shadow: 0px 0px 4px ${COLOR_GOLD};
   color: ${COLOR_LIGHTEST_GREEN};
@@ -58,25 +75,39 @@ const NameContainer = styled(FlexGroup)`
 
 const CreatedByContainer = styled(FlexGroup)`
   justify-content: center;
+  gap: 5px;
 `;
 
-const CreatedBy = styled(FlexGroup)`
+const CreatedBy = styled(Link)`
   color: ${COLOR_LIGHTEST_GREEN};
   font-weight: bold;
-  cursor: pointer;
-  margin-left: 5px;
 `;
 
 const LikesContainer = styled(FlexGroup)`
-  justify-content: center;
+  align-items: center;
   margin-top: 15px;
 `;
 
-const LikesTag = styled(Tag)`
+const LikeButton = styled.button<{ $liked: boolean }>`
+  background-color: ${({ $liked }) => ($liked ? COLOR_LIGHT_GREEN : COLOR_GREEN)};
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+  color: inherit;
   cursor: pointer;
+  font-family: ${FONT_BODY};
+  font-size: 14px;
+  height: 30px;
+  padding: 0 12px;
 
-  &:hover {
+  &:hover:enabled {
     background-color: ${COLOR_LIGHT_GREEN};
+  }
+
+  &:disabled {
+    cursor: progress;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_GOLD};
   }
 `;
 

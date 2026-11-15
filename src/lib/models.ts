@@ -1,61 +1,102 @@
-// Firestore document shapes, model v1 (2022). See docs/architecture.md "Firestore model (v1)".
-// Reads are NOT validated: v1 documents are trusted as-is and may contain numeric strings or miss
-// fields (code that reads them keeps its 2022 defaults). T3 replaces this with model v2 + rules.
-import type { StatValue } from './buildMath';
+// Firestore data model v2 (T3): the app-side types and the document shapes behind them. See
+// docs/architecture.md "Firestore model (v2)". firestore.rules validates every write, so reads are
+// trusted to have these shapes (src/lib/firebase/ casts at the boundary).
+import type { Timestamp } from 'firebase/firestore';
+import type { Stats } from './buildMath';
 
-export interface BuildComment {
-  /** Author uid. */
-  user: string;
-  comment: string;
-  /** Epoch milliseconds. */
-  date: number;
-}
+export const GAME_ELDEN_RING = 'elden-ring';
+export type GameId = typeof GAME_ELDEN_RING;
 
-/** builds/{id}. Weapon arrays are positional (slots 1–3 main hand, 4–6 off hand). */
-export interface BuildDoc {
-  /** Owner uid. */
-  user: string;
-  name: string;
-  /** Markdown, rendered through rehype-sanitize. */
-  description: string;
-  tags: string[];
-  /** Character level as a string ("131"). */
-  level: string;
-  likes: number;
-  comments: BuildComment[];
-  vigor: StatValue;
-  mind: StatValue;
-  end: StatValue;
-  str: StatValue;
-  dex: StatValue;
-  int: StatValue;
-  fai: StatValue;
-  arc: StatValue;
+/** Limits enforced by firestore.rules; the UI uses them for maxLength and validation. */
+export const LIMITS = {
+  buildName: 80,
+  description: 20000,
+  tags: 20,
+  displayName: 40,
+  comment: 1000,
+} as const;
+
+/**
+ * Item names per slot group (T7 moves to IDs). Weapon lists are positional, 6 long (slots 1–3 main
+ * hand, 4–6 off hand; null = empty); arrows positional, 4 long; the rest compacted.
+ */
+export interface Equipment {
   weapons: (string | null)[];
   weaponAffinities: (string | null)[];
   weaponSkills: (string | null)[];
   arrows: (string | null)[];
-  tals: string[];
+  talismans: string[];
   spells: string[];
   tears: string[];
-  cons: string[];
+  consumables: string[];
   helm: string | null;
   chest: string | null;
   gauntlet: string | null;
   leg: string | null;
 }
 
-export type Build = BuildDoc & { id: string };
-
-/** users/{uid}. */
-export interface UserDoc {
-  /** Set by the client at signup (T3 moves admin to a custom claim). */
-  admin: boolean;
-  /** Public today (T3 moves it to a private doc). */
-  email: string;
+/** What the build editor saves: the owner-editable part of a build. */
+export interface BuildContent {
   name: string;
-  builds?: string[];
-  likedBuilds?: string[];
+  description: string;
+  tags: string[];
+  level: number;
+  stats: Stats;
+  equipment: Equipment;
 }
 
-export type User = UserDoc & { id: string };
+/** builds/{id} as stored. */
+export interface BuildDoc extends BuildContent {
+  ownerId: string;
+  game: GameId;
+  /** `name.toLowerCase()`, for prefix search (T9). */
+  nameLower: string;
+  likeCount: number;
+  commentCount: number;
+  /** Set by the comment counter (see firestore.rules); not used by the UI. */
+  lastCommentId?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface Build extends BuildContent {
+  id: string;
+  ownerId: string;
+  game: GameId;
+  likeCount: number;
+  commentCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** users/{uid} as stored: the public profile. Email lives only in Firebase Auth. */
+export interface UserDoc {
+  displayName: string;
+  createdAt: Timestamp;
+}
+
+export interface UserProfile {
+  id: string;
+  displayName: string;
+  createdAt: Date;
+}
+
+/** builds/{buildId}/comments/{id} as stored. */
+export interface CommentDoc {
+  authorId: string;
+  text: string;
+  createdAt: Timestamp;
+}
+
+export interface Comment {
+  id: string;
+  authorId: string;
+  text: string;
+  createdAt: Date;
+}
+
+/** builds/{buildId}/likes/{uid} as stored (the doc id is the liker's uid). */
+export interface LikeDoc {
+  userId: string;
+  createdAt: Timestamp;
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent } from 'react';
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
@@ -22,6 +22,20 @@ import {
   updateEditAffinitySlot,
 } from './store/app';
 import { selectEquipment } from './store/selectors';
+
+/** What each slot type holds, for screen-reader labels ("Choose talisman"). */
+const SLOT_LABELS: Record<SlotType, string> = {
+  SLOT_TYPE_ARROW: 'arrow or bolt',
+  SLOT_TYPE_CHEST: 'chest armor',
+  SLOT_TYPE_CON: 'item',
+  SLOT_TYPE_GAUNTLET: 'gauntlets',
+  SLOT_TYPE_HELM: 'helm',
+  SLOT_TYPE_LEG: 'leg armor',
+  SLOT_TYPE_SPELL: 'spell',
+  SLOT_TYPE_TAL: 'talisman',
+  SLOT_TYPE_TEAR: 'crystal tear',
+  SLOT_TYPE_WEAPON: 'weapon',
+};
 
 const SLOT_SIZE = '80px';
 const SLOT_SIZE_SMALL = '60px';
@@ -90,6 +104,23 @@ function Slot({
     }
   };
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick();
+    }
+  };
+
+  // Enabled slots act as buttons: choose an item when empty, remove it when filled.
+  const buttonProps = disabled
+    ? {}
+    : {
+        role: 'button',
+        tabIndex: 0,
+        'aria-label': hasItem ? `Remove ${item.name}` : `Choose ${SLOT_LABELS[type]}`,
+        onKeyDown: handleKeyDown,
+      };
+
   const weaponSkillName = subItem || (subId ? equipment[subId] : null);
   const weaponAffinity = affinity || (affinityId ? equipment[affinityId] : null);
   const weaponSkill = getSkill(weaponSkillName);
@@ -118,11 +149,9 @@ function Slot({
       $hasItem={hasItem}
       $hoverColor={hoverColor}
       $size={size}
-      onClick={handleClick}>
-      {!hasItem ? null : (
-        // eslint-disable-next-line jsx-a11y/alt-text
-        <img src={`/assets/${item.imageUrl}`} />
-      )}
+      onClick={handleClick}
+      {...buttonProps}>
+      {!hasItem ? null : <img alt="" src={`/assets/${item.imageUrl}`} />}
       {!hasItem ? null : <NameContainer>{item.name}</NameContainer>}
       {weaponAffinity ? (
         <WeaponAffinityIconContainer
@@ -203,6 +232,10 @@ const Container = styled(FlexGroup)<ContainerProps>`
 
   &:hover {
     background-color: ${({ $backgroundColor, $disabled, $hoverColor }) => ($disabled ? $backgroundColor : $hoverColor)};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_LIGHT_GOLD};
   }
 
   & > img {

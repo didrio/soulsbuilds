@@ -1,10 +1,12 @@
+import { Link, useParams } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
+import ErrorMessage from '@/components/ui/ErrorMessage';
 import FlexGroup from '@/components/ui/FlexGroup';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import PageMessage from '@/components/ui/PageMessage';
 import { useAppSelector } from '@/app/hooks';
-import useAuth from '@/features/auth/useAuth';
-import useUser from '@/features/auth/useUser';
+import { errorMessage } from '@/lib/firebase';
 import { BELOW_1100 } from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildTags from './sections/BuildTags';
@@ -17,48 +19,54 @@ import StatEditor from './sections/StatEditor';
 import TearEditor from './sections/TearEditor';
 import { selectLevel } from './store/build';
 import { EditorContainer } from './styles';
-import { useBuildComments } from './useBuildComments';
 import { useBuildEditor } from './useBuildEditor';
-import { useLikeBuild } from './useLikeBuild';
 
-/**
- * `/build/:buildId`: view, create (`/build/new`) and edit a build in one page, plus likes and
- * comments. Slots live in Redux (./store); everything else in the hooks.
- */
+/** `/build/:buildId` (or `/build/new`): one editor per build, so state never leaks between builds. */
 function BuildEditorPage() {
-  const auth = useAuth();
-  const loggedInUser = useUser();
-  const editor = useBuildEditor(auth);
-  const { buildId, editable, setLikes } = editor;
+  const { buildId = 'new' } = useParams();
+  const id = buildId === 'new' ? null : buildId;
+  return <BuildEditor key={buildId} buildId={id} />;
+}
+
+/** View, create and edit a build in one page, plus likes, comments and delete. */
+function BuildEditor({ buildId }: { buildId: string | null }) {
+  const editor = useBuildEditor(buildId);
   const level = useAppSelector(selectLevel);
-  const { handleLike } = useLikeBuild({ auth, buildId, loggedInUser, setLikes });
+  const { auth, build, buildQuery, editable, isNew } = editor;
 
-  const isLoggedIn = Boolean(auth && auth.uid && loggedInUser);
-  const comments = useBuildComments({ auth, buildId, comments: editor.comments, isLoggedIn });
-
-  if (auth === null) {
-    return null;
-  }
-
-  if (editor.loading) {
-    return (
-      <LoadingContainer>
-        <LoadingAnimation size={50} />
-      </LoadingContainer>
-    );
+  if (isNew) {
+    if (auth.loading) return <PageMessage loading />;
+    if (!auth.uid) {
+      return (
+        <PageMessage title="Log in to create a build">
+          <p>Use Login or Register at the top of the page, then come back here.</p>
+        </PageMessage>
+      );
+    }
+  } else {
+    if (buildQuery.isPending) return <PageMessage loading />;
+    if (buildQuery.isError) {
+      return (
+        <PageMessage title="Couldn’t load this build">
+          <ErrorMessage onRetry={() => void buildQuery.refetch()}>
+            {errorMessage(buildQuery.error)}
+          </ErrorMessage>
+        </PageMessage>
+      );
+    }
+    if (!build) {
+      return (
+        <PageMessage title="Build not found">
+          <p>It may have been deleted, or the link is wrong.</p>
+          <Link to="/">Browse builds</Link>
+        </PageMessage>
+      );
+    }
   }
 
   return (
     <Container>
-      {editable ? null : (
-        <BuildTitle
-          buildUser={editor.buildUser}
-          canLike={Boolean(auth && loggedInUser)}
-          likes={editor.likes}
-          name={editor.name}
-          onLike={handleLike}
-        />
-      )}
+      {!editable && build ? <BuildTitle build={build} /> : null}
       <UpperSection>
         <LeftColumn vertical>
           {editable ? (
@@ -92,34 +100,48 @@ function BuildEditorPage() {
           editable={editable}
           onChange={editor.setDescription}
         />
-        {editable || editor.tags.length <= 0 ? null : <BuildTags tags={editor.tags} />}
+        {editable || editor.tags.length === 0 ? null : <BuildTags tags={editor.tags} />}
         {editable ? (
-          <SaveContainer>
-            {editor.saveLoading ? (
+          <Actions vertical>
+            <ErrorMessage>{editor.saveError}</ErrorMessage>
+            {editor.saving ? (
               <LoadingAnimation size={30} />
             ) : (
-              <Button disabled={editor.saveLoading || !isLoggedIn} onClick={editor.handleSave}>
-                Save
-              </Button>
+              <FlexGroup>
+                <Button onClick={editor.handleSave}>Save</Button>
+                <SecondaryButton onClick={editor.handleCancel}>Cancel</SecondaryButton>
+              </FlexGroup>
             )}
-          </SaveContainer>
+          </Actions>
         ) : null}
-        {!editable && editor.userOwnsBuild ? (
-          <EditContainer>
-            <Button onClick={editor.handleEdit}>Edit</Button>
-          </EditContainer>
+        {!editable && editor.isOwner ? (
+          <Actions vertical>
+            <ErrorMessage>{editor.deleteError}</ErrorMessage>
+            {editor.confirmingDelete ? (
+              <>
+                <p>Delete this build, with its likes and comments? This can’t be undone.</p>
+                {editor.deleting ? (
+                  <LoadingAnimation size={30} />
+                ) : (
+                  <FlexGroup>
+                    <Button onClick={editor.handleDelete}>Yes, delete</Button>
+                    <SecondaryButton onClick={() => editor.setConfirmingDelete(false)}>
+                      Keep it
+                    </SecondaryButton>
+                  </FlexGroup>
+                )}
+              </>
+            ) : (
+              <FlexGroup>
+                <Button onClick={editor.handleEdit}>Edit</Button>
+                <SecondaryButton onClick={() => editor.setConfirmingDelete(true)}>
+                  Delete build
+                </SecondaryButton>
+              </FlexGroup>
+            )}
+          </Actions>
         ) : null}
-        {editable ? null : (
-          <CommentsSection
-            commentText={comments.commentText}
-            commentUsers={comments.commentUsers}
-            isLoggedIn={isLoggedIn}
-            onCommentTextChange={comments.setCommentText}
-            onPost={comments.handleSaveComment}
-            saveCommentLoading={comments.saveCommentLoading}
-            sortedComments={comments.sortedComments}
-          />
-        )}
+        {!editable && build ? <CommentsSection buildId={build.id} /> : null}
       </LowerSection>
     </Container>
   );
@@ -147,12 +169,6 @@ const LowerSection = styled(FlexGroup)`
   width: 95%;
 `;
 
-const LoadingContainer = styled(FlexGroup)`
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-`;
-
 const LeftColumn = styled(FlexGroup)`
   max-width: 50%;
   width: 50%;
@@ -175,25 +191,15 @@ const RightColumn = styled(FlexGroup)`
   }
 `;
 
-const SaveContainer = styled(EditorContainer)`
-  justify-content: center;
-  margin-top: 50px;
-  margin-bottom: -10px;
+const Actions = styled(EditorContainer)`
+  align-items: center;
+  margin-top: 30px;
+  text-align: center;
   width: 100%;
-
-  & > button {
-    width: 250px;
-  }
 `;
 
-const EditContainer = styled(EditorContainer)`
-  justify-content: center;
-  margin-top: 20px;
-  width: 100%;
-
-  & > button {
-    width: 250px;
-  }
+const SecondaryButton = styled(Button)`
+  margin-left: 20px;
 `;
 
 export default BuildEditorPage;

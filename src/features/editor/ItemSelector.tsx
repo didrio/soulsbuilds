@@ -193,11 +193,20 @@ function ItemSelector() {
   };
 
   const getItem = (item: SlotItem) => (
-    <RowContainer key={item.name} onClick={handleSelectItem(item)}>
+    <RowContainer
+      key={item.name}
+      role="button"
+      tabIndex={0}
+      onClick={handleSelectItem(item)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleSelectItem(item)();
+        }
+      }}>
       <RowName>
         <ImageContainer>
-          {/* eslint-disable-next-line jsx-a11y/alt-text */}
-          <img src={`/assets/${item.imageUrl}`} />
+          <img alt="" src={`/assets/${item.imageUrl}`} />
         </ImageContainer>
         <FlexItem>{item.name}</FlexItem>
       </RowName>
@@ -209,7 +218,12 @@ function ItemSelector() {
     <Container>
       <TopBar>
         <SearchContainer>
-          <TextInput onChange={handleSearch} placeholder="Search" value={searchText} />
+          <TextInput
+            aria-label="Search items"
+            onChange={handleSearch}
+            placeholder="Search"
+            value={searchText}
+          />
         </SearchContainer>
         <CloseButton onClick={handleClose} />
       </TopBar>

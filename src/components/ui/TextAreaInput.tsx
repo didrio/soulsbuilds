@@ -1,20 +1,19 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, FONT_BODY } from '@/theme';
 
-interface TextAreaInputProps {
-  disabled?: boolean;
+type TextAreaInputProps = Omit<ComponentPropsWithoutRef<'textarea'>, 'onChange' | 'value'> & {
   onChange: (value: string, event: ChangeEvent<HTMLTextAreaElement>) => void;
   value: string;
-}
+};
 
-function TextAreaInput({ disabled = false, onChange, value }: TextAreaInputProps) {
+/** A styled textarea. Other `<textarea>` props (aria-label, maxLength…) pass through. */
+function TextAreaInput({ onChange, rows = 5, ...rest }: TextAreaInputProps) {
   const handleChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const { value: inputValue } = e.target;
-    onChange(inputValue, e);
+    onChange(e.target.value, e);
   };
 
-  return <Container disabled={disabled} onChange={handleChange} rows={5} value={value} />;
+  return <Container onChange={handleChange} rows={rows} {...rest} />;
 }
 
 const Container = styled.textarea`
@@ -32,6 +31,14 @@ const Container = styled.textarea`
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
   font-family: ${FONT_BODY};
   resize: none;
+
+  &:focus-visible {
+    border-color: ${COLOR_GOLD};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
 `;
 
 export default TextAreaInput;

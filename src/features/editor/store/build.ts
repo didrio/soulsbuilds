@@ -1,5 +1,5 @@
-// Moving a whole v1 build between Firestore and the editor state: `loadBuild` puts a saved build
-// into the slots, `selectBuildFields` reads the slots back as the fields a build document stores.
+// Moving a whole build between Firestore (model v2) and the editor state: `loadBuild` puts a saved
+// build's stats and equipment into the slots, `selectBuildFields` reads the slots back.
 import { createSelector, type ThunkAction, type UnknownAction } from '@reduxjs/toolkit';
 import type { RootState } from '@/app/store';
 import {
@@ -12,7 +12,7 @@ import {
   getWeapon,
 } from '@/data';
 import { calculateLevel } from '@/lib/buildMath';
-import type { BuildDoc } from '@/lib/models';
+import type { BuildContent } from '@/lib/models';
 import {
   ARROW_SLOTS,
   CONSUMABLE_SLOTS,
@@ -53,26 +53,13 @@ import {
   selectWeaponSkills,
 } from './selectors';
 import { clearSpells, updateSpell } from './spells';
-import {
-  clearStats,
-  updateArc,
-  updateDex,
-  updateEnd,
-  updateFai,
-  updateInt,
-  updateMind,
-  updateStr,
-  updateVigor,
-} from './stats';
+import { clearStats, setStats } from './stats';
 import { clearTears, updateTear } from './tears';
 
 type AppThunk = ThunkAction<void, RootState, unknown, UnknownAction>;
 
 /** The build fields that live in the editor's Redux state. */
-export type BuildFields = Omit<
-  BuildDoc,
-  'user' | 'name' | 'description' | 'tags' | 'likes' | 'comments'
->;
+export type BuildFields = Pick<BuildContent, 'level' | 'stats' | 'equipment'>;
 
 /** Empties the editor: no items, all stats 10, picker closed. */
 export const clearEditor = (): AppThunk => (dispatch) => {
@@ -86,21 +73,22 @@ export const clearEditor = (): AppThunk => (dispatch) => {
 /**
  * Puts a saved build into the editor slots, looking each item up by name. Names that aren't in the
  * game data leave the slot empty (and are dropped on the next save; T7 moves to IDs). Saved arrays
- * fill slots in order; entries beyond the last slot are ignored.
+ * fill slots in order; entries beyond the last slot are ignored. Starts from an empty editor.
  */
 export const loadBuild =
-  (build: BuildFields): AppThunk =>
+  ({ stats, equipment }: Pick<BuildFields, 'stats' | 'equipment'>): AppThunk =>
   (dispatch) => {
+    dispatch(clearEditor());
     const {
-      arrows = [],
-      cons = [],
-      tals = [],
-      spells = [],
-      tears = [],
-      weapons = [],
-      weaponAffinities = [],
-      weaponSkills = [],
-    } = build;
+      arrows,
+      consumables: cons,
+      talismans: tals,
+      spells,
+      tears,
+      weapons,
+      weaponAffinities,
+      weaponSkills,
+    } = equipment;
     ARROW_SLOTS.forEach((id, i) => {
       if (i < arrows.length) dispatch(updateArrow({ id, item: getArrow(arrows[i]) ?? null }));
     });
@@ -127,25 +115,17 @@ export const loadBuild =
       if (i < weaponSkills.length)
         dispatch(updateWeaponSkill({ id, item: weaponSkills[i] ?? null }));
     });
-    dispatch(updateHelm(getArmor('helms', build.helm) ?? null));
-    dispatch(updateLeg(getArmor('legs', build.leg) ?? null));
-    dispatch(updateChest(getArmor('chests', build.chest) ?? null));
-    dispatch(updateGauntlet(getArmor('gauntlets', build.gauntlet) ?? null));
-    // v1 stats are numbers or numeric strings (unvalidated: a missing one gives level NaN, as in 2022).
-    dispatch(updateArc(build.arc));
-    dispatch(updateDex(build.dex));
-    dispatch(updateEnd(build.end));
-    dispatch(updateFai(build.fai));
-    dispatch(updateInt(build.int));
-    dispatch(updateMind(build.mind));
-    dispatch(updateStr(build.str));
-    dispatch(updateVigor(build.vigor));
+    dispatch(updateHelm(getArmor('helms', equipment.helm) ?? null));
+    dispatch(updateLeg(getArmor('legs', equipment.leg) ?? null));
+    dispatch(updateChest(getArmor('chests', equipment.chest) ?? null));
+    dispatch(updateGauntlet(getArmor('gauntlets', equipment.gauntlet) ?? null));
+    dispatch(setStats(stats));
   };
 
-/** Character level as v1 stores it (a string). */
-export const selectLevel = createSelector(selectStats, (stats) => String(calculateLevel(stats)));
+/** Character level from the stats. */
+export const selectLevel = createSelector(selectStats, (stats) => calculateLevel(stats));
 
-/** The editor state as build document fields (what `handleSave` writes). */
+/** The editor state as build fields (what saving writes, with name/description/tags). */
 export const selectBuildFields = createSelector(
   [
     selectStats,
@@ -180,18 +160,20 @@ export const selectBuildFields = createSelector(
     gauntlet,
   ): BuildFields => ({
     level,
-    arrows,
-    cons,
-    tals,
-    weapons,
-    weaponAffinities,
-    weaponSkills,
-    spells,
-    tears,
-    ...stats,
-    helm: helm?.name ?? null,
-    leg: leg?.name ?? null,
-    chest: chest?.name ?? null,
-    gauntlet: gauntlet?.name ?? null,
+    stats,
+    equipment: {
+      weapons,
+      weaponAffinities,
+      weaponSkills,
+      arrows,
+      talismans: tals,
+      spells,
+      tears,
+      consumables: cons,
+      helm: helm?.name ?? null,
+      chest: chest?.name ?? null,
+      gauntlet: gauntlet?.name ?? null,
+      leg: leg?.name ?? null,
+    },
   }),
 );

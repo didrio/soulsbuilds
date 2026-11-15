@@ -21,12 +21,15 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:rules": "node scripts/firebase.mjs --config firebase.test.json emulators:exec --project demo-soulsbuilds-test --only firestore \"vitest run --config vitest.emulator.config.ts\"",
+    "e2e": "node scripts/e2e.mjs",
     "screenshot": "node scripts/screenshot.mjs",
     "doctor": "node scripts/doctor.mjs",
     "deploy": "npm run check && node scripts/firebase.mjs deploy --project soulsbuilds --only hosting"
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.14.0",
+    "@tanstack/react-query": "^5.107.1",
     "@uiw/react-md-editor": "^4.2.3",
     "firebase": "^12.19.0",
     "nanoid": "^5.1.16",
@@ -46,6 +49,8 @@
   "devDependencies": {
     "@babel/core": "^7.29.13",
     "@eslint/js": "^9.39.5",
+    "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.65.1",
     "@rolldown/plugin-babel": "^0.3.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",

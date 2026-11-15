@@ -21,23 +21,49 @@ public by design; security rules protect the data.
   **4005** (http://127.0.0.1:4005), hub 4405, logging 4505. Vite: **5180**.
 - **Java 21+** is required by firebase-tools. `scripts/firebase.mjs` finds one (JAVA_HOME, PATH, macOS
   `java_home`, Homebrew `openjdk` kegs) and puts it on PATH for the CLI. `npm run doctor` shows which.
-- Seed accounts and builds: `scripts/seed.mjs` (two users, four builds; it validates every item name).
+- Seed accounts and builds: `scripts/seed.mjs` (two users, four builds, a like and a comment, in data model
+  v2; it validates every item name). It wipes the emulator's Firestore first, so `npm run seed` resets data.
+- `npm run test:rules` runs `tests/rules/` (rules + the real data-layer functions as different users) and
+  `tests/migration/` against a **separate** Firestore emulator (`firebase.test.json`: port 8185, project
+  `demo-soulsbuilds-test`), so it works while `npm run dev` is running.
+- `npm run e2e` runs the Playwright tests in `tests/e2e/`. It reuses running emulators and Vite (`npm run dev`)
+  or starts and seeds them itself. CI runs both (`emulator-tests` job, Java 21 via `actions/setup-java`).
 
 ## Security rules
 
 - **Production** still has the 2022 test-mode rules, which expired on 2022-05-17: every read and write is
   denied, so the live site shows no data. That's the safe state until relaunch.
-- **`firestore.rules` in the repo is INTERIM and local-only** (T1): owner-based writes for the v1 model, but any
-  signed-in user can change `likes`/`comments` on any build. **Never deploy it.** T3 writes the real rules
-  with tests; T12 deploys them, with the owner.
-- `firestore.indexes.json` is empty (v1 has no queries). T3 adds indexes.
+- **`firestore.rules` is the real v2 ruleset** (T3; model in `docs/architecture.md`), tested by
+  `npm run test:rules`. The emulators load it. It is **not deployed yet**: production still holds v1 data, so
+  deploying rules, indexes and running the migration happen together in T12, with the owner.
+- `firestore.indexes.json` has the composite indexes the queries need (builds by game + likes/date, by tag, by
+  owner; likes by user). Production builds its indexes when T12 deploys them.
+
+## Migrating production (T12, owner-approved)
+
+`scripts/migrate-v1-to-v2.mjs` converts v1 documents (2022) to v2. It is dry-run by default, idempotent (v2 docs
+are skipped; each build's likes and comments are written before the build doc), and uses Application Default
+Credentials, never a key.
+
+```bash
+node scripts/migrate-v1-to-v2.mjs                           # dry run against the local emulator
+node scripts/migrate-v1-to-v2.mjs --project soulsbuilds     # dry run against production (read-only)
+node scripts/migrate-v1-to-v2.mjs --project soulsbuilds --write   # apply (after rules/indexes deploy)
+```
+
+What it changes: builds get `ownerId`, `game`, numeric stats (clamped 1–99, recomputed level), an `equipment`
+map, timestamps from the docs' own create/update times; `comments[]` → comments subcollection;
+users' `likedBuilds[]` → likes subcollection, with `likeCount`/`commentCount` counted from what was written.
+Users become `{ displayName, createdAt }`: **emails are dropped from Firestore** (they stay in Firebase Auth)
+and v1 `admin: true` flags are reported (set a custom claim instead if still wanted). The report lists every
+renamed, clamped or dropped value.
 
 ## Deploys (owner-approved only)
 
 - `npm run deploy` = `npm run check` then `firebase deploy --project soulsbuilds --only hosting`. It needs
   `npx firebase login` (the owner) and always asks first (`.claude/settings.json`). Hosting serves `dist/` with
   an SPA rewrite to `index.html`.
-- Never `firebase deploy` without `--only`, and never deploy rules before T3 lands.
+- Never `firebase deploy` without `--only`. Rules, indexes and the migration go out together (T12).
 - T12 replaces manual deploys with GitHub Actions (preview channels per PR, approved production deploys,
   Workload Identity Federation instead of keys).
 

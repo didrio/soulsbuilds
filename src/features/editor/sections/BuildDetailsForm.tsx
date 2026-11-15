@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import Chips from '@/components/ui/Chips';
 import FlexGroup from '@/components/ui/FlexGroup';
 import TextInput from '@/components/ui/TextInput';
+import { LIMITS } from '@/lib/models';
 import { BELOW_1100, BELOW_1400 } from '@/theme';
 import { EditorContainer, SectionHeader } from '../styles';
 
@@ -24,9 +25,17 @@ function BuildDetailsForm({
   return (
     <>
       <HeaderContainer vertical>
-        <SectionHeader>Build Name</SectionHeader>
+        <SectionHeader as="label" htmlFor="build-name">
+          Build Name
+        </SectionHeader>
         <NameInputContainer>
-          <TextInput onChange={onNameChange} value={name} />
+          <TextInput
+            id="build-name"
+            maxLength={LIMITS.buildName}
+            onChange={onNameChange}
+            required
+            value={name}
+          />
         </NameInputContainer>
       </HeaderContainer>
       <TagContainer vertical>

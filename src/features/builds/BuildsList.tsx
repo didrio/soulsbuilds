@@ -1,9 +1,15 @@
+import { Link } from 'react-router';
 import styled from 'styled-components';
-import { useNavigate } from 'react-router';
 import FlexGroup from '@/components/ui/FlexGroup';
 import Tag from '@/components/ui/Tag';
 import Slot from '@/features/editor/Slot';
-import { SLOT_TYPE_WEAPON } from '@/features/editor/slots';
+import {
+  SLOT_TYPE_CHEST,
+  SLOT_TYPE_GAUNTLET,
+  SLOT_TYPE_HELM,
+  SLOT_TYPE_LEG,
+  SLOT_TYPE_WEAPON,
+} from '@/features/editor/slots';
 import { getArmor, getWeapon } from '@/data';
 import type { Build } from '@/lib/models';
 import {
@@ -12,144 +18,137 @@ import {
   COLOR_GOLD,
   COLOR_LIGHTEST_GREEN,
   FONT_DISPLAY,
+  BELOW_800,
 } from '@/theme';
 
-/** Build cards: likes, name, level, two weapons per hand, armor and tags. Click opens the build. */
-function BuildsList({ builds = [] }: { builds?: Build[] }) {
-  const navigate = useNavigate();
+// The card previews the first two slots of each hand: weapon slots 1, 2 (main) and 4, 5 (off hand).
+const PREVIEW_WEAPONS = [
+  { index: 0, background: 'weapon' },
+  { index: 1, background: 'weapon' },
+  { index: 3, background: 'shield' },
+  { index: 4, background: 'shield' },
+] as const;
 
-  const handleSelectBuild = (id: string) => () => {
-    navigate(`/build/${id}`);
-  };
+const ARMOR = [
+  { slot: 'helm', group: 'helms', type: SLOT_TYPE_HELM },
+  { slot: 'chest', group: 'chests', type: SLOT_TYPE_CHEST },
+  { slot: 'gauntlet', group: 'gauntlets', type: SLOT_TYPE_GAUNTLET },
+  { slot: 'leg', group: 'legs', type: SLOT_TYPE_LEG },
+] as const;
 
-  // The armor slots pass SLOT_TYPE_WEAPON and the key is the name, not the id (T5).
+const likesText = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
+
+/** Build cards (links to the build): likes, name, level, two weapons per hand, armor and tags. */
+function BuildsList({ builds }: { builds: Build[] }) {
   return (
-    <Container vertical>
-      {builds
-        .filter(({ name }) => name)
-        .map((build) => (
-          <Build key={build.name} onClick={handleSelectBuild(build.id)} vertical>
-            <UpperSection>
-              <LikesContainer>
-                {`${build.likes} ${build.likes === 1 ? 'Like' : 'Likes'}`}
-              </LikesContainer>
-              <NameContainer>{build.name}</NameContainer>
-              <LevelContainer>{`Level ${build.level}`}</LevelContainer>
-            </UpperSection>
-            <LowerSection>
-              <EquipmentContainer>
-                <Slot
-                  affinity={build?.weaponAffinities?.[0] || null}
-                  background="weapon"
-                  disabled
-                  item={getWeapon(build?.weapons?.[0]) || null}
-                  subItem={build?.weaponSkills?.[0] || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-                <Slot
-                  affinity={build?.weaponAffinities?.[1] || null}
-                  background="weapon"
-                  disabled
-                  item={getWeapon(build?.weapons?.[1]) || null}
-                  subItem={build?.weaponSkills?.[1] || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-                <Slot
-                  affinity={build?.weaponAffinities?.[3] || null}
-                  background="shield"
-                  disabled
-                  item={getWeapon(build?.weapons?.[3]) || null}
-                  subItem={build?.weaponSkills?.[3] || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-                <Slot
-                  affinity={build?.weaponAffinities?.[4] || null}
-                  background="shield"
-                  disabled
-                  item={getWeapon(build?.weapons?.[4]) || null}
-                  subItem={build?.weaponSkills?.[4] || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-              </EquipmentContainer>
-              <GearContainer>
-                <Slot
-                  background="helm"
-                  disabled
-                  item={getArmor('helms', build?.helm) || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-                <Slot
-                  background="chest"
-                  disabled
-                  item={getArmor('chests', build?.chest) || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-                <Slot
-                  background="gauntlet"
-                  disabled
-                  item={getArmor('gauntlets', build?.gauntlet) || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-                <Slot
-                  background="leg"
-                  disabled
-                  item={getArmor('legs', build?.leg) || null}
-                  type={SLOT_TYPE_WEAPON}
-                />
-              </GearContainer>
-            </LowerSection>
-            {build.tags.length ? (
-              <TagsSection>
-                {build.tags.map((tag) => (
-                  <Tag key={tag}>{tag}</Tag>
-                ))}
-              </TagsSection>
-            ) : null}
-          </Build>
-        ))}
-    </Container>
+    <List>
+      {builds.map((build) => {
+        const { equipment } = build;
+        return (
+          <li key={build.id}>
+            <Card to={`/build/${build.id}`}>
+              <UpperSection>
+                <Likes>{likesText(build.likeCount)}</Likes>
+                <Name>{build.name}</Name>
+                <Level>{`Level ${build.level}`}</Level>
+              </UpperSection>
+              <LowerSection>
+                <EquipmentContainer>
+                  {PREVIEW_WEAPONS.map(({ index, background }) => (
+                    <Slot
+                      key={index}
+                      affinity={equipment.weaponAffinities[index] ?? null}
+                      background={background}
+                      disabled
+                      item={getWeapon(equipment.weapons[index]) ?? null}
+                      subItem={equipment.weaponSkills[index] ?? null}
+                      type={SLOT_TYPE_WEAPON}
+                    />
+                  ))}
+                </EquipmentContainer>
+                <GearContainer>
+                  {ARMOR.map(({ slot, group, type }) => (
+                    <Slot
+                      key={slot}
+                      background={slot}
+                      disabled
+                      item={getArmor(group, equipment[slot]) ?? null}
+                      type={type}
+                    />
+                  ))}
+                </GearContainer>
+              </LowerSection>
+              {build.tags.length ? (
+                <TagsSection>
+                  {build.tags.map((tag) => (
+                    <Tag key={tag}>{tag}</Tag>
+                  ))}
+                </TagsSection>
+              ) : null}
+            </Card>
+          </li>
+        );
+      })}
+    </List>
   );
 }
 
-const Container = styled(FlexGroup)`
+const List = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
   width: 100%;
 `;
 
-const Build = styled(FlexGroup)`
+const Card = styled(Link)`
   background-color: ${COLOR_GREEN};
-  width: 100%;
-  cursor: pointer;
-  padding: 0 10px;
-  border-radius: 4px;
-  font-weight: bold;
-  font-size: 18px;
-  margin-bottom: 25px;
-  transition: background-color 0.1s ease-in-out;
   border: 1px solid ${COLOR_LIGHT_GREEN};
+  border-radius: 4px;
+  color: ${COLOR_GOLD};
+  display: flex;
+  flex-direction: column;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 25px;
+  padding: 0 10px;
+  transition: background-color 0.1s ease-in-out;
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_GOLD};
   }
 `;
 
 const LowerSection = styled(FlexGroup)`
   align-items: center;
   justify-content: center;
-  height: 80px;
+  flex-wrap: wrap;
+  gap: 10px 0;
   margin: 10px 0;
 `;
 
 const EquipmentContainer = styled(FlexGroup)`
   border-right: 1px solid ${COLOR_LIGHT_GREEN};
+  gap: 20px;
+  padding-right: 20px;
 
-  & > div {
-    margin-right: 20px;
+  @media ${BELOW_800} {
+    border-right: none;
+    gap: 8px;
+    padding-right: 0;
   }
 `;
 
 const GearContainer = styled(FlexGroup)`
-  & > div {
-    margin-left: 20px;
+  gap: 20px;
+  padding-left: 20px;
+
+  @media ${BELOW_800} {
+    gap: 8px;
+    padding-left: 0;
   }
 `;
 
@@ -158,34 +157,34 @@ const UpperSection = styled(FlexGroup)`
   justify-content: space-between;
   padding: 10px 0px;
   width: 100%;
-  font-size: 18px;
-  font-weight: bold;
   border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
 `;
 
-const LevelContainer = styled(FlexGroup)`
+const Level = styled.span`
+  text-align: right;
   width: 25%;
-  justify-content: flex-end;
 `;
 
-const LikesContainer = styled(FlexGroup)`
+const Likes = styled.span`
   width: 25%;
-  justify-content: flex-start;
 `;
 
-const NameContainer = styled(FlexGroup)`
-  width: 50%;
-  justify-content: center;
-  font-size: 20px;
-  font-family: ${FONT_DISPLAY};
-  text-shadow: 0px 0px 3px ${COLOR_GOLD};
+const Name = styled.span`
   color: ${COLOR_LIGHTEST_GREEN};
+  font-family: ${FONT_DISPLAY};
+  font-size: 20px;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-shadow: 0px 0px 3px ${COLOR_GOLD};
+  width: 50%;
 `;
 
 const TagsSection = styled(FlexGroup)`
+  border-top: 1px solid ${COLOR_LIGHT_GREEN};
+  flex-wrap: wrap;
+  gap: 8px 0;
   justify-content: center;
   padding: 10px 0;
-  border-top: 1px solid ${COLOR_LIGHT_GREEN};
 `;
 
 export default BuildsList;

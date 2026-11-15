@@ -1,81 +1,168 @@
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router';
+import { useState, type FormEvent } from 'react';
+import { Link, useParams } from 'react-router';
 import styled from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
 import Button from '@/components/ui/Button';
-import BuildsList from '@/features/builds/BuildsList';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import FlexGroup from '@/components/ui/FlexGroup';
+import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import PageMessage from '@/components/ui/PageMessage';
+import TextInput from '@/components/ui/TextInput';
 import useAuth from '@/features/auth/useAuth';
-import { getBuild, getUser } from '@/lib/firebase';
-import type { Build, User } from '@/lib/models';
-import { COLOR_LIGHTEST_GREEN } from '@/theme';
+import BuildsList from '@/features/builds/BuildsList';
+import { useUserBuilds } from '@/features/builds/queries';
+import { errorMessage } from '@/lib/firebase';
+import { LIMITS, type UserProfile } from '@/lib/models';
+import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '@/theme';
+import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
 
-/** `/user/:userId`: display name, the user's builds, and "Create New Build" for the owner. */
+type Tab = 'builds' | 'liked';
+
+/** `/user/:userId`: display name (editable by its owner), and tabs for their builds and likes. */
 function Profile() {
-  const params = useParams();
-  const navigate = useNavigate();
-  const auth = useAuth();
+  const { userId = '' } = useParams();
+  const { uid } = useAuth();
+  const profile = useUserProfile(userId);
+  const [tab, setTab] = useState<Tab>('builds');
+  const isOwner = uid === userId;
 
-  const [userId, setUserId] = useState<string | null>(null);
-  const [user, setUser] = useState<User | false | null>(null);
-  const [builds, setBuilds] = useState<Build[]>([]);
-
-  useEffect(() => {
-    const paramUserId = params?.userId ?? null;
-    if (!paramUserId) {
-      navigate('/');
-    }
-    setUserId(paramUserId);
-  }, [params, navigate]);
-
-  useEffect(() => {
-    if (userId) {
-      const run = async () => {
-        const result = await getUser(userId);
-        setUser(result);
-      };
-      run();
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    if (user && Array.isArray(user.builds) && user.builds.length > 0) {
-      const ids = user.builds;
-      const run = async () => {
-        const result = await Promise.all(ids.map((buildId) => getBuild(buildId)));
-        setBuilds(result);
-      };
-      run();
-    }
-  }, [user]);
-
-  const handleNavigateNewBuild = () => {
-    navigate('/build/new');
-  };
-
-  const isCurrentUser = userId && auth && auth.uid === userId;
+  if (profile.isPending) return <PageMessage loading />;
+  if (profile.isError) {
+    return (
+      <PageMessage title="Couldn’t load this profile">
+        <ErrorMessage onRetry={() => void profile.refetch()}>
+          {errorMessage(profile.error)}
+        </ErrorMessage>
+      </PageMessage>
+    );
+  }
+  if (!profile.data) {
+    return (
+      <PageMessage title="User not found">
+        <Link to="/">Browse builds</Link>
+      </PageMessage>
+    );
+  }
 
   return (
     <Container vertical>
-      <HeaderContainer vertical>
-        <Header>{(user && user.name) || ''}</Header>
-      </HeaderContainer>
-      {builds.length > 0 ? (
-        <BuildListContainer vertical>
-          <SubHeader>Builds</SubHeader>
-          <BuildsListContainer>
-            <BuildsList builds={builds} />
-          </BuildsListContainer>
-        </BuildListContainer>
-      ) : (
-        <SubHeader>This user has no builds</SubHeader>
-      )}
-      {isCurrentUser ? (
-        <NewBuildContainer>
-          <Button onClick={handleNavigateNewBuild}>+ Create New Build</Button>
-        </NewBuildContainer>
-      ) : null}
+      <ProfileHeader profile={profile.data} editable={isOwner} />
+      <Tabs role="tablist" aria-label="Profile">
+        {(['builds', 'liked'] as Tab[]).map((value) => (
+          <TabButton
+            key={value}
+            type="button"
+            role="tab"
+            id={`tab-${value}`}
+            aria-selected={tab === value}
+            aria-controls={`panel-${value}`}
+            $active={tab === value}
+            onClick={() => setTab(value)}>
+            {value === 'builds' ? 'Builds' : 'Liked'}
+          </TabButton>
+        ))}
+      </Tabs>
+      <Panel role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+        {tab === 'builds' ? <OwnBuilds userId={userId} isOwner={isOwner} /> : null}
+        {tab === 'liked' ? <LikedBuilds userId={userId} isOwner={isOwner} /> : null}
+      </Panel>
     </Container>
   );
+}
+
+function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: boolean }) {
+  const rename = useUpdateDisplayName(profile.id);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(profile.displayName);
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    if (!name.trim()) return;
+    rename.mutate(name, { onSuccess: () => setEditing(false) });
+  };
+
+  if (editing) {
+    return (
+      <RenameForm onSubmit={handleSubmit} aria-label="Change display name">
+        <NameInput>
+          <TextInput
+            aria-label="Display name"
+            maxLength={LIMITS.displayName}
+            onChange={setName}
+            required
+            value={name}
+          />
+        </NameInput>
+        <FlexGroup>
+          <Button type="submit" disabled={!name.trim() || rename.isPending}>
+            Save
+          </Button>
+          <Spaced
+            onClick={() => {
+              setName(profile.displayName);
+              setEditing(false);
+            }}>
+            Cancel
+          </Spaced>
+        </FlexGroup>
+        <ErrorMessage>{rename.error ? errorMessage(rename.error) : ''}</ErrorMessage>
+      </RenameForm>
+    );
+  }
+
+  return (
+    <HeaderContainer>
+      <Header>{profile.displayName}</Header>
+      {editable ? (
+        <TextButton type="button" onClick={() => setEditing(true)}>
+          Change name
+        </TextButton>
+      ) : null}
+    </HeaderContainer>
+  );
+}
+
+function OwnBuilds({ userId, isOwner }: { userId: string; isOwner: boolean }) {
+  const builds = useUserBuilds(userId);
+  return (
+    <>
+      {isOwner ? (
+        <NewBuildContainer>
+          <NewBuildLink to="/build/new">+ Create New Build</NewBuildLink>
+        </NewBuildContainer>
+      ) : null}
+      <BuildListState
+        query={builds}
+        empty={isOwner ? 'You haven’t made any builds yet.' : 'This user has no builds yet.'}
+      />
+    </>
+  );
+}
+
+function LikedBuilds({ userId, isOwner }: { userId: string; isOwner: boolean }) {
+  const builds = useLikedBuilds(userId);
+  return (
+    <BuildListState
+      query={builds}
+      empty={isOwner ? 'You haven’t liked any builds yet.' : 'No liked builds yet.'}
+    />
+  );
+}
+
+function BuildListState({
+  query,
+  empty,
+}: {
+  query: ReturnType<typeof useUserBuilds>;
+  empty: string;
+}) {
+  if (query.isPending) return <LoadingAnimation size={40} />;
+  if (query.isError) {
+    return (
+      <ErrorMessage onRetry={() => void query.refetch()}>{errorMessage(query.error)}</ErrorMessage>
+    );
+  }
+  if (query.data.length === 0) return <Empty>{empty}</Empty>;
+  return <BuildsList builds={query.data} />;
 }
 
 const Container = styled(FlexGroup)`
@@ -83,37 +170,87 @@ const Container = styled(FlexGroup)`
   width: 100%;
 `;
 
-const BuildListContainer = styled(FlexGroup)`
+const HeaderContainer = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+`;
+
+const Header = styled.h1`
+  color: ${COLOR_LIGHTEST_GREEN};
+  font-size: 26px;
+  margin: 0 0 6px;
+  overflow-wrap: anywhere;
+  text-align: center;
+`;
+
+const TextButton = styled.button`
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+`;
+
+const RenameForm = styled.form`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+`;
+
+const NameInput = styled.div`
+  width: 260px;
+`;
+
+const Spaced = styled(Button)`
+  margin-left: 20px;
+`;
+
+const Tabs = styled.div`
+  display: flex;
+  margin-bottom: 20px;
+`;
+
+const TabButton = styled.button<{ $active: boolean }>`
+  background-color: ${({ $active }) => ($active ? COLOR_LIGHT_GREEN : COLOR_GREEN)};
+  border: 1px solid ${COLOR_LIGHT_GREEN};
+  color: ${COLOR_GOLD};
+  cursor: pointer;
+  font: inherit;
+  font-size: 18px;
+  padding: 8px 20px;
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_GOLD};
+  }
+`;
+
+const Panel = styled.div`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
   width: 95%;
 `;
 
-const HeaderContainer = styled(FlexGroup)`
-  align-items: center;
-`;
-
-const Header = styled.h2`
-  color: ${COLOR_LIGHTEST_GREEN};
-  margin-bottom: 20px;
-  font-size: 26px;
-`;
-
-const SubHeader = styled(FlexGroup)`
+const Empty = styled.p`
   font-size: 20px;
-  margin-bottom: 20px;
-`;
-
-const BuildsListContainer = styled(FlexGroup)`
-  width: 100%;
 `;
 
 const NewBuildContainer = styled(FlexGroup)`
-  margin-top: 20px;
   justify-content: center;
+  margin-bottom: 20px;
   width: 100%;
+`;
 
-  & > button {
-    width: 250px;
-  }
+const NewBuildLink = styled(Link)`
+  color: ${COLOR_LIGHTEST_GREEN};
+  font-size: 20px;
+  font-weight: bold;
 `;
 
 export default Profile;

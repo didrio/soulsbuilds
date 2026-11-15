@@ -35,9 +35,6 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...jsxA11y.flatConfigs.recommended.rules,
-      // The 2022 data-loading effects set state synchronously. T4 replaces them with TanStack Query;
-      // make this an error again when T4 lands.
-      'react-hooks/set-state-in-effect': 'warn',
     },
   },
   {
@@ -54,6 +51,25 @@ export default tseslint.config(
         {
           selector: 'TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}\\b/]',
           message: 'No hex colors outside src/theme: import a COLOR_* token from @/theme.',
+        },
+      ],
+    },
+  },
+  {
+    // All Firebase access goes through src/lib/firebase (AGENTS.md conventions).
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/lib/firebase/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['firebase/*', '@firebase/*'],
+              message: 'Use the functions in @/lib/firebase instead of the Firebase SDK.',
+              allowTypeImports: true,
+            },
+          ],
         },
       ],
     },

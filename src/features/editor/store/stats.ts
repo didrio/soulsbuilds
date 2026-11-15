@@ -1,61 +1,33 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Stats, StatValue } from '@/lib/buildMath';
+import { clampStat, DEFAULT_STAT, STAT_KEYS, type StatKey, type Stats } from '@/lib/buildMath';
 
 export type StatsState = Stats;
 
 const initialState: StatsState = {
-  arc: 10,
-  dex: 10,
-  end: 10,
-  fai: 10,
-  int: 10,
-  mind: 10,
-  str: 10,
-  vigor: 10,
+  arc: DEFAULT_STAT,
+  dex: DEFAULT_STAT,
+  end: DEFAULT_STAT,
+  fai: DEFAULT_STAT,
+  int: DEFAULT_STAT,
+  mind: DEFAULT_STAT,
+  str: DEFAULT_STAT,
+  vigor: DEFAULT_STAT,
 };
 
+/** Stats are always whole numbers from 1 to 99: every update is clamped into range. */
 const stats = createSlice({
   name: 'stats',
   initialState,
   reducers: {
-    updateArc: (state, action: PayloadAction<StatValue>) => {
-      state.arc = action.payload;
+    updateStat: (state, action: PayloadAction<{ key: StatKey; value: number }>) => {
+      state[action.payload.key] = clampStat(action.payload.value);
     },
-    updateDex: (state, action: PayloadAction<StatValue>) => {
-      state.dex = action.payload;
-    },
-    updateEnd: (state, action: PayloadAction<StatValue>) => {
-      state.end = action.payload;
-    },
-    updateFai: (state, action: PayloadAction<StatValue>) => {
-      state.fai = action.payload;
-    },
-    updateInt: (state, action: PayloadAction<StatValue>) => {
-      state.int = action.payload;
-    },
-    updateMind: (state, action: PayloadAction<StatValue>) => {
-      state.mind = action.payload;
-    },
-    updateStr: (state, action: PayloadAction<StatValue>) => {
-      state.str = action.payload;
-    },
-    updateVigor: (state, action: PayloadAction<StatValue>) => {
-      state.vigor = action.payload;
-    },
+    setStats: (_state, action: PayloadAction<Stats>) =>
+      Object.fromEntries(STAT_KEYS.map((key) => [key, clampStat(action.payload[key])])) as Stats,
     clearStats: () => initialState,
   },
 });
 
-export const {
-  clearStats,
-  updateArc,
-  updateDex,
-  updateEnd,
-  updateFai,
-  updateInt,
-  updateMind,
-  updateStr,
-  updateVigor,
-} = stats.actions;
+export const { clearStats, setStats, updateStat } = stats.actions;
 
 export default stats.reducer;

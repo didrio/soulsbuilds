@@ -1,52 +1,18 @@
-import type { ReactNode } from 'react';
+import type { ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
 
-const noop = () => {};
-
-export interface FlexGroupProps {
+export type FlexGroupProps = ComponentPropsWithoutRef<'div'> & {
   basis?: string;
-  children?: ReactNode;
-  className?: string;
-  onClick?: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
   /** Column instead of row. */
   vertical?: boolean;
-}
+};
 
-/** A flex `<div>` (row, or column with `vertical`). The 2022 layout is built from these. */
-function FlexGroup({
-  basis = '1',
-  children,
-  className = '',
-  onClick = noop,
-  onMouseEnter = noop,
-  onMouseLeave = noop,
-  vertical = false,
-}: FlexGroupProps) {
-  const handleClick = () => {
-    onClick();
-  };
-
-  const handleMouseEnter = () => {
-    onMouseEnter();
-  };
-
-  const handleMouseLeave = () => {
-    onMouseLeave();
-  };
-
-  return (
-    <Container
-      $basis={basis}
-      $vertical={vertical}
-      className={className}
-      onClick={handleClick}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}>
-      {children}
-    </Container>
-  );
+/**
+ * A flex `<div>` (row, or column with `vertical`). The 2022 layout is built from these. Other div
+ * props (role, aria-*, tabIndex, handlers…) pass through.
+ */
+function FlexGroup({ basis = '1', vertical = false, ...rest }: FlexGroupProps) {
+  return <Container $basis={basis} $vertical={vertical} {...rest} />;
 }
 
 const Container = styled.div<{ $basis: string; $vertical: boolean }>`

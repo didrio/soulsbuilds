@@ -1,81 +1,105 @@
 # Architecture
 
 Read this before changing routes, the editor, state or Firestore access. It describes the app **as it is now**
-(T2: the 2022 behaviour, now strict TypeScript in feature folders). T3 (data model v2) and T4 (TanStack Query,
-one AuthProvider) change it substantially; update this file with them.
+(data model v2 from T3, TanStack Query and one `AuthProvider` from T4).
 
 ## Pages and routes
 
-`src/app/routes.tsx` defines three routes, with no 404 yet (T6):
+`src/app/routes.tsx` defines the routes:
 
-| Route             | Component         | What it does                                                                              |
-| ----------------- | ----------------- | ----------------------------------------------------------------------------------------- |
-| `/`               | `Landing`         | Fetches **every** build, filters by tags and level range client-side, sorts by likes      |
-| `/build/:buildId` | `BuildEditorPage` | View, create (`/build/new`) and edit in one component, plus likes and comments            |
-| `/user/:userId`   | `Profile`         | Display name, the user's builds (one `getBuild` per id), "Create New Build" for the owner |
+| Route             | Component         | What it does                                                                                              |
+| ----------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `/`               | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL |
+| `/build/:buildId` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments                     |
+| `/user/:userId`   | `Profile`         | Display name (the owner can rename), tabs for the user's builds and the builds they liked                 |
+| `*`               | `NotFound`        | 404 page                                                                                                  |
 
-Login and Register are not routes: a slide-down panel in `src/app/App.tsx`, opened from `Header`. `GameSelector` is a
-cosmetic bar ("Coming soon!" for other games). The item picker (`ItemSelector`) is a modal that opens whenever
-Redux `app.slotType` is set.
+Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
+Login and Register are not routes: a slide-down panel in `src/app/App.tsx`, opened from `Header`.
+`GameSelector` is a cosmetic bar ("Coming soon!" for other games). The item picker (`ItemSelector`) is a modal
+that opens whenever Redux `app.slotType` is set.
 
 ## State and data flow
 
-- **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited: `app` (which slot the picker edits), `equipment`
-  (weapon1–6, weaponSkill1–6, weaponAffinity1–6, arrow1–4, tal1–4, con1–10, helm/chest/gauntlet/leg),
-  `spells` (spell1–10), `stats` (8 stats, default 10), `tears` (tear1–2). Slot ids are literal types in
-  `features/editor/slots.ts`. `selectors.ts` maps that state to the arrays that get saved.
-- **Everything else** (builds list, users, comments, likes) is component `useState`, loaded through functions
-  in `src/lib/firebase.ts`, typed by `src/lib/models.ts`. Auth is per component: `useAuth` (an `onAuthStateChanged` listener) and `useUser`
-  (fetches the signed-in user's doc), each registered separately wherever used. T4 replaces this with TanStack
-  Query and one `AuthProvider`.
+- **Server data** (builds, profiles, likes, comments) goes through **TanStack Query** hooks in
+  `src/features/<feature>/queries.ts` (`useBuild`, `useBuilds`, `useUserBuilds`, `useUserProfile(s)`,
+  `useLikedBuilds`, `useHasLiked`/`useToggleLike`, `useComments`/`useAddComment`/`useDeleteComment`,
+  `useSaveBuild`, `useDeleteBuild`), which call the functions in `src/lib/firebase/`. Keys are in
+  `src/lib/queryKeys.ts`; invalidating `['builds']` refreshes every list and detail. Likes and comment deletes
+  are optimistic and roll back on error. Never copy server data into Redux.
+- **The signed-in user**: `AuthProvider` (`src/features/auth/`) listens to Firebase Auth once; components call
+  `useAuth()` → `{ loading, user, uid }`. The public profile is `useUserProfile(uid)`.
+- **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited:
+  `app` (which slot the picker edits), `equipment` (weapon1–6, weaponSkill1–6, weaponAffinity1–6, arrow1–4,
+  tal1–4, con1–10, helm/chest/gauntlet/leg), `spells` (spell1–10), `stats` (8 stats, integers 1–99, default
+  10), `tears` (tear1–2). Slot ids are literal types in `features/editor/slots.ts`.
+- **The build page** (`useBuildEditor`): the page renders one `BuildEditor` per build id (`key`), so nothing
+  leaks between builds. A layout effect loads the saved build into the Redux slots (`loadBuild`, which clears
+  first) whenever it (re)loads and the owner isn't editing; `/build/new` clears them. Name, description and tags
+  are a local draft while editing. Ownership is computed at render from `useAuth()` and the build, so there is
+  no load race. Save (`selectBuildFields` + draft → `createBuild`/`updateBuild`) only writes the owner-editable
+  fields; a failed save shows the error and keeps the editor open. Cancel reloads the saved build.
 - **Game data** is static JSON in `src/data/`, bundled, read through typed accessors in `src/data/index.ts`
-  (see `docs/data.md`).
-- **Load a build** (`useBuildEditor` effect): `getBuild(id)` → the `loadBuild` thunk
-  (`features/editor/store/build.ts`) looks each saved item **name** up and fills the Redux slots → `getUser(build.user)` for "Created by". Names that no longer exist leave the slot
-  empty and are dropped on the next save.
-- **Save** (`useBuildEditor.handleSave`): `selectBuildFields` + name/description/tags → a `BuildDoc` → `saveBuild` (`setDoc` for new with a 12-char nanoid,
-  then append the id to `users/{uid}.builds`; `updateDoc` for edits) → navigate to `/build/{id}`.
+  (see `docs/data.md`). Builds store item **names** (T7 moves to IDs); names that no longer exist leave the
+  slot empty and are dropped on the next save.
 
-## Firestore model (v1, 2022)
+## Firestore model (v2)
+
+Types in `src/lib/models.ts`; access in `src/lib/firebase/` (the only code that imports the Firebase SDK;
+ESLint enforces it); rules in `firestore.rules`, tested in `tests/rules/`.
 
 ```
-users/{uid}
-  admin: boolean          // set by the client at signup (!) — T3 moves admin to a custom claim
-  email: string           // public (!) — T3 moves it to a private doc
-  name: string
-  builds: string[]        // build ids, appended on create
-  likedBuilds: string[]   // build ids
+users/{uid}                       public profile; email stays in Firebase Auth only
+  displayName: string             trimmed, 1–40 chars
+  createdAt: timestamp            server time
 
-builds/{id}               // id: 12 chars [0-9A-Z]
-  user: string            // owner uid
-  name, description       // description is markdown, rendered through rehype-sanitize
-  tags: string[]          // boss names from src/data/tags.json
-  level: string           // "131" (string!)
-  likes: number
-  comments: [{ user: uid, comment: string, date: epoch ms }]
-  vigor, mind, end, str, dex, int, fai, arc: number | string
-  weapons: (name|null)[6], weaponAffinities: (name|null)[6], weaponSkills: (name|null)[6]   // positional
-  arrows: (name|null)[4]                                                                      // positional
-  tals: name[], spells: name[], tears: name[], cons: name[]                                   // compacted
-  helm, chest, gauntlet, leg: name | null
+builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED001
+  ownerId: uid                    immutable
+  game: 'elden-ring'              immutable; other games later (backlog)
+  name: string                    trimmed, 1–80 chars
+  nameLower: string               name.toLowerCase(), for prefix search
+  description: string             markdown (≤ 20,000 chars), rendered through rehype-sanitize
+  tags: string[]                  ≤ 20, boss names from src/data/tags.json
+  level: int                      sum of stats − 79, min 1 (rules check the formula)
+  stats: { vigor, mind, end, str, dex, int, fai, arc }   ints 1–99
+  equipment: {                    item names (T7: IDs)
+    weapons, weaponAffinities, weaponSkills: (name|null)[6]   positional: 1–3 main hand, 4–6 off hand
+    arrows: (name|null)[4]                                    positional
+    talismans ≤4, spells ≤10, tears ≤2, consumables ≤10: name[]   compacted
+    helm, chest, gauntlet, leg: name|null
+  }
+  likeCount, commentCount: int    0 on create; only change by ±1 with a like/comment (see below)
+  lastCommentId: string           set by the comment counter (rules plumbing, unused by the UI)
+  createdAt, updatedAt: timestamp server time; owner edits must bump updatedAt
+
+builds/{id}/likes/{uid}           one like per user (doc id = liker's uid)
+  userId: uid, createdAt: timestamp
+builds/{id}/comments/{autoId}
+  authorId: uid, text: string (trimmed, 1–1000), createdAt: timestamp
 ```
 
-Weapon slots 1–3 are the main hand, 4–6 the off hand (the UI shows 2 more placeholder slots per hand for
-arrows/bolts). All reads and writes are in `src/lib/firebase.ts` (`useUser` adds one direct `getDoc`). There are
-no queries (`where`/`orderBy`/`limit`), transactions or batches, so no indexes yet.
+- **Counters without Cloud Functions** (they need the paid Blaze plan): a like is one batched write that creates
+  `likes/{uid}` and does `likeCount: increment(1)`; the rules only allow the counter to move by exactly 1 when the
+  caller's like doc appears/disappears in the same batch (`exists`/`existsAfter`). Comments work the same way;
+  the batch also sets `lastCommentId` so the build rule knows which comment to check.
+- **Who can do what**: anyone reads everything. Signed-in users create builds they own, like (once), and
+  comment. Owners edit content and delete their builds; comment authors delete their comments. **Admins** are a
+  custom claim (`request.auth.token.admin`), never a document field: they can delete any build or comment.
+  Deleting a build deletes the build doc first, then its likes/comments (anyone signed in may clean up children
+  of a build that no longer exists).
+- **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
+  (optionally `tags array-contains`), by `ownerId` + `createdAt desc`; likes collection group by `userId` +
+  `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
+- **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
+  The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
+  `comments[]`) only exists in production, which is dark until T12 runs the migration with the owner.
 
 ## Known problems (fixed by the ticket in brackets)
 
-- Editing a build resets its likes and comments: `handleSave` always writes `likes: 0, comments: []` and edits
-  use `updateDoc` with that object [T3].
-- Likes: two separate read-modify-writes (user doc, build doc), no transaction; on error the button stays
-  locked [T3, T4, T5].
-- Comments: read-modify-write of an array, then `window.location.reload()`; one `getUser` per comment [T3, T4].
-- `getBuilds` reads the entire collection; no pagination [T9].
-- The BuildEditor load effect races auth (ownership/Edit button can go missing); `/build/new` keeps the
-  previous build in Redux [T4].
-- Edit gate is client-side only; rules don't check ownership in production (expired rules deny all) [T3].
-- Small UI bugs: see T5 in `TICKETS.md`.
+- Landing filters: only the first tag is a Firestore query; further tags and the level range filter the loaded
+  pages, so a narrow filter can show few results per page ("Load more" fetches more) [T9: search, level query].
+- Builds reference items by name; renamed items silently drop [T7].
+- No moderation tools beyond admin deletes; no App Check yet [T10].
 
 ## Styling
 

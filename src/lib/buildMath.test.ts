@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { calculateLevel, type Stats } from './buildMath';
+import {
+  calculateLevel,
+  clampStat,
+  MAX_LEVEL,
+  parseStat,
+  STAT_KEYS,
+  type Stats,
+} from './buildMath';
 
-const stats = (overrides: Record<string, number | string> = {}) => ({
+const stats = (overrides: Partial<Stats> = {}): Stats => ({
   vigor: 10,
   mind: 10,
   end: 10,
@@ -22,16 +29,40 @@ describe('calculateLevel', () => {
     ).toBe(9);
   });
 
-  it('accepts numeric strings, which v1 build documents contain', () => {
-    expect(calculateLevel(stats({ vigor: '60', dex: '40' }))).toBe(81);
-  });
-
   it('never goes below level 1', () => {
     expect(calculateLevel(stats({ vigor: 1, mind: 1 }))).toBe(1);
   });
 
   it('reaches 713 with every stat at 99', () => {
-    const maxed = Object.fromEntries(Object.keys(stats()).map((key) => [key, 99])) as Stats;
+    const maxed = Object.fromEntries(STAT_KEYS.map((key) => [key, 99])) as Stats;
     expect(calculateLevel(maxed)).toBe(713);
+    expect(MAX_LEVEL).toBe(713);
+  });
+});
+
+describe('clampStat / parseStat', () => {
+  it.each([
+    [0, 1],
+    [1, 1],
+    [42, 42],
+    [99, 99],
+    [150, 99],
+    [-5, 1],
+    [12.6, 13],
+    [Number.NaN, 10],
+  ])('clampStat(%s) = %s', (input, expected) => {
+    expect(clampStat(input)).toBe(expected);
+  });
+
+  it.each([
+    ['42', 42],
+    [' 7 ', 7],
+    ['abc', 10],
+    ['', 10],
+    ['250', 99],
+    [60, 60],
+    [null, 10],
+  ])('parseStat(%j) = %s', (input, expected) => {
+    expect(parseStat(input)).toBe(expected);
   });
 });

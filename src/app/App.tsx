@@ -4,6 +4,7 @@ import FlexGroup from '@/components/ui/FlexGroup';
 import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
 import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
+import useAuth from '@/features/auth/useAuth';
 import ItemSelector from '@/features/editor/ItemSelector';
 import {
   updateEditSlot,
@@ -44,6 +45,7 @@ type PanelContent = 'login' | 'register';
 function App() {
   const dispatch = useAppDispatch();
   const slotType = useAppSelector(selectSlotType);
+  const { uid } = useAuth();
 
   const [showHiddenContainer, setShowHiddenContainer] = useState(false);
   const [hiddenContainerContent, setHiddenContainerContent] = useState<PanelContent | null>(null);
@@ -87,18 +89,17 @@ function App() {
         <GameSelector />
         <HeaderContainer>
           <Header
+            openPanel={showHiddenContainer ? hiddenContainerContent : null}
             onShowLogin={() => togglePanel('login')}
             onShowRegister={() => togglePanel('register')}
           />
         </HeaderContainer>
         <HiddenContainer $visible={showHiddenContainer}>
-          {hiddenContainerContent === 'login' ? (
-            <Login onSubmit={handleCloseHiddenContainer} />
+          {hiddenContainerContent === 'login' && !uid ? (
+            <Login onDone={handleCloseHiddenContainer} />
           ) : null}
-          {hiddenContainerContent === 'register' ? (
-            <div>
-              <SignUp onSubmit={handleCloseHiddenContainer} />
-            </div>
+          {hiddenContainerContent === 'register' && !uid ? (
+            <SignUp onDone={handleCloseHiddenContainer} />
           ) : null}
         </HiddenContainer>
         <Content>
@@ -116,20 +117,15 @@ const HeaderContainer = styled(FlexGroup)`
 `;
 
 const HiddenContainer = styled(FlexGroup)<{ $visible: boolean }>`
-  height: ${({ $visible }) => ($visible ? '100px' : '0px')};
+  max-height: ${({ $visible }) => ($visible ? '420px' : '0px')};
   margin-bottom: ${({ $visible }) => ($visible ? '40px' : '0px')};
   transition: all 0.4s ease-in-out;
   background-color: ${COLOR_GREEN};
   overflow: hidden;
   align-items: center;
-  padding-left: 20px;
   width: 100%;
   justify-content: center;
   box-shadow: inset 0 0 5px ${COLOR_DARK_GREEN};
-
-  @media ${BELOW_800} {
-    height: ${({ $visible }) => ($visible ? '300px' : '0px')};
-  }
 `;
 
 const Background = styled(FlexGroup)`

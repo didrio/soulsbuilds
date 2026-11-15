@@ -1,38 +1,20 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN, FONT_BODY } from '@/theme';
 
-interface TextInputProps {
+type TextInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'onChange' | 'value'> & {
   centered?: boolean;
-  disabled?: boolean;
   onChange: (value: string, event: ChangeEvent<HTMLInputElement>) => void;
-  /** Accepted but not rendered yet (T5). */
-  placeholder?: string;
-  type?: string;
   value: string | number;
-}
+};
 
-function TextInput({
-  centered = false,
-  disabled = false,
-  onChange,
-  type = 'text',
-  value,
-}: TextInputProps) {
+/** A styled text input. Other `<input>` props (placeholder, aria-label, onBlur…) pass through. */
+function TextInput({ centered = false, onChange, type = 'text', ...rest }: TextInputProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { value: inputValue } = e.target;
-    onChange(inputValue, e);
+    onChange(e.target.value, e);
   };
 
-  return (
-    <Container
-      $centered={centered}
-      disabled={disabled}
-      onChange={handleChange}
-      type={type}
-      value={value}
-    />
-  );
+  return <Container $centered={centered} onChange={handleChange} type={type} {...rest} />;
 }
 
 const Container = styled.input<{ $centered: boolean }>`
@@ -49,6 +31,19 @@ const Container = styled.input<{ $centered: boolean }>`
   text-align: ${({ $centered }) => ($centered ? 'center' : 'left')};
   font-family: ${FONT_BODY};
   box-shadow: inset 0 0 3px ${COLOR_DARK_GREEN};
+
+  &::placeholder {
+    color: ${COLOR_GOLD};
+    opacity: 0.5;
+  }
+
+  &:focus-visible {
+    border-color: ${COLOR_GOLD};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+  }
 `;
 
 export default TextInput;

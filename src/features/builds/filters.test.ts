@@ -1,0 +1,68 @@
+import { describe, expect, it } from 'vitest';
+import type { Build } from '@/lib/models';
+import { clampLevel, DEFAULT_FILTERS, filterBuilds, parseFilters, toSearchParams } from './filters';
+
+const build = (id: string, level: number, tags: string[]) => ({ id, level, tags }) as Build;
+const builds = [
+  build('a', 50, ['Malenia']),
+  build('b', 150, ['Malenia', 'Mohg']),
+  build('c', 150, ['Mohg']),
+  build('d', 300, []),
+];
+const ids = (list: Build[]) => list.map((b) => b.id);
+
+describe('filterBuilds', () => {
+  it('applies the tag and level filters together', () => {
+    // 2022 bug: a tag filter started again from all builds, dropping the level range.
+    expect(
+      ids(
+        filterBuilds(builds, { ...DEFAULT_FILTERS, tags: ['Mohg'], minLevel: 100, maxLevel: 200 }),
+      ),
+    ).toEqual(['b', 'c']);
+    expect(
+      ids(filterBuilds(builds, { ...DEFAULT_FILTERS, tags: ['Malenia'], maxLevel: 100 })),
+    ).toEqual(['a']);
+  });
+
+  it('needs every selected tag', () => {
+    expect(ids(filterBuilds(builds, { ...DEFAULT_FILTERS, tags: ['Malenia', 'Mohg'] }))).toEqual([
+      'b',
+    ]);
+  });
+
+  it('keeps builds without tags when no tag is selected', () => {
+    expect(ids(filterBuilds(builds, DEFAULT_FILTERS))).toEqual(['a', 'b', 'c', 'd']);
+  });
+});
+
+describe('URL filters', () => {
+  it('round-trips through the query string, leaving out defaults', () => {
+    const filters = {
+      sort: 'new' as const,
+      tags: ['Malenia', 'Mohg'],
+      minLevel: 50,
+      maxLevel: 150,
+    };
+    const params = toSearchParams(filters);
+    expect(params.toString()).toBe('sort=new&tag=Malenia&tag=Mohg&min=50&max=150');
+    expect(parseFilters(params)).toEqual(filters);
+    expect(toSearchParams(DEFAULT_FILTERS).toString()).toBe('');
+  });
+
+  it('ignores junk and swaps a reversed range', () => {
+    expect(parseFilters(new URLSearchParams('sort=hot&min=abc&max=99999'))).toEqual(
+      DEFAULT_FILTERS,
+    );
+    expect(parseFilters(new URLSearchParams('min=200&max=100'))).toMatchObject({
+      minLevel: 100,
+      maxLevel: 200,
+    });
+  });
+
+  it('clampLevel', () => {
+    expect(clampLevel('0', 1)).toBe(1);
+    expect(clampLevel('1000', 1)).toBe(713);
+    expect(clampLevel('', 713)).toBe(713);
+    expect(clampLevel(' 42', 1)).toBe(42);
+  });
+});

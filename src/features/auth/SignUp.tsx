@@ -1,150 +1,96 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router';
+import { useState, type FormEvent } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import TextInput from '@/components/ui/TextInput';
 import Button from '@/components/ui/Button';
-import FlexGroup from '@/components/ui/FlexGroup';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
-import { createUser, DEFAULT_USER_DATA } from '@/lib/firebase';
+import ErrorMessage from '@/components/ui/ErrorMessage';
+import { errorMessage, signUp } from '@/lib/firebase';
+import { LIMITS } from '@/lib/models';
+import { queryKeys } from '@/lib/queryKeys';
 import { BELOW_800 } from '@/theme';
-import useAuth from './useAuth';
+import { AuthField, AuthForm } from './styles';
 
-/** Registration form, shown in the slide-down panel. Calls `onSubmit` on success. */
-function SignUp({ onSubmit }: { onSubmit: () => void }) {
+/** Registration form (email, password, display name), shown in the slide-down panel. */
+function SignUp({ onDone }: { onDone: () => void }) {
+  const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const auth = useAuth();
-  const navigate = useNavigate();
+  const canRegister = email.trim() !== '' && password !== '' && name.trim() !== '' && !busy;
 
-  useEffect(() => {
-    if (auth) {
-      navigate('/');
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!canRegister) return;
+    setBusy(true);
+    setError('');
+    try {
+      const uid = await signUp(email, password, name);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.user(uid) });
+      onDone();
+    } catch (err) {
+      setError(errorMessage(err));
+      setBusy(false);
     }
-  }, [navigate, auth]);
-
-  const handleEmailChange = (value: string) => {
-    setEmail(value);
   };
-
-  const handlePasswordChange = (value: string) => {
-    setPassword(value);
-  };
-
-  const handleNameChange = (value: string) => {
-    setName(value);
-  };
-
-  const handleSignUp = useCallback(() => {
-    setIsSubmitting(true);
-    const run = async () => {
-      const success = await createUser(email, password, {
-        ...DEFAULT_USER_DATA,
-        email,
-        name,
-      });
-      if (success) {
-        onSubmit();
-      }
-      if (!success) {
-        setIsSubmitting(false);
-      }
-    };
-    run();
-  }, [email, password, name, onSubmit]);
-
-  // A global Enter handler rather than a <form> (T5).
-  const handleKeyDown = useCallback(
-    ({ code }: KeyboardEvent) => {
-      if (code === 'Enter' && email.length > 0 && password.length > 0) {
-        handleSignUp();
-      }
-    },
-    [handleSignUp, email, password],
-  );
-
-  useEffect(() => {
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyDown]);
-
-  // Checks the password twice and never the name (T5).
-  const canRegister = email.length > 0 && password.length > 0 && password.length > 0;
-
-  if (auth) {
-    return null;
-  }
-
-  if (isSubmitting) {
-    return (
-      <LoadingContainer>
-        <LoadingAnimation size={40} />
-      </LoadingContainer>
-    );
-  }
 
   return (
-    <Container>
-      <Input>
-        <Label>Email</Label>
-        <TextInput onChange={handleEmailChange} type="email" value={email} />
-      </Input>
-      <Input>
-        <Label>Password</Label>
-        <TextInput onChange={handlePasswordChange} type="password" value={password} />
-      </Input>
-      <Input>
-        <Label>Display Name</Label>
-        <TextInput onChange={handleNameChange} value={name} />
-      </Input>
-      <RegisterButton disabled={!canRegister} onClick={handleSignUp}>
-        Register
-      </RegisterButton>
-    </Container>
+    <AuthForm onSubmit={handleSubmit} aria-label="Register">
+      <Fields>
+        <AuthField>
+          <label htmlFor="signup-email">Email</label>
+          <TextInput
+            id="signup-email"
+            autoComplete="email"
+            onChange={setEmail}
+            required
+            type="email"
+            value={email}
+          />
+        </AuthField>
+        <AuthField>
+          <label htmlFor="signup-password">Password</label>
+          <TextInput
+            id="signup-password"
+            autoComplete="new-password"
+            minLength={6}
+            onChange={setPassword}
+            required
+            type="password"
+            value={password}
+          />
+        </AuthField>
+        <AuthField>
+          <label htmlFor="signup-name">Display name</label>
+          <TextInput
+            id="signup-name"
+            autoComplete="nickname"
+            maxLength={LIMITS.displayName}
+            onChange={setName}
+            required
+            value={name}
+          />
+        </AuthField>
+        <Button type="submit" disabled={!canRegister}>
+          {busy ? 'Registering…' : 'Register'}
+        </Button>
+      </Fields>
+      <ErrorMessage>{error}</ErrorMessage>
+    </AuthForm>
   );
 }
 
-const Container = styled(FlexGroup)`
-  align-items: center;
+const Fields = styled.div`
+  align-items: flex-end;
+  display: flex;
+  gap: 20px;
 
   @media ${BELOW_800} {
+    align-items: center;
     flex-direction: column;
-  }
-`;
-
-const Label = styled(FlexGroup)`
-  font-size: 13px;
-  font-weight: bold;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-`;
-
-const LoadingContainer = styled(FlexGroup)`
-  width: 100%;
-  justify-content: center;
-  margin-top: 100px;
-`;
-
-const Input = styled(FlexGroup)`
-  flex-direction: column;
-  margin-right: 20px;
-  width: 200px;
-
-  @media ${BELOW_800} {
-    margin-top: 10px;
-  }
-`;
-
-const RegisterButton = styled(Button)`
-  margin-bottom: -22px;
-
-  @media ${BELOW_800} {
-    margin-bottom: 0px;
-    margin-top: 10px;
+    gap: 10px;
   }
 `;
 

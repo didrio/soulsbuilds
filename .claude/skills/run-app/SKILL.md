@@ -19,7 +19,7 @@ npm run dev
 
 It starts the auth + firestore emulators (project `demo-soulsbuilds`), seeds them (`scripts/seed.mjs`), then
 Vite at **http://127.0.0.1:5180**. Wait for the `Local:` line. Data resets on every start; re-seed a running
-instance with `npm run seed`. Emulator UI (browse Firestore docs, auth users): http://127.0.0.1:4005.
+instance with `npm run seed` (it wipes the emulator's Firestore first). Emulator UI (browse Firestore docs, auth users): http://127.0.0.1:4005.
 
 - Port busy? `npm run doctor` says which. Reuse a running `npm run dev` rather than starting a second.
 - Vite only (no Firebase), e.g. for pure layout work: `npm run dev:vite` (data calls will fail).
@@ -48,7 +48,7 @@ Use a browser you can control (in the Claude desktop app: the built-in browser p
 `http://127.0.0.1:5180`). Seed accounts: `tarnished@example.test` and `ranni@example.test`, password in
 `scripts/seed.mjs`; or register a new user (it only exists in the emulator). For repeatable flows, write a
 scratch Playwright script on `playwright-core` with the installed Chrome (see `scripts/screenshot.mjs`), or
-add an e2e test (T4 sets these up).
+add an e2e test in `tests/e2e/` (`npm run e2e` reuses the running emulators and Vite).
 
 ## 5. Report honestly
 

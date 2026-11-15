@@ -15,12 +15,20 @@ interface ButtonProps {
   children: ReactNode;
   className?: string;
   disabled?: boolean;
-  onClick: () => void;
+  onClick?: () => void;
+  /** 'submit' inside a <form>; defaults to 'button'. */
+  type?: 'button' | 'submit';
 }
 
-function Button({ className = '', children, disabled = false, onClick }: ButtonProps) {
+function Button({
+  className = '',
+  children,
+  disabled = false,
+  onClick,
+  type = 'button',
+}: ButtonProps) {
   return (
-    <Container className={className} disabled={disabled} onClick={onClick}>
+    <Container className={className} disabled={disabled} onClick={onClick} type={type}>
       {children}
     </Container>
   );
@@ -80,6 +88,11 @@ const Container = styled.button`
   &:disabled {
     cursor: auto;
     opacity: 0.4;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_LIGHT_GOLD};
+    outline-offset: 2px;
   }
 `;
 

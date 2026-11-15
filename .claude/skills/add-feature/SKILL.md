@@ -5,8 +5,8 @@ description: Add a page, component, editor section or data feature to soulsbuild
 
 # Add a feature
 
-**Assumes** the T2 layout (strict TypeScript, feature folders, `@/` alias). T4 (TanStack Query, one
-`AuthProvider`) changes where server data goes: when it lands, rewrite this skill to match, in the same change.
+Layout: strict TypeScript, feature folders, `@/` alias; Firestore data model v2 (T3); server data through
+TanStack Query hooks and one `AuthProvider` (T4).
 
 ## Where things go
 
@@ -16,8 +16,10 @@ description: Add a page, component, editor section or data feature to soulsbuild
 | A section of the build page       | `src/features/editor/sections/` (rendered by `BuildEditorPage`); page logic in a `use*` hook next to the page    |
 | Shared UI (button, input, tag…)   | `src/components/ui/` — reuse what's there first (`Button`, `TextInput`, `FlexGroup`, `Tag`, `Chips`, `DropDown`) |
 | State for the build being edited  | A slice/action in `src/features/editor/store/` + a selector in `selectors.ts`; slot ids in `slots.ts`            |
-| Saving/loading a new build field  | `BuildDoc` in `src/lib/models.ts`, then `loadBuild`/`selectBuildFields` in `features/editor/store/build.ts`      |
-| Data from Firestore               | A function in `src/lib/firebase.ts` (the only file that talks to Firestore/Auth), typed with `src/lib/models.ts` |
+| Saving/loading a new build field  | `src/lib/models.ts`, `firestore.rules` (+ rules test), then `loadBuild`/`selectBuildFields` in `store/build.ts`  |
+| A Firestore/Auth call             | A function in `src/lib/firebase/<area>.ts` (only that folder imports the SDK; lint enforces it)                  |
+| Server data in a component        | A TanStack Query hook in `src/features/<feature>/queries.ts`, keyed by `src/lib/queryKeys.ts`. Never Redux       |
+| The signed-in user                | `useAuth()` from `@/features/auth/useAuth` (`{ loading, user, uid }`); profile via `useUserProfile(uid)`         |
 | Game data (items, spells, tags…)  | Read through `@/data` accessors (`getWeapon(name)`, `armorList(kind)`…). JSON is read-only; T7 owns changes      |
 | Pure calculations (stats, weight) | `src/lib/buildMath.ts` (or a new `src/lib/*.ts`), with a colocated test                                          |
 | Colors, fonts, breakpoints        | `@/theme` (`COLOR_*`, `FONT_*`, `BELOW_*`). ESLint rejects hex literals outside `src/theme/`                     |
@@ -34,9 +36,14 @@ description: Add a page, component, editor section or data feature to soulsbuild
    don't reach the DOM.
 4. Interactive elements are real `<button>`/`<a>` (or have a role and label): tests query by role/text.
 5. Markdown from users renders with `rehype-sanitize`. Never `dangerouslySetInnerHTML`.
-6. Firestore writes: think about the security rules. Until T3, `firestore.rules` is interim and local-only: if a
-   new write needs a rule, update it and note it for T3. Never deploy rules.
-7. Tests: logic gets a unit test (`*.test.ts` next to it); a component gets a test with
-   `renderWithProviders` from `src/test/render.tsx` (see `features/builds/BuildsList.test.tsx`).
-8. Seed data: if the feature needs data to be visible, extend `scripts/seed.mjs` (it validates item names).
-9. Verify: `npm run check`, then the `run-app` skill: screenshots of the changed pages, desktop and `--mobile`.
+6. Firestore writes: every new write needs a rule in `firestore.rules` and tests in `tests/rules/` (both a
+   rules test and, for a data-layer function, a case in `data-layer.test.ts`); run `npm run test:rules`.
+   Counters change in the same batch as the doc they count (see likes/comments). Never deploy rules (T12).
+7. Pages handle loading, error (`ErrorMessage` with `onRetry`), empty and not-found (`PageMessage`).
+8. Tests: logic gets a unit test (`*.test.ts` next to it); a component gets a test with
+   `renderWithProviders` from `src/test/render.tsx` (options: `route`, `path`, `uid`) and fixtures from
+   `src/test/fixtures.ts`; mock `@/lib/firebase` with `vi.mock` (see `editor/BuildEditorPage.test.tsx`).
+   A user journey gets a Playwright test in `tests/e2e/` (`npm run e2e`).
+9. Seed data: if the feature needs data to be visible, extend `scripts/seed.mjs` (v2 docs; it validates item
+   names).
+10. Verify: `npm run check`, then the `run-app` skill: screenshots of the changed pages, desktop and `--mobile`.
