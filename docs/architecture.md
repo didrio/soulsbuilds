@@ -30,21 +30,26 @@ that opens whenever Redux `app.slotType` is set.
 - **The signed-in user**: `AuthProvider` (`src/features/auth/`) listens to Firebase Auth once; components call
   `useAuth()` → `{ loading, user, uid }`. The public profile is `useUserProfile(uid)`.
 - **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited:
-  `app` (which slot the picker edits), `equipment` (weapon1–6, weaponSkill1–6, weaponAffinity1–6, arrow1–4,
-  tal1–4, con1–10, helm/chest/gauntlet/leg), `spells` (spell1–10), `stats` (8 stats, integers 1–99, default
-  10), `tears` (tear1–2). Slot ids are literal types in `features/editor/slots.ts`.
+  `app` (which slot the picker edits), `equipment` (weapon1–6, weaponSkill1–6 (the Ash of War),
+  weaponAffinity1–6, arrow1–4, tal1–4, con1–10, helm/chest/gauntlet/leg, greatRune, spiritAsh), `spells`
+  (spell1–10), `stats` (8 stats, integers 1–99, default 10), `tears` (tear1–2). Slots hold the game data
+  objects; slot ids are literal types in `features/editor/slots.ts`. The weapon reducers keep each weapon's Ash
+  and affinity valid for it (`src/data/rules.ts`), so loading or editing can't produce a combination the game
+  doesn't allow.
 - **The item picker**: a slot (empty or filled) opens `ItemSelector` via `openPicker`; it chooses, changes or
-  removes the item, and for weapons the affinity and skill. `closePicker` drops an affinity/skill left on an
-  empty weapon slot.
+  removes the item. For a slot holding a weapon, `WeaponOptions` offers the Ashes of War that fit it and the
+  affinities it shares with the chosen Ash (or shows a unique weapon's fixed skill); talismans that share a
+  group with one already worn are disabled with the reason.
 - **The build page** (`useBuildEditor`): the page renders one `BuildEditor` per build id (`key`), so nothing
   leaks between builds. A layout effect loads the saved build into the Redux slots (`loadBuild`, which clears
   first) whenever it (re)loads and the owner isn't editing; `/build/new` clears them. Name, description and tags
   are a local draft while editing. Ownership is computed at render from `useAuth()` and the build, so there is
   no load race. Save (`selectBuildFields` + draft → `createBuild`/`updateBuild`) only writes the owner-editable
   fields; a failed save shows the error and keeps the editor open. Cancel reloads the saved build.
-- **Game data** is static JSON in `src/data/`, bundled, read through typed accessors in `src/data/index.ts`
-  (see `docs/data.md`). Builds store item **names** (T13 moves to the game IDs of T7's data in
-  `src/data/er/`); names that no longer exist leave the slot empty and are dropped on the next save.
+- **Game data** is static JSON in `src/data/er/` (from the game files, T7), bundled, read through typed
+  accessors by ID in `src/data/index.ts`; the equipment rules are pure functions in `src/data/rules.ts`, shared
+  with the seed and migration scripts (see `docs/data.md`). Builds store **game IDs**; an ID the data no longer
+  has leaves the slot empty and is dropped on the next save.
 
 ## Firestore model (v2)
 
@@ -62,14 +67,16 @@ builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED
   name: string                    trimmed, 1–80 chars
   nameLower: string               name.toLowerCase(), for prefix search
   description: string             markdown (≤ 20,000 chars), rendered through rehype-sanitize
-  tags: string[]                  ≤ 20, boss names from src/data/tags.json
+  tags: string[]                  ≤ 20, from src/data/er/tags.json (bosses, weapon types, …)
   level: int                      sum of stats − 79, min 1 (rules check the formula)
   stats: { vigor, mind, end, str, dex, int, fai, arc }   ints 1–99
-  equipment: {                    item names (T13: game IDs)
-    weapons, weaponAffinities, weaponSkills: (name|null)[6]   positional: 1–3 main hand, 4–6 off hand
-    arrows: (name|null)[4]                                    positional
-    talismans ≤4, spells ≤10, tears ≤2, consumables ≤10: name[]   compacted
-    helm, chest, gauntlet, leg: name|null
+  equipment: {                    game IDs (param row IDs; each field implies its file in src/data/er/)
+    weapons: (id|null)[6]                       positional: 1–3 main hand, 4–6 off hand
+    weaponSkills: (id|null)[6]                  the Ash of War applied; null = the weapon's built-in skill
+    weaponAffinities: (key|null)[6]             'cold', 'flame-art', …; null = Standard
+    arrows: (id|null)[4]                        positional
+    talismans ≤4, spells ≤10, tears ≤2, consumables ≤10: id[]   compacted
+    helm, chest, gauntlet, leg, greatRune, spiritAsh: id|null
   }
   likeCount, commentCount: int    0 on create; only change by ±1 with a like/comment (see below)
   lastCommentId: string           set by the comment counter (rules plumbing, unused by the UI)
@@ -101,15 +108,21 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
   The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
-  `comments[]`) only exists in production, which is dark until T12 runs the migration with the owner.
+  `comments[]`, item **names**) only exists in production, which is dark until T12 runs the migration with the
+  owner. Item names become game IDs on the way (`scripts/lib/names-to-ids.mjs` with
+  `scripts/data/name-aliases.json`), dropping, with a note each, names the game data doesn't have and
+  Ash/affinity/talisman combinations the game doesn't allow; the tag "Warhammer" becomes "Great Hammer".
 
 ## Known problems (fixed by the ticket in brackets)
 
 - Landing filters: only the first tag is a Firestore query; further tags and the level range filter the loaded
   pages, so a narrow filter can show few results per page ("Load more" fetches more). Search is a name prefix
   match only, and ignores sort and the server-side tag [T9].
-- Game data (~650 KB of JSON) is in the main bundle because the landing cards use it [T11, after T13].
-- Builds reference items by name; renamed items silently drop [T13].
+- Game data (~1.2 MB of JSON, 294 KB gzipped, in the `Slot` chunk) loads with the landing page because the
+  cards use it [T11: per route, or a slim index for the cards].
+- The rules check the types of positional equipment lists and single slots, but only the sizes of the
+  talisman/spell/tear/consumable lists (Firestore's per-request expression budget; `firestore.rules`). The app
+  ignores IDs it doesn't know.
 - App Check is on in production builds (reCAPTCHA Enterprise key in `src/lib/firebase/app.ts`); enforcement
   waits for T12 (`docs/firebase.md`).
 - No admin UI: reports are reviewed with `scripts/admin.mjs` (backlog).

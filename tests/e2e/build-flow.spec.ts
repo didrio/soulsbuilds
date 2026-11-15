@@ -24,13 +24,32 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
 
   await register(page);
 
-  // Create a build: name, a weapon from the picker, a stat.
+  // Create a build: name, weapons from the picker (with an Ash of War and affinity), a great rune,
+  // a stat.
   await page.getByRole('link', { name: 'New build' }).click();
   await page.getByLabel('Build Name').fill(buildName);
   await page.getByRole('button', { name: 'Choose weapon' }).first().click();
   await page.getByLabel('Search items').fill('Moonveil');
   await page.getByRole('button', { name: /^Moonveil/ }).click();
-  await expect(page.getByRole('button', { name: 'Change Moonveil' })).toBeVisible();
+  // A unique weapon: its skill is fixed, no Ash of War or affinity to choose.
+  await page.getByRole('button', { name: 'Change Moonveil (Transient Moonlight skill)' }).click();
+  await expect(page.getByText("Transient Moonlight (can't be changed)")).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Ash of War' })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Close' }).click();
+
+  await page.getByRole('button', { name: 'Choose weapon' }).first().click();
+  await page.getByLabel('Search items').fill('Uchigatana');
+  await page.getByRole('button', { name: /^Uchigatana/ }).click();
+  await page.getByRole('button', { name: 'Change Uchigatana (Unsheathe skill)' }).click();
+  await page.getByRole('combobox', { name: 'Ash of War' }).selectOption({ label: 'Seppuku' });
+  await page.getByRole('combobox', { name: 'Affinity' }).selectOption({ label: 'Blood' });
+  await page.getByRole('button', { name: 'Close' }).click();
+  await expect(
+    page.getByRole('button', { name: 'Change Uchigatana (Blood affinity, Seppuku skill)' }),
+  ).toBeVisible();
+
+  await page.getByRole('button', { name: 'Choose great rune' }).click();
+  await page.getByRole('button', { name: /^Radahn's Great Rune/ }).click();
   const vigor = page.getByLabel('Vigor');
   await vigor.fill('40');
   await vigor.blur();
@@ -39,6 +58,10 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
 
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
+  // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune.
+  await expect(page.getByRole('button', { name: 'Affinity: Blood' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Skill: Seppuku' })).toBeVisible();
+  await expect(page.getByText("Radahn's Great Rune")).toBeVisible();
   await expect(page.getByText(`Created by${displayName}`)).toBeVisible();
 
   // Like (optimistic, then confirmed).

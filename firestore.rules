@@ -84,24 +84,52 @@ service cloud.firestore {
           && level == 1));
     }
 
-    // Item names (T7 moves to IDs). Positional lists have a fixed length (null = empty slot).
-    function isItem(value) {
-      return value == null || (value is string && value.size() >= 1 && value.size() <= 100);
+    // Items are game IDs (param row IDs in src/data/er/; each field implies the file). Positional
+    // lists (weapons, their affinities and Ashes of War, arrows) have a fixed length and null for an
+    // empty slot. Whether an ID exists or fits its weapon is the app's job (it ignores unknown IDs).
+    //
+    // Budget: Firestore evaluates at most ~1,000 expressions per request and denies without detail
+    // beyond that. Every reference to a list re-walks request.resource.data…, so one entry check
+    // costs ~25: checking all 42 list entries would blow it. So the positional lists, the single
+    // slots and the affinities are type-checked, and the talisman/spell/tear/consumable lists only
+    // by size, like every list in 2022 (docs/decisions.md). The full-equipment test in
+    // tests/rules/firestore.rules.test.ts guards the worst case.
+    function isItemIdOrNull(value) {
+      return value == null || value is int;
+    }
+
+    function slots4(l) {
+      return l is list && l.size() == 4
+        && (l[0] == null || l[0] is int) && (l[1] == null || l[1] is int)
+        && (l[2] == null || l[2] is int) && (l[3] == null || l[3] is int);
+    }
+
+    function slots6(l) {
+      return l is list && l.size() == 6
+        && (l[0] == null || l[0] is int) && (l[1] == null || l[1] is int)
+        && (l[2] == null || l[2] is int) && (l[3] == null || l[3] is int)
+        && (l[4] == null || l[4] is int) && (l[5] == null || l[5] is int);
+    }
+
+    // A weapon's affinity per slot; Standard is stored as null.
+    function affinities6(l) {
+      return l is list && l.size() == 6 && [null, 'heavy', 'keen', 'quality', 'fire', 'flame-art',
+        'lightning', 'sacred', 'magic', 'cold', 'poison', 'blood', 'occult'].hasAll(l);
     }
 
     function validEquipment(e) {
       return e is map
         && hasExactly(e, ['weapons', 'weaponAffinities', 'weaponSkills', 'arrows', 'talismans',
-          'spells', 'tears', 'consumables', 'helm', 'chest', 'gauntlet', 'leg'])
-        && e.weapons is list && e.weapons.size() == 6
-        && e.weaponAffinities is list && e.weaponAffinities.size() == 6
-        && e.weaponSkills is list && e.weaponSkills.size() == 6
-        && e.arrows is list && e.arrows.size() == 4
+          'spells', 'tears', 'consumables', 'helm', 'chest', 'gauntlet', 'leg', 'greatRune',
+          'spiritAsh'])
+        && slots6(e.weapons) && affinities6(e.weaponAffinities) && slots6(e.weaponSkills)
+        && slots4(e.arrows)
         && e.talismans is list && e.talismans.size() <= 4
         && e.spells is list && e.spells.size() <= 10
         && e.tears is list && e.tears.size() <= 2
         && e.consumables is list && e.consumables.size() <= 10
-        && isItem(e.helm) && isItem(e.chest) && isItem(e.gauntlet) && isItem(e.leg);
+        && isItemIdOrNull(e.helm) && isItemIdOrNull(e.chest) && isItemIdOrNull(e.gauntlet)
+        && isItemIdOrNull(e.leg) && isItemIdOrNull(e.greatRune) && isItemIdOrNull(e.spiritAsh);
     }
 
     // The fields the owner writes. Everything else is set on create or changed by the counters.

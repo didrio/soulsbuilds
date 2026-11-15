@@ -4,25 +4,25 @@ import FlexGroup from '@/components/ui/FlexGroup';
 import FlexItem from '@/components/ui/FlexItem';
 import TextInput from '@/components/ui/TextInput';
 import CloseButton from '@/components/ui/CloseButton';
-import DropDown from '@/components/ui/DropDown';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import {
-  affinities,
   armorList,
   arrows,
   consumables,
-  skillNames,
+  greatRunes,
+  iconUrl,
   spells,
+  spiritAshes,
+  talismanConflict,
   talismans,
   tears,
   weapons,
   type Armor,
   type Arrow,
-  type Consumable,
+  type Goods,
   type SlotItem,
   type Spell,
   type Talisman,
-  type Tear,
   type Weapon,
 } from '@/data';
 import { sortBy } from '@/lib/array';
@@ -45,9 +45,11 @@ import {
   SLOT_TYPE_CHEST,
   SLOT_TYPE_CON,
   SLOT_TYPE_GAUNTLET,
+  SLOT_TYPE_GREAT_RUNE,
   SLOT_TYPE_HELM,
   SLOT_TYPE_LEG,
   SLOT_TYPE_SPELL,
+  SLOT_TYPE_SPIRIT_ASH,
   SLOT_TYPE_TAL,
   SLOT_TYPE_TEAR,
   SLOT_TYPE_WEAPON,
@@ -60,41 +62,43 @@ import {
   updateLeg,
   updateChest,
   updateGauntlet,
+  updateGreatRune,
+  updateSpiritAsh,
   updateArrow,
   updateCon,
   updateTal,
   updateWeapon,
-  updateWeaponAffinity,
-  updateWeaponSkill,
 } from './store/equipment';
 import { updateSpell } from './store/spells';
 import { updateTear } from './store/tears';
 import {
-  selectEditAffinitySlot,
   selectEditSlot,
-  selectSlotType,
-  selectEditSubSlot,
-  selectEditWeaponAffinity,
-  selectEditWeaponSkill,
   selectEditedItem,
+  selectEquipment,
+  selectSlotType,
 } from './store/selectors';
+import WeaponOptions from './WeaponOptions';
 
 const itemsForSlotType = (slotType: SlotType | null): readonly SlotItem[] => {
   switch (slotType) {
     case SLOT_TYPE_ARROW:
       return arrows;
     case SLOT_TYPE_CHEST:
-      return armorList('chests');
+      return armorList('chest');
     case SLOT_TYPE_CON:
       return consumables;
     case SLOT_TYPE_GAUNTLET:
-      return armorList('gauntlets');
+      return armorList('arms');
+    case SLOT_TYPE_GREAT_RUNE:
+      return greatRunes;
     case SLOT_TYPE_HELM:
-      return armorList('helms');
+      return armorList('head');
     case SLOT_TYPE_LEG:
       return armorList('legs');
     case SLOT_TYPE_SPELL:
       return spells;
+    case SLOT_TYPE_SPIRIT_ASH:
+      return spiritAshes;
     case SLOT_TYPE_TAL:
       return talismans;
     case SLOT_TYPE_TEAR:
@@ -106,19 +110,20 @@ const itemsForSlotType = (slotType: SlotType | null): readonly SlotItem[] => {
   }
 };
 
+/** Memory slots a spell takes, shown next to it. */
+const slotsText = (spell: Spell) => `${spell.slots} ${spell.slots === 1 ? 'slot' : 'slots'}`;
+
 /**
- * The item picker modal: a searchable list of items for the slot type being edited (plus affinity
- * and skill dropdowns for weapons). Picking an item writes it to the slot and closes the picker.
+ * The item picker modal: a searchable list of items for the slot type being edited. Picking an item
+ * writes it to the slot and closes the picker. For a weapon slot that holds a weapon it also offers
+ * the weapon's Ash of War and affinity; talismans that can't be worn with one already worn say so.
  */
 function ItemSelector() {
   const [searchText, setSearchText] = useState('');
 
   const dispatch = useAppDispatch();
-  const editAffinitySlot = useAppSelector(selectEditAffinitySlot);
   const editSlot = useAppSelector(selectEditSlot);
-  const editSubSlot = useAppSelector(selectEditSubSlot);
-  const editWeaponSkill = useAppSelector(selectEditWeaponSkill);
-  const editWeaponAffinity = useAppSelector(selectEditWeaponAffinity);
+  const equipment = useAppSelector(selectEquipment);
   const slotType = useAppSelector(selectSlotType);
   const currentItem = useAppSelector(selectEditedItem);
 
@@ -136,9 +141,11 @@ function ItemSelector() {
     return sortedItems;
   }, [slotType, searchText]);
 
-  const handleSearch = (value: string) => {
-    setSearchText(value);
-  };
+  // Talismans worn in the other slots: one of the same group can't be added.
+  const otherTalismans =
+    slotType === SLOT_TYPE_TAL
+      ? TALISMAN_SLOTS.filter((slot) => slot !== editSlot).map((slot) => equipment[slot])
+      : [];
 
   // The item list matches the slot type, so the casts below narrow to what the list holds.
   /** Puts `item` in the slot being edited (null empties it), then closes the picker. */
@@ -153,10 +160,13 @@ function ItemSelector() {
         break;
       case SLOT_TYPE_CON:
         if (isSlot(CONSUMABLE_SLOTS, editSlot))
-          dispatch(updateCon({ id: editSlot, item: item as Consumable }));
+          dispatch(updateCon({ id: editSlot, item: item as Goods }));
         break;
       case SLOT_TYPE_GAUNTLET:
         dispatch(updateGauntlet(item as Armor));
+        break;
+      case SLOT_TYPE_GREAT_RUNE:
+        dispatch(updateGreatRune(item as Goods));
         break;
       case SLOT_TYPE_HELM:
         dispatch(updateHelm(item as Armor));
@@ -168,13 +178,16 @@ function ItemSelector() {
         if (isSlot(SPELL_SLOTS, editSlot))
           dispatch(updateSpell({ id: editSlot, item: item as Spell }));
         break;
+      case SLOT_TYPE_SPIRIT_ASH:
+        dispatch(updateSpiritAsh(item as Goods));
+        break;
       case SLOT_TYPE_TAL:
         if (isSlot(TALISMAN_SLOTS, editSlot))
           dispatch(updateTal({ id: editSlot, item: item as Talisman }));
         break;
       case SLOT_TYPE_TEAR:
         if (isSlot(TEAR_SLOTS, editSlot))
-          dispatch(updateTear({ id: editSlot, item: item as Tear }));
+          dispatch(updateTear({ id: editSlot, item: item as Goods }));
         break;
       case SLOT_TYPE_WEAPON:
         if (isSlot(WEAPON_SLOTS, editSlot))
@@ -186,35 +199,34 @@ function ItemSelector() {
     handleClose();
   };
 
-  const handleSkillChange = (value: string | null) => {
-    if (editSubSlot) dispatch(updateWeaponSkill({ id: editSubSlot, item: value }));
+  const getItem = (item: SlotItem) => {
+    const conflict =
+      slotType === SLOT_TYPE_TAL ? talismanConflict(item as Talisman, otherTalismans) : undefined;
+    return (
+      <RowContainer
+        key={item.id}
+        type="button"
+        aria-disabled={conflict ? true : undefined}
+        onClick={conflict ? undefined : handleSelectItem(item)}>
+        <RowName>
+          <ImageContainer>
+            <img alt="" loading="lazy" decoding="async" src={iconUrl(item.icon)} />
+          </ImageContainer>
+          <FlexItem>
+            {item.name}
+            {conflict ? (
+              <Note>
+                {conflict.id === item.id ? 'Already worn' : `Can't be worn with ${conflict.name}`}
+              </Note>
+            ) : null}
+          </FlexItem>
+        </RowName>
+        {slotType === SLOT_TYPE_SPELL ? (
+          <SlotContainer>{slotsText(item as Spell)}</SlotContainer>
+        ) : null}
+      </RowContainer>
+    );
   };
-
-  const handleAffinityChange = (value: string | null) => {
-    if (editAffinitySlot) dispatch(updateWeaponAffinity({ id: editAffinitySlot, item: value }));
-  };
-
-  const getItem = (item: SlotItem) => (
-    <RowContainer
-      key={item.name}
-      role="button"
-      tabIndex={0}
-      onClick={handleSelectItem(item)}
-      onKeyDown={(event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          handleSelectItem(item)();
-        }
-      }}>
-      <RowName>
-        <ImageContainer>
-          <img alt="" loading="lazy" src={`/assets/${item.imageUrl}`} />
-        </ImageContainer>
-        <FlexItem>{item.name}</FlexItem>
-      </RowName>
-      {'slot' in item && item.slot ? <SlotContainer>{item.slot}</SlotContainer> : null}
-    </RowContainer>
-  );
 
   return (
     <Container>
@@ -222,7 +234,7 @@ function ItemSelector() {
         <SearchContainer>
           <TextInput
             aria-label="Search items"
-            onChange={handleSearch}
+            onChange={setSearchText}
             placeholder="Search"
             value={searchText}
           />
@@ -234,30 +246,7 @@ function ItemSelector() {
         ) : null}
         <CloseButton onClick={handleClose} />
       </TopBar>
-      {slotType === SLOT_TYPE_WEAPON ? (
-        <SkillContainer>
-          <SkillLabel>Add Affinity</SkillLabel>
-          <SkillDropDown>
-            <DropDown
-              label="Affinity"
-              onChange={handleAffinityChange}
-              options={affinities}
-              placeholder="-- Choose an Affinity --"
-              value={editWeaponAffinity || ''}
-            />
-          </SkillDropDown>
-          <SkillLabel>Add Skill</SkillLabel>
-          <SkillDropDown>
-            <DropDown
-              label="Weapon skill"
-              onChange={handleSkillChange}
-              options={skillNames}
-              placeholder="-- Choose a Skill --"
-              value={editWeaponSkill || ''}
-            />
-          </SkillDropDown>
-        </SkillContainer>
-      ) : null}
+      {slotType === SLOT_TYPE_WEAPON ? <WeaponOptions /> : null}
       <Contents>{options.map((option) => getItem(option))}</Contents>
     </Container>
   );
@@ -268,41 +257,6 @@ const Container = styled(FlexGroup)`
   flex-direction: column;
   height: 100%;
   font-size: 14px;
-`;
-
-const SkillContainer = styled(FlexGroup)`
-  margin-bottom: 10px;
-  margin-top: 10px;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
-
-  @media ${BELOW_750} {
-    flex-wrap: wrap;
-    gap: 6px 0;
-  }
-`;
-
-const SkillLabel = styled(FlexGroup)`
-  font-size: 16px;
-  font-weight: bold;
-  margin-right: 20px;
-
-  @media ${BELOW_750} {
-    flex: 0 0 30%;
-    margin-right: 0;
-  }
-`;
-
-const SkillDropDown = styled(FlexGroup)`
-  margin-right: 20px;
-  width: 200px;
-
-  @media ${BELOW_750} {
-    flex: 1 1 60%;
-    margin-right: 0;
-    width: auto;
-  }
 `;
 
 const RemoveButton = styled.button`
@@ -327,12 +281,17 @@ const TopBar = styled(FlexGroup)`
   width: 100%;
 `;
 
-const RowContainer = styled(FlexGroup)`
+const RowContainer = styled.button`
+  display: flex;
   align-items: center;
   justify-content: space-between;
   height: 80px;
   min-height: 80px;
   background-color: ${COLOR_GREEN};
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   margin: 5px 0;
   margin-right: 10px;
   cursor: pointer;
@@ -341,9 +300,18 @@ const RowContainer = styled(FlexGroup)`
   width: 250px;
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
 
-  &:hover {
+  &:hover:not([aria-disabled='true']) {
     background-color: ${COLOR_LIGHT_GREEN};
     color: ${COLOR_LIGHTEST_GREEN};
+  }
+
+  &[aria-disabled='true'] {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_GOLD};
   }
 `;
 
@@ -355,9 +323,16 @@ const RowName = styled(FlexGroup)`
   }
 `;
 
+const Note = styled.span`
+  display: block;
+  font-size: 12px;
+  font-style: italic;
+`;
+
 const SlotContainer = styled(FlexGroup)`
   font-weight: bold;
-  margin-right: 30px;
+  margin-right: 10px;
+  white-space: nowrap;
 `;
 
 const ImageContainer = styled(FlexGroup)`
@@ -365,6 +340,11 @@ const ImageContainer = styled(FlexGroup)`
   min-height: 60px;
   height: 60px;
   width: 60px;
+
+  & > img {
+    height: 100%;
+    width: 100%;
+  }
 `;
 
 const Contents = styled(FlexGroup)`

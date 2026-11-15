@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import type { Tear } from '@/data';
+import type { Goods } from '@/data';
 import type { TearSlot } from '../slots';
 import type { SlotUpdate } from './equipment';
 
-export type TearsState = Record<TearSlot, Tear | null>;
+export type TearsState = Record<TearSlot, Goods | null>;
 
 const initialState: TearsState = {
   tear1: null,
@@ -14,7 +14,7 @@ const tears = createSlice({
   name: 'tears',
   initialState,
   reducers: {
-    updateTear: (state, action: PayloadAction<SlotUpdate<TearSlot, Tear>>) => {
+    updateTear: (state, action: PayloadAction<SlotUpdate<TearSlot, Goods>>) => {
       state[action.payload.id] = action.payload.item;
     },
     clearTears: () => initialState,

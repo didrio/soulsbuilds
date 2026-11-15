@@ -1,80 +1,113 @@
-// Typed access to the static game data. Components import from '@/data', never the JSON files.
-// Items are looked up by NAME (builds store names until T7 moves them to stable IDs).
+// Typed access to the game data v2 (T7) in ./er. Components import from '@/data', never the JSON
+// files. Items are looked up by their game param row ID; each build slot implies the file the ID
+// belongs to (docs/data.md).
 //
-// JSON boundary: TypeScript infers a literal type for each JSON file; the `as` casts below assert
-// it matches the interfaces in ./types (src/data/data.test.ts checks the data's integrity).
-import affinitiesJson from './affinities.json';
-import armorJson from './armorIndexed.json';
-import arrowsJson from './arrowsAndBolts.json';
-import consumablesJson from './consumables.json';
-import skillsJson from './skillsIndexed.json';
-import spellsJson from './spells.json';
-import tagsJson from './tags.json';
-import talismansJson from './talismans.json';
-import tearsJson from './tears.json';
-import weaponsJson from './weaponsAndShields.json';
+// JSON boundary: TypeScript infers a literal type for each JSON file; the `as` casts below assert the
+// types from ./schema (src/data/data.test.ts validates the committed files against the schemas).
+import affinitiesJson from './er/affinities.json';
+import armorJson from './er/armor.json';
+import arrowsJson from './er/arrows.json';
+import ashesOfWarJson from './er/ashesOfWar.json';
+import consumablesJson from './er/consumables.json';
+import greatRunesJson from './er/greatRunes.json';
+import skillsJson from './er/skills.json';
+import spellsJson from './er/spells.json';
+import spiritAshesJson from './er/spiritAshes.json';
+import tagsJson from './er/tags.json';
+import talismansJson from './er/talismans.json';
+import tearsJson from './er/tears.json';
+import weaponsJson from './er/weapons.json';
+import * as rules from './rules';
 import type {
+  Affinity,
+  AffinityKey,
   Armor,
-  ArmorKind,
   Arrow,
-  Consumable,
+  AshOfWar,
+  Goods,
   Skill,
   Spell,
+  Tags,
   Talisman,
-  Tear,
   Weapon,
-} from './types';
+} from './schema';
 
-export type * from './types';
+export type * from './schema';
 
-const weaponsByName = weaponsJson as Record<string, Weapon>;
-const armorByName = armorJson as Record<ArmorKind, Record<string, Armor>>;
-const skillsByName = skillsJson as Record<string, Skill>;
+/** Anything that can sit in an editor slot (what `Slot` renders). */
+export type SlotItem = Weapon | Armor | Arrow | Talisman | Spell | Goods;
 
-/** First item wins on duplicate names, like the `Array.find` lookups this replaced. */
-function indexByName<T extends { name: string }>(items: readonly T[]): Map<string, T> {
-  const map = new Map<string, T>();
-  for (const item of items) if (!map.has(item.name)) map.set(item.name, item);
-  return map;
+/** The skill most shields, staffs and seals come with ("No Skill" is a real skill in the game). */
+export const NO_SKILL_ID = 10;
+
+export const weapons = weaponsJson as Weapon[];
+export const armor = armorJson as Armor[];
+export const arrows = arrowsJson as Arrow[];
+export const ashesOfWar = ashesOfWarJson as AshOfWar[];
+export const skills = skillsJson as Skill[];
+export const talismans = talismansJson as Talisman[];
+export const spells = spellsJson as Spell[];
+export const tears = tearsJson as Goods[];
+export const consumables = consumablesJson as Goods[];
+export const greatRunes = greatRunesJson as Goods[];
+export const spiritAshes = spiritAshesJson as Goods[];
+/** The 13 affinities in the game's order, Standard first. */
+export const affinities = affinitiesJson as Affinity[];
+/** Tag groups for the tag picker ("Bosses", "Melee Weapons", …) → tag names. */
+export const tagGroups = tagsJson as Tags;
+
+/** A lookup by ID over `items`; `undefined` for null or an ID that isn't in the data. */
+function lookup<T extends { id: number }>(items: readonly T[]) {
+  const byId = new Map(items.map((item) => [item.id, item]));
+  return (id: number | null | undefined): T | undefined => (id == null ? undefined : byId.get(id));
 }
 
-export const arrows = arrowsJson as Arrow[];
-export const consumables = consumablesJson as Consumable[];
-export const spells = spellsJson as Spell[];
-export const talismans = talismansJson as Talisman[];
-export const tears = tearsJson as Tear[];
-export const weapons: Weapon[] = Object.values(weaponsByName);
-export const affinities: string[] = affinitiesJson.affinities;
-/** Tag groups for the tag picker ("Bosses", "Effects", …) → tag names. */
-export const tagGroups = tagsJson as Record<string, string[]>;
-/** Every skill name, sorted (the weapon skill picker's options). */
-export const skillNames: string[] = Object.values(skillsByName)
-  .map(({ name }) => name)
-  .sort();
+export const getWeapon = lookup(weapons);
+export const getArrow = lookup(arrows);
+export const getAsh = lookup(ashesOfWar);
+export const getSkill = lookup(skills);
+export const getTalisman = lookup(talismans);
+export const getSpell = lookup(spells);
+export const getTear = lookup(tears);
+export const getConsumable = lookup(consumables);
+export const getGreatRune = lookup(greatRunes);
+export const getSpiritAsh = lookup(spiritAshes);
 
-const arrowsByName = indexByName(arrows);
-const consumablesByName = indexByName(consumables);
-const spellsByName = indexByName(spells);
-const talismansByName = indexByName(talismans);
-const tearsByName = indexByName(tears);
+const armorById = lookup(armor);
+/** An armor piece by ID, only if it goes in `slot` (a helm ID in the chest slot is undefined). */
+export const getArmor = (id: number | null | undefined, slot: Armor['slot']): Armor | undefined => {
+  const piece = armorById(id);
+  return piece?.slot === slot ? piece : undefined;
+};
 
-/** Item lookups by name. `undefined` when the name isn't in the data (renamed or misspelled). */
-export const getWeapon = (name: string | null | undefined) =>
-  name == null ? undefined : weaponsByName[name];
-export const getArmor = (kind: ArmorKind, name: string | null | undefined) =>
-  name == null ? undefined : armorByName[kind][name];
-export const getArrow = (name: string | null | undefined) =>
-  name == null ? undefined : arrowsByName.get(name);
-export const getConsumable = (name: string | null | undefined) =>
-  name == null ? undefined : consumablesByName.get(name);
-export const getSpell = (name: string | null | undefined) =>
-  name == null ? undefined : spellsByName.get(name);
-export const getTalisman = (name: string | null | undefined) =>
-  name == null ? undefined : talismansByName.get(name);
-export const getTear = (name: string | null | undefined) =>
-  name == null ? undefined : tearsByName.get(name);
-export const getSkill = (name: string | null | undefined) =>
-  name == null ? undefined : skillsByName[name];
+/** All armor pieces for one slot, in data order. */
+export const armorList = (slot: Armor['slot']): Armor[] =>
+  armor.filter((piece) => piece.slot === slot);
 
-/** All armor pieces of one kind, in data order. */
-export const armorList = (kind: ArmorKind): Armor[] => Object.values(armorByName[kind]);
+/** The image of an item's `icon`. */
+export const iconUrl = (icon: number) => `/assets/icons/${icon}.webp`;
+
+const affinityNames = new Map(affinities.map(({ key, name }) => [key, name]));
+/** Display name of an affinity key ('flame-art' → "Flame Art"). */
+export const affinityName = (key: AffinityKey) => affinityNames.get(key) ?? key;
+
+/** What the player sees for an Ash of War: the skill it grants ("Seppuku"). */
+export const ashLabel = (ash: AshOfWar) =>
+  getSkill(ash.skill)?.name ?? ash.name.replace(/^Ash of War: /, '');
+
+/** The skill a weapon has: the Ash's if one is applied, else its built-in one. */
+export const weaponSkill = (weapon: Weapon, ash: AshOfWar | null | undefined) =>
+  getSkill(ash ? ash.skill : weapon.skill);
+
+// The rules in ./rules, bound to the data.
+export const ashChoices = (weapon: Weapon) => rules.ashChoices(weapon, ashesOfWar);
+export const fitAsh = (weapon: Weapon, ash: AshOfWar | null | undefined) =>
+  rules.fitAsh(weapon, ash, ashesOfWar);
+export const allowedAffinities = (weapon: Weapon, ash: AshOfWar | null) =>
+  rules.allowedAffinities(weapon, ash, ashesOfWar);
+export const fitAffinity = (
+  weapon: Weapon,
+  ash: AshOfWar | null,
+  affinity: AffinityKey | null | undefined,
+) => rules.fitAffinity(weapon, ash, affinity, ashesOfWar);
+export const { talismanConflict } = rules;

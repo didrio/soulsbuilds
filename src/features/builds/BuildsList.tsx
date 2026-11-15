@@ -30,10 +30,10 @@ const PREVIEW_WEAPONS = [
 ] as const;
 
 const ARMOR = [
-  { slot: 'helm', group: 'helms', type: SLOT_TYPE_HELM },
-  { slot: 'chest', group: 'chests', type: SLOT_TYPE_CHEST },
-  { slot: 'gauntlet', group: 'gauntlets', type: SLOT_TYPE_GAUNTLET },
-  { slot: 'leg', group: 'legs', type: SLOT_TYPE_LEG },
+  { slot: 'helm', armorSlot: 'head', type: SLOT_TYPE_HELM },
+  { slot: 'chest', armorSlot: 'chest', type: SLOT_TYPE_CHEST },
+  { slot: 'gauntlet', armorSlot: 'arms', type: SLOT_TYPE_GAUNTLET },
+  { slot: 'leg', armorSlot: 'legs', type: SLOT_TYPE_LEG },
 ] as const;
 
 const likesText = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
@@ -58,21 +58,21 @@ function BuildsList({ builds }: { builds: Build[] }) {
                     <Slot
                       key={index}
                       affinity={equipment.weaponAffinities[index] ?? null}
+                      ash={equipment.weaponSkills[index] ?? null}
                       background={background}
                       disabled
                       item={getWeapon(equipment.weapons[index]) ?? null}
-                      subItem={equipment.weaponSkills[index] ?? null}
                       type={SLOT_TYPE_WEAPON}
                     />
                   ))}
                 </EquipmentContainer>
                 <GearContainer>
-                  {ARMOR.map(({ slot, group, type }) => (
+                  {ARMOR.map(({ slot, armorSlot, type }) => (
                     <Slot
                       key={slot}
                       background={slot}
                       disabled
-                      item={getArmor(group, equipment[slot]) ?? null}
+                      item={getArmor(equipment[slot], armorSlot) ?? null}
                       type={type}
                     />
                   ))}

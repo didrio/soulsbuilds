@@ -2,7 +2,17 @@ import { useState, type KeyboardEvent, type PointerEvent } from 'react';
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { getSkill, type SlotItem } from '@/data';
+import {
+  affinityName,
+  getAsh,
+  iconUrl,
+  NO_SKILL_ID,
+  weaponSkill,
+  type AffinityKey,
+  type AshOfWar,
+  type SlotItem,
+  type Weapon,
+} from '@/data';
 import {
   COLOR_LIGHT_GOLD,
   COLOR_DARK_GOLD,
@@ -28,9 +38,11 @@ const SLOT_LABELS: Record<SlotType, string> = {
   SLOT_TYPE_CHEST: 'chest armor',
   SLOT_TYPE_CON: 'item',
   SLOT_TYPE_GAUNTLET: 'gauntlets',
+  SLOT_TYPE_GREAT_RUNE: 'great rune',
   SLOT_TYPE_HELM: 'helm',
   SLOT_TYPE_LEG: 'leg armor',
   SLOT_TYPE_SPELL: 'spell',
+  SLOT_TYPE_SPIRIT_ASH: 'spirit ash',
   SLOT_TYPE_TAL: 'talisman',
   SLOT_TYPE_TEAR: 'crystal tear',
   SLOT_TYPE_WEAPON: 'weapon',
@@ -42,23 +54,27 @@ const SLOT_SIZE_XSMALL = '50px';
 const SLOT_SIZE_XXSMALL = '40px';
 
 interface SlotProps {
-  /** Affinity name to show (display-only slots). Wins over `affinityId`. */
-  affinity?: string | null;
+  /** Affinity to show (display-only slots; null = Standard). Wins over `affinityId`. */
+  affinity?: AffinityKey | null;
   /** Editor affinity slot this weapon slot reads and the picker edits. */
   affinityId?: WeaponAffinitySlot | '';
-  /** Placeholder icon: public/assets/menu/<background>.png. */
+  /** Ash of War ID to show (display-only slots; null = built-in skill). Wins over `subId`. */
+  ash?: number | null;
+  /** Empty-slot placeholder: public/assets/menu/<background>.png. */
   background?: string;
+  /** Empty-slot placeholder from the game's icons instead (faded): an item's `icon`. */
+  backgroundIcon?: number;
   disabled?: boolean;
   /** Editor slot the picker writes to. */
   id?: ItemSlot | '';
   item?: SlotItem | null;
   size?: string | null;
-  /** Editor weapon-skill slot this weapon slot reads and the picker edits. */
+  /** Editor Ash of War slot this weapon slot reads and the picker edits. */
   subId?: WeaponSkillSlot | '';
-  /** Skill name to show (display-only slots). Wins over `subId`. */
-  subItem?: string | null;
   type: SlotType;
 }
+
+const isWeapon = (item: SlotItem | null): item is Weapon => item !== null && 'ashesOfWar' in item;
 
 type Tip = 'affinity' | 'skill';
 
@@ -69,15 +85,16 @@ type Tip = 'affinity' | 'skill';
  * that toggle the details on tap or keyboard. In edit mode the picker shows them instead.
  */
 function Slot({
-  affinity = '',
+  affinity = null,
   affinityId = '',
+  ash = null,
   background = '',
+  backgroundIcon,
   disabled = false,
   id = '',
   item = null,
   size = null,
   subId = '',
-  subItem = null,
   type,
 }: SlotProps) {
   const dispatch = useAppDispatch();
@@ -110,12 +127,18 @@ function Slot({
     }
   };
 
-  const weaponSkillName = subItem || (subId ? equipment[subId] : null);
-  const weaponAffinity = affinity || (affinityId ? equipment[affinityId] : null);
-  const weaponSkill = getSkill(weaponSkillName);
+  // A weapon's affinity (null = Standard: no badge) and skill (its Ash's, else its built-in one;
+  // "No Skill" gets no badge).
+  const weapon = isWeapon(item) ? item : null;
+  const appliedAsh: AshOfWar | null =
+    (ash !== null ? getAsh(ash) : subId ? equipment[subId] : null) ?? null;
+  const affinityKey = affinity ?? (affinityId ? equipment[affinityId] : null);
+  const weaponAffinity = weapon && affinityKey ? affinityName(affinityKey) : null;
+  const skill = weapon ? weaponSkill(weapon, appliedAsh) : undefined;
+  const weaponSkillShown = skill && skill.id !== NO_SKILL_ID ? skill : undefined;
   const details = [
     weaponAffinity ? `${weaponAffinity} affinity` : null,
-    weaponSkill ? `${weaponSkill.name} skill` : null,
+    weaponSkillShown ? `${weaponSkillShown.name} skill` : null,
   ].filter(Boolean);
 
   // Enabled slots act as buttons that open the picker.
@@ -165,7 +188,8 @@ function Slot({
 
   return (
     <Container
-      $background={background}
+      $background={backgroundIcon ? iconUrl(backgroundIcon) : `/assets/menu/${background}.png`}
+      $faded={backgroundIcon !== undefined}
       $backgroundColor={backgroundColor}
       $disabled={disabled}
       $hasItem={hasItem}
@@ -173,31 +197,31 @@ function Slot({
       $size={size}
       onClick={handleClick}
       {...buttonProps}>
-      {!hasItem ? null : <img alt="" src={`/assets/${item.imageUrl}`} />}
+      {!hasItem ? null : <img alt="" loading="lazy" decoding="async" src={iconUrl(item.icon)} />}
       {!hasItem ? null : <NameContainer>{item.name}</NameContainer>}
       {weaponAffinity ? (
         <WeaponAffinityIconContainer {...badgeProps('affinity', `Affinity: ${weaponAffinity}`)}>
           A
         </WeaponAffinityIconContainer>
       ) : null}
-      {weaponSkill ? (
-        <WeaponSkillIconContainer {...badgeProps('skill', `Skill: ${weaponSkill.name}`)}>
+      {weaponSkillShown ? (
+        <WeaponSkillIconContainer {...badgeProps('skill', `Skill: ${weaponSkillShown.name}`)}>
           S
         </WeaponSkillIconContainer>
       ) : null}
-      {weaponSkill && openTip === 'skill' ? (
+      {weaponSkillShown && openTip === 'skill' ? (
         <WeaponSkillContainer vertical role="tooltip">
           <FlexGroup>
             <WeaponSkillLabel>Weapon Skill:</WeaponSkillLabel>
-            <WeaponSkillValue>{weaponSkill.name}</WeaponSkillValue>
+            <WeaponSkillValue>{weaponSkillShown.name}</WeaponSkillValue>
           </FlexGroup>
           <FlexGroup>
-            <WeaponSkillLabel>Effect:</WeaponSkillLabel>
-            <WeaponSkillValue>{weaponSkill.effect}</WeaponSkillValue>
+            <WeaponSkillLabel>From:</WeaponSkillLabel>
+            <WeaponSkillValue>{appliedAsh ? 'Ash of War' : 'Built-in'}</WeaponSkillValue>
           </FlexGroup>
           <FlexGroup>
             <WeaponSkillLabel>FP:</WeaponSkillLabel>
-            <WeaponSkillValue>{weaponSkill.fp}</WeaponSkillValue>
+            <WeaponSkillValue>{weaponSkillShown.fp}</WeaponSkillValue>
           </FlexGroup>
         </WeaponSkillContainer>
       ) : null}
@@ -214,7 +238,9 @@ function Slot({
 }
 
 interface ContainerProps {
+  /** Placeholder image URL for an empty slot. */
   $background: string;
+  $faded: boolean;
   $backgroundColor: string;
   $disabled: boolean;
   $hasItem: boolean;
@@ -240,11 +266,12 @@ const Container = styled(FlexGroup)<ContainerProps>`
     right: 0px;
     bottom: 0px;
     left: 0px;
-    background-image: ${({ $background, $hasItem }) => ($hasItem ? 'none' : `url("/assets/menu/${$background}.png")`)};
+    background-image: ${({ $background, $hasItem }) => ($hasItem ? 'none' : `url("${$background}")`)};
     background-size: auto 80%;
     background-repeat: no-repeat;
     background-position: center;
-    opacity: 1;
+    opacity: ${({ $faded }) => ($faded ? 0.3 : 1)};
+    filter: ${({ $faded }) => ($faded ? 'grayscale(1)' : 'none')};
     box-shadow: 0px 0px 3px ${COLOR_GREEN};
   }
 

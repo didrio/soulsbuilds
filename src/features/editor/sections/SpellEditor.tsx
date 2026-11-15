@@ -12,7 +12,7 @@ function SpellEditor({ editable }: { editable: boolean }) {
 
   const slotPoints = SPELL_SLOTS.reduce((count, slot) => {
     const spell = spells[slot];
-    return count + (spell ? Number(spell.slot) : 0);
+    return count + (spell?.slots ?? 0);
   }, 0);
 
   const disabled = !editable;

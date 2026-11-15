@@ -14,13 +14,14 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T3–T6, T10 and T7's data done, most of T9/T11): Vite 8, React 19 (React Compiler), RTK 2,
+As of 2026-11-15 (T3–T7, T10, T13 done, most of T9/T11): Vite 8, React 19 (React Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 12, strict TypeScript. Firestore model v2 with tested rules
-and a v1→v2 migration; one `AuthProvider`; page states; search, delete, rename, change items in place,
-consumables, send-only email verification; reports + `scripts/admin.mjs` moderation; Playwright e2e; all green
-in CI. **Production is dark** (v1 data under the expired 2022 rules); T12 deploys rules, indexes, migrations
-and App Check with the owner. Game data v2 (base + DLC, game IDs, from the game files) is in `src/data/er/`;
-the app reads the 2022 files until T13 moves it and Firestore to IDs.
+and a v1→v2 migration (2022 names → game IDs); one `AuthProvider`; page states; search, delete, rename, change
+items in place, consumables, great rune and spirit ash, send-only email verification; reports +
+`scripts/admin.mjs` moderation; Playwright e2e; all green in CI. Game data v2 (base + DLC, from the game
+files) in `src/data/er/`; builds store game IDs; the picker follows the game's Ash of War/affinity rules.
+**Production is dark** (v1 data under the expired 2022 rules); T12 deploys rules, indexes, the migration and
+App Check with the owner.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -95,7 +96,7 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
 index.html                 Vite entry (Adobe Typekit font kit + favicon placeholder) → src/main.tsx
 src/
   main.tsx                 createRoot + <AppProviders><App/>
-  app/                     App (shell: header, login/register slide-down panel, item-picker modal),
+  app/                     App (shell: header, login/register slide-down panel, item-picker modal, footer),
                            routes.tsx (/, /build/:buildId, /user/:userId, 404), AppProviders (Query, Auth,
                            Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch), Header
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
@@ -106,8 +107,9 @@ src/
   features/editor/         BuildEditorPage (view/create/edit/delete) + useBuildEditor; queries.ts (useBuild,
                            useSaveBuild, likes, comments); sections/ (BuildTitle with like button, BuildDetailsForm,
                            Equipment/Stat/Tear/SpellEditor, DescriptionSection, BuildTags, CommentsSection);
-                           Slot, ItemSelector (picker), slots.ts; store/ = Redux slices for the build being
-                           edited + selectors + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
+                           Slot, ItemSelector (picker) + WeaponOptions (Ash of War, affinity), slots.ts; store/ =
+                           Redux slices for the build being edited + selectors + build.ts (loadBuild /
+                           selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: FlexGroup, Button, TextInput/TextAreaInput, DropDown, Chips, Tag,
                            PageMessage (loading/empty/not-found), ErrorMessage (with retry), FocusScope
                            (dialog/panel focus + Escape), LoadingAnimation…
@@ -117,16 +119,18 @@ src/
                            array.ts
   theme/                   Tokens: COLOR_* (colors.ts), FONT_* (fonts.ts), BELOW_* media queries (media.ts),
                            SPACE_* spacing scale (spacing.ts)
-  data/                    er/*.json game data v2 (T7: base + DLC, game IDs; written by `npm run data`) +
-                           schema.ts (zod; types only in the app). *.json + index.ts accessors (getWeapon(name),
-                           armorList(kind)…) + types.ts = the 2022 data the app still uses (T13). docs/data.md
+  data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
+                           (zod; types only in the app), index.ts accessors by ID (getWeapon(id),
+                           armorList(slot), iconUrl…), rules.ts (Ash of War/affinity/talisman rules, shared
+                           with scripts). docs/data.md
   test/                    Vitest setup, renderWithProviders (store, QueryClient, router, uid), fixtures
+                           (+ game IDs), editor.tsx (EditorWithPicker, searchItems)
 tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/
                            (scripts/admin.mjs), e2e/ (Playwright)
-public/assets/             icons/<iconId>.webp (T7 data); 2022 icons by category (deleted in T13); menu/ slot icons
+public/assets/             icons/<icon>.webp (T7 data); menu/ empty-slot icons (2022)
 scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, doctor, firebase (Java
-                           wrapper), lib/ (model-v2 helpers); data/ = game data pipeline (TypeScript) +
-                           name-aliases.json (2022 names → IDs); legacy-data/ = 2022 scrapers (reference only)
+                           wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript) +
+                           name-aliases.json (2022 names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
 firestore.rules            v2 security rules (not deployed until T12); firestore.indexes.json
 docs/                      architecture, firebase, data, decisions
@@ -147,7 +151,7 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Game data**: import from `@/data` (typed accessors), never the JSON files directly (tests excepted).
 - **Firestore**: only `src/lib/firebase/` imports the Firebase SDK (ESLint enforces it; type imports are
   fine). Every write has a rule in `firestore.rules` and a test in `tests/rules/`. Counters change in the same
-  batch as the doc they count. Builds reference items **by name** today (renames drop items: T13 moves to IDs).
+  batch as the doc they count. Builds reference items by **game ID** (`Equipment` in `src/lib/models.ts`).
 - **Markdown** from users renders through `rehype-sanitize`. Never `dangerouslySetInnerHTML`.
 - **Tests** are colocated `*.test.ts(x)`, Vitest + Testing Library. Components render with
   `renderWithProviders`; query by role/text. Game data integrity: `src/data/data.test.ts`.
@@ -179,8 +183,11 @@ TICKETS.md                 Ordered backlog; one ticket per session
   `serverTimestamps: 'estimate'`), so a just-written doc never has a null `createdAt`.
 - **`npm run seed` wipes the emulator's Firestore** before seeding, and so does importing `scripts/seed.mjs`
   (it runs on import): read constants from it with a regex instead.
-- **Item names in the 2022 data have scrape quirks** (`"Flame Grant me Strength"`, `"Glinstone Pebble"`): copy
-  names from the JSON. `scripts/seed.mjs` validates every name it uses.
+- **Firestore rules have an expression budget** (~1,000 per request; every field access counts, and function
+  arguments are re-evaluated at each use). Past it, writes fail with a bare `PERMISSION_DENIED`. Keep
+  `validEquipment` cheap; the full-equipment test in `tests/rules/` guards the worst case.
+- **Game rules live in `src/data/rules.ts`** (which Ash fits, which affinity, talisman groups). Scripts import
+  it directly (`../src/data/rules.ts`, Node strips the types), so it keeps type-only imports.
 - **`scripts/data/*.ts` run directly under Node 24** (type stripping): relative imports keep `.ts`, and only
   erasable syntax works (no enums). `src/data/er/` and `scripts/data/name-aliases.json` are machine-written
   (Prettier-ignored): change the pipeline and re-run it, never hand-edit.

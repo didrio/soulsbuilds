@@ -5,8 +5,11 @@ import type { RootState } from '@/app/store';
 import {
   getArmor,
   getArrow,
+  getAsh,
   getConsumable,
+  getGreatRune,
   getSpell,
+  getSpiritAsh,
   getTalisman,
   getTear,
   getWeapon,
@@ -30,8 +33,10 @@ import {
   updateChest,
   updateCon,
   updateGauntlet,
+  updateGreatRune,
   updateHelm,
   updateLeg,
+  updateSpiritAsh,
   updateTal,
   updateWeapon,
   updateWeaponAffinity,
@@ -42,9 +47,11 @@ import {
   selectChest,
   selectCons,
   selectGauntlet,
+  selectGreatRune,
   selectHelm,
   selectLeg,
   selectSpells,
+  selectSpiritAsh,
   selectStats,
   selectTals,
   selectTears,
@@ -71,9 +78,11 @@ export const clearEditor = (): AppThunk => (dispatch) => {
 };
 
 /**
- * Puts a saved build into the editor slots, looking each item up by name. Names that aren't in the
- * game data leave the slot empty (and are dropped on the next save; T7 moves to IDs). Saved arrays
- * fill slots in order; entries beyond the last slot are ignored. Starts from an empty editor.
+ * Puts a saved build into the editor slots, looking each item up by ID. IDs that aren't in the game
+ * data (or armor in the wrong slot) leave the slot empty and are dropped on the next save. Each
+ * weapon goes in before its Ash of War and affinity, which the reducers keep only if the weapon
+ * allows them. Saved arrays fill slots in order; entries beyond the last slot are ignored. Starts
+ * from an empty editor.
  */
 export const loadBuild =
   ({ stats, equipment }: Pick<BuildFields, 'stats' | 'equipment'>): AppThunk =>
@@ -107,18 +116,20 @@ export const loadBuild =
     WEAPON_SLOTS.forEach((id, i) => {
       if (i < weapons.length) dispatch(updateWeapon({ id, item: getWeapon(weapons[i]) ?? null }));
     });
+    WEAPON_SKILL_SLOTS.forEach((id, i) => {
+      if (i < weaponSkills.length)
+        dispatch(updateWeaponSkill({ id, item: getAsh(weaponSkills[i]) ?? null }));
+    });
     WEAPON_AFFINITY_SLOTS.forEach((id, i) => {
       if (i < weaponAffinities.length)
         dispatch(updateWeaponAffinity({ id, item: weaponAffinities[i] ?? null }));
     });
-    WEAPON_SKILL_SLOTS.forEach((id, i) => {
-      if (i < weaponSkills.length)
-        dispatch(updateWeaponSkill({ id, item: weaponSkills[i] ?? null }));
-    });
-    dispatch(updateHelm(getArmor('helms', equipment.helm) ?? null));
-    dispatch(updateLeg(getArmor('legs', equipment.leg) ?? null));
-    dispatch(updateChest(getArmor('chests', equipment.chest) ?? null));
-    dispatch(updateGauntlet(getArmor('gauntlets', equipment.gauntlet) ?? null));
+    dispatch(updateHelm(getArmor(equipment.helm, 'head') ?? null));
+    dispatch(updateChest(getArmor(equipment.chest, 'chest') ?? null));
+    dispatch(updateGauntlet(getArmor(equipment.gauntlet, 'arms') ?? null));
+    dispatch(updateLeg(getArmor(equipment.leg, 'legs') ?? null));
+    dispatch(updateGreatRune(getGreatRune(equipment.greatRune) ?? null));
+    dispatch(updateSpiritAsh(getSpiritAsh(equipment.spiritAsh) ?? null));
     dispatch(setStats(stats));
   };
 
@@ -142,6 +153,8 @@ export const selectBuildFields = createSelector(
     selectLeg,
     selectChest,
     selectGauntlet,
+    selectGreatRune,
+    selectSpiritAsh,
   ],
   (
     stats,
@@ -158,6 +171,8 @@ export const selectBuildFields = createSelector(
     leg,
     chest,
     gauntlet,
+    greatRune,
+    spiritAsh,
   ): BuildFields => ({
     level,
     stats,
@@ -170,10 +185,12 @@ export const selectBuildFields = createSelector(
       spells,
       tears,
       consumables: cons,
-      helm: helm?.name ?? null,
-      chest: chest?.name ?? null,
-      gauntlet: gauntlet?.name ?? null,
-      leg: leg?.name ?? null,
+      helm: helm?.id ?? null,
+      chest: chest?.id ?? null,
+      gauntlet: gauntlet?.id ?? null,
+      leg: leg?.id ?? null,
+      greatRune: greatRune?.id ?? null,
+      spiritAsh: spiritAsh?.id ?? null,
     },
   }),
 );

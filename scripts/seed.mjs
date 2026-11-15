@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
+import { fitAffinity, fitAsh, talismanConflict } from '../src/data/rules.ts';
 import { buildContent, GAME } from './lib/model-v2.mjs';
 
 export const SEED_PASSWORD = 'seed-password-123';
@@ -31,14 +32,24 @@ for (const name of ['FIRESTORE_EMULATOR_HOST', 'FIREBASE_AUTH_EMULATOR_HOST']) {
   }
 }
 
-const data = (file) => JSON.parse(readFileSync(join(root, 'src', 'data', file), 'utf8'));
-const weapons = data('weaponsAndShields.json');
-const armor = data('armorIndexed.json');
-const talismans = new Set(data('talismans.json').map((t) => t.name));
-const spells = new Set(data('spells.json').map((s) => s.name));
-const tears = new Set(data('tears.json').map((t) => t.name));
-const skills = data('skillsIndexed.json');
-const { affinities } = data('affinities.json');
+// Game data v2 (src/data/er/). Seed builds name their items; toEquipmentIds() looks the IDs up.
+const er = (file) =>
+  JSON.parse(readFileSync(join(root, 'src', 'data', 'er', `${file}.json`), 'utf8'));
+const DATA = Object.fromEntries(
+  [
+    'weapons',
+    'armor',
+    'arrows',
+    'talismans',
+    'spells',
+    'tears',
+    'consumables',
+    'greatRunes',
+    'spiritAshes',
+    'ashesOfWar',
+    'skills',
+  ].map((file) => [file, er(file)]),
+);
 
 const at = (month, day) => Timestamp.fromDate(new Date(Date.UTC(2026, month - 1, day, 12)));
 
@@ -64,7 +75,7 @@ const stats = (vigor, mind, end, str, dex, int, fai, arc) => ({
 });
 const noWeapons = [null, null, null, null, null, null];
 
-// Builds in the editor's terms; main() turns them into v2 documents with buildContent().
+// Builds with item names (as in the game); main() turns them into v2 documents with item IDs.
 const BUILDS = [
   {
     id: 'SEEDBLEED001',
@@ -86,7 +97,8 @@ const BUILDS = [
     stats: stats(50, 15, 25, 18, 40, 9, 8, 45),
     equipment: {
       weapons: ['Rivers of Blood', null, null, 'Uchigatana', null, null],
-      weaponAffinities: [null, null, null, 'Blood', null, null],
+      weaponAffinities: [null, null, null, 'blood', null, null],
+      // Ashes of War by the skill they grant; null = the weapon's built-in skill.
       weaponSkills: [null, null, null, 'Seppuku', null, null],
       talismans: [
         "Lord of Blood's Exultation",
@@ -99,6 +111,8 @@ const BUILDS = [
       chest: 'Raging Wolf Armor',
       gauntlet: 'Raging Wolf Gauntlets',
       leg: 'Raging Wolf Greaves',
+      greatRune: "Mohg's Great Rune",
+      spiritAsh: 'Mimic Tear Ashes',
     },
   },
   {
@@ -125,6 +139,8 @@ const BUILDS = [
       chest: "Lusat's Robe",
       gauntlet: "Lusat's Manchettes",
       leg: "Old Sorcerer's Legwraps",
+      greatRune: "Radahn's Great Rune",
+      spiritAsh: 'Lone Wolf Ashes',
     },
   },
   {
@@ -139,13 +155,14 @@ const BUILDS = [
     stats: stats(45, 20, 25, 30, 12, 9, 60, 9),
     equipment: {
       weapons: ['Blasphemous Blade', null, null, 'Brass Shield', null, null],
+      weaponSkills: [null, null, null, 'Barricade Shield', null, null],
       talismans: [
         "Erdtree's Favor +2",
         'Godfrey Icon',
         'Flamedrake Talisman +2',
         'Shard of Alexander',
       ],
-      spells: ['Golden Vow', 'Flame Grant me Strength', 'Erdtree Heal'],
+      spells: ['Golden Vow', 'Flame, Grant Me Strength', 'Erdtree Heal'],
       tears: ['Opaline Hardtear', 'Greenburst Crystal Tear'],
     },
   },
@@ -163,27 +180,62 @@ const BUILDS = [
   },
 ];
 
-// Seed data must only reference items that exist, or the editor silently drops them.
-function validate(build) {
-  const problems = [];
-  const check = (ok, what) => ok || problems.push(what);
-  const e = buildContent(build).equipment;
-  e.weapons.forEach((n) => n && check(weapons[n], `weapon "${n}"`));
-  e.weaponAffinities.forEach((n) => n && check(affinities.includes(n), `affinity "${n}"`));
-  e.weaponSkills.forEach((n) => n && check(skills[n], `skill "${n}"`));
-  e.talismans.forEach((n) => check(talismans.has(n), `talisman "${n}"`));
-  e.spells.forEach((n) => check(spells.has(n), `spell "${n}"`));
-  e.tears.forEach((n) => check(tears.has(n), `tear "${n}"`));
-  for (const [slot, group] of [
-    ['helm', 'helms'],
-    ['chest', 'chests'],
-    ['gauntlet', 'gauntlets'],
-    ['leg', 'legs'],
-  ]) {
-    if (e[slot]) check(armor[group][e[slot]], `${slot} "${e[slot]}"`);
-  }
-  if (problems.length)
-    throw new Error(`Seed build ${build.id} references unknown ${problems.join(', ')}`);
+const ARMOR_SLOTS = { helm: 'head', chest: 'chest', gauntlet: 'arms', leg: 'legs' };
+
+/**
+ * A seed build's equipment with item names turned into game IDs. Throws on a name that isn't in the
+ * data, an Ash of War or affinity the weapon can't have, or talismans that can't be worn together,
+ * so the seed never shows something the editor would drop.
+ */
+function toEquipmentIds({ id: buildId, equipment: e }) {
+  const fail = (what) => {
+    throw new Error(`Seed build ${buildId}: ${what}`);
+  };
+  const find = (file, name, matches = () => true) =>
+    DATA[file].find((item) => item.name === name && matches(item)) ??
+    fail(`no ${file} item "${name}"`);
+  const ids = (file, names = []) => names.map((name) => (name ? find(file, name).id : null));
+  const skillName = (ash) => DATA.skills.find((skill) => skill.id === ash.skill)?.name;
+
+  const weapons = (e.weapons ?? []).map((name) => (name ? find('weapons', name) : null));
+  const weaponSkills = weapons.map((weapon, i) => {
+    const name = e.weaponSkills?.[i];
+    if (!name) return null;
+    const ash = find('ashesOfWar', `Ash of War: ${name}`, (a) => skillName(a) === name);
+    if (!weapon || fitAsh(weapon, ash, DATA.ashesOfWar) !== ash)
+      fail(`${weapon?.name ?? 'an empty slot'} can't take the Ash of War "${name}"`);
+    return ash;
+  });
+  const weaponAffinities = weapons.map((weapon, i) => {
+    const key = e.weaponAffinities?.[i] ?? null;
+    if (key && (!weapon || fitAffinity(weapon, weaponSkills[i], key, DATA.ashesOfWar) !== key))
+      fail(`${weapon?.name ?? 'an empty slot'} can't have the affinity "${key}"`);
+    return key;
+  });
+  const talismans = (e.talismans ?? []).map((name) => find('talismans', name));
+  talismans.forEach((talisman, i) => {
+    const conflict = talismanConflict(talisman, talismans.slice(0, i));
+    if (conflict) fail(`"${talisman.name}" can't be worn with "${conflict.name}"`);
+  });
+  const armor = Object.fromEntries(
+    Object.entries(ARMOR_SLOTS).map(([slot, armorSlot]) => [
+      slot,
+      e[slot] ? find('armor', e[slot], (piece) => piece.slot === armorSlot).id : null,
+    ]),
+  );
+  return {
+    weapons: weapons.map((weapon) => weapon?.id ?? null),
+    weaponAffinities,
+    weaponSkills: weaponSkills.map((ash) => ash?.id ?? null),
+    arrows: ids('arrows', e.arrows),
+    talismans: talismans.map((talisman) => talisman.id),
+    spells: ids('spells', e.spells),
+    tears: ids('tears', e.tears),
+    consumables: ids('consumables', e.consumables),
+    ...armor,
+    greatRune: e.greatRune ? find('greatRunes', e.greatRune).id : null,
+    spiritAsh: e.spiritAsh ? find('spiritAshes', e.spiritAsh).id : null,
+  };
 }
 
 // Empties the emulator's Firestore (emulator REST API), so re-seeding gives a known state.
@@ -194,7 +246,10 @@ async function clearFirestore() {
 }
 
 async function main() {
-  BUILDS.forEach(validate);
+  // Resolve every name first: a typo fails before the emulator is touched.
+  const contents = new Map(
+    BUILDS.map((build) => [build.id, buildContent({ ...build, equipment: toEquipmentIds(build) })]),
+  );
   initializeApp({ projectId: PROJECT_ID });
   const auth = getAuth();
   const db = getFirestore();
@@ -219,7 +274,7 @@ async function main() {
     const batch = db.batch();
     const ref = db.doc(`builds/${build.id}`);
     batch.set(ref, {
-      ...buildContent(build),
+      ...contents.get(build.id),
       ownerId: build.ownerId,
       game: GAME,
       likeCount: build.likedBy.length,

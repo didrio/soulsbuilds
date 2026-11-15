@@ -1,10 +1,12 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { getWeapon } from '@/data';
+import { MOONVEIL, SEPPUKU_ASH, UCHIGATANA } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import Slot from './Slot';
 
-const uchigatana = getWeapon('Uchigatana')!;
+const uchigatana = getWeapon(UCHIGATANA)!;
+const BRASS_SHIELD = 31130000;
 
 describe('Slot', () => {
   it('view mode: the affinity and skill badges toggle their details on tap or keyboard', async () => {
@@ -12,8 +14,8 @@ describe('Slot', () => {
       <Slot
         disabled
         item={uchigatana}
-        affinity="Blood"
-        subItem="Seppuku"
+        affinity="blood"
+        ash={SEPPUKU_ASH}
         type="SLOT_TYPE_WEAPON"
       />,
     );
@@ -34,7 +36,7 @@ describe('Slot', () => {
 
   it('mouse hover still shows the details; touch pointers wait for the tap', () => {
     renderWithProviders(
-      <Slot disabled item={uchigatana} affinity="Blood" type="SLOT_TYPE_WEAPON" />,
+      <Slot disabled item={uchigatana} affinity="blood" type="SLOT_TYPE_WEAPON" />,
     );
     const badge = screen.getByRole('button', { name: 'Affinity: Blood' });
     fireEvent.pointerEnter(badge, { pointerType: 'touch' });
@@ -50,8 +52,8 @@ describe('Slot', () => {
       <Slot
         id="weapon1"
         item={uchigatana}
-        affinity="Blood"
-        subItem="Seppuku"
+        affinity="blood"
+        ash={SEPPUKU_ASH}
         type="SLOT_TYPE_WEAPON"
       />,
     );
@@ -59,5 +61,16 @@ describe('Slot', () => {
     expect(
       screen.getByRole('button', { name: 'Change Uchigatana (Blood affinity, Seppuku skill)' }),
     ).toBeInTheDocument();
+  });
+
+  it("shows a weapon's built-in skill, except No Skill", () => {
+    renderWithProviders(<Slot disabled item={getWeapon(MOONVEIL)!} type="SLOT_TYPE_WEAPON" />);
+    expect(screen.getByRole('button', { name: 'Skill: Transient Moonlight' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Affinity/ })).not.toBeInTheDocument();
+  });
+
+  it('shows no skill badge for "No Skill" (most shields)', () => {
+    renderWithProviders(<Slot disabled item={getWeapon(BRASS_SHIELD)!} type="SLOT_TYPE_WEAPON" />);
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 });

@@ -1,6 +1,5 @@
 // Integrity checks for the game data v2 in src/data/er/ (T7), written by `npm run data` from the
-// owner's export of the game files (docs/data.md). The 2022 files next to it are frozen until T13
-// switches the app over and deletes them.
+// owner's export of the game files (docs/data.md).
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -192,7 +191,8 @@ describe('game data v2', () => {
     expect(tags.Bosses).toContain('Radagon / Elden Beast');
     expect(tags.Bosses).toContain('Messmer');
     expect(tags.Bosses).toContain('Promised Consort Radahn');
-    expect(tags['Melee Weapons']).toContain('Warhammer'); // 2022 tag string, kept for saved builds
+    expect(tags['Melee Weapons']).toContain('Great Hammer'); // 2022 "Warhammer", renamed in T13
+    expect(tags['Melee Weapons']).not.toContain('Warhammer');
     expect(tags['Melee Weapons']).toContain('Great Katana');
   });
 });

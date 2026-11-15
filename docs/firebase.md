@@ -55,8 +55,11 @@ What it changes: builds get `ownerId`, `game`, numeric stats (clamped 1–99, re
 map, timestamps from the docs' own create/update times; `comments[]` → comments subcollection;
 users' `likedBuilds[]` → likes subcollection, with `likeCount`/`commentCount` counted from what was written.
 Users become `{ displayName, createdAt }`: **emails are dropped from Firestore** (they stay in Firebase Auth)
-and v1 `admin: true` flags are reported (set a custom claim instead if still wanted). The report lists every
-renamed, clamped or dropped value.
+and v1 `admin: true` flags are reported (set a custom claim instead if still wanted). Item names become game
+IDs (T13, `scripts/lib/names-to-ids.mjs` with `scripts/data/name-aliases.json`): names the game data doesn't
+have, and Ash of War / affinity / talisman combinations the game doesn't allow, are dropped; the tag
+"Warhammer" becomes "Great Hammer". The report lists every renamed, clamped or dropped value, and ends with the
+dropped item names and how many builds lost each.
 
 ## Moderation: reports and admins (T10)
 

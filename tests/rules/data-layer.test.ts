@@ -55,18 +55,20 @@ const input: BuildInput = {
   tags: ['Rennala'],
   stats: { vigor: 40, mind: 30, end: 15, str: 12, dex: 18, int: 80, fai: 7, arc: 9 },
   equipment: {
-    weapons: ['Moonveil', null, null, 'Carian Regal Scepter', null, null],
+    weapons: [9060000, null, null, 33090000, null, null], // Moonveil, Carian Regal Scepter
     weaponAffinities: [null, null, null, null, null, null],
     weaponSkills: [null, null, null, null, null, null],
     arrows: [null, null, null, null],
-    talismans: ['Graven-Mass Talisman'],
-    spells: ["Rennala's Full Moon"],
+    talismans: [3001], // Graven-Mass Talisman
+    spells: [4000], // Glintstone Pebble
     tears: [],
     consumables: [],
     helm: null,
-    chest: "Lusat's Robe",
+    chest: 580100, // Lusat's Robe
     gauntlet: null,
     leg: null,
+    greatRune: null,
+    spiritAsh: 207000, // Mimic Tear Ashes
   },
 };
 

@@ -24,29 +24,57 @@ export const calculateLevel = (stats) =>
 
 const name = (value) => (typeof value === 'string' && value.trim() ? value.trim() : null);
 
-/** Exactly `length` entries, null for empty or missing slots. */
-const positional = (list, length) =>
-  Array.from({ length }, (_, i) => (Array.isArray(list) ? name(list[i]) : null));
+/** Affinities a build stores; Standard is stored as null (see src/lib/models.ts Equipment). */
+export const AFFINITY_KEYS = [
+  'heavy',
+  'keen',
+  'quality',
+  'fire',
+  'flame-art',
+  'lightning',
+  'sacred',
+  'magic',
+  'cold',
+  'poison',
+  'blood',
+  'occult',
+];
 
-/** Non-empty names only, at most `max`. */
+/** A game item ID (a non-negative integer), or null. */
+const id = (value) => (Number.isInteger(value) && value >= 0 ? value : null);
+const affinity = (value) => (AFFINITY_KEYS.includes(value) ? value : null);
+
+/** Exactly `length` entries, null for empty, missing or invalid slots. */
+const positional = (list, length, clean = id) =>
+  Array.from({ length }, (_, i) => (Array.isArray(list) ? clean(list[i]) : null));
+
+/** Valid IDs only, at most `max`. */
 const compacted = (list, max) =>
-  (Array.isArray(list) ? list : []).map(name).filter(Boolean).slice(0, max);
+  (Array.isArray(list) ? list : [])
+    .map(id)
+    .filter((value) => value !== null)
+    .slice(0, max);
 
-/** The `equipment` map from loose input (missing groups become empty). */
+/**
+ * The `equipment` map from loose input with item IDs (missing groups become empty). Doesn't check
+ * that IDs exist or fit the weapon: callers do (scripts/lib/names-to-ids.mjs, src/data/rules.ts).
+ */
 export function toEquipment(e = {}) {
   return {
     weapons: positional(e.weapons, SLOT_COUNTS.weapons),
-    weaponAffinities: positional(e.weaponAffinities, SLOT_COUNTS.weapons),
+    weaponAffinities: positional(e.weaponAffinities, SLOT_COUNTS.weapons, affinity),
     weaponSkills: positional(e.weaponSkills, SLOT_COUNTS.weapons),
     arrows: positional(e.arrows, SLOT_COUNTS.arrows),
     talismans: compacted(e.talismans, SLOT_COUNTS.talismans),
     spells: compacted(e.spells, SLOT_COUNTS.spells),
     tears: compacted(e.tears, SLOT_COUNTS.tears),
     consumables: compacted(e.consumables, SLOT_COUNTS.consumables),
-    helm: name(e.helm),
-    chest: name(e.chest),
-    gauntlet: name(e.gauntlet),
-    leg: name(e.leg),
+    helm: id(e.helm),
+    chest: id(e.chest),
+    gauntlet: id(e.gauntlet),
+    leg: id(e.leg),
+    greatRune: id(e.greatRune),
+    spiritAsh: id(e.spiritAsh),
   };
 }
 
@@ -58,7 +86,10 @@ export function buildContent({ name: rawName, description, tags, stats, equipmen
     name: buildName,
     nameLower: buildName.toLowerCase(),
     description: typeof description === 'string' ? description.slice(0, LIMITS.description) : '',
-    tags: [...new Set(compacted(tags, Infinity))].slice(0, LIMITS.tags),
+    tags: [...new Set((Array.isArray(tags) ? tags : []).map(name).filter(Boolean))].slice(
+      0,
+      LIMITS.tags,
+    ),
     level: calculateLevel(cleanStats),
     stats: cleanStats,
     equipment: toEquipment(equipment),

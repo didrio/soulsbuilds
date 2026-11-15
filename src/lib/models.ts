@@ -2,6 +2,7 @@
 // docs/architecture.md "Firestore model (v2)". firestore.rules validates every write, so reads are
 // trusted to have these shapes (src/lib/firebase/ casts at the boundary).
 import type { Timestamp } from 'firebase/firestore';
+import type { AffinityKey } from '@/data/schema';
 import type { Stats } from './buildMath';
 
 export const GAME_ELDEN_RING = 'elden-ring';
@@ -18,22 +19,26 @@ export const LIMITS = {
 } as const;
 
 /**
- * Item names per slot group (T7 moves to IDs). Weapon lists are positional, 6 long (slots 1–3 main
- * hand, 4–6 off hand; null = empty); arrows positional, 4 long; the rest compacted.
+ * Items by game ID (the param row ID in src/data/er/; each field implies the file). Weapon lists are
+ * positional, 6 long (slots 1–3 main hand, 4–6 off hand; null = empty); arrows positional, 4 long;
+ * the rest compacted. A weapon's affinity is null for Standard, its skill the Ash of War applied
+ * (null = the weapon's built-in skill); the editor keeps both valid for the weapon (src/data/rules.ts).
  */
 export interface Equipment {
-  weapons: (string | null)[];
-  weaponAffinities: (string | null)[];
-  weaponSkills: (string | null)[];
-  arrows: (string | null)[];
-  talismans: string[];
-  spells: string[];
-  tears: string[];
-  consumables: string[];
-  helm: string | null;
-  chest: string | null;
-  gauntlet: string | null;
-  leg: string | null;
+  weapons: (number | null)[];
+  weaponAffinities: (AffinityKey | null)[];
+  weaponSkills: (number | null)[];
+  arrows: (number | null)[];
+  talismans: number[];
+  spells: number[];
+  tears: number[];
+  consumables: number[];
+  helm: number | null;
+  chest: number | null;
+  gauntlet: number | null;
+  leg: number | null;
+  greatRune: number | null;
+  spiritAsh: number | null;
 }
 
 /** What the build editor saves: the owner-editable part of a build. */

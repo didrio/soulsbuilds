@@ -2,15 +2,21 @@ import type { ChangeEvent } from 'react';
 import styled from 'styled-components';
 import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN, FONT_BODY } from '@/theme';
 
+/** An option: a string is both value and label. */
+export type DropDownOption = string | { value: string; label: string };
+
 interface DropDownProps {
   /** Accessible name of the select. */
   label: string;
-  /** The chosen option, or null when the placeholder ("none") is chosen. */
+  /** The chosen option's value, or null when the placeholder ("none") is chosen. */
   onChange: (value: string | null) => void;
-  options: readonly string[];
+  options: readonly DropDownOption[];
   placeholder: string;
   value: string;
 }
+
+const optionOf = (option: DropDownOption) =>
+  typeof option === 'string' ? { value: option, label: option } : option;
 
 /** A `<select>` with a placeholder option, which clears the value. */
 function DropDown({ label, onChange, options, placeholder, value }: DropDownProps) {
@@ -21,9 +27,9 @@ function DropDown({ label, onChange, options, placeholder, value }: DropDownProp
   return (
     <Container aria-label={label} onChange={handleChange} value={value}>
       <Option value="">{placeholder}</Option>
-      {options.map((option) => (
-        <Option key={option} value={option}>
-          {option}
+      {options.map(optionOf).map((option) => (
+        <Option key={option.value} value={option.value}>
+          {option.label}
         </Option>
       ))}
     </Container>

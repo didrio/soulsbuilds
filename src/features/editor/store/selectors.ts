@@ -1,5 +1,5 @@
-// Selectors over the editor state. The plural selectors map the slots to the arrays a v1 build
-// document stores (item names; see BuildDoc in src/lib/models.ts).
+// Selectors over the editor state. The plural selectors map the slots to the arrays a build
+// document stores (item IDs; see Equipment in src/lib/models.ts).
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/app/store';
 import type { SlotItem } from '@/data';
@@ -30,48 +30,50 @@ export const selectHelm = (state: RootState) => state.equipment.helm;
 export const selectLeg = (state: RootState) => state.equipment.leg;
 export const selectChest = (state: RootState) => state.equipment.chest;
 export const selectGauntlet = (state: RootState) => state.equipment.gauntlet;
+export const selectGreatRune = (state: RootState) => state.equipment.greatRune;
+export const selectSpiritAsh = (state: RootState) => state.equipment.spiritAsh;
 
 /** Saved compacted: slot positions are lost. */
 export const selectTears = createSelector(selectTearSlots, (tears) =>
-  compact(TEAR_SLOTS.map((slot) => tears[slot]?.name ?? null)),
+  compact(TEAR_SLOTS.map((slot) => tears[slot]?.id ?? null)),
 );
 
 /** Saved compacted: slot positions are lost. */
 export const selectSpells = createSelector(selectSpellSlots, (spells) =>
-  compact(SPELL_SLOTS.map((slot) => spells[slot]?.name ?? null)),
+  compact(SPELL_SLOTS.map((slot) => spells[slot]?.id ?? null)),
 );
 
 /** Positional, null for empty slots. */
 export const selectArrows = createSelector(selectEquipment, (equipment) =>
-  ARROW_SLOTS.map((slot) => equipment[slot]?.name ?? null),
+  ARROW_SLOTS.map((slot) => equipment[slot]?.id ?? null),
 );
 
 /** Saved compacted: slot positions are lost. */
 export const selectCons = createSelector(selectEquipment, (equipment) =>
-  compact(CONSUMABLE_SLOTS.map((slot) => equipment[slot]?.name ?? null)),
+  compact(CONSUMABLE_SLOTS.map((slot) => equipment[slot]?.id ?? null)),
 );
 
 /** Saved compacted: slot positions are lost. */
 export const selectTals = createSelector(selectEquipment, (equipment) =>
-  compact(TALISMAN_SLOTS.map((slot) => equipment[slot]?.name ?? null)),
+  compact(TALISMAN_SLOTS.map((slot) => equipment[slot]?.id ?? null)),
 );
 
 /** Positional, null for empty slots. */
 export const selectWeapons = createSelector(selectEquipment, (equipment) =>
-  WEAPON_SLOTS.map((slot) => equipment[slot]?.name ?? null),
+  WEAPON_SLOTS.map((slot) => equipment[slot]?.id ?? null),
 );
 
-/** Positional skill names. */
+/** Positional Ash of War IDs (null = the weapon's built-in skill). */
 export const selectWeaponSkills = createSelector(selectEquipment, (equipment) =>
-  WEAPON_SKILL_SLOTS.map((slot) => equipment[slot]),
+  WEAPON_SKILL_SLOTS.map((slot) => equipment[slot]?.id ?? null),
 );
 
-/** Positional affinity names. */
+/** Positional affinity keys (null = Standard). */
 export const selectWeaponAffinities = createSelector(selectEquipment, (equipment) =>
   WEAPON_AFFINITY_SLOTS.map((slot) => equipment[slot]),
 );
 
-/** The skill in the slot the picker is editing. */
+/** The Ash of War in the slot the picker is editing. */
 export const selectEditWeaponSkill = (state: RootState) =>
   state.app.editSubSlot ? state.equipment[state.app.editSubSlot] : null;
 
@@ -87,6 +89,8 @@ export const selectEditedItem = (state: RootState): SlotItem | null => {
   if (slotType === 'SLOT_TYPE_CHEST') return equipment.chest;
   if (slotType === 'SLOT_TYPE_GAUNTLET') return equipment.gauntlet;
   if (slotType === 'SLOT_TYPE_LEG') return equipment.leg;
+  if (slotType === 'SLOT_TYPE_GREAT_RUNE') return equipment.greatRune;
+  if (slotType === 'SLOT_TYPE_SPIRIT_ASH') return equipment.spiritAsh;
   if (isSlot(SPELL_SLOTS, editSlot)) return state.spells[editSlot];
   if (isSlot(TEAR_SLOTS, editSlot)) return state.tears[editSlot];
   if (isSlot(WEAPON_SLOTS, editSlot)) return equipment[editSlot];

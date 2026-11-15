@@ -11,9 +11,17 @@ node -e 'console.log(require("./src/data/er/spells.json").filter(s=>/Heal/.test(
 ## v2: `src/data/er/` (T7, base game + Shadow of the Erdtree)
 
 Extracted from the owner's own copy of the game (regulation 1.17.3, exported 2026-11-15) and written by
-`npm run data`. **The app doesn't use it yet**: T13 switches the app and Firestore over and deletes the 2022
-files below. Shapes: zod schemas in `src/data/schema.ts` (app code imports their types only, so zod stays out
-of the bundle).
+`npm run data`. The app reads it through `src/data/index.ts` (`@/data`): lists (`weapons`, `armorList(slot)`,
+`greatRunes`…), lookups by ID (`getWeapon(id)`, `getArmor(id, slot)`, `getAsh(id)`…, `undefined` for an
+unknown ID), `iconUrl(icon)`, display helpers (`affinityName`, `ashLabel`, `weaponSkill`). Shapes: zod schemas
+in `src/data/schema.ts` (app code imports their types only, so zod stays out of the bundle).
+
+**Equipment rules** (`src/data/rules.ts`, pure functions, type-only imports; the seed and the migration import
+the file directly): `ashChoices` (the Ashes a weapon can take, minus the one granting its built-in skill),
+`fitAsh` / `fitAffinity` (what a slot keeps; Standard = null), `allowedAffinities` (the weapon's own ∩ the
+Ash's, or the built-in skill's Ash when none is chosen; standard only when it takes no Ashes),
+`talismanConflict` (same `group`). The editor's reducers, the picker, the seed and the migration all go
+through them.
 
 | File                                                                    | What                                                                                                                                  |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -61,17 +69,14 @@ counts in `src/data/data.test.ts`, look at the diff (one item per line).
 - Not items: Unarmed (`110000`), the bare Head/Body/Arms/Legs rows, gestures (goods sort group 250).
 - Upgrade copies (spirit ash +1…+10, written "+1" or "+ 1"; flasks +1…+12) collapse to one item.
 
-## 2022 files: `src/data/*.json` (frozen, deleted by T13)
+## Builds and the 2022 names
 
-Scraped from rankedboost.com in April 2022 (`scripts/legacy-data/`, reference only); base game only, numbers
-as strings, wrong affinities ("Frost", no Flame Art), 36 missing skills, 44 consumables without images. The app
-still reads them through `src/data/index.ts` (`getWeapon(name)`, `armorList(kind)`…; shapes in
-`src/data/types.ts`) with icons in `public/assets/{weapons,armor,items,spells,talismans}/`.
-
-**Builds reference items by name** until T13: a renamed or removed item silently disappears from a build on
-its next save. `scripts/data/name-aliases.json` (`node scripts/data/aliases.ts`) maps every 2022 name to its
-T7 ID for T13's migration: 1,357 of 1,376 items and all 137 skills (an Ash of War ID, or `null` for a
-weapon's built-in skill); the 18 unmapped names (cut armor, upgrade materials, scrape errors) are listed in
-it.
+Builds store these IDs (`Equipment` in `src/lib/models.ts`; `docs/architecture.md`). The 2022 app stored item
+names from a rankedboost.com scrape (deleted in T13; scrapers in `scripts/legacy-data/` for reference).
+`scripts/data/name-aliases.json` maps every 2022 name to its ID (1,357 of 1,376 items, all 137 skills as an Ash
+of War ID or `null` for a built-in skill, affinities with "Frost" → `cold`); the 18 `unmapped` names (cut armor,
+upgrade materials, scrape errors) are dropped. `scripts/migrate-v1-to-v2.mjs` uses it through
+`scripts/lib/names-to-ids.mjs` when T12 migrates production. The script that generated it went with the 2022
+files; the JSON stays until that migration has run.
 
 Don't add or change data sources without the owner's OK.

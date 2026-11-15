@@ -1,6 +1,13 @@
 // Model v2 fixtures for component tests.
 import type { Build, Comment, Equipment, UserProfile } from '@/lib/models';
 
+/** Game IDs used across tests. */
+export const MOONVEIL = 9060000;
+export const UCHIGATANA = 9000000;
+export const SEPPUKU_ASH = 60600;
+export const WHITE_MASK = 680000;
+export const GODRICKS_GREAT_RUNE = 191;
+
 export const emptyEquipment = (): Equipment => ({
   weapons: [null, null, null, null, null, null],
   weaponAffinities: [null, null, null, null, null, null],
@@ -14,6 +21,8 @@ export const emptyEquipment = (): Equipment => ({
   chest: null,
   gauntlet: null,
   leg: null,
+  greatRune: null,
+  spiritAsh: null,
 });
 
 export const makeBuild = (overrides: Partial<Build> = {}): Build => ({
@@ -25,7 +34,7 @@ export const makeBuild = (overrides: Partial<Build> = {}): Build => ({
   tags: ['Rennala'],
   level: 132,
   stats: { vigor: 40, mind: 30, end: 15, str: 12, dex: 18, int: 80, fai: 7, arc: 9 },
-  equipment: { ...emptyEquipment(), weapons: ['Moonveil', null, null, null, null, null] },
+  equipment: { ...emptyEquipment(), weapons: [MOONVEIL, null, null, null, null, null] },
   likeCount: 1,
   commentCount: 0,
   createdAt: new Date(Date.UTC(2026, 9, 5)),

@@ -5,9 +5,11 @@ export const SLOT_TYPE_ARROW = 'SLOT_TYPE_ARROW';
 export const SLOT_TYPE_CHEST = 'SLOT_TYPE_CHEST';
 export const SLOT_TYPE_CON = 'SLOT_TYPE_CON';
 export const SLOT_TYPE_GAUNTLET = 'SLOT_TYPE_GAUNTLET';
+export const SLOT_TYPE_GREAT_RUNE = 'SLOT_TYPE_GREAT_RUNE';
 export const SLOT_TYPE_HELM = 'SLOT_TYPE_HELM';
 export const SLOT_TYPE_LEG = 'SLOT_TYPE_LEG';
 export const SLOT_TYPE_SPELL = 'SLOT_TYPE_SPELL';
+export const SLOT_TYPE_SPIRIT_ASH = 'SLOT_TYPE_SPIRIT_ASH';
 export const SLOT_TYPE_TAL = 'SLOT_TYPE_TAL';
 export const SLOT_TYPE_TEAR = 'SLOT_TYPE_TEAR';
 export const SLOT_TYPE_WEAPON = 'SLOT_TYPE_WEAPON';
@@ -17,9 +19,11 @@ export type SlotType =
   | typeof SLOT_TYPE_CHEST
   | typeof SLOT_TYPE_CON
   | typeof SLOT_TYPE_GAUNTLET
+  | typeof SLOT_TYPE_GREAT_RUNE
   | typeof SLOT_TYPE_HELM
   | typeof SLOT_TYPE_LEG
   | typeof SLOT_TYPE_SPELL
+  | typeof SLOT_TYPE_SPIRIT_ASH
   | typeof SLOT_TYPE_TAL
   | typeof SLOT_TYPE_TEAR
   | typeof SLOT_TYPE_WEAPON;
@@ -76,6 +80,8 @@ export const SPELL_SLOTS = [
 ] as const;
 export const TEAR_SLOTS = ['tear1', 'tear2'] as const;
 export const ARMOR_SLOTS = ['helm', 'chest', 'gauntlet', 'leg'] as const;
+/** Slots that hold one item: the armor, the great rune and the spirit ash. */
+export const SINGLE_SLOTS = [...ARMOR_SLOTS, 'greatRune', 'spiritAsh'] as const;
 
 export type WeaponSlot = (typeof WEAPON_SLOTS)[number];
 export type WeaponSkillSlot = (typeof WEAPON_SKILL_SLOTS)[number];
@@ -86,10 +92,21 @@ export type ConsumableSlot = (typeof CONSUMABLE_SLOTS)[number];
 export type SpellSlot = (typeof SPELL_SLOTS)[number];
 export type TearSlot = (typeof TEAR_SLOTS)[number];
 export type ArmorSlot = (typeof ARMOR_SLOTS)[number];
+export type SingleSlot = (typeof SINGLE_SLOTS)[number];
 
 /** Any slot the item picker can be opened for. */
 export type ItemSlot =
-  WeaponSlot | ArrowSlot | TalismanSlot | ConsumableSlot | SpellSlot | TearSlot | ArmorSlot;
+  WeaponSlot | ArrowSlot | TalismanSlot | ConsumableSlot | SpellSlot | TearSlot | SingleSlot;
+
+/** The affinity and Ash of War slots that belong to weapon slot `id`. */
+export function weaponSubSlots(id: WeaponSlot) {
+  const index = WEAPON_SLOTS.indexOf(id);
+  return { affinity: WEAPON_AFFINITY_SLOTS[index]!, skill: WEAPON_SKILL_SLOTS[index]! };
+}
+
+/** The weapon slot an affinity or Ash of War slot belongs to. */
+export const weaponSlotOf = (id: WeaponAffinitySlot | WeaponSkillSlot): WeaponSlot =>
+  `weapon${id.slice(-1)}` as WeaponSlot;
 
 /** Type guard: is `id` one of `slots`? */
 export const isSlot = <S extends string>(slots: readonly S[], id: string | null): id is S =>

@@ -9,8 +9,10 @@ import {
   SLOT_TYPE_CHEST,
   SLOT_TYPE_CON,
   SLOT_TYPE_GAUNTLET,
+  SLOT_TYPE_GREAT_RUNE,
   SLOT_TYPE_HELM,
   SLOT_TYPE_LEG,
+  SLOT_TYPE_SPIRIT_ASH,
   SLOT_TYPE_TAL,
   SLOT_TYPE_WEAPON,
   WEAPON_AFFINITY_SLOTS,
@@ -22,6 +24,11 @@ import {
 } from '../slots';
 import { selectEquipment } from '../store/selectors';
 
+// Empty great rune and spirit ash slots show a faded game icon (there's no menu icon for them):
+// Godrick's Great Rune and the Lone Wolf Ashes.
+const GREAT_RUNE_PLACEHOLDER = 3201;
+const SPIRIT_ASH_PLACEHOLDER = 104;
+
 /** Weapon slot n (1–6) and the affinity/skill slots that belong to it. */
 const weaponSlotIds = (index: number) => ({
   id: WEAPON_SLOTS[index] as WeaponSlot,
@@ -29,7 +36,10 @@ const weaponSlotIds = (index: number) => ({
   subId: WEAPON_SKILL_SLOTS[index]!,
 });
 
-/** Equipment section: main hand, off hand, gear (armor) and talisman slots. */
+/**
+ * Equipment section: main hand, off hand, gear (armor), talismans, great rune and spirit ash, and
+ * consumables.
+ */
 function EquipmentEditor({ editable }: { editable: boolean }) {
   const equipment = useAppSelector(selectEquipment);
 
@@ -137,6 +147,25 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
         {talismanSlot('tal2')}
         {talismanSlot('tal3')}
         {talismanSlot('tal4')}
+      </SlotContainer>
+      <HeaderContainer>
+        <SubHeader>Great Rune &amp; Spirit Ash</SubHeader>
+      </HeaderContainer>
+      <SlotContainer>
+        <Slot
+          backgroundIcon={GREAT_RUNE_PLACEHOLDER}
+          disabled={!editable}
+          id="greatRune"
+          item={equipment.greatRune}
+          type={SLOT_TYPE_GREAT_RUNE}
+        />
+        <Slot
+          backgroundIcon={SPIRIT_ASH_PLACEHOLDER}
+          disabled={!editable}
+          id="spiritAsh"
+          item={equipment.spiritAsh}
+          type={SLOT_TYPE_SPIRIT_ASH}
+        />
       </SlotContainer>
       <HeaderContainer>
         <SubHeader>Consumables</SubHeader>

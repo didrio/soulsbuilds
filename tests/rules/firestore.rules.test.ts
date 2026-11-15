@@ -57,18 +57,20 @@ const content = () => ({
   level: 131,
   stats: { vigor: 50, mind: 15, end: 25, str: 18, dex: 40, int: 9, fai: 8, arc: 45 },
   equipment: {
-    weapons: ['Rivers of Blood', null, null, 'Uchigatana', null, null],
-    weaponAffinities: [null, null, null, 'Blood', null, null],
-    weaponSkills: [null, null, null, 'Seppuku', null, null],
+    weapons: [9040000, null, null, 9000000, null, null], // Rivers of Blood, Uchigatana
+    weaponAffinities: [null, null, null, 'blood', null, null],
+    weaponSkills: [null, null, null, 60600, null, null], // Ash of War: Seppuku
     arrows: [null, null, null, null],
-    talismans: ["Lord of Blood's Exultation"],
+    talismans: [2160], // Lord of Blood's Exultation
     spells: [],
-    tears: ['Opaline Hardtear'],
+    tears: [11011], // Opaline Hardtear
     consumables: [],
-    helm: 'White Mask',
+    helm: 680000, // White Mask
     chest: null,
     gauntlet: null,
     leg: null,
+    greatRune: 191, // Godrick's Great Rune
+    spiritAsh: null,
   },
 });
 
@@ -225,11 +227,62 @@ describe('builds/{id}: create', () => {
     await assertFails(
       setDoc(
         doc(db, 'builds/N1'),
-        newBuild('alice', { equipment: { ...equipment, talismans: ['a', 'b', 'c', 'd', 'e'] } }),
+        newBuild('alice', { equipment: { ...equipment, talismans: [1, 2, 3, 4, 5] } }),
       ),
     );
     await assertFails(
       setDoc(doc(db, 'builds/N1'), newBuild('alice', { equipment: { ...equipment, extra: 1 } })),
+    );
+    const { greatRune: _greatRune, ...noGreatRune } = equipment;
+    await assertFails(setDoc(doc(db, 'builds/N1'), newBuild('alice', { equipment: noGreatRune })));
+  });
+
+  // Items are game IDs. Positional lists and single slots are type-checked; the other lists only
+  // by size (the rules' expression budget, see validEquipment).
+  it.each([
+    ['an item name instead of an ID', { helm: 'White Mask' }],
+    ['a fractional ID', { greatRune: 191.5 }],
+    ['a weapon name', { weapons: ['Uchigatana', null, null, null, null, null] }],
+    ['an Ash of War name', { weaponSkills: ['Seppuku', null, null, null, null, null] }],
+    ['an ID as text in an arrow slot', { arrows: ['50000000', null, null, null] }],
+    ['the 2022 affinity name', { weaponAffinities: ['Blood', null, null, null, null, null] }],
+    [
+      'Standard as a key (stored as null)',
+      { weaponAffinities: ['standard', null, null, null, null, null] },
+    ],
+    ['an unknown affinity', { weaponAffinities: [null, null, null, null, null, 'frost'] }],
+  ])('rejects equipment with %s', async (_label, equipmentOverrides) => {
+    const equipment = { ...content().equipment, ...equipmentOverrides };
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { equipment })));
+  });
+
+  // Worst case for the rules' expression budget (see validEquipment): every slot filled.
+  it('accepts a build with every slot filled and every stored affinity key', async () => {
+    const equipment = {
+      weapons: [9040000, 9000000, 9060000, 1000000, 2000000, 3000000],
+      weaponAffinities: ['heavy', 'flame-art', 'cold', 'occult', 'blood', 'keen'],
+      weaponSkills: [60600, 10000, 10100, 10200, 10300, 10400],
+      arrows: [50000000, 50010000, 52000000, 52010000],
+      talismans: [1000, 1010, 1020, 1030],
+      spells: [4000, 4010, 4020, 4030, 4040, 4050, 4060, 4070, 4080, 4090],
+      tears: [11011, 11000],
+      consumables: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+      helm: 680000,
+      chest: 580100,
+      gauntlet: 580200,
+      leg: 580300,
+      greatRune: 191,
+      spiritAsh: 207000,
+    };
+    const db = as('alice');
+    await assertSucceeds(setDoc(doc(db, 'builds/N1'), newBuild('alice', { equipment })));
+    await assertSucceeds(
+      updateDoc(doc(db, 'builds/N1'), {
+        equipment,
+        name: 'Renamed',
+        nameLower: 'renamed',
+        updatedAt: serverTimestamp(),
+      }),
     );
   });
 

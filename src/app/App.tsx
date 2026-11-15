@@ -24,6 +24,7 @@ import {
   SPACE_XL,
   SPACE_XXL,
 } from '@/theme';
+import Footer from './Footer';
 import GameSelector from './GameSelector';
 import Header from './Header';
 import { useAppDispatch, useAppSelector } from './hooks';
@@ -39,8 +40,8 @@ const GlobalStyle = createGlobalStyle`
 type PanelContent = 'login' | 'register';
 
 /**
- * The page shell: game selector, header, the login/register slide-down panel, the routes, and the
- * item picker modal (open while Redux `app.slotType` is set).
+ * The page shell: game selector, header, the login/register slide-down panel, the routes, the
+ * footer, and the item picker modal (open while Redux `app.slotType` is set).
  */
 function App() {
   const dispatch = useAppDispatch();
@@ -108,6 +109,7 @@ function App() {
         <Content>
           <AppRoutes />
         </Content>
+        <Footer />
       </Container>
     </Background>
   );

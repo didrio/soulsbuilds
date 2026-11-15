@@ -14,6 +14,9 @@
 //   builds/{id}  v1 fields → v2 (ownerId, game, numeric stats, `equipment` map, counts, timestamps
 //                from the document's own create/update time); comments[] → comments subcollection;
 //                users' likedBuilds[] → likes subcollection; likeCount/commentCount = docs written.
+//                Items: 2022 names → game IDs (scripts/lib/names-to-ids.mjs, T13), dropping names the
+//                game data doesn't have and Ash/affinity/talisman combos the game doesn't allow;
+//                tag "Warhammer" → "Great Hammer". Every drop is a note; the summary counts them.
 //   users/{uid}  { name, email, admin, builds, likedBuilds } → { displayName, createdAt }. Emails
 //                stay in Firebase Auth; v1 `admin: true` users are listed (admin is a custom claim now).
 import { readFileSync } from 'node:fs';
@@ -21,33 +24,41 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Timestamp } from 'firebase-admin/firestore';
 import { buildContent, GAME, toCommentText, toDisplayName } from './lib/model-v2.mjs';
+import { equipmentToIds, loadGameData, renameTags } from './lib/names-to-ids.mjs';
 
 const BATCH_LIMIT = 450;
 
 const isV1Build = (data) => typeof data.user === 'string' && data.ownerId === undefined;
 const isV1User = (data) => data.displayName === undefined;
 
-/** v1 build doc → v2 content fields (see buildContent for how odd values are cleaned up). */
-function v1BuildContent(data) {
+/**
+ * v1 build doc → v2 content fields, items as game IDs (see buildContent for how odd values are
+ * cleaned up, equipmentToIds for the items).
+ */
+function v1BuildContent(data, game, hooks) {
   return buildContent({
     name: data.name,
     description: data.description,
-    tags: data.tags,
+    tags: renameTags(data.tags, hooks.note),
     stats: data,
-    equipment: {
-      weapons: data.weapons,
-      weaponAffinities: data.weaponAffinities,
-      weaponSkills: data.weaponSkills,
-      arrows: data.arrows,
-      talismans: data.tals,
-      spells: data.spells,
-      tears: data.tears,
-      consumables: data.cons,
-      helm: data.helm,
-      chest: data.chest,
-      gauntlet: data.gauntlet,
-      leg: data.leg,
-    },
+    equipment: equipmentToIds(
+      {
+        weapons: data.weapons,
+        weaponAffinities: data.weaponAffinities,
+        weaponSkills: data.weaponSkills,
+        arrows: data.arrows,
+        talismans: data.tals,
+        spells: data.spells,
+        tears: data.tears,
+        consumables: data.cons,
+        helm: data.helm,
+        chest: data.chest,
+        gauntlet: data.gauntlet,
+        leg: data.leg,
+      },
+      game,
+      hooks,
+    ),
   });
 }
 
@@ -84,12 +95,15 @@ export async function migrate(db, { write = false, log = () => {} } = {}) {
     likes: 0,
     comments: 0,
     notes: [],
+    /** "category: name" → how many builds lost it (names the game data doesn't have). */
+    dropped: {},
   };
   const note = (message) => {
     report.notes.push(message);
     log(`  · ${message}`);
   };
 
+  const game = loadGameData();
   const [userSnap, buildSnap] = await Promise.all([
     db.collection('users').get(),
     db.collection('builds').get(),
@@ -120,7 +134,13 @@ export async function migrate(db, { write = false, log = () => {} } = {}) {
       continue;
     }
     const ref = buildDoc.ref;
-    const content = v1BuildContent(data);
+    const content = v1BuildContent(data, game, {
+      note: (message) => note(`build ${buildDoc.id}: ${message}`),
+      dropped: (category, name) => {
+        const key = `${category}: ${name}`;
+        report.dropped[key] = (report.dropped[key] ?? 0) + 1;
+      },
+    });
     const likers = likersByBuild.get(buildDoc.id) ?? [];
     const comments = v1Comments(data, buildDoc.createTime);
 
@@ -223,6 +243,11 @@ Builds: ${report.builds.migrated} to migrate, ${report.builds.alreadyV2} already
 Users:  ${report.users.migrated} to migrate, ${report.users.alreadyV2} already v2 (of ${report.users.total})
 Likes:  ${report.likes} like docs, comments: ${report.comments} comment docs
 Notes:  ${report.notes.length}`);
+  const dropped = Object.entries(report.dropped).sort(([, a], [, b]) => b - a);
+  if (dropped.length) {
+    console.log('\nNames not in the game data (dropped), by number of builds:');
+    for (const [name, count] of dropped) console.log(`  ${count}× ${name}`);
+  }
   if (!opts.write) console.log('\nNothing was written. Re-run with --write to apply.');
 }
 

@@ -1,26 +1,40 @@
 import { describe, expect, it } from 'vitest';
 import { makeStore } from '@/app/store';
 import { getWeapon } from '@/data';
+import {
+  GODRICKS_GREAT_RUNE,
+  MOONVEIL,
+  SEPPUKU_ASH,
+  UCHIGATANA,
+  WHITE_MASK,
+} from '@/test/fixtures';
 import { clearEditor, loadBuild, selectBuildFields, selectLevel, type BuildFields } from './build';
 import { updateWeapon } from './equipment';
+
+const RIVERS_OF_BLOOD = 9040000;
+const LORD_OF_BLOODS_EXULTATION = 2160;
+const MILLICENTS_PROSTHESIS = 1250;
+const CRIMSON_CRYSTAL_TEAR = 11002;
 
 // Editor fields modelled on seed build SEEDBLEED001 (scripts/seed.mjs).
 const bleed: BuildFields = {
   level: 131,
   stats: { vigor: 50, mind: 15, end: 25, str: 18, dex: 40, int: 9, fai: 8, arc: 45 },
   equipment: {
-    weapons: ['Rivers of Blood', null, null, 'Uchigatana', null, null],
-    weaponAffinities: [null, null, null, 'Blood', null, null],
-    weaponSkills: [null, null, null, 'Seppuku', null, null],
+    weapons: [RIVERS_OF_BLOOD, null, null, UCHIGATANA, null, null],
+    weaponAffinities: [null, null, null, 'blood', null, null],
+    weaponSkills: [null, null, null, SEPPUKU_ASH, null, null],
     arrows: [null, null, null, null],
-    talismans: ["Lord of Blood's Exultation", "Millicent's Prosthesis"],
+    talismans: [LORD_OF_BLOODS_EXULTATION, MILLICENTS_PROSTHESIS],
     spells: [],
-    tears: ['Crimson Crystal Tear'],
+    tears: [CRIMSON_CRYSTAL_TEAR],
     consumables: [],
-    helm: 'White Mask',
+    helm: WHITE_MASK,
     chest: null,
     gauntlet: null,
     leg: null,
+    greatRune: GODRICKS_GREAT_RUNE,
+    spiritAsh: null,
   },
 };
 
@@ -31,28 +45,35 @@ describe('loadBuild / selectBuildFields', () => {
     expect(selectBuildFields(store.getState())).toEqual(bleed);
   });
 
-  it('empties slots whose item names are not in the game data', () => {
+  it('empties slots whose IDs are not in the game data, or hold armor for another slot', () => {
     const store = makeStore();
     store.dispatch(
       loadBuild({
         ...bleed,
-        equipment: { ...bleed.equipment, weapons: ['Renamed Sword'], helm: 'Old Hat' },
+        equipment: { ...bleed.equipment, weapons: [123], helm: null, chest: WHITE_MASK },
       }),
     );
     const { equipment } = selectBuildFields(store.getState());
     expect(equipment.weapons[0]).toBeNull();
-    expect(equipment.helm).toBeNull();
+    expect(equipment.chest).toBeNull();
+  });
+
+  it("drops an Ash of War or affinity the weapon can't have", () => {
+    const store = makeStore();
+    const weaponSkills = [SEPPUKU_ASH, null, null, SEPPUKU_ASH, null, null];
+    const weaponAffinities = ['cold' as const, null, null, 'fire' as const, null, null];
+    store.dispatch(
+      loadBuild({ ...bleed, equipment: { ...bleed.equipment, weaponSkills, weaponAffinities } }),
+    );
+    const { equipment } = selectBuildFields(store.getState());
+    // Rivers of Blood takes no Ashes; Seppuku on the Uchigatana allows no Fire.
+    expect(equipment.weaponSkills).toEqual([null, null, null, SEPPUKU_ASH, null, null]);
+    expect(equipment.weaponAffinities).toEqual([null, null, null, null, null, null]);
   });
 
   it('ignores saved entries beyond the last slot', () => {
     const store = makeStore();
-    const talismans = [
-      'Godfrey Icon',
-      'Shard of Alexander',
-      "Erdtree's Favor",
-      'Dragoncrest Shield Talisman',
-      'Green Turtle Talisman',
-    ];
+    const talismans = [3090, 1231, 1040, 4000, 1150];
     store.dispatch(loadBuild({ ...bleed, equipment: { ...bleed.equipment, talismans } }));
     expect(selectBuildFields(store.getState()).equipment.talismans).toEqual(talismans.slice(0, 4));
     expect(Object.keys(store.getState().equipment)).not.toContain('tal5');
@@ -60,7 +81,7 @@ describe('loadBuild / selectBuildFields', () => {
 
   it('replaces whatever was in the editor before', () => {
     const store = makeStore();
-    store.dispatch(updateWeapon({ id: 'weapon2', item: getWeapon('Moonveil') ?? null }));
+    store.dispatch(updateWeapon({ id: 'weapon2', item: getWeapon(MOONVEIL) ?? null }));
     store.dispatch(loadBuild(bleed));
     expect(selectBuildFields(store.getState())).toEqual(bleed);
   });
@@ -81,7 +102,7 @@ describe('loadBuild / selectBuildFields', () => {
   it('clearEditor empties every slot and resets stats to 10', () => {
     const store = makeStore();
     store.dispatch(loadBuild(bleed));
-    store.dispatch(updateWeapon({ id: 'weapon2', item: getWeapon('Moonveil') ?? null }));
+    store.dispatch(updateWeapon({ id: 'weapon2', item: getWeapon(MOONVEIL) ?? null }));
     store.dispatch(clearEditor());
     expect(selectBuildFields(store.getState())).toEqual(selectBuildFields(makeStore().getState()));
   });

@@ -8,6 +8,8 @@ export interface MigrationReport {
   likes: number;
   comments: number;
   notes: string[];
+  /** "category: name" → number of builds that lost that 2022 name (not in the game data). */
+  dropped: Record<string, number>;
 }
 
 export function migrate(

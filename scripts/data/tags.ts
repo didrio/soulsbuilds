@@ -1,8 +1,10 @@
 // Tag groups written to src/data/er/tags.json. The 2022 groups are kept word for word (saved builds
-// carry these strings); the pipeline adds the DLC weapon types and the DLC bosses below. Boss tags
+// carry these strings), except "Warhammer", which the game calls "Great Hammer" (owner's call,
+// 2026-11-15; scripts/migrate-v1-to-v2.mjs renames it on saved builds). The pipeline adds the DLC
+// weapon types and the DLC bosses below. Boss tags
 // are short names, like the 2022 ones; the build checks each DLC one against the game's NPC names.
 
-/** The 2022 tags (src/data/tags.json), unchanged. */
+/** The 2022 tags (the deleted src/data/tags.json), with "Warhammer" renamed. */
 export const TAGS_2022: Record<string, string[]> = {
   Bosses: [
     'Adula',
@@ -48,6 +50,7 @@ export const TAGS_2022: Record<string, string[]> = {
     'Flail',
     'Greataxe',
     'Greatsword',
+    'Great Hammer',
     'Great Spear',
     'Halberd',
     'Hammer',
@@ -58,7 +61,6 @@ export const TAGS_2022: Record<string, string[]> = {
     'Straight Sword',
     'Thrusting Sword',
     'Twinblade',
-    'Warhammer',
     'Whip',
   ],
   'Ranged Weapons': [

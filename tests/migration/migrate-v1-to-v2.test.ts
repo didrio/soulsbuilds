@@ -1,5 +1,6 @@
 // scripts/migrate-v1-to-v2.mjs against v1 data in the emulator, then the v2 rules against the result
-// (migrated docs must be ones their owners can keep editing). `npm run test:rules`.
+// (migrated docs must be ones their owners can keep editing). Items go from 2022 names to game IDs
+// (scripts/lib/names-to-ids.mjs). `npm run test:rules`.
 import { readFileSync } from 'node:fs';
 import {
   assertSucceeds,
@@ -54,7 +55,7 @@ beforeAll(async () => {
     user: 'alice',
     name: 'Carian Moon Knight',
     description: 'Moonveil.',
-    tags: ['Rennala'],
+    tags: ['Rennala', 'Warhammer', 'Great Hammer'],
     level: '132',
     likes: 3,
     comments: [
@@ -70,17 +71,26 @@ beforeAll(async () => {
     fai: 7,
     arc: 9,
     weapons: ['Moonveil', null, null, 'Carian Regal Scepter'],
-    weaponAffinities: [],
+    weaponAffinities: ['Heavy'],
     weaponSkills: [],
     arrows: [null, null, null, null],
-    tals: ['A', 'B', 'C', 'D', 'E'],
+    tals: ['Not A Talisman', "Erdtree's Favor", "Erdtree's Favor +1", "Crepu's Vial"],
     spells: ["Rennala's Full Moon"],
     tears: [],
     cons: [],
-    helm: null,
+    helm: "Brave's Cord Circlet",
     chest: "Lusat's Robe",
     gauntlet: null,
     leg: null,
+  });
+  // Any skill and affinity on any weapon, as the 2022 app allowed.
+  await db.doc('builds/V1BLEED').set({
+    user: 'alice',
+    name: 'Bleed',
+    level: '1',
+    weapons: ['Uchigatana', 'Claymore', null, 'Brass Shield', 'Moonveil'],
+    weaponAffinities: ['Blood', 'Frost', 'Heavy', 'Standard', null, null],
+    weaponSkills: ['Seppuku', "Lion's Claw", null, 'Corpse Piler', 'Seppuku', null],
   });
   await db.doc('builds/V1EMPTY').set({ user: 'bob', name: '', level: '1' });
 });
@@ -95,7 +105,7 @@ describe('migrate v1 → v2', () => {
     const report = await migrate(db);
     expect(report).toMatchObject({
       write: false,
-      builds: { total: 2, migrated: 2, alreadyV2: 0 },
+      builds: { total: 3, migrated: 3, alreadyV2: 0 },
       users: { total: 2, migrated: 2, alreadyV2: 0 },
       likes: 1,
       comments: 1,
@@ -113,6 +123,10 @@ describe('migrate v1 → v2', () => {
         'user alice: was admin in v1; set the custom claim if still wanted',
       ]),
     );
+    expect(report.dropped).toEqual({
+      'talismans: Not A Talisman': 1,
+      "armor: Brave's Cord Circlet": 1,
+    });
 
     const moon = (await db.doc('builds/V1MOON').get()).data();
     expect(moon).toMatchObject({
@@ -128,16 +142,48 @@ describe('migrate v1 → v2', () => {
     });
     expect(moon?.user).toBeUndefined();
     expect(moon?.comments).toBeUndefined();
-    expect(moon?.equipment.weapons).toEqual([
-      'Moonveil',
-      null,
-      null,
-      'Carian Regal Scepter',
-      null,
-      null,
-    ]);
-    expect(moon?.equipment.talismans).toEqual(['A', 'B', 'C', 'D']);
-    expect(moon?.equipment.chest).toBe("Lusat's Robe");
+    expect(moon?.tags).toEqual(['Rennala', 'Great Hammer']);
+    expect(moon?.equipment).toEqual({
+      weapons: [9060000, null, null, 33090000, null, null], // Moonveil, Carian Regal Scepter
+      weaponAffinities: [null, null, null, null, null, null],
+      weaponSkills: [null, null, null, null, null, null],
+      arrows: [null, null, null, null],
+      talismans: [1040, 6000], // Erdtree's Favor, Crepus's Vial (2022 typo "Crepu's")
+      spells: [4360], // Rennala's Full Moon
+      tears: [],
+      consumables: [],
+      helm: null,
+      chest: 580100, // Lusat's Robe
+      gauntlet: null,
+      leg: null,
+      greatRune: null,
+      spiritAsh: null,
+    });
+    expect(report.notes).toEqual(
+      expect.arrayContaining([
+        'build V1MOON: tag "Warhammer" → "Great Hammer"',
+        "build V1MOON: dropped Heavy affinity on Moonveil (the game doesn't allow it)",
+        'build V1MOON: dropped talisman "Not A Talisman" (not in the game data)',
+        "build V1MOON: dropped talisman \"Erdtree's Favor +1\" (can't be worn with Erdtree's Favor)",
+        'build V1MOON: dropped helm "Brave\'s Cord Circlet" (not in the game data)',
+      ]),
+    );
+
+    const bleed = (await db.doc('builds/V1BLEED').get()).data();
+    expect(bleed?.equipment).toMatchObject({
+      // Uchigatana, Claymore, -, Brass Shield, Moonveil
+      weapons: [9000000, 3180000, null, 31130000, 9060000, null],
+      // Lion's Claw is the Claymore's own skill (null); Frost is Cold; Standard is null.
+      weaponSkills: [60600, null, null, null, null, null],
+      weaponAffinities: ['blood', 'cold', null, null, null, null],
+    });
+    expect(report.notes).toEqual(
+      expect.arrayContaining([
+        'build V1BLEED: dropped Heavy affinity on empty weapon slot 3',
+        'build V1BLEED: dropped skill "Corpse Piler" on Brass Shield (it keeps No Skill)',
+        'build V1BLEED: dropped Ash of War "Seppuku" on Moonveil (the game doesn\'t allow it)',
+      ]),
+    );
 
     const comment = (await db.doc('builds/V1MOON/comments/v1-0').get()).data();
     expect(comment?.text).toBe('Nice build!');
@@ -154,7 +200,7 @@ describe('migrate v1 → v2', () => {
   it('is idempotent', async () => {
     const report = await migrate(db, { write: true });
     expect(report).toMatchObject({
-      builds: { migrated: 0, alreadyV2: 2 },
+      builds: { migrated: 0, alreadyV2: 3 },
       users: { migrated: 0, alreadyV2: 2 },
     });
     expect((await db.doc('builds/V1MOON').get()).data()?.likeCount).toBe(1);
