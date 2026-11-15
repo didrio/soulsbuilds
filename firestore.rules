@@ -214,5 +214,41 @@ service cloud.firestore {
     match /{path=**}/likes/{likeId} {
       allow read: if true;
     }
+
+    // ---- reports/{id}: abuse reports (T10) -----------------------------------------------------
+    // A signed-in user reports a build or a comment once: the doc id is `${targetId}_${uid}`, so a
+    // second report is an update, which is refused. The target must exist. Admins read every report;
+    // a reporter may read their own (so the UI can say "already reported"). Nobody changes or
+    // deletes reports from a client: scripts/admin.mjs resolves them with the Admin SDK.
+
+    function isId(value) {
+      return value is string && value.matches('^[A-Za-z0-9_-]{1,40}$');
+    }
+
+    function reportTargetOk(reportId, r) {
+      return isId(r.buildId) && (
+        (r.commentId == null
+          && reportId == r.buildId + '_' + request.auth.uid
+          && exists(buildPath(r.buildId)))
+        || (isId(r.commentId)
+          && reportId == r.commentId + '_' + request.auth.uid
+          && exists(/databases/$(database)/documents/builds/$(r.buildId)/comments/$(r.commentId))));
+    }
+
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && hasExactly(incoming(),
+          ['reporterId', 'buildId', 'commentId', 'reason', 'note', 'status', 'createdAt'])
+        && incoming().reporterId == request.auth.uid
+        && incoming().reason in ['spam', 'offensive', 'harassment', 'other']
+        && incoming().note is string && incoming().note.size() <= 500
+        && incoming().note == incoming().note.trim()
+        && incoming().status == 'open'
+        && incoming().createdAt == request.time
+        && reportTargetOk(reportId, incoming());
+      allow get: if isAdmin() || (signedIn() && resource.data.reporterId == request.auth.uid);
+      allow list: if isAdmin();
+      allow update, delete: if false;
+    }
   }
 }

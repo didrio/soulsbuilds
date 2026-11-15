@@ -10,7 +10,15 @@ import PageMessage from '@/components/ui/PageMessage';
 import TextInput from '@/components/ui/TextInput';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import { errorMessage, type BuildSort } from '@/lib/firebase';
-import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN, BELOW_800 } from '@/theme';
+import {
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
+  BELOW_800,
+  SPACE_LG,
+  SPACE_MD,
+  SPACE_SM,
+} from '@/theme';
 import BuildsList from './BuildsList';
 import {
   clampLevel,
@@ -198,16 +206,16 @@ const Container = styled(FlexGroup)`
 const SubHeader = styled.h2`
   font-size: 20px;
   font-weight: normal;
-  margin: 0 0 10px;
+  margin: 0 0 ${SPACE_SM};
 `;
 
 const Filters = styled.div`
   align-items: flex-start;
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: ${SPACE_LG};
   justify-content: space-between;
-  margin-bottom: 15px;
+  margin-bottom: ${SPACE_MD};
   width: 95%;
 
   @media ${BELOW_800} {
@@ -251,7 +259,7 @@ const TextButton = styled.button`
 
 const SearchNote = styled.p`
   font-size: 16px;
-  margin: 10px 0 0;
+  margin: ${SPACE_SM} 0 0;
 `;
 
 const SortToggle = styled.div`
@@ -274,13 +282,13 @@ const SortButton = styled.button<{ $active: boolean }>`
 `;
 
 const Results = styled(FlexGroup)`
-  margin-top: 10px;
+  margin-top: ${SPACE_SM};
   width: 95%;
 `;
 
 const LevelRangeRow = styled(FlexGroup)`
   align-items: center;
-  gap: 10px;
+  gap: ${SPACE_SM};
 `;
 
 const LevelRangeInput = styled(FlexGroup)`
@@ -289,7 +297,7 @@ const LevelRangeInput = styled(FlexGroup)`
 
 const LoadMore = styled(FlexGroup)`
   justify-content: center;
-  margin: 10px 0 20px;
+  margin: ${SPACE_SM} 0 ${SPACE_LG};
 `;
 
 export default Landing;

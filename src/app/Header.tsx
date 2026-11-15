@@ -8,6 +8,8 @@ import {
   COLOR_LIGHTEST_GREEN_LOW_OPACITY,
   FONT_DISPLAY,
   BELOW_500,
+  SPACE_LG,
+  SPACE_SM,
 } from '@/theme';
 
 interface HeaderProps {
@@ -58,9 +60,9 @@ const Container = styled.header`
   border-bottom: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: ${SPACE_SM};
   justify-content: space-between;
-  padding-bottom: 10px;
+  padding-bottom: ${SPACE_SM};
   width: 100%;
 `;
 
@@ -83,7 +85,7 @@ const Logo = styled(Link)`
 
 const Nav = styled.nav`
   display: flex;
-  gap: 20px;
+  gap: ${SPACE_LG};
 `;
 
 const navItem = `

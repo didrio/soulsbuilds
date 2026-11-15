@@ -27,6 +27,7 @@ const {
 const { hasLiked, likeBuild, listLikedBuildIds, unlikeBuild } =
   await import('@/lib/firebase/likes');
 const { addComment, deleteComment, listComments } = await import('@/lib/firebase/comments');
+const { reportContent } = await import('@/lib/firebase/reports');
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
   await import('@/lib/firebase/users');
 
@@ -150,6 +151,19 @@ describe('data layer against the rules', () => {
     actAs('bob');
     await deleteComment(buildId, first.id);
     expect((await getBuild(buildId))?.commentCount).toBe(1);
+  });
+
+  it('reports: once per user per target, on builds and comments', async () => {
+    actAs('carol');
+    const [comment] = await listComments(buildId);
+    await expect(reportContent('carol', { buildId }, 'spam', '  ads  ')).resolves.toBe('reported');
+    await expect(reportContent('carol', { buildId }, 'other')).resolves.toBe('already-reported');
+    await expect(
+      reportContent('carol', { buildId, commentId: comment!.id }, 'harassment'),
+    ).resolves.toBe('reported');
+    await expect(reportContent('carol', { buildId: 'NOPE' }, 'spam')).rejects.toThrow();
+    actAs(null);
+    await expect(reportContent('carol', { buildId }, 'spam')).rejects.toThrow();
   });
 
   it('lists: top, new, by tag, by owner', async () => {

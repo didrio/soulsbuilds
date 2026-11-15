@@ -1,4 +1,4 @@
-import { useState, type KeyboardEvent } from 'react';
+import { useState, type KeyboardEvent, type PointerEvent } from 'react';
 import styled from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
@@ -10,9 +10,13 @@ import {
   COLOR_LIGHT_GREEN,
   COLOR_DARK_GREEN,
   COLOR_TEXT_SHADOW,
+  COLOR_WHITE,
   BELOW_400,
   BELOW_500,
+  BELOW_800,
   BELOW_1400,
+  SPACE_GUTTER,
+  COLOR_LIGHTEST_GREEN,
 } from '@/theme';
 import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
 import { openPicker } from './store/app';
@@ -56,10 +60,13 @@ interface SlotProps {
   type: SlotType;
 }
 
+type Tip = 'affinity' | 'skill';
+
 /**
  * One equipment/spell slot. Enabled: click (or Enter/Space) opens the item picker for `id`, to
- * choose, change or remove the item (and a weapon's affinity and skill). Shows hover badges for
- * affinity and skill.
+ * choose, change or remove the item (and a weapon's affinity and skill). "A"/"S" badges show the
+ * weapon's affinity and skill: on mouse hover, and in view mode (disabled slots) also as buttons
+ * that toggle the details on tap or keyboard. In edit mode the picker shows them instead.
  */
 function Slot({
   affinity = '',
@@ -76,8 +83,9 @@ function Slot({
   const dispatch = useAppDispatch();
   const equipment = useAppSelector(selectEquipment);
 
-  const [showWeaponAffinity, setShowWeaponAffinity] = useState(false);
-  const [showWeaponSkill, setShowWeaponSkill] = useState(false);
+  const [openTip, setOpenTip] = useState<Tip | null>(null);
+  // Opened by a click/tap/key (stays open) rather than by hover (closes on leave).
+  const [pinned, setPinned] = useState(false);
 
   const hasItem = item !== null;
   const backgroundColor = hasItem ? COLOR_DARK_GOLD : COLOR_GREEN;
@@ -102,34 +110,57 @@ function Slot({
     }
   };
 
+  const weaponSkillName = subItem || (subId ? equipment[subId] : null);
+  const weaponAffinity = affinity || (affinityId ? equipment[affinityId] : null);
+  const weaponSkill = getSkill(weaponSkillName);
+  const details = [
+    weaponAffinity ? `${weaponAffinity} affinity` : null,
+    weaponSkill ? `${weaponSkill.name} skill` : null,
+  ].filter(Boolean);
+
   // Enabled slots act as buttons that open the picker.
   const buttonProps = disabled
     ? {}
     : {
         role: 'button',
         tabIndex: 0,
-        'aria-label': hasItem ? `Change ${item.name}` : `Choose ${SLOT_LABELS[type]}`,
+        'aria-label': hasItem
+          ? `Change ${item.name}${details.length ? ` (${details.join(', ')})` : ''}`
+          : `Choose ${SLOT_LABELS[type]}`,
         onKeyDown: handleKeyDown,
       };
 
-  const weaponSkillName = subItem || (subId ? equipment[subId] : null);
-  const weaponAffinity = affinity || (affinityId ? equipment[affinityId] : null);
-  const weaponSkill = getSkill(weaponSkillName);
-
-  const handleShowWeaponSkill = () => {
-    setShowWeaponSkill(true);
-  };
-
-  const handleHideWeaponSkill = () => {
-    setShowWeaponSkill(false);
-  };
-
-  const handleShowWeaponAffinity = () => {
-    setShowWeaponAffinity(true);
-  };
-
-  const handleHideWeaponAffinity = () => {
-    setShowWeaponAffinity(false);
+  // Hover opens a tip for mouse users only (a tap also fires pointer events, then its click pins it).
+  const badgeProps = (tip: Tip, label: string) => {
+    const hover = {
+      onPointerEnter: (event: PointerEvent) => {
+        if (event.pointerType === 'mouse' && !pinned) setOpenTip(tip);
+      },
+      onPointerLeave: (event: PointerEvent) => {
+        if (event.pointerType === 'mouse' && !pinned) setOpenTip(null);
+      },
+    };
+    if (!disabled) return { ...hover, 'aria-hidden': true };
+    const close = () => {
+      setPinned(false);
+      setOpenTip(null);
+    };
+    return {
+      ...hover,
+      as: 'button' as const,
+      type: 'button' as const,
+      'aria-label': label,
+      'aria-expanded': openTip === tip,
+      onClick: () => {
+        if (pinned && openTip === tip) return close();
+        setPinned(true);
+        setOpenTip(tip);
+      },
+      onBlur: close,
+      onKeyDown: (event: KeyboardEvent) => {
+        if (event.key === 'Escape') close();
+      },
+    };
   };
 
   return (
@@ -145,21 +176,17 @@ function Slot({
       {!hasItem ? null : <img alt="" src={`/assets/${item.imageUrl}`} />}
       {!hasItem ? null : <NameContainer>{item.name}</NameContainer>}
       {weaponAffinity ? (
-        <WeaponAffinityIconContainer
-          onMouseEnter={handleShowWeaponAffinity}
-          onMouseLeave={handleHideWeaponAffinity}>
+        <WeaponAffinityIconContainer {...badgeProps('affinity', `Affinity: ${weaponAffinity}`)}>
           A
         </WeaponAffinityIconContainer>
       ) : null}
       {weaponSkill ? (
-        <WeaponSkillIconContainer
-          onMouseEnter={handleShowWeaponSkill}
-          onMouseLeave={handleHideWeaponSkill}>
+        <WeaponSkillIconContainer {...badgeProps('skill', `Skill: ${weaponSkill.name}`)}>
           S
         </WeaponSkillIconContainer>
       ) : null}
-      {weaponSkill && showWeaponSkill ? (
-        <WeaponSkillContainer vertical>
+      {weaponSkill && openTip === 'skill' ? (
+        <WeaponSkillContainer vertical role="tooltip">
           <FlexGroup>
             <WeaponSkillLabel>Weapon Skill:</WeaponSkillLabel>
             <WeaponSkillValue>{weaponSkill.name}</WeaponSkillValue>
@@ -174,8 +201,8 @@ function Slot({
           </FlexGroup>
         </WeaponSkillContainer>
       ) : null}
-      {weaponAffinity && showWeaponAffinity ? (
-        <WeaponSkillContainer vertical>
+      {weaponAffinity && openTip === 'affinity' ? (
+        <WeaponSkillContainer vertical role="tooltip">
           <FlexGroup>
             <WeaponSkillLabel>Weapon Affinity:</WeaponSkillLabel>
             <WeaponSkillValue>{weaponAffinity}</WeaponSkillValue>
@@ -253,6 +280,7 @@ const Container = styled(FlexGroup)<ContainerProps>`
 const NameContainer = styled.div`
   position: absolute;
   bottom: 5px;
+  color: ${COLOR_WHITE};
   font-weight: bold;
   font-size: 12px;
   text-align: center;
@@ -269,7 +297,9 @@ const NameContainer = styled.div`
   }
 `;
 
-const WeaponSkillIconContainer = styled(FlexGroup)`
+const WeaponSkillIconContainer = styled.span`
+  display: flex;
+  box-sizing: border-box;
   position: absolute;
   right: 2px;
   top: 2px;
@@ -280,12 +310,30 @@ const WeaponSkillIconContainer = styled(FlexGroup)`
   border-radius: 2px;
   align-items: center;
   justify-content: center;
+  color: inherit;
+  font: inherit;
   font-size: 12px;
+  padding: 0;
   z-index: 2;
-  cursor: default;
+  cursor: ${({ as }) => (as === 'button' ? 'pointer' : 'default')};
 
-  &:hover {
+  &:hover,
+  &[aria-expanded='true'] {
     background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${COLOR_LIGHT_GOLD};
+  }
+
+  /* A bigger tap target on phones, without growing the badge. */
+  @media ${BELOW_800} {
+    &::after {
+      content: '';
+      inset: -8px;
+      position: absolute;
+    }
   }
 `;
 
@@ -306,6 +354,18 @@ const WeaponSkillContainer = styled(FlexGroup)`
   font-size: 14px;
   padding: 5px;
   z-index: 3;
+
+  /* On phones the side placement runs off-screen: pin the details to the bottom of the viewport. */
+  @media ${BELOW_800} {
+    position: fixed;
+    top: auto;
+    right: ${SPACE_GUTTER};
+    bottom: ${SPACE_GUTTER};
+    left: ${SPACE_GUTTER};
+    width: auto;
+    padding: 12px;
+    z-index: 200;
+  }
 `;
 
 const WeaponSkillLabel = styled(FlexGroup)`

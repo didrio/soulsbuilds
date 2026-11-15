@@ -115,6 +115,7 @@ const Card = styled(Link)`
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
   }
 
   &:focus-visible {

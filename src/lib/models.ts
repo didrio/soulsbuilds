@@ -14,6 +14,7 @@ export const LIMITS = {
   tags: 20,
   displayName: 40,
   comment: 1000,
+  reportNote: 500,
 } as const;
 
 /**
@@ -99,4 +100,27 @@ export interface Comment {
 export interface LikeDoc {
   userId: string;
   createdAt: Timestamp;
+}
+
+/** Why something is reported (firestore.rules checks the value); labels are for the report form. */
+export const REPORT_REASONS = {
+  spam: 'Spam or advertising',
+  offensive: 'Offensive or hateful',
+  harassment: 'Harassment',
+  other: 'Something else',
+} as const;
+export type ReportReason = keyof typeof REPORT_REASONS;
+
+/** reports/{targetId}_{reporterUid} as stored. `commentId` is null for a report about a build. */
+export interface ReportDoc {
+  reporterId: string;
+  buildId: string;
+  commentId: string | null;
+  reason: ReportReason;
+  /** Optional detail from the reporter ('' when none). */
+  note: string;
+  /** 'open' from a client; scripts/admin.mjs sets 'removed' or 'dismissed' and resolvedAt. */
+  status: 'open' | 'removed' | 'dismissed';
+  createdAt: Timestamp;
+  resolvedAt?: Timestamp;
 }

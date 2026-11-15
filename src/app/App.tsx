@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled, { createGlobalStyle } from 'styled-components';
 import FlexGroup from '@/components/ui/FlexGroup';
+import FocusScope from '@/components/ui/FocusScope';
 import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
 import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
@@ -18,6 +19,10 @@ import {
   BELOW_500,
   BELOW_800,
   BELOW_1200,
+  SPACE_LG,
+  SPACE_SM,
+  SPACE_XL,
+  SPACE_XXL,
 } from '@/theme';
 import GameSelector from './GameSelector';
 import Header from './Header';
@@ -71,8 +76,10 @@ function App() {
       {slotType === null ? null : (
         <ModalContainer>
           <OutsideClickHandler onOutsideClick={handleHideModal}>
-            <Modal $top={top}>
-              <ItemSelector />
+            <Modal $top={top} role="dialog" aria-modal="true" aria-label="Choose an item">
+              <ModalFocusScope trap onEscape={handleHideModal}>
+                <ItemSelector />
+              </ModalFocusScope>
             </Modal>
           </OutsideClickHandler>
         </ModalContainer>
@@ -87,11 +94,15 @@ function App() {
           />
         </HeaderContainer>
         <HiddenContainer $visible={showHiddenContainer}>
-          {hiddenContainerContent === 'login' && !uid ? (
-            <Login onDone={handleCloseHiddenContainer} />
-          ) : null}
-          {hiddenContainerContent === 'register' && !uid ? (
-            <SignUp onDone={handleCloseHiddenContainer} />
+          {hiddenContainerContent && !uid ? (
+            // Not modal: Tab may leave it. Escape closes it and focus returns to the header button.
+            <FocusScope key={hiddenContainerContent} onEscape={handleCloseHiddenContainer}>
+              {hiddenContainerContent === 'login' ? (
+                <Login onDone={handleCloseHiddenContainer} />
+              ) : (
+                <SignUp onDone={handleCloseHiddenContainer} />
+              )}
+            </FocusScope>
           ) : null}
         </HiddenContainer>
         <Content>
@@ -103,14 +114,14 @@ function App() {
 }
 
 const HeaderContainer = styled(FlexGroup)`
-  margin-bottom: 40px;
-  margin-top: 20px;
+  margin-bottom: ${SPACE_XXL};
+  margin-top: ${SPACE_LG};
   width: 95%;
 `;
 
 const HiddenContainer = styled(FlexGroup)<{ $visible: boolean }>`
   max-height: ${({ $visible }) => ($visible ? '420px' : '0px')};
-  margin-bottom: ${({ $visible }) => ($visible ? '40px' : '0px')};
+  margin-bottom: ${({ $visible }) => ($visible ? '${SPACE_XXL}' : '0px')};
   transition: all 0.4s ease-in-out;
   background-color: ${COLOR_GREEN};
   overflow: hidden;
@@ -131,8 +142,8 @@ const Container = styled(FlexGroup)`
   flex-direction: column;
   width: 72%;
   min-height: 100vh;
-  padding-top: 10px;
-  padding-bottom: 30px;
+  padding-top: ${SPACE_SM};
+  padding-bottom: ${SPACE_XL};
   box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
   align-items: center;
 
@@ -167,12 +178,17 @@ const ModalContainer = styled(FlexGroup)`
   z-index: 100;
 `;
 
+// The picker sizes itself to the modal (height: 100%), so the focus wrapper must pass it through.
+const ModalFocusScope = styled(FocusScope)`
+  height: 100%;
+`;
+
 const Modal = styled.div<{ $top: number }>`
   background-color: ${COLOR_DARK_GREEN};
   width: 70vw;
   height: 70vh;
   border-radius: 10px;
-  padding: 20px;
+  padding: ${SPACE_LG};
   margin-top: ${({ $top }) => $top}px;
   box-shadow: 0px 0px 3px ${COLOR_GREEN};
 `;

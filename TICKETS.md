@@ -7,42 +7,22 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T13
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T10 — Moderation: reports, admin tools, App Check · Opus · high · plan mode on (needs the owner for
-App Check setup). Or, if the owner has picked a data source: T7.
+**Next:** T6 once the owner answers its two questions (email verification, consumables) · Sonnet · medium ·
+plan mode off. Or T7 once the owner picks a data source. T12 is the relaunch, with the owner.
 
-**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T5 done (typed code, safe
-data model, data layer, 2022 bugs). Left: T6 remainder (two owner calls), T7–T9 make it worth visiting (DLC
-data, build math, discovery remainder); T10–T12 make it safe to open (moderation, polish, deploy). The critical
-path to relaunch is **T10 → T12**; whether T7–T9 come before or after the relaunch is the owner's call.
+**Owner to-dos tracked in tickets:** T6 (two decisions), T7 (data/icon source), T11 (icon; fonts), T12 (App
+Check key and enforcement, your admin claim, the production cutover).
+
+**Road to relaunch** (owner's call, 2026-11-14: relaunch publicly on Firebase): T2–T5 and T10 done (typed code,
+safe data model, data layer, 2022 bugs, moderation). Left: T6 remainder (two owner calls), T7–T9 make it worth
+visiting (DLC data, build math, discovery remainder); T11 polish remainder and T12 deploy make it ready to open.
+The critical path to relaunch is **T12**; whether T7–T9 come before or after the relaunch is the owner's call.
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T10 — Moderation: reports, admin tools, App Check
-
-- **Status:** ready; App Check needs the owner in the Firebase/Google Cloud console
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Safe to open to the public: abuse can be reported and handled.
-- **Done when:**
-  - [x] (T3/T4) Delete own comment; admins (custom claim `admin`) may delete any build or comment (rules +
-        tests); comment length and one-like-per-user enforced by the rules.
-  - [ ] Report a build or comment: a `reports` collection, create-only for signed-in users (reporter = auth uid,
-        target path, reason from a fixed list, optional note ≤ 500, server `createdAt`), readable by admins only;
-        one report per user per target (doc id `${targetId}_${uid}`). "Report" buttons on the build page and on
-        comments.
-  - [ ] Admin: `scripts/admin.mjs` (ADC, dry-run by default like the migration): set/unset the admin claim,
-        list open reports, delete a build/comment (with its counter batch) and resolve the report. Decide with
-        the owner whether "hide" (a `hidden` flag the rules and queries respect) is needed or delete is enough.
-        Optionally a minimal admin page if the owner wants one.
-  - [ ] Firebase App Check with reCAPTCHA Enterprise, enforced for Firestore and Auth. The owner creates the
-        site key and turns on enforcement; the code adds `initializeAppCheck` in `src/lib/firebase/app.ts` (not
-        in emulator mode; debug token for local). Write the exact console steps in `docs/firebase.md`.
-  - [ ] Rules tests for reports and admin paths in `tests/rules/`.
-- **Context:** `firestore.rules` (`isAdmin()`), `tests/rules/`, `docs/firebase.md`, `src/lib/firebase/`,
-  `scripts/migrate-v1-to-v2.mjs` (pattern for an ADC admin script).
 
 ### T6 — Missing core features (remainder)
 
@@ -63,7 +43,7 @@ path to relaunch is **T10 → T12**; whether T7–T9 come before or after the re
 
 ### T11 — Performance and polish (remainder)
 
-- **Status:** ready (fonts need the owner's OK)
+- **Status:** in part blocked: icons and fonts need the owner's OK; the bundle split waits for T7
 - **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** Fast first load and a finished look on phones.
 - **Done when:**
@@ -74,11 +54,18 @@ path to relaunch is **T10 → T12**; whether T7–T9 come before or after the re
   - [ ] Game data (~650 KB JSON in the main bundle, the landing cards need it): after T7, load it per route or
         ship a slim index for the cards. Consider a lighter markdown renderer for view mode (the full editor
         package is 365 KB gzipped just to render).
-  - [ ] Favicon, app icons, `manifest.json`, meta description and Open Graph tags (site-level). Ask the owner
-        for an icon or approve a simple generated one.
-  - [ ] Tooltips usable on touch (weapon affinity/skill badges in `Slot` are hover-only).
-  - [ ] Accessibility: contrast check of the gold/green palette (WCAG AA), alt text strategy for item icons,
-        keyboard focus trap and Escape for the item picker modal and the login panel.
+  - [x] (2026-11-15) Meta description, Open Graph/Twitter tags (site-level), manifest and theme colors.
+        Weapon affinity/skill badges usable on touch and keyboard in view mode (pinned to the screen bottom
+        on phones); slot names include affinity/skill for screen readers. WCAG AA contrast pass (hover text,
+        error red, liked button, slot names); item icons decorative by design. `FocusScope`: the item picker
+        is a focus-trapped dialog with Escape; the login panel and report form take focus, close on Escape
+        and hand focus back. Spacing scale `SPACE_*` in `src/theme/`, used by the shell and main pages.
+  - [ ] **Owner:** favicon, app icons (`manifest.json` has none yet) and an `og:image`: supply an icon or
+        approve a simple generated one.
+  - [ ] Main `Button` text is AA only around its middle (dark text on the gold→dark-gold gradient drops to
+        2.9:1 at the dark end); fine as is, revisit if the button style changes.
+  - [ ] Move the remaining literal margins/paddings (editor sections, picker, cards) to `SPACE_*` as files
+        are touched.
   - [ ] Fonts: replace the Adobe Typekit kit (`garamond-premier-pro`, tied to the owner's Adobe account) with a
         self-hosted open font (e.g. EB Garamond); check the OptimusPrinceps license or replace it. **Owner OK
         first** (new asset source).
@@ -144,7 +131,7 @@ path to relaunch is **T10 → T12**; whether T7–T9 come before or after the re
 
 ### T12 — Deploy pipeline and relaunch
 
-- **Status:** ready (after T10; ideally T6–T9)
+- **Status:** ready (ideally after T6–T9)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Ship it: repeatable deploys and a safe production cutover.
 - **Done when:**
@@ -158,6 +145,12 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
         `--write`; deploy hosting; smoke-test the live site (sign up, create, like, comment). Rules and the
         migration must go together: the v2 rules reject v1 docs.
   - [ ] Analytics: consent banner or drop Analytics. Privacy policy and terms pages.
+  - [ ] **Owner, from T10:** App Check. Create the reCAPTCHA Enterprise key, register the web app, put the
+        site key in `APP_CHECK_SITE_KEY` (`src/lib/firebase/app.ts`), deploy, watch the metrics, then enforce
+        for Firestore and Auth. Exact steps: `docs/firebase.md` "App Check".
+  - [ ] **Owner, from T10:** make yourself admin in production:
+        `node scripts/admin.mjs grant <your email> --project soulsbuilds --write`, then check
+        `node scripts/admin.mjs reports --project soulsbuilds` works with ADC.
   - [ ] Relaunch checklist in `docs/firebase.md` (backups/PITR, budget alerts, App Check enforced, auth
         providers, authorized domains).
 - **Context:** `docs/firebase.md`, `firebase.json`, `.github/workflows/ci.yml`, `npm run deploy`.
@@ -172,6 +165,8 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
 - Firebase JS SDK 13 (and `@firebase/rules-unit-testing` 6, which requires it): check the changelog, upgrade,
   run all three test suites.
 - Build history / "updated" badge using `updatedAt`; edit comments (rules allow no comment updates today).
+- Admin page in the app (list reports, remove/dismiss) if `scripts/admin.mjs` gets tedious; the rules already
+  let admins list reports and delete content.
 
 ## Done
 
@@ -191,3 +186,7 @@ firestore:rules,firestore:indexes`) and wait for the indexes to build; run the m
   race or page reloads, SDK imports lint-restricted to `src/lib/firebase/`, Playwright e2e (`npm run e2e`, CI).
 - T5 — 2022 UI bug batch — 2026-11-14 — filters combine, cards keyed by id with armor slot types, timers, CSS,
   placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.
+- T10 — Moderation — 2026-11-15 — reports on builds and comments (`reports/{targetId}_{uid}`, rules + tests,
+  "Report" buttons), `scripts/admin.mjs` (reports, remove with JSON backup, dismiss, grant/revoke admin; tested
+  on the emulators), App Check code (off until the owner's key: moved to T12). Delete, not hide
+  (`docs/decisions.md`); no admin UI (backlog).

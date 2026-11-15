@@ -133,6 +133,7 @@ const Chip = styled(FlexGroup)`
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
   }
 `;
 

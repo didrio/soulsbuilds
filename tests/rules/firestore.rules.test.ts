@@ -8,6 +8,7 @@ import {
   type RulesTestEnvironment,
 } from '@firebase/rules-unit-testing';
 import {
+  collection,
   collectionGroup,
   deleteDoc,
   doc,
@@ -410,9 +411,81 @@ describe('after a build is deleted', () => {
   });
 });
 
+describe('reports/{id}', () => {
+  beforeEach(async () => {
+    await seedBuild();
+    await comment(as('bob'), 'c1', { authorId: 'bob', text: 'buy gold at example.test' });
+  });
+
+  /** A report as the client writes it. */
+  const report = (reporterId: string, overrides: Record<string, unknown> = {}) => ({
+    reporterId,
+    buildId: 'B1',
+    commentId: null,
+    reason: 'spam',
+    note: '',
+    status: 'open',
+    createdAt: serverTimestamp(),
+    ...overrides,
+  });
+
+  it('a signed-in user reports a build or a comment, once', async () => {
+    await assertSucceeds(setDoc(doc(as('carol'), 'reports/B1_carol'), report('carol')));
+    await assertSucceeds(
+      setDoc(doc(as('carol'), 'reports/c1_carol'), report('carol', { commentId: 'c1' })),
+    );
+    await assertFails(setDoc(doc(as('carol'), 'reports/B1_carol'), report('carol')));
+    await assertFails(setDoc(doc(as(), 'reports/B1_anon'), report('anon')));
+  });
+
+  it('the doc id names the target and the reporter', async () => {
+    await assertFails(setDoc(doc(as('carol'), 'reports/B1_dave'), report('dave')));
+    await assertFails(setDoc(doc(as('carol'), 'reports/B1_dave'), report('carol')));
+    await assertFails(setDoc(doc(as('carol'), 'reports/x_carol'), report('carol')));
+    await assertFails(
+      setDoc(doc(as('carol'), 'reports/B1_carol'), report('carol', { commentId: 'c1' })),
+    );
+  });
+
+  it('the target must exist', async () => {
+    await assertFails(
+      setDoc(doc(as('carol'), 'reports/GONE_carol'), report('carol', { buildId: 'GONE' })),
+    );
+    await assertFails(
+      setDoc(doc(as('carol'), 'reports/c9_carol'), report('carol', { commentId: 'c9' })),
+    );
+  });
+
+  it('reason from the list, a trimmed note up to 500, status open, server time', async () => {
+    const db = as('carol');
+    const ref = doc(db, 'reports/B1_carol');
+    await assertFails(setDoc(ref, report('carol', { reason: 'boring' })));
+    await assertFails(setDoc(ref, report('carol', { note: 'x'.repeat(501) })));
+    await assertFails(setDoc(ref, report('carol', { note: ' padded ' })));
+    await assertFails(setDoc(ref, report('carol', { status: 'dismissed' })));
+    await assertFails(setDoc(ref, report('carol', { createdAt: Timestamp.now() })));
+    await assertFails(setDoc(ref, report('carol', { priority: 'high' })));
+    await assertSucceeds(setDoc(ref, report('carol', { reason: 'other', note: 'x'.repeat(500) })));
+  });
+
+  it('only admins list reports; a reporter reads only their own; nobody edits them', async () => {
+    await setDoc(doc(as('carol'), 'reports/B1_carol'), report('carol'));
+    await assertSucceeds(getDoc(doc(as('carol'), 'reports/B1_carol')));
+    await assertFails(getDoc(doc(as('alice'), 'reports/B1_carol')));
+    await assertFails(getDocs(collection(as('carol'), 'reports')));
+    await assertSucceeds(getDocs(collection(as('root', { admin: true }), 'reports')));
+    await assertSucceeds(getDoc(doc(as('root', { admin: true }), 'reports/B1_carol')));
+    await assertFails(updateDoc(doc(as('carol'), 'reports/B1_carol'), { note: 'changed' }));
+    await assertFails(
+      updateDoc(doc(as('root', { admin: true }), 'reports/B1_carol'), { status: 'dismissed' }),
+    );
+    await assertFails(deleteDoc(doc(as('carol'), 'reports/B1_carol')));
+  });
+});
+
 describe('everything else', () => {
   it('is denied', async () => {
-    await assertFails(setDoc(doc(as('alice'), 'reports/r1'), { reason: 'spam' }));
+    await assertFails(setDoc(doc(as('alice'), 'secrets/x'), { reason: 'spam' }));
     await assertFails(getDoc(doc(as('alice'), 'secrets/x')));
   });
 });

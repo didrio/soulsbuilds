@@ -5,3 +5,4 @@ export * from './builds';
 export * from './comments';
 export * from './likes';
 export * from './users';
+export * from './reports';

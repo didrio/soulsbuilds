@@ -21,7 +21,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:rules": "node scripts/firebase.mjs --config firebase.test.json emulators:exec --project demo-soulsbuilds-test --only firestore \"vitest run --config vitest.emulator.config.ts\"",
+    "test:rules": "node scripts/firebase.mjs --config firebase.test.json emulators:exec --project demo-soulsbuilds-test --only firestore,auth \"vitest run --config vitest.emulator.config.ts\"",
     "e2e": "node scripts/e2e.mjs",
     "screenshot": "node scripts/screenshot.mjs",
     "doctor": "node scripts/doctor.mjs",

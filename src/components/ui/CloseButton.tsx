@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN } from '@/theme';
+import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '@/theme';
 
 /** A square "×" button; `label` is its accessible name (default "Close"). */
 function CloseButton({ onClick, label = 'Close' }: { onClick: () => void; label?: string }) {
@@ -27,6 +27,7 @@ const Container = styled.button`
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
   }
 
   &:focus-visible {

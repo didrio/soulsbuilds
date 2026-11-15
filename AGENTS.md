@@ -14,12 +14,13 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-14 (T3–T5 done, most of T6/T9/T11): Vite 8 + React 19 (React Compiler) + RTK 2 + TanStack
-Query 5 + styled-components 6 + Firebase 12, strict TypeScript. Firestore model v2 with tested security rules
-and a v1→v2 migration; one `AuthProvider`; loading/error/empty/not-found states; search, delete, rename, change
-items in place; Playwright e2e. `npm run check`, `test:rules` and `e2e` are green and run in CI.
-**Production is dark**: it still holds v1 data under the expired 2022 rules (deny all); T12 deploys the v2
-rules + indexes and runs the migration, with the owner. Game data is base game only until T7.
+As of 2026-11-15 (T3–T5 and T10 done, most of T6/T9/T11): Vite 8 + React 19 (React Compiler) + RTK 2 +
+TanStack Query 5 + styled-components 6 + Firebase 12, strict TypeScript. Firestore model v2 with tested security
+rules and a v1→v2 migration; one `AuthProvider`; loading/error/empty/not-found states; search, delete, rename,
+change items in place; reports + `scripts/admin.mjs` moderation; Playwright e2e. `npm run check`, `test:rules`
+and `e2e` are green and run in CI. **Production is dark**: it still holds v1 data under the expired 2022 rules
+(deny all); T12 deploys the v2 rules + indexes, runs the migration and turns on App Check, with the owner.
+Game data is base game only until T7.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -56,12 +57,13 @@ rules + indexes and runs the migration, with the owner. Game data is base game o
 | All checks (run before finishing)           | `npm run check`                                                              |
 | Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format` |
 | Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                    |
-| Rules + migration tests (own emulator)      | `npm run test:rules` (works while `npm run dev` runs)                        |
+| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                        |
 | End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                              |
 | What can this machine run?                  | `npm run doctor`                                                             |
 | Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                         |
 | Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                         |
 | v1→v2 migration (dry run; prod = T12 only)  | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`               |
+| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`  |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--full]` → PNG path   |
 | Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)         |
 | Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                   |
@@ -99,23 +101,29 @@ src/
   features/builds/         Landing (sort, tag/level filters in the URL, load more), BuildsList (build cards),
                            filters.ts, queries.ts (useBuilds, useUserBuilds)
   features/profile/        Profile (rename, Builds/Liked tabs), queries.ts (useUserProfile(s), useLikedBuilds…)
+  features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete) + useBuildEditor; queries.ts (useBuild,
                            useSaveBuild, likes, comments); sections/ (BuildTitle with like button, BuildDetailsForm,
                            Equipment/Stat/Tear/SpellEditor, DescriptionSection, BuildTags, CommentsSection);
                            Slot, ItemSelector (picker), slots.ts; store/ = Redux slices for the build being
                            edited + selectors + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: FlexGroup, Button, TextInput/TextAreaInput, DropDown, Chips, Tag,
-                           PageMessage (loading/empty/not-found), ErrorMessage (with retry), LoadingAnimation…
-  lib/                     firebase/ (ALL Auth/Firestore access: app, auth, builds, likes, comments, users),
+                           PageMessage (loading/empty/not-found), ErrorMessage (with retry), FocusScope
+                           (dialog/panel focus + Escape), LoadingAnimation…
+  lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check), auth, builds, likes,
+                           comments, users, reports),
                            models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping),
                            array.ts
-  theme/                   Tokens: COLOR_* (colors.ts), FONT_* (fonts.ts), BELOW_* media queries (media.ts)
+  theme/                   Tokens: COLOR_* (colors.ts), FONT_* (fonts.ts), BELOW_* media queries (media.ts),
+                           SPACE_* spacing scale (spacing.ts)
   data/                    *.json static Elden Ring data (base game, 2022; never Read whole) + index.ts
                            typed accessors (getWeapon(name), armorList(kind)…) + types.ts. docs/data.md
   test/                    Vitest setup, renderWithProviders (store, QueryClient, router, uid), fixtures
-tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), e2e/ (Playwright)
+tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/
+                           (scripts/admin.mjs), e2e/ (Playwright)
 public/assets/             ~1,400 item icons by category (armor, weapons, spells, items, talismans, menu)
-scripts/                   seed, migrate-v1-to-v2, e2e, screenshot, doctor, firebase (Java wrapper), lib/
+scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, doctor, firebase (Java
+                           wrapper), lib/
                            (model-v2 helpers); legacy-data/ = 2022 scrapers (reference only)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
 firestore.rules            v2 security rules (not deployed until T12); firestore.indexes.json
@@ -129,8 +137,8 @@ TICKETS.md                 Ordered backlog; one ticket per session
   named type with a comment (see `src/data/index.ts`, `src/lib/firebase.ts`). Import across folders with `@/`.
 - **Layout**: a feature's pages, sections, hooks and state live in `src/features/<feature>/`; generic UI in
   `src/components/ui/`; framework-free code in `src/lib/`. See the `add-feature` skill.
-- **Styling**: styled-components, defined at the bottom of the file. Colors, fonts and breakpoints only from
-  `@/theme` (ESLint rejects hex literals outside `src/theme/`). Style-only props are transient (`$active`).
+- **Styling**: styled-components, defined at the bottom of the file. Colors, fonts, breakpoints and spacing
+  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`). Style-only props are transient (`$active`).
 - **State**: the build being edited → Redux slices + selectors (`useAppSelector`/`useAppDispatch`). Server
   data (builds, users, likes, comments) → TanStack Query hooks in `src/features/<feature>/queries.ts`, keys in
   `src/lib/queryKeys.ts`. The signed-in user → `useAuth()`. Never copy server data into Redux.
@@ -141,7 +149,10 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Markdown** from users renders through `rehype-sanitize`. Never `dangerouslySetInnerHTML`.
 - **Tests** are colocated `*.test.ts(x)`, Vitest + Testing Library. Components render with
   `renderWithProviders`; query by role/text. Known data gaps are `it.fails` in `src/data/data.test.ts`.
-- **Accessibility**: new interactive elements are real `<button>`/`<a>` with visible text or a label.
+- **Accessibility**: new interactive elements are real `<button>`/`<a>` with visible text or a label. Dialogs
+  and pop-up panels go through `FocusScope` (focus in, Escape, focus back; `trap` when modal). Text on
+  `COLOR_LIGHT_GREEN` is `COLOR_LIGHTEST_GREEN` (contrast notes in `src/theme/colors.ts`). Item icons are
+  `alt=""` because the item name is always shown next to them.
 
 ## Gotchas
 
@@ -164,6 +175,7 @@ TICKETS.md                 Ordered backlog; one ticket per session
   Rules, indexes and the migration go out together in T12, with the owner.
 - **`serverTimestamp()` reads back as an estimate** until the server confirms (`toBuild` and friends pass
   `serverTimestamps: 'estimate'`), so a just-written doc never has a null `createdAt`.
-- **`npm run seed` wipes the emulator's Firestore** before seeding.
+- **`npm run seed` wipes the emulator's Firestore** before seeding, and so does importing `scripts/seed.mjs`
+  (it runs on import): read constants from it with a regex instead.
 - **Item names in the data have scrape quirks** (`"Flame Grant me Strength"`, `"Glinstone Pebble"`): copy names
   from the JSON. `scripts/seed.mjs` validates every name it uses.

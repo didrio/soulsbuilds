@@ -8,6 +8,9 @@ coverage/
 # Agent and tool artifacts (screenshots, scratch output)
 .artifacts/
 
+# scripts/admin.mjs backups of removed content (user data: never commit)
+.admin-backups/
+
 # Firebase local state
 .firebase/
 .firebaserc.local

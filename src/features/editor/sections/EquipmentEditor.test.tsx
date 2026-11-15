@@ -35,11 +35,12 @@ describe('EquipmentEditor + item picker', () => {
       weaponAffinity1: 'Heavy',
     });
 
+    // The slot's name includes the affinity (the "A" badge is hover-only in edit mode).
     // Remove empties the slot and drops its affinity.
-    await user.click(screen.getByRole('button', { name: 'Change Moonveil' }));
+    await user.click(screen.getByRole('button', { name: 'Change Moonveil (Heavy affinity)' }));
     await user.click(screen.getByRole('button', { name: 'Remove Moonveil' }));
     expect(store.getState().equipment).toMatchObject({ weapon1: null, weaponAffinity1: null });
-    expect(screen.queryByRole('button', { name: 'Change Moonveil' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Change Moonveil/ })).not.toBeInTheDocument();
   });
 
   it('read-only slots are not buttons', () => {

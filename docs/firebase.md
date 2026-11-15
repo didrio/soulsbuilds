@@ -58,6 +58,50 @@ Users become `{ displayName, createdAt }`: **emails are dropped from Firestore**
 and v1 `admin: true` flags are reported (set a custom claim instead if still wanted). The report lists every
 renamed, clamped or dropped value.
 
+## Moderation: reports and admins (T10)
+
+- Signed-in users report a build or a comment from its page ("Report": a reason from a fixed list plus an
+  optional note). Reports live in `reports/{targetId}_{uid}`: one per user per target, create-only from a client,
+  readable by admins (and by the reporter, for "already reported"). Rules and tests: `firestore.rules`,
+  `tests/rules/`.
+- **Admins** have the `admin: true` custom claim (never a Firestore field). The rules let admins delete any
+  build or comment; the app has no admin UI yet: moderation runs from `scripts/admin.mjs` (Admin SDK, dry run
+  unless `--write`, local emulator unless `--project`):
+
+```bash
+node scripts/admin.mjs reports                                   # open reports, grouped by target
+node scripts/admin.mjs remove <buildId> [commentId] --write      # delete it, resolve its reports
+node scripts/admin.mjs dismiss <buildId> [commentId] --write     # keep it, resolve its reports
+node scripts/admin.mjs grant you@example.com --write             # admin claim (revoke to undo)
+node scripts/admin.mjs reports --project soulsbuilds             # production (ADC, owner only)
+```
+
+- **Delete, not hide** (`docs/decisions.md`). `remove` first saves what it deletes (the build with its comments
+  and likes, or the comment) as JSON in `.admin-backups/` (gitignored), so a mistake can be restored by hand.
+  Resolved reports keep their doc with `status: 'removed' | 'dismissed'` and `resolvedAt`.
+- A new admin claim reaches the user's ID token on their next sign-in (or within an hour).
+
+## App Check (set up at T12, owner)
+
+The code is ready (`src/lib/firebase/app.ts`): App Check turns on in production builds once
+`APP_CHECK_SITE_KEY` is filled in. It never runs against the emulators. Steps, in order (don't enforce first,
+or the live site breaks):
+
+1. **Create the key.** Google Cloud console, project `soulsbuilds` → Security → reCAPTCHA → Create key: type
+   _Website_, domains `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` (plus any custom domain), no
+   checkbox challenge. Copy the site key. (The free tier covers 10,000 assessments a month; App Check caches
+   tokens, so that's roughly 10,000 visits. If the console insists on a billing account and you'd rather not,
+   the fallback is reCAPTCHA v3: `ReCaptchaV3Provider` in `app.ts`, a one-line change.)
+2. **Register the app.** Firebase console → App Check → Apps → the web app → reCAPTCHA Enterprise → paste the
+   site key → Save.
+3. **Ship the key.** Put it in `APP_CHECK_SITE_KEY` in `src/lib/firebase/app.ts` and deploy hosting.
+4. **Watch, then enforce.** Firebase console → App Check → APIs: after a day or two of traffic, the
+   Cloud Firestore and Authentication metrics should show almost all requests verified. Then click **Enforce**
+   on both. Unverified requests (scripts using the public API key) are refused from then on.
+5. **Local preview** (`npm run preview` serves the production build on 127.0.0.1, which the key doesn't allow):
+   the app switches to debug mode there and logs a debug token in the browser console. Register it under
+   App Check → Apps → ⋮ → Manage debug tokens. Never commit a debug token.
+
 ## Deploys (owner-approved only)
 
 - `npm run deploy` = `npm run check` then `firebase deploy --project soulsbuilds --only hosting`. It needs

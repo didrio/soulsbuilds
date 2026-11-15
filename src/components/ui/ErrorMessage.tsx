@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { COLOR_RED } from '@/theme';
+import { COLOR_ERROR } from '@/theme';
 
 interface ErrorMessageProps {
   children?: string;
@@ -23,7 +23,7 @@ function ErrorMessage({ children = '', onRetry }: ErrorMessageProps) {
 }
 
 const Container = styled.p`
-  color: ${COLOR_RED};
+  color: ${COLOR_ERROR};
   font-size: 14px;
   margin: 8px 0;
 `;

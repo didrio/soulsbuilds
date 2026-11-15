@@ -1,5 +1,6 @@
 // The Firebase app, Auth and Firestore instances, wired to the emulators in dev and tests.
 import { initializeApp } from 'firebase/app';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
@@ -32,7 +33,30 @@ const emulatorConfig = {
   projectId: EMULATOR_PROJECT_ID,
 };
 
+// Firebase App Check (T10): proves requests come from this site, so the public API key can't be
+// scripted against Firestore/Auth from elsewhere. reCAPTCHA Enterprise site key, public by design
+// like the config above. Empty = App Check off; the owner creates the key and turns on
+// enforcement at T12 (steps in docs/firebase.md "App Check"). Never used with the emulators.
+const APP_CHECK_SITE_KEY = '';
+
+declare global {
+  // App Check debug mode: `true` makes the SDK print a debug token to register in the console.
+  var FIREBASE_APPCHECK_DEBUG_TOKEN: boolean | string | undefined;
+}
+
 const firebaseApp = initializeApp(USE_EMULATORS ? emulatorConfig : productionConfig);
+
+if (!USE_EMULATORS && APP_CHECK_SITE_KEY) {
+  // `npm run preview` serves the production build on 127.0.0.1, which the site key doesn't allow:
+  // use a debug token there instead.
+  if (['127.0.0.1', 'localhost'].includes(window.location.hostname)) {
+    globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+  }
+  initializeAppCheck(firebaseApp, {
+    provider: new ReCaptchaEnterpriseProvider(APP_CHECK_SITE_KEY),
+    isTokenAutoRefreshEnabled: true,
+  });
+}
 export const auth = getAuth(firebaseApp);
 export const firestore = getFirestore(firebaseApp);
 

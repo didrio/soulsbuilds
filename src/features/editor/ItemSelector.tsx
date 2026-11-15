@@ -26,7 +26,14 @@ import {
   type Weapon,
 } from '@/data';
 import { sortBy } from '@/lib/array';
-import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN, BELOW_750, BELOW_1000 } from '@/theme';
+import {
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
+  BELOW_750,
+  BELOW_1000,
+  COLOR_LIGHTEST_GREEN,
+} from '@/theme';
 import {
   ARROW_SLOTS,
   CONSUMABLE_SLOTS,
@@ -201,7 +208,7 @@ function ItemSelector() {
       }}>
       <RowName>
         <ImageContainer>
-          <img alt="" src={`/assets/${item.imageUrl}`} />
+          <img alt="" loading="lazy" src={`/assets/${item.imageUrl}`} />
         </ImageContainer>
         <FlexItem>{item.name}</FlexItem>
       </RowName>
@@ -309,6 +316,7 @@ const RemoveButton = styled.button`
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
   }
 `;
 
@@ -335,6 +343,7 @@ const RowContainer = styled(FlexGroup)`
 
   &:hover {
     background-color: ${COLOR_LIGHT_GREEN};
+    color: ${COLOR_LIGHTEST_GREEN};
   }
 `;
 

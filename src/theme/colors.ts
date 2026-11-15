@@ -1,4 +1,7 @@
 // The palette. Every color in the app comes from here (ESLint rejects hex literals elsewhere in src/).
+// Contrast (WCAG AA, checked 2026-11-14, T11): COLOR_GOLD and COLOR_LIGHTEST_GREEN text pass on every
+// green background except COLOR_LIGHT_GREEN, where only COLOR_LIGHTEST_GREEN passes, so hover states
+// that turn a background COLOR_LIGHT_GREEN also turn the text COLOR_LIGHTEST_GREEN.
 export const COLOR_BLACK = '#000000';
 export const COLOR_BLUE = '#017acc';
 export const COLOR_DARK_GRAY = '#333333';
@@ -9,6 +12,8 @@ export const COLOR_GRAY = '#555555';
 export const COLOR_LIGHTER_GRAY = '#777777';
 export const COLOR_LIGHT_GRAY = '#cccccc';
 export const COLOR_RED = '#f24c4c';
+// Error text: COLOR_RED is under WCAG AA (4.5:1) on COLOR_GREEN panels; this passes on every green.
+export const COLOR_ERROR = 'rgb(255, 138, 138)';
 export const COLOR_WHITE = '#ffffff';
 
 export const COLOR_LIGHT_GOLD = 'rgb(185, 149, 100)';

@@ -109,3 +109,33 @@ test('logging in with a wrong password shows an error', async ({ page }) => {
   await form.getByRole('button', { name: 'Login' }).click();
   await expect(form.getByRole('alert')).toHaveText('Wrong email or password.');
 });
+
+test('report a build once; the login panel closes with Escape', async ({ page }) => {
+  await page.goto('/');
+  const login = page.getByRole('button', { name: 'Login' });
+  await login.click();
+  await expect(page.getByRole('form', { name: 'Log in' }).getByLabel('Email')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(login).toBeFocused();
+  await expect(login).toHaveAttribute('aria-expanded', 'false');
+
+  await page.getByRole('button', { name: 'Register' }).click();
+  const form = page.getByRole('form', { name: 'Register' });
+  await form.getByLabel('Email').fill(`report-${unique}@example.test`);
+  await form.getByLabel('Password').fill(password);
+  await form.getByLabel('Display name').fill(`Reporter ${unique}`);
+  await form.getByRole('button', { name: 'Register' }).click();
+  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+
+  await page.goto('/build/SEEDBLEED001');
+  await page.getByRole('button', { name: 'Report this build' }).click();
+  await page.getByRole('combobox', { name: 'Reason' }).selectOption('Spam or advertising');
+  await page.getByRole('button', { name: 'Send report' }).click();
+  await expect(page.getByText('Thanks, an admin will take a look.')).toBeVisible();
+
+  await page.reload();
+  await page.getByRole('button', { name: 'Report this build' }).click();
+  await page.getByRole('combobox', { name: 'Reason' }).selectOption('Something else');
+  await page.getByRole('button', { name: 'Send report' }).click();
+  await expect(page.getByText('You already reported this build.')).toBeVisible();
+});

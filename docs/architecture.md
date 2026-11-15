@@ -79,6 +79,11 @@ builds/{id}/likes/{uid}           one like per user (doc id = liker's uid)
   userId: uid, createdAt: timestamp
 builds/{id}/comments/{autoId}
   authorId: uid, text: string (trimmed, 1–1000), createdAt: timestamp
+
+reports/{targetId}_{uid}          one report per user per build/comment (T10); create-only from clients
+  reporterId: uid, buildId, commentId: string|null (null = the build itself)
+  reason: 'spam'|'offensive'|'harassment'|'other', note: string (trimmed, ≤ 500, may be '')
+  status: 'open' (client) → 'removed'|'dismissed' + resolvedAt (scripts/admin.mjs), createdAt: timestamp
 ```
 
 - **Counters without Cloud Functions** (they need the paid Blaze plan): a like is one batched write that creates
@@ -89,7 +94,8 @@ builds/{id}/comments/{autoId}
   comment. Owners edit content and delete their builds; comment authors delete their comments. **Admins** are a
   custom claim (`request.auth.token.admin`), never a document field: they can delete any build or comment.
   Deleting a build deletes the build doc first, then its likes/comments (anyone signed in may clean up children
-  of a build that no longer exists).
+  of a build that no longer exists). Signed-in users report builds and comments; only admins read reports
+  (a reporter may read their own). Moderation runs from `scripts/admin.mjs` (`docs/firebase.md`).
 - **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
   (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`), by
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
@@ -104,7 +110,8 @@ builds/{id}/comments/{autoId}
   match only, and ignores sort and the server-side tag [T9].
 - Game data (~650 KB of JSON) is in the main bundle because the landing cards use it [T7/T11].
 - Builds reference items by name; renamed items silently drop [T7].
-- No moderation tools beyond admin deletes; no App Check yet [T10].
+- App Check is coded but off until the owner creates the reCAPTCHA key (`docs/firebase.md`) [T12].
+- No admin UI: reports are reviewed with `scripts/admin.mjs` (backlog).
 
 ## Styling
 
@@ -112,6 +119,13 @@ styled-components with no `ThemeProvider`; tokens are plain constants in `src/th
 golds, `FONT_*`, `BELOW_*` media queries; ESLint rejects hex literals elsewhere); one `createGlobalStyle` in
 `src/app/App.tsx`. Fonts: OptimusPrinceps SemiBold (local TTF, headings) and
 `garamond-premier-pro` from an Adobe Typekit kit in `index.html`. Responsive layout is ad-hoc `max-width`
-media queries (400–1400 px). Tooltips are hover-only. No spacing scale yet (2022 margins are ad hoc); T11 polishes the rest.
+media queries (400–1400 px). Spacing: `SPACE_*` tokens (5px steps, plus `SPACE_GUTTER` 16px) in
+`src/theme/spacing.ts`, used by the shell and the pages touched since T11; older margins are still literal.
+Contrast: gold and light-green text pass WCAG AA on the greens, except on `COLOR_LIGHT_GREEN`, so hover states
+that use it switch the text to `COLOR_LIGHTEST_GREEN` (notes in `colors.ts`). Weapon affinity/skill badges in
+`Slot` show details on mouse hover, and in view mode are buttons (tap/Enter toggles, Escape/blur closes; pinned to
+the bottom of the screen on phones). Dialogs and panels use `components/ui/FocusScope` (focus in, Escape, focus
+back; `trap` for the item picker modal). Item icons are decorative (`alt=""`): the name is always shown next to
+them.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited.

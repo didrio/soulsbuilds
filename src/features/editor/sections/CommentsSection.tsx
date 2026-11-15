@@ -8,6 +8,7 @@ import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import TextAreaInput from '@/components/ui/TextAreaInput';
 import useAuth from '@/features/auth/useAuth';
 import { useUserProfiles } from '@/features/profile/queries';
+import ReportButton from '@/features/reports/ReportButton';
 import { errorMessage } from '@/lib/firebase';
 import { LIMITS } from '@/lib/models';
 import {
@@ -15,6 +16,10 @@ import {
   COLOR_LIGHTEST_GREEN,
   COLOR_LIGHTEST_GREEN_LOW_OPACITY,
   BELOW_800,
+  SPACE_LG,
+  SPACE_MD,
+  SPACE_SM,
+  SPACE_XL,
 } from '@/theme';
 import { useAddComment, useComments, useDeleteComment } from '../queries';
 
@@ -66,6 +71,11 @@ function CommentsSection({ buildId }: { buildId: string }) {
                       Delete
                     </DeleteButton>
                   ) : null}
+                  <ReportButton
+                    target={{ buildId, commentId: comment.id }}
+                    authorId={comment.authorId}
+                    kind="comment"
+                  />
                 </CommentMeta>
                 <CommentText>{comment.text}</CommentText>
               </CommentItem>
@@ -101,27 +111,27 @@ function CommentsSection({ buildId }: { buildId: string }) {
 
 const SaveCommentContainer = styled(FlexGroup)`
   justify-content: center;
-  margin-top: 20px;
+  margin-top: ${SPACE_LG};
 `;
 
 const Title = styled.h2`
   display: block;
   font-size: 24px;
   font-weight: normal;
-  margin: 0 0 10px;
+  margin: 0 0 ${SPACE_SM};
   color: ${COLOR_LIGHTEST_GREEN};
 `;
 
 const CommentList = styled.ol`
   list-style: none;
-  margin: 15px 0 20px;
+  margin: ${SPACE_MD} 0 ${SPACE_LG};
   padding: 0;
 `;
 
 const CommentItem = styled.li`
   border-bottom: 1px dashed ${COLOR_LIGHT_GREEN};
-  padding-bottom: 10px;
-  margin-bottom: 20px;
+  padding-bottom: ${SPACE_SM};
+  margin-bottom: ${SPACE_LG};
   font-size: 18px;
 
   &:last-child {
@@ -133,8 +143,8 @@ const CommentMeta = styled.div`
   align-items: baseline;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 10px;
+  gap: ${SPACE_SM};
+  margin-bottom: ${SPACE_SM};
   font-size: 14px;
 
   & > a {
@@ -162,7 +172,7 @@ const DeleteButton = styled.button`
 const CommentTextAreaContainer = styled(FlexGroup)`
   height: 100px;
   width: 100%;
-  margin-top: 15px;
+  margin-top: ${SPACE_MD};
 `;
 
 const Empty = styled.p`
@@ -173,7 +183,7 @@ const Empty = styled.p`
 const CommentsContainer = styled(FlexGroup)`
   width: 100%;
   border-top: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
-  padding-top: 20px;
+  padding-top: ${SPACE_LG};
 
   @media ${BELOW_800} {
     flex-direction: column;
@@ -185,12 +195,12 @@ const CommentsPost = styled.form`
   display: flex;
   flex-direction: column;
   width: 40%;
-  padding-left: 30px;
+  padding-left: ${SPACE_XL};
 
   @media ${BELOW_800} {
     width: 100%;
     padding-left: 0px;
-    margin-top: 20px;
+    margin-top: ${SPACE_LG};
   }
 `;
 

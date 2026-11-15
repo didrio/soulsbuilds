@@ -12,7 +12,14 @@ import BuildsList from '@/features/builds/BuildsList';
 import { useUserBuilds } from '@/features/builds/queries';
 import { errorMessage } from '@/lib/firebase';
 import { LIMITS, type UserProfile } from '@/lib/models';
-import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '@/theme';
+import {
+  COLOR_GOLD,
+  COLOR_GREEN,
+  COLOR_LIGHT_GREEN,
+  COLOR_LIGHTEST_GREEN,
+  SPACE_LG,
+  SPACE_SM,
+} from '@/theme';
 import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
 
 type Tab = 'builds' | 'liked';
@@ -174,7 +181,7 @@ const HeaderContainer = styled.div`
   align-items: center;
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
+  margin-bottom: ${SPACE_LG};
 `;
 
 const Header = styled.h1`
@@ -199,8 +206,8 @@ const RenameForm = styled.form`
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: ${SPACE_SM};
+  margin-bottom: ${SPACE_LG};
 `;
 
 const NameInput = styled.div`
@@ -208,12 +215,12 @@ const NameInput = styled.div`
 `;
 
 const Spaced = styled(Button)`
-  margin-left: 20px;
+  margin-left: ${SPACE_LG};
 `;
 
 const Tabs = styled.div`
   display: flex;
-  margin-bottom: 20px;
+  margin-bottom: ${SPACE_LG};
 `;
 
 const TabButton = styled.button<{ $active: boolean }>`
@@ -223,7 +230,7 @@ const TabButton = styled.button<{ $active: boolean }>`
   cursor: pointer;
   font: inherit;
   font-size: 18px;
-  padding: 8px 20px;
+  padding: 8px ${SPACE_LG};
 
   &:focus-visible {
     outline: 2px solid ${COLOR_GOLD};
@@ -243,7 +250,7 @@ const Empty = styled.p`
 
 const NewBuildContainer = styled(FlexGroup)`
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: ${SPACE_LG};
   width: 100%;
 `;
 
