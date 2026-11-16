@@ -7,11 +7,11 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T46
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T44 — Check off route stops that aren't gear · Opus · high · plan mode on (a gap the owner hit while
-tracking). Then `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
-blocked on the Blaze decision), rules budget (T42) before copies and variations (T32 → T33), the branded email
-action page (T43), and item hover cards (T45, no rush).
-T32, T33, T44 and T45 start with owner questions (★ in each ticket).
+**Next:** T42 — Free up rules budget on builds before the next field · Opus · extra high · plan mode on (it
+unblocks copies and variations, T32 → T33). Also from `docs/product.md` "Priorities": usage counts (T38, blocked on
+the owner), link previews (T37, blocked on the Blaze decision), the branded email action page (T43), and item
+hover cards (T45, no rush).
+T32, T33 and T45 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -34,43 +34,17 @@ and spacing, and the canvas notes say why.
   `node scripts/admin.mjs counts --project soulsbuilds` (dry run), then `--write` (`docs/firebase.md`
   "Tracking counters backfill").
 
-- **Before approving T30's production deploy:** enable Google sign-in, add the redirect URI
-  `https://soulsbuilds.com/__/auth/handler`, set the password policy (8) and turn on email enumeration protection
-  (`docs/firebase.md` "Sign-in setup", steps 1–4); after the deploy, step 5's smoke test.
-
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
-T40 (the build image), T30 (sign up and log in) and T31 (profile and account settings).
+T40 (the build image), T30 (sign up and log in), T31 (profile and account settings) and T44 (route stops done).
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T44 — Check off route stops that aren't gear
-
-- **Status:** ready (owner, 2026-11-16, while tracking a build)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** While tracking a build, the player can mark a route stop done when it has nothing to check off: key
-  items (Flask of Wondrous Physick, the Haligtree Secret Medallion halves), a boss, an Ash of War. Today such a
-  stop only counts as done once a later stop with tracked gear is done (`stopProgress` in
-  `features/editor/guide/progress.ts`), so "Next stop" stays stuck on it.
-- **Done when:** (★ owner questions first)
-  - ★ A "Mark done" control on those stops (per stop, or per key item?), in `GuideRoute` and the Loadout tab's
-    `NextStop` card; unchecking works too. ★ Whether they count toward the progress percentage (suggest: no, it
-    stays about the build's gear and stats).
-  - Stored in the private tracking doc. Options: key-item keys in `collected` (e.g. `key:<id>`, mind the 64
-    cap) or a new `stopsDone` list (a rules change in `validTracking`: `hasExactly` + a size cap, with rules
-    tests). Existing docs keep working with no migration.
-  - `stopProgress` treats a marked stop as done; the "a later stop is done" inference stays for unmarked ones.
-    Unit tests in `progress.test.ts`, the tracking e2e extended; `npm run check`, `npm run test:rules`,
-    `npm run e2e`; screenshots desktop and `--mobile`.
-- **Context:** `features/editor/guide/{progress.ts,GuideRoute.tsx,NextStop.tsx}`, `lib/tracking.ts`
-  (`applyChange`, `trackingProgress`), `features/tracking/{useBuildTracking.ts,saveQueue.ts}`,
-  `firestore.rules` `validTracking` with `tests/rules/`.
 
 ### T38 — Cookie-free usage counts
 
@@ -262,6 +236,11 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T44 — Check off route stops that aren't gear — 2026-11-16 — owner: one "Mark done" per stop (How to get and
+  the Next stop card), not in the percentage, and no inference (a later stop done says nothing about earlier
+  ones, gear or marks). `guide/progress.ts` `stopMarkKeys` (a stop's gate and item keys, not its number) +
+  `stopProgress(…, marked)`; `RouteAction.gate`; `applyChange` `mark` (pruned to the route); optional
+  `marked` on the tracking doc (`validTracking`: list ≤ 64); e2e `guide.spec.ts`; decision "Route stops done".
 - T31 — Profile and account settings — 2026-11-16 — owner: no canvas mock, name menu in the header, Google-only
   accounts set a password (no email change), framed profile hero. `/account` (`features/account/`: display name,
   email + verify notice + change by link, sign-in methods + change/set password, Log out, DeleteAccount moved
@@ -280,8 +259,3 @@ Older entries: `docs/tickets-archive.md`.
   shape, optional on create), `buildImage` / `imageChoices` in `lib/equipment.ts` (read-time fallback to the main
   weapon; the editor saves a gone pick as null), `getCardItem` + 5 new card kinds (cards.json +7 KB gzipped);
   hero, landing rows, profile panels; e2e `build-image.spec.ts`. Rules budget nearly exhausted → T42.
-- T36 — Playing and Completed — 2026-11-16 — owner: both profile tabs private, "Most played" sort, stopping a
-  finished build removes it from Completed; build counters `playerCount`/`finishedCount` (±1 in the tracking
-  doc's batch, rules check both sides; `saveQueue` tracks the stored status), hero "N playing · M finished",
-  profile Playing cards (progress + next stop, lazy) and Completed trophies, `admin.mjs counts` backfill, e2e
-  `playing.spec.ts`

@@ -77,6 +77,7 @@ describe('Playing and Completed (T36)', () => {
   const state = (overrides = {}) => ({
     collected: [],
     seen: [],
+    marked: [],
     stats: BASE,
     startedAt: new Date('2026-11-04T12:00:00Z'),
     completedAt: null,

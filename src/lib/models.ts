@@ -147,6 +147,8 @@ export interface TrackingDoc {
   game: GameId;
   collected: string[];
   seen: string[];
+  /** Route stops marked done (T44); docs saved before T44 don't have it. */
+  marked?: string[];
   stats: Stats;
   startedAt: Timestamp;
   updatedAt: Timestamp;

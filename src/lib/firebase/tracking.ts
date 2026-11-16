@@ -40,6 +40,7 @@ function toTrackingState(snapshot: DocumentSnapshot): TrackingState {
   return {
     collected: data.collected,
     seen: data.seen,
+    marked: data.marked ?? [],
     stats: data.stats,
     startedAt: data.startedAt.toDate(),
     completedAt: data.completedAt?.toDate() ?? null,
@@ -82,6 +83,7 @@ export async function saveTracking(
     game: GAME_ELDEN_RING,
     collected: state.collected,
     seen: state.seen,
+    marked: state.marked,
     stats: state.stats,
     startedAt: Timestamp.fromDate(state.startedAt),
     updatedAt: serverTimestamp(),

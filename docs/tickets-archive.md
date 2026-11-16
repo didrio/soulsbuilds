@@ -128,3 +128,8 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   `useOpenAuthDialog(kind, onSignedIn)` + `startAfterSignIn(uid)`; signed in with no tracked build, from
   `tracksAnyBuild` (`limit(1)`): Start tracking / Not now); local storage, sync, Keep my progress and
   `mergeTracking` gone; `screenshot --storage` → `--click`; e2e `helpers.ts` `completeSignUp`.
+- T36 — Playing and Completed — 2026-11-16 — owner: both profile tabs private, "Most played" sort, stopping a
+  finished build removes it from Completed; build counters `playerCount`/`finishedCount` (±1 in the tracking
+  doc's batch, rules check both sides; `saveQueue` tracks the stored status), hero "N playing · M finished",
+  profile Playing cards (progress + next stop, lazy) and Completed trophies, `admin.mjs counts` backfill, e2e
+  `playing.spec.ts`

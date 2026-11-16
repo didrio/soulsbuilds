@@ -24,7 +24,12 @@ describe('GuideSection', () => {
   });
 
   it('shows progress along the route while tracking', async () => {
-    renderWithProviders(<GuideSection equipment={withMoonveil()} collected={[]} />);
+    renderWithProviders(
+      <GuideSection
+        equipment={withMoonveil()}
+        tracking={{ collected: [], marked: [], onMark: () => {} }}
+      />,
+    );
     expect(await screen.findByText(/stops done/)).toBeInTheDocument();
     expect(screen.getByText(/still to get/)).toBeInTheDocument();
   });

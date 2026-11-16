@@ -3,7 +3,15 @@
 // the ones it shouldn't make are refused. `npm run test:rules`.
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, setDoc, Timestamp, type Firestore } from 'firebase/firestore';
+import {
+  deleteDoc,
+  deleteField,
+  doc,
+  setDoc,
+  Timestamp,
+  updateDoc,
+  type Firestore,
+} from 'firebase/firestore';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { BuildInput } from '@/lib/firebase/builds';
 
@@ -268,6 +276,7 @@ describe('tracking (T34) and the build’s counters (T36)', () => {
   const state = {
     collected: ['helm:680000'],
     seen: ['helm:680000', 'talisman:2160'],
+    marked: ['gate:margit', 'keyItems:8590'],
     stats: { vigor: 30, mind: 10, end: 20, str: 12, dex: 30, int: 9, fai: 8, arc: 30 },
     startedAt: new Date('2026-11-10T12:00:00Z'),
     completedAt: null,
@@ -288,6 +297,13 @@ describe('tracking (T34) and the build’s counters (T36)', () => {
     expect(await tracksAnyBuild('gus')).toBe(true);
     expect(await getTracking('gus', B9)).toEqual(state);
     await saveTracking('gus', B9, { ...state, collected: [] }, 'playing');
+    // A doc saved before T44 has no marks: it reads back with none.
+    await env.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore() as unknown as Firestore, 'users/gus/tracking', B9), {
+        marked: deleteField(),
+      });
+    });
+    expect((await getTracking('gus', B9))?.marked).toEqual([]);
     const done = { ...state, collected: [...state.seen], completedAt: new Date('2026-11-16') };
     await saveTracking('gus', B9, done, 'playing');
     expect(await getTracking('gus', B9)).toEqual(done);
@@ -338,6 +354,7 @@ describe('account deletion (T18)', () => {
     const progress0 = {
       collected: [],
       seen: [],
+      marked: [],
       stats: input.stats,
       startedAt: new Date(),
       completedAt: null,

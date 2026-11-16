@@ -248,6 +248,7 @@ describe('planRoute', () => {
       'Shop: remembrance Enia → 6',
       'Capital Gate: pickup → 8',
     ]);
+    expect(route.legs[1]?.steps[0]?.actions[0]?.gate).toBe('godrick');
     expect(route.legs.map((leg) => leg.region?.name)).toEqual([
       'Limgrave',
       'Stormveil',
@@ -317,6 +318,8 @@ describe('planRoute', () => {
     const itemOf = (id: number) =>
       actions.flatMap((a) => a.items).find((routeItem) => routeItem.ref.id === id);
     expect(actions.find((a) => a.detail === 'Defeat Margit')?.reason).toBe('Main-path boss');
+    // Its id too (T44: a stop is marked done by its gates and items).
+    expect(actions.find((a) => a.detail === 'Defeat Margit')?.gate).toBe('margit');
     expect(itemOf(900)?.gate?.reason).toBe('For ashes');
     expect(itemOf(910)?.usedFor).toEqual([
       { kind: 'remembrance', detail: 'Enia', items: [{ file: 'weapons', id: 6 }] },

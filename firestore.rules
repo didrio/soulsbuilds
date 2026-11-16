@@ -108,13 +108,17 @@ service cloud.firestore {
       return countersMoved(get(buildPath(buildId)).data, getAfter(buildPath(buildId)).data, from, to);
     }
 
+    // `marked` (T44: route stops marked done) is optional: docs saved before it don't have it.
     function validTracking(buildId, t) {
       return isId(buildId)
-        && hasExactly(t, ['game', 'collected', 'seen', 'stats', 'startedAt', 'updatedAt',
+        && t.keys().hasAll(['game', 'collected', 'seen', 'stats', 'startedAt', 'updatedAt',
           'completedAt'])
+        && t.keys().hasOnly(['game', 'collected', 'seen', 'marked', 'stats', 'startedAt',
+          'updatedAt', 'completedAt'])
         && t.game == 'elden-ring'
         && t.collected is list && t.collected.size() <= 64
         && t.seen is list && t.seen.size() <= 64
+        && (!('marked' in t) || (t.marked is list && t.marked.size() <= 64))
         && validStats(t.stats)
         && t.startedAt is timestamp
         && t.updatedAt == request.time

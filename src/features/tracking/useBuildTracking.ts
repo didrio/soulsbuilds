@@ -152,5 +152,7 @@ export function useBuildTracking(build: Build | null) {
     toggle: (itemKey: string) => change({ type: 'toggle', key: itemKey }),
     setStat: (stat: StatKey, value: number) => change({ type: 'stat', key: stat, value }),
     acknowledge: () => change({ type: 'acknowledge' }),
+    /** Marks a route stop done, or undoes it (T44): its mark keys, and every mark key on the route. */
+    mark: (keys: string[], route: string[]) => change({ type: 'mark', keys, route }),
   };
 }

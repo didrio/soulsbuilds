@@ -34,9 +34,9 @@ import { trackingContext } from './useBuildTracking';
 /** Where the route sends the player next: "Erdtree Sanctuary, Leyndell", or null when there's none. */
 export function nextStopTitle(
   build: Pick<Build, 'equipment'>,
-  state: Pick<TrackingState, 'collected'>,
+  state: Pick<TrackingState, 'collected' | 'marked'>,
 ) {
-  const { stops, progress } = routeProgress(build.equipment, state.collected);
+  const { stops, progress } = routeProgress(build.equipment, state);
   const stop = progress && progress.next >= 0 ? stops[progress.next] : undefined;
   if (!stop) return null;
   const area = legTitle(stop.leg);

@@ -163,7 +163,11 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
                 <NextStop
                   buildId={build.id}
                   equipment={build.equipment}
-                  collected={tracking.state.collected}
+                  tracking={{
+                    collected: tracking.state.collected,
+                    marked: tracking.state.marked,
+                    onMark: tracking.mark,
+                  }}
                 />
               </Suspense>
             ) : null}
@@ -225,7 +229,18 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
                 />
               ) : null}
               {tab === 'route' && build ? (
-                <GuideSection equipment={build.equipment} collected={tracking.state?.collected} />
+                <GuideSection
+                  equipment={build.equipment}
+                  tracking={
+                    tracking.state
+                      ? {
+                          collected: tracking.state.collected,
+                          marked: tracking.state.marked,
+                          onMark: tracking.mark,
+                        }
+                      : undefined
+                  }
+                />
               ) : null}
               {tab === 'comments' && build ? (
                 <CommentsSection buildId={build.id} ownerId={build.ownerId} />

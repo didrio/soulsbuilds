@@ -280,6 +280,19 @@ describe('users/{uid}/tracking/{buildId} (T34)', () => {
     await assertSucceeds(track(fs, 'alice', tracking({ completedAt: Timestamp.now() }), 1, 1));
   });
 
+  it('may hold the route stops marked done, a list of at most 64 (T44)', async () => {
+    await seedTracking();
+    const fs = db();
+    const marked = (value: unknown) => setDoc(ref(fs), tracking({ marked: value }));
+    await assertSucceeds(marked(['gate:margit', 'keyItems:8590']));
+    await assertSucceeds(marked(Array.from({ length: 64 }, (_, i) => `gate:g${i}`)));
+    await assertFails(marked(Array.from({ length: 65 }, (_, i) => `gate:g${i}`)));
+    await assertFails(marked('gate:margit'));
+    await assertFails(marked(null));
+    // Without it (a client from before T44) still works.
+    await assertSucceeds(setDoc(ref(fs), tracking()));
+  });
+
   it('startedAt keeps its date, or moves earlier when progress is merged', async () => {
     await seedTracking();
     const fs = db();

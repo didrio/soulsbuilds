@@ -1,5 +1,5 @@
 // The route during a run (T35): the route as numbered stops, and which of them a tracking player has
-// done (T34's `collected` item keys). Pure.
+// done (T34's `collected` item keys, and T44's stops marked done). Pure.
 import type { AcquisitionFile } from '@/data/schema';
 import type { ItemRef, Route, RouteLeg, RouteStep } from './route';
 
@@ -42,38 +42,68 @@ export function isCollected(ref: ItemRef, collected: ReadonlySet<string>): boole
   return (KEY_SLOTS[ref.file] ?? []).some((slot) => collected.has(`${slot}:${ref.id}`));
 }
 
+/** The build's items on a stop that tracking checks off (collected on the Loadout tab). */
+const trackedOn = (stop: RouteStop, own: ReadonlySet<string>) =>
+  stop.step.actions
+    .flatMap((action) => action.items)
+    .filter((item) => own.has(refKey(item.ref)) && isTrackable(item.ref));
+
+/**
+ * What marks a stop without tracked items done (T44): its gates (`gate:margit`) and its items
+ * (`keyItems:8590`). Keyed by the things on it, not its number, so a mark survives the author editing
+ * the build and the route moving. A stop is marked when all of them are.
+ */
+export function stopMarkKeys(stop: RouteStop, own: ReadonlySet<string>): string[] {
+  const keys = stop.step.actions.flatMap((action) => [
+    ...(action.gate ? [`gate:${action.gate}`] : []),
+    ...action.items
+      .filter((item) => !(own.has(refKey(item.ref)) && isTrackable(item.ref)))
+      .map((item) => refKey(item.ref)),
+  ]);
+  return [...new Set(keys)];
+}
+
+/** Every mark key on the route: a player's marks are kept to these. */
+export const routeMarkKeys = (stops: RouteStop[], own: ReadonlySet<string>) => [
+  ...new Set(stops.flatMap((stop) => stopMarkKeys(stop, own))),
+];
+
+/** A tracking player's progress, as the route reads it, and how they mark a stop done (T44). */
+export interface RouteTracking {
+  collected: string[];
+  marked: string[];
+  /** Marks a stop done, or undoes it: its mark keys, and every mark key on the route. */
+  onMark: (keys: string[], route: string[]) => void;
+}
+
 export interface StopProgress {
   /** Per stop, in order. */
   done: boolean[];
+  /** Per stop: it has none of the build's tracked items, so the player marks it done (T44). */
+  markable: boolean[];
   /** Index of the first stop not done; -1 when every stop is. */
   next: number;
   doneCount: number;
 }
 
 /**
- * Which stops are done. A stop with the build's tracked items is done when all of them are collected.
- * Any other stop (key items, a boss, an Ash of War) is done once a later stop with tracked items is:
- * the player has evidently moved past it.
+ * Which stops are done. A stop with the build's tracked items is done when all of them are collected;
+ * any other stop (key items, a boss, an Ash of War) when the player has marked it done (T44). Nothing
+ * else counts: players go out of order, so a later stop being done says nothing about an earlier one.
  */
 export function stopProgress(
   stops: RouteStop[],
   collected: readonly string[],
   own: ReadonlySet<string>,
+  marked: readonly string[],
 ): StopProgress {
   const have = new Set(collected);
-  const tracked = stops.map(({ step }) =>
-    step.actions
-      .flatMap((action) => action.items)
-      .filter((item) => own.has(refKey(item.ref)) && isTrackable(item.ref)),
-  );
-  const done = tracked.map(
-    (items) => items.length > 0 && items.every((item) => isCollected(item.ref, have)),
-  );
-  // From the end: is any later tracked stop done?
-  let laterDone = false;
-  for (let index = stops.length - 1; index >= 0; index--) {
-    if (tracked[index]!.length === 0) done[index] = laterDone;
-    else laterDone ||= done[index]!;
-  }
-  return { done, next: done.indexOf(false), doneCount: done.filter(Boolean).length };
+  const marks = new Set(marked);
+  const markable = stops.map((stop) => trackedOn(stop, own).length === 0);
+  const done = stops.map((stop, index) => {
+    if (!markable[index]) return trackedOn(stop, own).every((item) => isCollected(item.ref, have));
+    const keys = stopMarkKeys(stop, own);
+    return keys.length > 0 && keys.every((key) => marks.has(key));
+  });
+  return { done, markable, next: done.indexOf(false), doneCount: done.filter(Boolean).length };
 }

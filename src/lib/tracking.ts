@@ -10,6 +10,11 @@ export interface TrackingState {
   collected: string[];
   /** Item keys the player has seen on the build, so items the author adds later show as new. */
   seen: string[];
+  /**
+   * Route stops without tracked items that the player marked done (T44), by the gates and items on
+   * them (`stopMarkKeys` in features/editor/guide/progress.ts). Not part of the percentage.
+   */
+  marked: string[];
   /** The player's attribute levels. */
   stats: Stats;
   startedAt: Date;
@@ -17,7 +22,10 @@ export interface TrackingState {
   completedAt: Date | null;
 }
 
-/** The most item keys a tracking doc holds (firestore.rules checks it). A build has at most 30. */
+/**
+ * The most keys a tracking doc holds in each list (firestore.rules checks it). A build has at most 30
+ * items; marks are kept to the route's current stops.
+ */
 export const MAX_TRACKED_KEYS = 64;
 
 /** Where a stat starts without a starting class: the Wretch's 10 (lowered to the target). */
@@ -130,6 +138,7 @@ export function startTracking(context: TrackingContext, now: Date): TrackingStat
   const state = {
     collected: [],
     seen: [...context.items],
+    marked: [],
     stats: { ...context.baseline },
     startedAt: now,
   };
@@ -140,7 +149,12 @@ export type TrackingChange =
   | { type: 'toggle'; key: string }
   | { type: 'stat'; key: StatKey; value: number }
   /** "Got it" on the new-items notice. */
-  | { type: 'acknowledge' };
+  | { type: 'acknowledge' }
+  /**
+   * "Mark done" on a route stop (T44), or undoing it: the stop's mark keys, and every mark key on the
+   * route now (marks of stops the author's edits removed are dropped).
+   */
+  | { type: 'mark'; keys: string[]; route: string[] };
 
 /**
  * The state after a player's change. Keys are kept to the build's current items (so the doc stays
@@ -157,6 +171,16 @@ export function applyChange(
   const current = new Set(context.items);
   const keep = (keys: string[]) => keys.filter((key) => current.has(key));
   let { collected, seen, stats } = state;
+
+  if (change.type === 'mark') {
+    const marks = new Set(state.marked);
+    const on = !change.keys.every((key) => marks.has(key));
+    change.keys.forEach((key) => (on ? marks.add(key) : marks.delete(key)));
+    const route = new Set(change.route);
+    const marked = [...marks].filter((key) => route.has(key)).slice(0, MAX_TRACKED_KEYS);
+    // The percentage leaves marks out, so completedAt stays as it is.
+    return { ...state, marked };
+  }
 
   if (change.type === 'toggle') {
     if (!current.has(change.key)) return state;

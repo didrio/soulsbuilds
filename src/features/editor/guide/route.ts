@@ -58,6 +58,8 @@ export interface RouteAction {
   items: RouteItem[];
   /** A gate's reason (T35): "Main-path boss: …". */
   reason?: string;
+  /** A gate's id (T44: marking its stop done). */
+  gate?: string;
 }
 
 export interface RouteStep {
@@ -495,7 +497,12 @@ function topoSort(
 function actionOf(node: Node, option: Option | undefined): RouteAction | null {
   if (node.type === 'gate') {
     if (node.gate.anyOf || (node.gate.item && node.gate.at == null)) return null;
-    const action: RouteAction = { kind: 'gate', detail: node.gate.label, items: [] };
+    const action: RouteAction = {
+      kind: 'gate',
+      detail: node.gate.label,
+      items: [],
+      gate: node.gate.id,
+    };
     if (node.gate.reason) action.reason = node.gate.reason;
     return action;
   }

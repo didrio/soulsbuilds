@@ -68,9 +68,13 @@ Infinity`: the page is the only writer), read from `users/{uid}/tracking/{buildI
   calls `onSignedIn(uid)` after a successful sign-in, and `startAfterSignIn(uid)` starts tracking on that account
   unless it already tracks the build (the uid comes from the auth result, since `useAuth` may lag a render).
   The route follows progress (T35): `guide/progress.ts` maps a route item to its tracking keys (`isCollected`)
-  and decides which numbered stops are done (`stopProgress`: a stop with the build's tracked items when all are collected, any
-  other stop once a later tracked one is); How to get folds done stops and marks the next, and the Loadout tab
-  shows a Next stop card (`guide/NextStop`).
+  and decides which numbered stops are done (`stopProgress`: a stop with the build's tracked items when all are
+  collected; any other stop (key items, a boss, an Ash of War) when the player marks it done, T44). Nothing is
+  inferred from later stops: players go out of order (owner's call). A mark is stored as the stop's things
+  (`stopMarkKeys`: `gate:<gateId>`, `<file>:<id>` for its items), not its number, so it survives the author
+  reshuffling the route; `applyChange`'s `mark` keeps marks to the route's current keys. Marks don't count
+  toward the percentage. How to get folds done stops, marks the next and has "Mark done" toggles; the Loadout
+  tab shows a Next stop card (`guide/NextStop`) with the same toggle.
   **Playing and Completed (T36)**: the build's public `playerCount`/`finishedCount` move in the same batch as
   the tracking doc whenever its status changes (`trackingStatus`, `counterDelta` in `src/lib/tracking.ts`;
   `saveTracking(…, from)` / `deleteTracking(…, counted)`). `saveQueue.ts` keeps each record's status in the
@@ -98,6 +102,8 @@ users/{uid}/tracking/{buildId}    T34: the player's private progress on a build;
   game: 'elden-ring'
   collected: string[]             item keys (below) marked collected, ≤ 64 (a build has at most 30)
   seen: string[]                  the build's item keys the player has seen; others show as "new items"
+  marked?: string[]               T44: route stops marked done, as gate/item keys (`gate:margit`), ≤ 64;
+                                  optional (docs from before T44 have none)
   stats: { vigor … arc }          the player's levels, ints 1–99
   startedAt: timestamp            client time (local progress keeps its start); may only move earlier
   updatedAt: timestamp            server time

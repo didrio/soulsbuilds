@@ -47,6 +47,7 @@ const BASELINE = { vigor: 10, mind: 10, end: 10, str: 10, dex: 10, int: 10, fai:
 const tracking = (overrides: Partial<TrackingState> = {}): TrackingState => ({
   collected: [],
   seen: ITEMS,
+  marked: [],
   stats: BASELINE,
   startedAt: new Date('2026-11-04T12:00:00Z'),
   completedAt: null,

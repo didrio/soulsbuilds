@@ -155,6 +155,7 @@ describe('startTracking and applyChange', () => {
     expect(start()).toEqual({
       collected: [],
       seen: ctx.items,
+      marked: [],
       stats: WRETCH,
       startedAt: NOW,
       completedAt: null,
@@ -197,6 +198,34 @@ describe('startTracking and applyChange', () => {
     const acknowledged = applyChange(state, { type: 'acknowledge' }, edited, NOW);
     expect(newItems(acknowledged, edited.items)).toEqual([]);
     expect(acknowledged.completedAt).toEqual(NOW);
+  });
+
+  it('marks a route stop done and undoes it, keeping marks to the route (T44)', () => {
+    const route = ['gate:margit', 'keyItems:8590', 'keyItems:250'];
+    const mark = (keys: string[]) => ({ type: 'mark' as const, keys, route });
+    let state = applyChange(start(), mark(['gate:margit', 'keyItems:8590']), ctx, NOW);
+    expect(state.marked).toEqual(['gate:margit', 'keyItems:8590']);
+    state = applyChange(state, mark(['keyItems:250']), ctx, NOW);
+    expect(state.marked).toEqual(['gate:margit', 'keyItems:8590', 'keyItems:250']);
+    // Partly marked (the route changed): marking marks all of it.
+    state = applyChange({ ...state, marked: ['gate:margit'] }, mark(route.slice(0, 2)), ctx, NOW);
+    expect(state.marked).toEqual(['gate:margit', 'keyItems:8590']);
+    state = applyChange(state, mark(['gate:margit', 'keyItems:8590']), ctx, NOW);
+    expect(state.marked).toEqual([]);
+    // A mark of a stop no longer on the route goes.
+    state = applyChange({ ...state, marked: ['gate:godrick'] }, mark(['keyItems:250']), ctx, NOW);
+    expect(state.marked).toEqual(['keyItems:250']);
+  });
+
+  it('leaves the percentage and completedAt alone when marking', () => {
+    const marked = applyChange(
+      start(),
+      { type: 'mark', keys: ['gate:margit'], route: ['gate:margit'] },
+      ctx,
+      NOW,
+    );
+    expect(marked).toEqual({ ...start(), marked: ['gate:margit'] });
+    expect(trackingProgress(marked, ctx)).toEqual(trackingProgress(start(), ctx));
   });
 
   it('drops keys the author removed', () => {

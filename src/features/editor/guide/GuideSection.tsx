@@ -6,6 +6,7 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import type { Equipment } from '@/lib/models';
 import { COLOR_TEXT_MUTED, SPACE_MD, SPACE_SM, TEXT_SM } from '@/theme';
 import { DashedTile, SolidTile } from './GuideTiles';
+import type { RouteTracking } from './progress';
 
 // The route needs the ~400 KB acquisition data: its own chunk, fetched when the tab opens (or when the
 // reader points at a link to it: `loadRoute` is the prefetch).
@@ -22,10 +23,10 @@ export const hasItems = (equipment: Equipment) =>
 
 /**
  * The How to get tab (T28): what the route is, a legend for its tiles, and the route itself
- * (`GuideRoute`, loaded with its data on the tab's first open). `collected`: the player's tracked
- * items (T35), for progress along the route.
+ * (`GuideRoute`, loaded with its data on the tab's first open). `tracking`: the player's progress
+ * (T35), for progress along the route, and marking stops done (T44).
  */
-function GuideSection({ equipment, collected }: { equipment: Equipment; collected?: string[] }) {
+function GuideSection({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
   const items = hasItems(equipment);
   return (
     <Frame aria-labelledby="guide-title">
@@ -38,12 +39,12 @@ function GuideSection({ equipment, collected }: { equipment: Equipment; collecte
               upgrade materials and runes aren’t included.
             </Hint>
             <Legend aria-hidden="true">
-              <SolidTile $size={20} /> {collected ? 'collected' : 'in this build'}
-              <DashedTile $size={20} /> {collected ? 'still to get' : 'other items'}
+              <SolidTile $size={20} /> {tracking ? 'collected' : 'in this build'}
+              <DashedTile $size={20} /> {tracking ? 'still to get' : 'other items'}
             </Legend>
           </Intro>
           <Suspense fallback={<LoadingAnimation size={30} />}>
-            <GuideRoute equipment={equipment} collected={collected} />
+            <GuideRoute equipment={equipment} tracking={tracking} />
           </Suspense>
         </>
       ) : (

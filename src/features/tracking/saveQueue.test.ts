@@ -12,6 +12,7 @@ const STATS = { vigor: 10, mind: 10, end: 10, str: 10, dex: 10, int: 10, fai: 10
 const playing: TrackingState = {
   collected: [],
   seen: [],
+  marked: [],
   stats: STATS,
   startedAt: new Date('2026-11-10'),
   completedAt: null,

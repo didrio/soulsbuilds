@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import styled, { css } from 'styled-components';
 import Button from '@/components/ui/Button';
 import ItemTile from '@/components/ui/ItemTile';
@@ -40,19 +40,33 @@ import {
   isCollected,
   isTrackable,
   refKey,
+  routeMarkKeys,
   routeStops,
+  stopMarkKeys,
   stopProgress,
   type RouteStop,
+  type RouteTracking,
 } from './progress';
 import { equipmentItems, planRoute, type RouteAction } from './route';
 
 /** The route with its stops, and the player's progress along it when they track the build. */
-export function routeProgress(equipment: Equipment, collected: string[] | undefined) {
+export function routeProgress(
+  equipment: Equipment,
+  tracking: Pick<RouteTracking, 'collected' | 'marked'> | undefined,
+) {
   const route = planRoute(equipment, acquisition);
   const own = new Set(equipmentItems(equipment).map(refKey));
   const stops = routeStops(route);
-  const progress = collected ? stopProgress(stops, collected, own) : null;
-  return { stops, own, progress, have: new Set(collected ?? []) };
+  const progress = tracking ? stopProgress(stops, tracking.collected, own, tracking.marked) : null;
+  return {
+    stops,
+    own,
+    progress,
+    have: new Set(tracking?.collected ?? []),
+    /** Marks stop `index` done, or undoes it (T44). */
+    markArgs: (index: number) =>
+      [stopMarkKeys(stops[index]!, own), routeMarkKeys(stops, own)] as const,
+  };
 }
 
 type StopState = 'todo' | 'done' | 'next';
@@ -60,28 +74,34 @@ type StopState = 'todo' | 'done' | 'next';
 /**
  * The route of "How to get this build" (T15, T28, T35): numbered stops from a fresh save to every item
  * of the build. Each stop has its area, its place, what to do there and the items, with why the ones
- * that aren't the build's are needed. Tracking the build (`collected`): "N of M stops done", finished
- * stops folded away, the next stop highlighted. Lazy-loaded with the ~400 KB acquisition data
- * (`GuideSection`).
+ * that aren't the build's are needed. Tracking the build: "N of M stops done", finished stops folded
+ * away, the next stop highlighted, and "Mark done" on stops without the build's gear (T44). Lazy-loaded
+ * with the ~400 KB acquisition data (`GuideSection`).
  */
-function GuideRoute({ equipment, collected }: { equipment: Equipment; collected?: string[] }) {
-  const { stops, own, progress, have } = routeProgress(equipment, collected);
+function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
+  const { stops, own, progress, have, markArgs } = routeProgress(equipment, tracking);
   const [showDone, setShowDone] = useState(false);
+  const progressLine = useRef<HTMLParagraphElement>(null);
   if (stops.length === 0) return <Hint>None of these items has a known source yet.</Hint>;
 
   const doneCount = progress?.doneCount ?? 0;
   const stateOf = (index: number): StopState =>
     !progress ? 'todo' : progress.done[index] ? 'done' : index === progress.next ? 'next' : 'todo';
   const shown = stops
-    .map((stop, index) => ({ stop, state: stateOf(index) }))
+    .map((stop, index) => ({ stop, index, state: stateOf(index) }))
     .filter(({ state }) => !progress || showDone || state !== 'done');
+  const mark = (index: number, done: boolean) => {
+    tracking?.onMark(...markArgs(index));
+    // Marked done, the stop folds away: focus goes to the count it joins.
+    if (!done && !showDone) progressLine.current?.focus();
+  };
 
   return (
     <>
       {progress ? (
         <Progress>
           <ProgressLine>
-            <ProgressText>
+            <ProgressText ref={progressLine} tabIndex={-1}>
               <Count>{doneCount}</Count> of {stops.length} stops done.
             </ProgressText>
             {doneCount > 0 ? (
@@ -100,7 +120,7 @@ function GuideRoute({ equipment, collected }: { equipment: Equipment; collected?
       ) : null}
       {shown.length > 0 ? (
         <Stops>
-          {shown.map(({ stop, state }) => (
+          {shown.map(({ stop, index, state }) => (
             <Stop key={stop.number} $state={state}>
               <Marker $state={state} aria-hidden="true">
                 {state === 'done' ? <CheckIcon size={14} strokeWidth={3} /> : stop.number}
@@ -113,6 +133,14 @@ function GuideRoute({ equipment, collected }: { equipment: Equipment; collected?
                   own={own}
                   have={progress ? have : null}
                 />
+                {progress?.markable[index] ? (
+                  <MarkRow>
+                    <MarkDone
+                      done={state === 'done'}
+                      onClick={() => mark(index, state === 'done')}
+                    />
+                  </MarkRow>
+                ) : null}
               </div>
             </Stop>
           ))}
@@ -121,6 +149,28 @@ function GuideRoute({ equipment, collected }: { equipment: Equipment; collected?
         <Hint>Every stop is done.</Hint>
       )}
     </>
+  );
+}
+
+/**
+ * "Mark done" on a stop without the build's gear (T44): a toggle. Its name stays "Mark done"; pressed,
+ * it shows "Done" with a check, and pressing it again undoes it.
+ */
+export function MarkDone({ done, onClick }: { done: boolean; onClick: () => void }) {
+  return (
+    <MarkButton
+      variant="secondary"
+      aria-pressed={done}
+      aria-label={done ? 'Mark done' : undefined}
+      onClick={onClick}>
+      {done ? (
+        <>
+          <CheckIcon size={14} strokeWidth={3} aria-hidden="true" /> Done
+        </>
+      ) : (
+        'Mark done'
+      )}
+    </MarkButton>
   );
 }
 
@@ -211,6 +261,17 @@ export function RouteItems({
   );
 }
 
+const MarkRow = styled.div`
+  margin-top: ${SPACE_SM};
+`;
+
+const MarkButton = styled(Button)`
+  &[aria-pressed='true'] {
+    border-color: ${COLOR_ACCENT_LINE};
+    color: ${COLOR_ACCENT};
+  }
+`;
+
 const Hint = styled.p`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_SM};
@@ -233,6 +294,10 @@ const ProgressText = styled.p`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_MD};
   margin: 0;
+
+  &:focus {
+    outline: none;
+  }
 `;
 
 const Count = styled.span`

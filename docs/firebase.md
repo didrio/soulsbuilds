@@ -283,7 +283,8 @@ unaffected).
 4. **Email enumeration protection.** Authentication → Settings → User actions: on (the app already answers
    neutrally; this makes the API itself stop telling).
 5. Smoke test on soulsbuilds.com: Continue with Google → the popup says "continue to soulsbuilds.com" → choose a
-   display name; then delete that test account from its profile (re-authenticates with Google).
+   display name; then delete that test account from the Account page (the menu under your name; it
+   re-authenticates with Google).
 
 Locally the Auth emulator fakes Google (a "Sign-in with Google.com" popup where you add an account), and it doesn't
 enforce the password policy or enumeration protection. Account linking: an email/password account and a Google
