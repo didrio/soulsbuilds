@@ -83,11 +83,20 @@ inWorld,Button,Tag,Chips}`, `app/Header.tsx`, `features/editor/sections/Markdown
 - **Goal:** Every item visible by name, spells inside the loadout, and attributes plus character stats in one
   card, in both view and edit mode. Today armor, talismans and tears are icon-only with names on hover or tap.
 - **Done when:**
-  - One Loadout panel (`EquipmentEditor` and `SpellEditor` merged). Right hand and Left hand side by side, as 64px
+  - One Loadout panel (`EquipmentEditor` and `SpellEditor` merged). **Left hand on the left, Right hand on the
+    right** (owner, 2026-11-16: the game lists the right hand first; the mockups still show it that way), as 64px
     tiles with the name and "affinity · skill". Armor, Talismans and Flask of Wondrous Physick in three columns,
-    plus great rune, spirit ash, arrows and consumables when present: 44px tiles with the name beside them. Then
-    Spells: "8 of 10 memory slots" with slot pips; a "2 slots" line only when a spell takes more than one.
+    plus great rune and spirit ash: 44px tiles with the name beside them. Then Spells: "8 of 10 memory slots".
     Requirement warnings stay.
+  - **Every slot always shows** (owner, 2026-11-16; decision "Empty slots", revised): a fixed layout, so the
+    equipment and spells take the same space on every build. Empty slots are a very subtle placeholder (fainter
+    than today's empty `ItemTile`, the slot name muted or nothing) at the same size as a filled one: 3 weapon
+    slots per hand, 4 armor, 4 talismans, great rune, spirit ash, 2 tears. Spells: one cell per memory slot
+    (`memorySlots` in `buildMath.ts`, usually 10), a 2-slot spell spanning two cells, the free ones as
+    placeholders; this replaces the separate slot pips. ★ Arrows and bolts (4) and consumables (up to 10): the
+    same rule, or shown only when the build uses them (ask the owner; most builds have none).
+  - Phones: Left hand and Right hand side by side too, names wrapping to two lines; if that's too cramped in
+    screenshots, stack them with Left hand first.
   - Edit mode keeps the same layout: every slot is a button that opens the picker (accessible name = slot and
     item); empty slots keep the empty tile and "Choose helm" (decision "Empty slots").
   - One stats card (`StatEditor` and `CharacterStats` merged): the rune level figure in the accent; 8 attribute
@@ -95,7 +104,8 @@ inWorld,Button,Tag,Chips}`, `app/Header.tsx`, `features/editor/sections/Markdown
     load as a bar marked at 30% and 70% (`rollType` in `buildMath.ts`) with the roll name; Poise. Edit mode: the
     attribute inputs sit in the same rows.
   - Phones: the stats card first (attributes in a 4×2 grid as Vig, Mnd, End, Str, Dex, Int, Fai, Arc; HP, FP,
-    Stamina and Poise in a row; the load bar), then the loadout in one column.
+    Stamina and Poise in a row; the load bar), then the loadout (hands side by side, the other groups in one
+    column).
   - Tests updated (EquipmentEditor, SpellEditor, StatEditor, CharacterStats, ItemSlot); `npm run check` and
     `npm run e2e` pass; screenshots of a build in view mode and `/build/new`, desktop and `--mobile`.
 - **Context:** Artboards `Main.dc.html` (loadout and stats card) and `BuildMobile.dc.html`. Files:
@@ -161,9 +171,11 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
     one-line toolbar: search (fills the width), Sort (Most liked / Newest), Level min–max. The Tags row below
     scrolls sideways (top tags with counts first, then "More tags").
   - Rows of about 88px: the main weapon (same rule as T28's hero) as a 72px portrait; the name in the serif on
-    one line with an ellipsis; "by author · age" and tags (fit + "+N" as today); a strip of filled slots only
-    (armaments, a divider, armor; 38px tiles, no empty diamonds); a small "Level" label and the number (not in
-    the accent); likes and comments with icons. The selection-bar hover stays.
+    one line with an ellipsis; "by author · age" and tags (fit + "+N" as today); the slot strip with today's fixed
+    cells (weapon slots 1–2 of each hand, a divider, the 4 armor slots; 38px tiles), **left hand first**, and empty
+    cells as a very subtle placeholder instead of the diamond, so every row lines up (owner, 2026-11-16; this
+    replaces the mockup's "filled slots only"); a small "Level" label and the number (not in the accent); likes
+    and comments with icons. The selection-bar hover stays.
   - Phones: 60px portrait, the name on up to 2 lines, "by author · age", then "Level · likes · comments"; tags;
     the strip below.
   - Rows, not cards (the canvas recommendation; the cards alternative stays on the canvas if wanted later).
@@ -198,7 +210,7 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
   - "Track this build" is the build page's primary button; it turns the Loadout tab into tracking mode. Items
     not yet collected are greyscale with a dashed border; a tap marks one collected: full color, accent border, a
     check badge and a short glow (none with reduced motion). Item buttons use `aria-pressed`; each group shows its
-    count ("3/4"). "Stop tracking" asks first.
+    count ("3/4"); T27's empty placeholders aren't buttons and don't count. "Stop tracking" asks first.
   - Attributes in tracking mode: your level against the target with − and + (from the build's starting class
     stats, when it has one, up to 99), ticked when reached.
   - Progress in the hero: one percentage, half gear (items collected out of the build's items, spells included)
