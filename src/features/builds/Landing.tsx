@@ -8,7 +8,6 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import Frame from '@/components/ui/Frame';
 import { SearchIcon } from '@/components/ui/icons';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
-import Ornament from '@/components/ui/Ornament';
 import PageMessage from '@/components/ui/PageMessage';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import TextInput from '@/components/ui/TextInput';
@@ -20,12 +19,14 @@ import {
   BELOW_MOBILE,
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
+  COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   SPACE_LG,
   SPACE_MD,
   SPACE_SM,
   TEXT_SM,
+  TEXT_XL,
   TEXT_XS,
   TRACKING_CAPS,
 } from '@/theme';
@@ -37,7 +38,6 @@ import {
   toSearchParams,
   type BuildFilters,
 } from './filters';
-import PageHero from '@/components/ui/PageHero';
 import { useBuilds } from './queries';
 
 const SORTS = [
@@ -113,12 +113,8 @@ function Landing() {
 
   return (
     <>
-      <PageHero
-        title={`${game.name} Builds`}
-        tagline="Forge a build, share it, and find the one worth a new playthrough."
-      />
-      <Ornament />
-      <Frame aria-label="Find builds">
+      <FindFrame aria-labelledby="landing-title">
+        <Title id="landing-title">{`${game.name} Builds`}</Title>
         <Toolbar>
           <SearchForm role="search" onSubmit={applySearch}>
             <FieldLabel htmlFor="build-search">Search</FieldLabel>
@@ -197,7 +193,7 @@ function Landing() {
           {filters.search ? <TextButton onClick={clearSearch}>Clear search</TextButton> : null}
           {filtered ? <TextButton onClick={clearFilters}>Clear filters</TextButton> : null}
         </TagsRow>
-      </Frame>
+      </FindFrame>
 
       <Status aria-live="polite">{builds.isSuccess ? status : ''}</Status>
       {builds.isPending ? <PageMessage loading /> : null}
@@ -239,6 +235,25 @@ function Landing() {
     </>
   );
 }
+
+// No hero: the search and filters open the page, under the page's (small) title.
+const FindFrame = styled(Frame)`
+  margin-top: ${SPACE_LG};
+
+  @media ${BELOW_MOBILE} {
+    margin-top: ${SPACE_MD};
+  }
+`;
+
+const Title = styled.h1`
+  color: ${COLOR_TEXT};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_XL};
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin: 0 0 ${SPACE_MD};
+`;
 
 const Toolbar = styled.div`
   align-items: flex-end;
@@ -361,7 +376,7 @@ const TagsRow = styled.div<{ $open: boolean }>`
 const Status = styled.p`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_SM};
-  margin: 28px 0 12px;
+  margin: ${SPACE_LG} 0 ${SPACE_SM};
 `;
 
 const LoadMore = styled.div`

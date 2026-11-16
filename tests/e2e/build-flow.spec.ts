@@ -83,7 +83,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
   // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune.
   await expect(page.getByText('Blood · Seppuku')).toBeVisible();
-  await expect(page.getByText("Radahn's Great Rune")).toBeVisible();
+  // Icon slots (T22) are tiles named after the item.
+  await expect(page.getByRole('button', { name: "Radahn's Great Rune" })).toBeVisible();
   await expect(page.getByText('Starting class: Samurai')).toBeVisible();
   await expect(page.getByRole('link', { name: displayName })).toBeVisible();
 

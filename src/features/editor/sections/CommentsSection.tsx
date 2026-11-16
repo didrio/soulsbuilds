@@ -123,9 +123,13 @@ const Empty = styled.p`
   text-align: center;
 `;
 
+// Comments span the page (T22): the thread and form keep a readable line length.
+const READABLE = '72ch';
+
 const CommentList = styled.ol`
   list-style: none;
   margin: 0;
+  max-width: ${READABLE};
   padding: 0;
 `;
 
@@ -183,6 +187,7 @@ const PostForm = styled.form`
   display: grid;
   gap: ${SPACE_SM};
   margin-top: ${SPACE_LG};
+  max-width: ${READABLE};
 `;
 
 const Label = styled.label`

@@ -1,9 +1,7 @@
-import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router';
 import styled, { css } from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import Ornament from '@/components/ui/Ornament';
 import PageMessage from '@/components/ui/PageMessage';
 import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
@@ -26,14 +24,12 @@ import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
 import CharacterStats from './sections/CharacterStats';
 import EquipmentEditor from './sections/EquipmentEditor';
+import GuideSection from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
 import SpellEditor from './sections/SpellEditor';
 import StatEditor from './sections/StatEditor';
 import { selectLevel } from './store/build';
 import { useBuildEditor } from './useBuildEditor';
-
-// The route needs the ~400 KB acquisition data: its own chunk, loaded on the build view only.
-const GuideSection = lazy(() => import('./guide/GuideSection'));
 
 /** `/build/:buildId` (or `/build/new`): one editor per build, so state never leaks between builds. */
 function BuildEditorPage() {
@@ -43,9 +39,10 @@ function BuildEditorPage() {
 }
 
 /**
- * View, create and edit a build in one layout: the title block, then equipment, the write-up and
- * comments, with attributes and spells in a side panel (above everything on phones). Edit mode turns
- * the same panels into controls and adds a sticky Save/Cancel bar.
+ * View, create and edit a build in one layout (T22): the title pane, equipment across the page, the
+ * write-up beside attributes, character stats and spells (after it on phones), then "How to get this
+ * build" (collapsed) and comments across the page. Edit mode turns the same panels into controls,
+ * leaves out the guide and comments, and adds a sticky Save/Cancel bar.
  */
 function BuildEditor({ buildId }: { buildId: string | null }) {
   const editor = useBuildEditor(buildId);
@@ -83,7 +80,7 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
   }
 
   return (
-    <>
+    <Page>
       <Back to="/">← All builds</Back>
       {editable ? (
         <BuildDetailsForm
@@ -111,21 +108,14 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
           }
         />
       ) : null}
-      <Ornament />
+      <EquipmentEditor editable={editable} />
       <Layout>
         <Main>
-          <EquipmentEditor editable={editable} />
-          {!editable && build ? (
-            <Suspense fallback={null}>
-              <GuideSection equipment={build.equipment} />
-            </Suspense>
-          ) : null}
           <DescriptionSection
             description={editor.description}
             editable={editable}
             onChange={editor.setDescription}
           />
-          {!editable && build ? <CommentsSection buildId={build.id} /> : null}
         </Main>
         <Aside>
           <StatEditor editable={editable} level={level} />
@@ -133,6 +123,8 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
           <SpellEditor editable={editable} />
         </Aside>
       </Layout>
+      {!editable && build ? <GuideSection equipment={build.equipment} /> : null}
+      {!editable && build ? <CommentsSection buildId={build.id} /> : null}
       {editable ? (
         <EditBar aria-label="Save changes">
           <ErrorMessage>{editor.saveError}</ErrorMessage>
@@ -146,25 +138,32 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
           </EditButtons>
         </EditBar>
       ) : null}
-    </>
+    </Page>
   );
 }
 
-const Back = styled(TextLink)`
-  margin-top: ${SPACE_MD};
+// The panels stacked with even gaps; the page ends with room before the footer.
+const Page = styled.div`
+  display: grid;
+  gap: ${SPACE_LG};
+  margin-bottom: ${SPACE_XXL};
 `;
 
-// Main column + a 330 px side panel; on tablets and phones one column with the side panel first.
+const Back = styled(TextLink)`
+  justify-self: start;
+  margin: ${SPACE_MD} 0 -${SPACE_SM};
+`;
+
+// The write-up + a 330 px side panel; on tablets and phones one column, the write-up first.
 const Layout = styled.div`
   align-items: start;
   display: grid;
   gap: ${SPACE_LG};
   grid-template-areas: 'main aside';
   grid-template-columns: minmax(0, 1fr) 330px;
-  margin-bottom: ${SPACE_XXL};
 
   @media ${BELOW_TABLET} {
-    grid-template-areas: 'aside' 'main';
+    grid-template-areas: 'main' 'aside';
     grid-template-columns: minmax(0, 1fr);
   }
 `;

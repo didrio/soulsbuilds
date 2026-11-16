@@ -6,6 +6,8 @@ import {
   COLOR_TILE_EMPTY_BORDER,
   COLOR_TILE_SHINE,
   COLOR_TILE_TOP,
+  COLOR_TEXT_MUTED,
+  TEXT_LG,
 } from '@/theme';
 
 interface ItemTileProps {
@@ -15,6 +17,8 @@ interface ItemTileProps {
   title?: string;
   /** Edge length in px (default 56). */
   size?: number;
+  /** Shown in an empty slot instead of the small diamond (e.g. "+" on a button that fills it). */
+  emptyMark?: string;
   className?: string;
 }
 
@@ -22,15 +26,16 @@ interface ItemTileProps {
  * An inventory-style item slot: dark, lit from above, with the item icon as the hero. Empty slots are
  * a faint frame with a small diamond, so filled slots stand out.
  */
-function ItemTile({ src, title, size = 56, className }: ItemTileProps) {
+function ItemTile({ src, title, size = 56, emptyMark, className }: ItemTileProps) {
   return (
-    <Tile className={className} title={title} $empty={!src} $size={size}>
+    <Tile className={className} title={title} $empty={!src} $mark={Boolean(emptyMark)} $size={size}>
       {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : null}
+      {!src && emptyMark ? <Mark aria-hidden="true">{emptyMark}</Mark> : null}
     </Tile>
   );
 }
 
-const Tile = styled.span<{ $empty: boolean; $size: number }>`
+const Tile = styled.span<{ $empty: boolean; $mark: boolean; $size: number }>`
   align-items: center;
   background: ${({ $empty }) =>
     $empty
@@ -56,11 +61,17 @@ const Tile = styled.span<{ $empty: boolean; $size: number }>`
   &::after {
     border: 1px solid ${COLOR_TILE_EMPTY_BORDER};
     content: '';
-    display: ${({ $empty }) => ($empty ? 'block' : 'none')};
+    display: ${({ $empty, $mark }) => ($empty && !$mark ? 'block' : 'none')};
     height: 6px;
     transform: rotate(45deg);
     width: 6px;
   }
+`;
+
+const Mark = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_LG};
+  line-height: 1;
 `;
 
 export default ItemTile;

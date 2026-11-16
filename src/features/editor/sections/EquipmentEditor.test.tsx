@@ -76,15 +76,24 @@ describe('EquipmentEditor + item picker', () => {
     expect(store.getState().equipment.spiritAsh?.name).toBe('Mimic Tear Ashes');
   });
 
-  it('read-only: only filled slots, as text, and only the groups that have one', () => {
-    const { store } = renderWithProviders(<EquipmentEditor editable={false} />);
+  it('read-only: only filled slots, as named tiles, and only the groups that have one', async () => {
+    const { store, user } = renderWithProviders(<EquipmentEditor editable={false} />);
     const favor = talismans.find(({ name }) => name === "Erdtree's Favor")!;
     act(() => store.dispatch(updateTal({ id: 'tal2', item: favor })));
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Talismans' })).toBeInTheDocument();
     expect(screen.getAllByRole('listitem')).toHaveLength(1);
-    expect(screen.getByText("Erdtree's Favor")).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Consumables' })).not.toBeInTheDocument();
+    // The tile is named after the item; tapping it shows the name and doesn't open the picker.
+    await user.click(screen.getByRole('button', { name: "Erdtree's Favor" }));
+    expect(screen.getByText("Erdtree's Favor")).toBeInTheDocument();
+    expect(store.getState().app.slotType).toBeNull();
+  });
+
+  it('editable: icon slots are picker buttons, "+" when empty', async () => {
+    const { user, store } = renderWithProviders(<EquipmentEditor editable />);
+    expect(screen.getAllByRole('button', { name: 'Choose talisman' })).toHaveLength(4);
+    await user.click(screen.getByRole('button', { name: 'Choose helm' }));
+    expect(store.getState().app).toMatchObject({ slotType: 'SLOT_TYPE_HELM', editSlot: 'helm' });
   });
 
   it('read-only and empty: says so', () => {

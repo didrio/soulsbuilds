@@ -101,8 +101,8 @@ takes each item's source reachable earliest (grace order, pushed back by the gat
 only when nothing else is reachable, otherwise an "or start as X" note), follows `item` prerequisites
 (remembrance, cookbook, base armor, unrestored rune) and `implied` gates, settles any-of gates with members the
 route needs anyway, sorts topologically (earliest first, staying at the same grace on ties), then merges
-consecutive things at one grace into a step and consecutive steps in one region into a leg. `GuideSection`
-(lazy chunk, view mode only) renders it; `phrases.ts` holds the wording.
+consecutive things at one grace into a step and consecutive steps in one region into a leg. `GuideRoute`
+(lazy chunk, view mode only, loaded when the reader expands `GuideSection`, T22) renders it; `phrases.ts` holds the wording.
 
 - **regions**: the 54 travel-menu sub-categories (Limgrave, Stormveil Castle, Gravesite Plain…) in canonical
   route order, each with the gates it needs. **locations**: the 419 Sites of Grace (BonfireWarpParam IDs).

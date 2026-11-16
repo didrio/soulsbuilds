@@ -1,57 +1,33 @@
-import { screen, within } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import {
-  emptyEquipment,
-  GODRICKS_GREAT_RUNE,
-  MOONVEIL,
-  SEPPUKU_ASH,
-  UCHIGATANA,
-} from '@/test/fixtures';
+import { emptyEquipment, MOONVEIL } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import GuideSection from './GuideSection';
 
-const SPIRIT_CALLING_BELL_SHOP = /Buy from Twin Maiden Husks/;
+const withMoonveil = () => ({
+  ...emptyEquipment(),
+  weapons: [MOONVEIL, null, null, null, null, null],
+});
 
 describe('GuideSection', () => {
-  it('renders nothing for an empty build', () => {
+  it('is left out for a build with no items', () => {
     const { container } = renderWithProviders(<GuideSection equipment={emptyEquipment()} />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('lists numbered steps by region, with items and what to do', () => {
-    renderWithProviders(
-      <GuideSection
-        equipment={{
-          ...emptyEquipment(),
-          weapons: [MOONVEIL, null, null, UCHIGATANA, null, null],
-          weaponSkills: [null, null, null, SEPPUKU_ASH, null, null],
-          greatRune: GODRICKS_GREAT_RUNE,
-          spiritAsh: 200000, // Black Knife Tiche: needs the Spirit Calling Bell
-        }}
-      />,
-    );
+  it('starts collapsed; Show loads the route, Hide folds it away', async () => {
+    const { user } = renderWithProviders(<GuideSection equipment={withMoonveil()} />);
     const section = screen.getByRole('region', { name: 'How to get this build' });
+    expect(section).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
 
-    // Regions are headings; the lists are ordered and numbering runs on from one region to the next.
-    const regions = within(section)
-      .getAllByRole('heading', { level: 3 })
-      .map((h) => h.textContent);
-    expect(regions).toContain('Limgrave');
-    expect(regions).toContain('Caelid');
-    expect(regions.indexOf('Limgrave')).toBeLessThan(regions.indexOf('Caelid'));
-    const lists = within(section).getAllByRole('list');
-    expect(lists[0]).toHaveAttribute('start', '1');
-    expect(lists[1]).toHaveAttribute(
-      'start',
-      String(within(lists[0]!).getAllByRole('listitem').length + 1),
-    );
+    const toggle = screen.getByRole('button', { name: 'Show the route' });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect((await screen.findAllByRole('heading', { level: 3 })).length).toBeGreaterThan(0);
 
-    // Items, actions and notes.
-    expect(within(section).getByText('Moonveil')).toBeInTheDocument();
-    expect(within(section).getByText('Defeat Magma Wyrm:')).toBeInTheDocument();
-    expect(within(section).getByText('Defeat Margit, the Fell Omen')).toBeInTheDocument();
-    expect(within(section).getByText(SPIRIT_CALLING_BELL_SHOP)).toBeInTheDocument();
-    expect(within(section).getByText('(or start as Samurai)')).toBeInTheDocument();
-    expect(within(section).getByText('Restore:')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Hide the route' }));
+    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
   });
 });

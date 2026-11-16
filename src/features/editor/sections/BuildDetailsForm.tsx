@@ -1,9 +1,19 @@
 import styled from 'styled-components';
 import Chips from '@/components/ui/Chips';
-import PageHero from '@/components/ui/PageHero';
+import Frame from '@/components/ui/Frame';
 import TextInput from '@/components/ui/TextInput';
 import { LIMITS } from '@/lib/models';
-import { COLOR_TEXT_MUTED, SPACE_LG, SPACE_XS, TEXT_XS, TRACKING_CAPS } from '@/theme';
+import {
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
+  FONT_DISPLAY,
+  SPACE_LG,
+  SPACE_MD,
+  SPACE_XS,
+  TEXT_XL,
+  TEXT_XS,
+  TRACKING_CAPS,
+} from '@/theme';
 
 interface BuildDetailsFormProps {
   isNew: boolean;
@@ -14,7 +24,7 @@ interface BuildDetailsFormProps {
   tags: string[];
 }
 
-/** Edit mode's title block: "New build" / "Edit build", then the build's name and tags. */
+/** Edit mode's title pane (in the view's spot): "New build" / "Edit build", the build's name and tags. */
 function BuildDetailsForm({
   isNew,
   name,
@@ -24,7 +34,8 @@ function BuildDetailsForm({
   tags,
 }: BuildDetailsFormProps) {
   return (
-    <PageHero title={isNew ? 'New build' : 'Edit build'}>
+    <Frame aria-labelledby="build-title">
+      <Title id="build-title">{isNew ? 'New build' : 'Edit build'}</Title>
       <Fields>
         <Field>
           <Label htmlFor="build-name">Build name</Label>
@@ -42,16 +53,23 @@ function BuildDetailsForm({
           <Chips onAdd={onAddTag} onRemove={onRemoveTag} values={tags} />
         </Field>
       </Fields>
-    </PageHero>
+    </Frame>
   );
 }
+
+const Title = styled.h1`
+  color: ${COLOR_TEXT};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_XL};
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin: 0 0 ${SPACE_MD};
+`;
 
 const Fields = styled.div`
   display: grid;
   gap: ${SPACE_LG};
-  margin: ${SPACE_LG} auto 0;
-  max-width: 560px;
-  text-align: left;
+  max-width: 640px;
 `;
 
 const Field = styled.div`

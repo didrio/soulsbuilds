@@ -14,14 +14,15 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T19, T21 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-16 (T1–T19, T21, T22 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
-approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
-page; build page = view and edit in one layout. T14/T19/T15: "How to get this build" from `acquisition.json`.
-T8: build math (class, vitals, load, poise, warnings). T21: smooth scrolling, `npm run perf`. T18: in-app account
-deletion, admin `rename`/`delete-user`. Left: App Check enforcing.
+approved production deploys on `main`. Redesign (T16, T17, T22): tokens + per-game skin; no heroes; build page =
+view and edit in one layout (title pane, equipment as icon tiles, write-up beside the numbers, guide collapsed).
+T14/T19/T15: "How to get this build" from `acquisition.json`. T8: build math (class, vitals, load, poise,
+warnings). T21: smooth scrolling, `npm run perf`. T18: in-app account deletion, admin `rename`/`delete-user`.
+Left: App Check enforcing.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -105,24 +106,25 @@ src/
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
-  features/builds/         Landing (sort, tag/level filters in the URL, load more), BuildsList (build cards),
-                           filters.ts, queries.ts (useBuilds, useUserBuilds)
+  features/builds/         Landing (sort, tag/level filters in the URL, load more), BuildsList (fixed-height rows;
+                           tags.ts fits tags on one line + "+N"), filters.ts, queries.ts (useBuilds, useUserBuilds)
   features/profile/        Profile (rename, Builds/Liked tabs), DeleteAccount (T18), queries.ts
                            (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete, one layout) + useBuildEditor; queries.ts
-                           (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader with like/report/tags,
+                           (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader = title pane with like/report/tags,
                            OwnerActions, BuildDetailsForm (edit title block), Equipment/Stat/SpellEditor panels,
-                           DescriptionSection, CommentsSection); ItemRow (a slot as tile + name; button in edit
-                           mode; warnings for unmet requirements) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
+                           DescriptionSection, CommentsSection); ItemRow (weapon/spell slot as tile + name; button in
+                           edit mode; warnings for unmet requirements), ItemSlot (other slots: icon tile button,
+                           name in a Tooltip) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
                            with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
-                           phrases.ts, GuideSection, lazy); store/ = Redux slices for the build being edited +
+                           phrases.ts, GuideSection (collapsed shell) → GuideRoute (lazy, on expand)); store/ = Redux slices for the build being edited +
                            selectors + derived.ts (build math selectors) + build.ts (loadBuild /
                            selectBuildFields: build ⇄ editor state); sections/CharacterStats (HP, load, poise)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
-                           DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, PageMessage, ErrorMessage,
-                           FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
+                           DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
+                           ErrorMessage, FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
                            inWorld.ts (frame + selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check), auth, builds, likes,
                            comments, users, reports, account (deletion, T18)),
@@ -175,7 +177,7 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Accessibility**: new interactive elements are real `<button>`/`<a>` with visible text or a label. Dialogs
   and pop-up panels go through `FocusScope` (modals: `Dialog`). Controls are ≥ 44 px tall. New text/background
   pairs get a line in `src/theme/colors.test.ts` (WCAG AA). Item icons are
-  `alt=""` because the item name is always shown next to them.
+  `alt=""`: the item name is shown next to them or is the tile button's accessible name (`ItemSlot`).
 
 ## Gotchas
 

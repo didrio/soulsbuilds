@@ -163,22 +163,30 @@ modern product UI and ~50% in-world; `docs/decisions.md` "Redesign"). ESLint rej
   `BELOW_MOBILE` (640) / `BELOW_TABLET` (900).
 - **Page-wide styles**: `GlobalStyle.ts` (background light, vignette, film grain, focus ring, reduced motion).
 - **In-world building blocks** (`components/ui/`): `Frame` (framed panel with corner marks), `SectionHeading`,
-  `Ornament` (divider), `PageHero` (title with the glow), `ItemTile` (inventory slot), and the `selectionBar`
+  `Ornament` (divider), `PageHero` (title with the glow; profile and legal pages), `ItemTile` (inventory slot), and the `selectionBar`
   CSS (the game-menu hover/focus glow) in `inWorld.ts`. Use these instead of one-off ornaments.
 
-**Build page** (T17, `features/editor/`): view and edit share one layout (title block, then Equipment, About this
-build and Comments in the main column, Attributes and Spells in a 330 px side panel that moves above on tablets
-and phones). A slot is an `ItemRow`: `ItemTile` + name + a muted detail line (a weapon's affinity and skill, a
-spell's memory slots). In view mode rows are text and only filled slots and groups show; in edit mode each row is
-a button that opens the picker ("Choose talisman", "Change Uchigatana (Blood affinity, Seppuku skill)"), and
-spells and consumables (saved without positions) show the filled slots plus one empty row. The **picker** is a tall
+**Build page** (T17, reshaped in T22, `features/editor/`): view and edit share one layout, top to bottom: the
+**title pane** (`BuildHeader`: name as `<h1>`, author and level, Like/Report/owner actions on the right, tags; in
+edit mode `BuildDetailsForm` takes its place), **Equipment** across the page, the write-up beside Attributes,
+Character and Spells (a 330 px side panel; under the write-up on tablets and phones), then **"How to get this
+build"** collapsed and **Comments** across the page (thread at a readable 72ch). No hero. Weapons and spells are
+`ItemRow`s: `ItemTile` + name + a muted detail line (affinity and skill, memory slots) + any warning (T8). Every
+other slot (armor, talismans, great rune, spirit ash, tears, arrows, consumables) is an `ItemSlot`: an icon tile
+that is a `<button>` named after the item, with the name in a `components/ui/Tooltip` bubble on hover, keyboard
+focus or tap (Escape or a tap elsewhere closes it). In view mode only filled slots and groups show; in edit mode
+each row or tile opens the picker ("Choose talisman", "Change Uchigatana (Blood affinity, Seppuku skill)"; empty
+tiles show "+"), and spells and consumables (saved without positions) show the filled slots plus one empty one.
+The **picker** is a tall
 `Dialog` (`ItemSelector`): search, weapon type / spell kind / base game–DLC filters (`picker.ts`), the current item
 marked (`aria-current`), "Show more" paging; picking a weapon with Ashes of War moves to its Ash of War and
 affinity step, where a filled weapon slot also opens. Dialogs and panels use `components/ui/FocusScope` (focus
-in, Escape, focus back to the opener). Item icons are decorative (`alt=""`): the name is always shown next to
-them.
+in, Escape, focus back to the opener). Item icons are decorative (`alt=""`): the name is shown next to them or is
+the tile button's accessible name.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
-largest dependency) loads only when a description is shown or edited.
+largest dependency) loads only when a description is shown or edited; the guide's route and its ~400 KB
+acquisition data (`guide/GuideRoute`) only when the reader expands "How to get this build" (fetched early on
+hover/focus of the button).
 
 ## Performance (T21)
 

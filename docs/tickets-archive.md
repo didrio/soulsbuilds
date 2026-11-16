@@ -46,3 +46,9 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
 - T17 — Redesign: build page, editor and item picker — 2026-11-15 — view and edit in one mockup layout (title
   block, framed panels, `ItemRow` tiles, stat bars, prose write-up), picker on a tall `Dialog` with filters and a
   weapon step for Ash of War/affinity, comments/report/like restyled; `legacy.ts`, `Slot` and 2022 icons deleted.
+- T19 — Acquisition facts — 2026-11-15 — every pickable item placed (Ragged set → `NO_SOURCE`): ~100 enemy farm
+  spots, base-game NPC/quest/painting rewards, DLC bosses and quests, Husks/Moore/Enia shop ranges, reversions;
+  pipeline reads weapons that come with an Ash of War and enemy lots by ID. Owner shown a 30-item sample.
+- T14 — Acquisition data — 2026-11-15 — `npm run data` writes `acquisition.json`: sources per item (lots placed by ID →
+  nearest grace, event hints, shops by range, recipes by cookbook flag, classes), 54 regions in route order, 419
+  graces, 27 gates, key items, validation with explicit allow-lists; ~670 items' facts pending (T19).

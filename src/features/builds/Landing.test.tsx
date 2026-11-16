@@ -25,6 +25,9 @@ describe('Landing', () => {
     renderWithProviders(<Landing />);
     expect(await screen.findByText('Bleed')).toBeInTheDocument();
     expect(firebase.listBuilds).toHaveBeenCalledWith(expect.objectContaining({ sort: 'top' }));
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Elden Ring Builds' }),
+    ).toBeInTheDocument();
   });
 
   it('applies tag and level filters from the URL together', async () => {

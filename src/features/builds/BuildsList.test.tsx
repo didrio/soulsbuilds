@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeBuild } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import BuildsList from './BuildsList';
@@ -38,6 +38,30 @@ describe('BuildsList', () => {
   it('shows builds without tags', () => {
     renderWithProviders(<BuildsList builds={[makeBuild({ tags: [] })]} />);
     expect(screen.queryByText('Rennala')).not.toBeInTheDocument();
+  });
+
+  describe('tags on one line', () => {
+    afterEach(() => vi.restoreAllMocks());
+
+    it('shows the tags that fit, then "+N"; the rest stay in the accessible name', () => {
+      // A 100 px line and 40 px chips: one chip plus the "+N" chip fit.
+      vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(100);
+      vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(40);
+      renderWithProviders(
+        <BuildsList builds={[makeBuild({ tags: ['Rennala', 'PvE', 'Moon'] })]} />,
+      );
+      expect(screen.getByText('+2')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Rennala PvE Moon/ })).toBeInTheDocument();
+    });
+
+    it('shows no "+N" when they all fit', () => {
+      vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(500);
+      vi.spyOn(HTMLElement.prototype, 'offsetWidth', 'get').mockReturnValue(40);
+      renderWithProviders(
+        <BuildsList builds={[makeBuild({ tags: ['Rennala', 'PvE', 'Moon'] })]} />,
+      );
+      expect(screen.queryByText(/^\+\d/)).not.toBeInTheDocument();
+    });
   });
 
   it('each row links to its build page', async () => {

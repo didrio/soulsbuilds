@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T24
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T22, Layout: lean landing, compact build page · Opus · high · plan mode on.
+**Next:** T20, Community feel: top tags, activity, community stats · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -23,7 +23,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so is T18 (account deletion). Then: T22 (layout), T20 (community feel), T23 (App Check wait; owner
+done, and so are T18 (account deletion) and T22 (layout). Then: T20 (community feel), T23 (App Check wait; owner
 can move it up).
 
 ## In progress
@@ -32,40 +32,9 @@ can move it up).
 
 ## Up next
 
-### T22 — Layout: lean landing, compact build page
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Show more of each build at once and bring the write-up and comments up the page, keeping the
-  equipment prominent. Landing: drop the hero so the builds start higher, and make every row the same height.
-- **Done when:**
-  - [ ] **Mockup first** (HTML, desktop + phone) of the build page, view and edit mode, for the owner to pick
-        from; include the owner's variant and the recommended one below.
-  - [ ] **Landing** (`src/features/builds/Landing.tsx`): remove the `PageHero` ("Elden Ring Builds" + tagline)
-        and the `Ornament`; the "Find builds" frame moves to the top with sensible spacing from the header.
-        Keep an `<h1>` for accessibility (visually hidden, or a small heading in the toolbar).
-  - [ ] **Fixed row height** (`BuildsList.tsx`): every row the same height with no tags, few or many: tags on one
-        line, overflow hidden behind a "+N" chip; name already ellipsizes. Same on tablet/phone layouts.
-  - [ ] **Build page** (`src/features/editor/BuildEditorPage.tsx`, view and edit share the layout): no hero.
-        Recommended order: 1. **Title pane** (framed, left-aligned, compact): name (`<h1>`), by author · level · likes, Like, Report,
-        owner Edit/Delete, tags. In edit mode `BuildDetailsForm` takes this spot. 2. **Equipment**, full width and compact: icon tiles grouped (right hand, left hand, armor, talismans,
-        the rest), **names on hover and keyboard focus** (accessible tooltip; each tile keeps an accessible
-        name since icons are `alt=""`), tap shows the name/details on touch. Requirement and memory warnings
-        (T8) stay visible as a badge on the tile. Edit mode: tiles are the picker buttons, empty slots "+". 3. Two columns: **description** (main) | stats, character, spells (aside). Phone: one column. 4. **"How to get this build"** full width, **collapsed by default** with a clear expand control. 5. **Comments** full width (comment text capped at a readable line length).
-        Owner's variant for the mockup: equipment full width first, then a left column with the title pane and
-        description beside the stats. Recommendation is title first: it's the page's identity and `<h1>`.
-  - [ ] Tests updated (component tests that find sections or item names by text; tooltip/collapse behavior);
-        `npm run e2e` passes (the build journeys click item rows). Screenshots desktop + `--mobile`.
-- **Context:** `src/features/editor/BuildEditorPage.tsx` (`Layout` grid `main aside`, `Main`/`Aside`),
-  `sections/BuildHeader.tsx` (becomes the title pane; `likesLabel` is reused), `sections/EquipmentEditor.tsx`
-  (groups, `compact` flag), `ItemRow.tsx` + `itemDetails.ts` (tile + name + warnings), `components/ui/ItemTile.tsx`,
-  `guide/GuideSection.tsx` (lazy; collapse), `sections/CommentsSection.tsx`, `components/ui/PageHero.tsx` (may
-  become unused). Accessibility rules in AGENTS.md (≥ 44 px targets, `FocusScope` for pop-ups). T20 builds on
-  this layout.
-
 ### T20 — Community feel: top tags, activity, community stats
 
-- **Status:** ready (after T22, which removes the landing hero and reshapes the build page)
+- **Status:** ready
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Make the site feel like a living community (people building, liking and talking) with small
   touches, while browsing and posting stay exactly as quick as now. No new sections that push the list down.
@@ -86,12 +55,14 @@ can move it up).
   - [ ] **Build page**: comment count as a jump link next to Like (to `#comments-title`), a warmer empty state
         ("No comments yet. Tried it? Tell <author> how it went."), and a small "More by <author>" strip at the
         bottom (`useUserBuilds`, excluding this build, hidden if none).
-  - [ ] **Community stats**: "N builds by M players" on the landing (from `stats/er`; T22 removes the hero,
+  - [ ] **Community stats**: "N builds by M players" on the landing (from `stats/er`; no hero since T22,
         so e.g. in the status line above the list), and
         "N builds · M likes received" on profiles (summed from the builds the profile already loads; free).
   - [ ] Tests: unit for the relative-time helper, top-tags pick and toggle; component tests for the new
         bits; rules test for `stats/`; admin script test like `tests/admin/`. Screenshots desktop + mobile.
-- **Context:** Owner's calls (2026-11-15): no podium/hall-of-fame (sort depends on filters; no categories);
+- **Context:** T22 layout: build rows are a fixed height (`BuildsList.tsx` `ROW_HEIGHT*`, tags one line via
+  `RowTags`/`fitCount`): new row content must fit them; the build page's title pane is `BuildHeader.tsx` (meta
+  line, actions on the right). Owner's calls (2026-11-15): no podium/hall-of-fame (sort depends on filters; no categories);
   no avatars for now; counts from a daily CI job, not live per-tag `count()` (105 tags in
   `src/data/er/tags.json` ≈ 105 reads per visitor vs Spark's 50k/day) or a client-written counter (rules can't
   cheaply verify increments). Files: `src/features/builds/Landing.tsx` (`TagsRow`, `Chips`, `setFilters`),
@@ -148,6 +119,11 @@ can move it up).
 
 Older entries: `docs/tickets-archive.md`.
 
+- T22 — Layout: lean landing, compact build page — 2026-11-16 — HTML mockup, owner picked "title first";
+  landing: no hero, small `<h1>` in the Find builds frame, fixed-height rows with tags on one line + "+N"
+  (`tags.ts` `fitCount`); build page: title pane, equipment across the page (weapons as rows, other slots as
+  `ItemSlot` icon tiles with a `Tooltip` name on hover/focus/tap), write-up beside the numbers, guide collapsed
+  with `GuideRoute` + acquisition data loaded on expand, comments across the page at 72ch.
 - T18 — Account deletion and admin rename — 2026-11-15 — profile "Delete account" (password re-auth; finds
   everything, then deletes builds, likes/comments elsewhere with counters, reports, profile, Auth user;
   re-runnable), rules for own profile/report delete + comments collection-group read, `admin.mjs rename` and
@@ -160,7 +136,6 @@ Older entries: `docs/tickets-archive.md`.
   next to the sort `orderBy`; 7 new composite indexes ending in `level`, plus `tags`+`game`+`nameLower`); data-layer
   test. Indexes are untested against production (the emulator ignores them): check the first level/search
   queries after the next deploy.
-
 - T8 — Build math — 2026-11-15 — `character.json` (classes + CalcCorrectGraph curves) and talisman `modifiers`
   from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory
   slots) tested against Fextralife; `startingClass` saved (rules + tests), spells ≤ 12; Character panel,
@@ -169,9 +144,3 @@ Older entries: `docs/tickets-archive.md`.
   reachable source, item prerequisites, implied and any-of gates, topological order, steps by grace, legs by
   region) + lazy `GuideSection` on the build view (numbered, collapsible regions, item icons); unit, component
   and e2e tests. Upgrade materials, rune farming and a starting-class suggestion are in the Backlog.
-- T19 — Acquisition facts — 2026-11-15 — every pickable item placed (Ragged set → `NO_SOURCE`): ~100 enemy farm
-  spots, base-game NPC/quest/painting rewards, DLC bosses and quests, Husks/Moore/Enia shop ranges, reversions;
-  pipeline reads weapons that come with an Ash of War and enemy lots by ID. Owner shown a 30-item sample.
-- T14 — Acquisition data — 2026-11-15 — `npm run data` writes `acquisition.json`: sources per item (lots placed by ID →
-  nearest grace, event hints, shops by range, recipes by cookbook flag, classes), 54 regions in route order, 419
-  graces, 27 gates, key items, validation with explicit allow-lists; ~670 items' facts pending (T19).

@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import styled from 'styled-components';
 import { HeartIcon } from '@/components/ui/icons';
@@ -11,6 +12,7 @@ import {
   BELOW_MOBILE,
   BELOW_TABLET,
   COLOR_ACCENT,
+  COLOR_ACCENT_DEEP,
   COLOR_ACCENT_STRONG,
   COLOR_FRAME,
   COLOR_LINE,
@@ -23,6 +25,7 @@ import {
   TEXT_XS,
   TRACKING_CAPS,
 } from '@/theme';
+import { fitCount } from './tags';
 
 // Rows preview the first two slots of each hand (weapon slots 1, 2 main hand and 4, 5 off hand) and
 // the four armor pieces, always in the same positions so the columns line up for scanning.
@@ -37,6 +40,10 @@ const ARMOR = [
 const TILE = 56;
 const TILE_MOBILE = 38;
 const GAP = 6;
+// Fixed row heights (name, author, one line of tags; on tablets and phones the tiles go underneath).
+const ROW_HEIGHT = 96;
+const ROW_HEIGHT_TABLET = 156;
+const ROW_HEIGHT_PHONE = 136;
 const SLOTS_WIDTH = `${4 * TILE + 3 * GAP}px`;
 
 interface BuildsListProps {
@@ -47,7 +54,8 @@ interface BuildsListProps {
 
 /**
  * Builds as full-width rows (one link each): name, author and tags; armaments and armor as item
- * tiles; level and likes. Dense on purpose, so many builds fit on screen.
+ * tiles; level and likes. Dense on purpose, so many builds fit on screen, and all the same height
+ * (tags on one line, the rest as "+N").
  */
 function BuildsList({ builds, authors }: BuildsListProps) {
   return (
@@ -73,13 +81,7 @@ function BuildsList({ builds, authors }: BuildsListProps) {
                       by <b>{author.displayName}</b>
                     </Meta>
                   ) : null}
-                  {build.tags.length ? (
-                    <Tags>
-                      {build.tags.map((tag) => (
-                        <Tag key={tag}>{tag}</Tag>
-                      ))}
-                    </Tags>
-                  ) : null}
+                  <RowTags tags={build.tags} />
                 </Who>
                 <Slots>
                   <SlotGroup>
@@ -129,6 +131,47 @@ function BuildsList({ builds, authors }: BuildsListProps) {
   );
 }
 
+const TAG_GAP = 6;
+/** Room kept for the "+N" chip (two digits at most in practice). */
+const MORE_WIDTH = 34;
+
+/**
+ * A row's tags on one line: as many as fit, then "+N". The rest stay in the link's accessible name
+ * (visually hidden, still measured), so they can come back when the row gets wider.
+ */
+function RowTags({ tags }: { tags: string[] }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [shown, setShown] = useState(tags.length);
+
+  useLayoutEffect(() => {
+    const line = ref.current;
+    if (!line) return;
+    const measure = () => {
+      const widths = [...line.querySelectorAll<HTMLElement>('[data-tag]')].map(
+        (chip) => chip.offsetWidth,
+      );
+      setShown(fitCount(widths, line.clientWidth, TAG_GAP, MORE_WIDTH));
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(line);
+    return () => observer.disconnect();
+  }, [tags]);
+
+  const more = tags.length - shown;
+  return (
+    <Tags ref={ref}>
+      {tags.map((tag, index) => (
+        <TagChip key={tag} data-tag="" $hidden={index >= shown}>
+          {tag}
+        </TagChip>
+      ))}
+      {more > 0 ? <More aria-hidden="true">+{more}</More> : null}
+    </Tags>
+  );
+}
+
 const columns = `minmax(0, 1fr) ${SLOTS_WIDTH} ${SLOTS_WIDTH} 70px 64px`;
 
 const ListHead = styled.div`
@@ -169,8 +212,8 @@ const Row = styled(Link)`
   column-gap: 24px;
   display: grid;
   grid-template-columns: ${columns};
-  min-height: 82px;
-  padding: 12px 16px;
+  height: ${ROW_HEIGHT}px;
+  padding: 0 16px;
   position: relative;
 
   &:hover img {
@@ -184,10 +227,13 @@ const Row = styled(Link)`
     grid-template-columns: minmax(0, 1fr) auto;
     row-gap: 10px;
     column-gap: 12px;
+    align-content: center;
+    height: ${ROW_HEIGHT_TABLET}px;
   }
 
   @media ${BELOW_MOBILE} {
-    padding: 12px 4px;
+    height: ${ROW_HEIGHT_PHONE}px;
+    padding: 0 4px;
   }
 `;
 
@@ -230,11 +276,30 @@ const Meta = styled.span`
   }
 `;
 
+// Always there (empty too) and one line tall, so every row has the same height.
 const Tags = styled.span`
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  gap: ${TAG_GAP}px;
+  height: 22px;
   margin-top: 6px;
+  overflow: hidden;
+  position: relative;
+`;
+
+// Tags that don't fit are taken out of the line but kept measurable and readable to screen readers.
+const TagChip = styled(Tag)<{ $hidden: boolean }>`
+  ${({ $hidden }) =>
+    $hidden &&
+    `
+    clip-path: inset(50%);
+    left: 0;
+    position: absolute;
+  `}
+`;
+
+const More = styled(Tag)`
+  border-color: ${COLOR_ACCENT_DEEP};
+  color: ${COLOR_ACCENT};
 `;
 
 // Desktop: the two slot groups are grid columns of the row; tablet and phone: one line under the name.

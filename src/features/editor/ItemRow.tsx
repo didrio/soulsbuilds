@@ -22,7 +22,13 @@ import {
   TEXT_XS,
   TRACKING_CAPS,
 } from '@/theme';
-import { itemSubline, weaponDetailLabels, weaponDetails, type ItemWarning } from './itemDetails';
+import {
+  itemSubline,
+  weaponDetailLabels,
+  weaponDetails,
+  type ItemWarning,
+  type WeaponDetails,
+} from './itemDetails';
 import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
 import { openPicker } from './store/app';
 
@@ -77,7 +83,7 @@ export const filledAndNext = (entries: SlotEntry[]) => {
  */
 function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
   const dispatch = useAppDispatch();
-  const { id, type, item, affinityId, subId, affinity = null, ash = null, warning = null } = entry;
+  const { type, item, affinity = null, ash = null, warning = null } = entry;
 
   // A weapon slot holds a weapon (the editor state's items are full data objects).
   const weapon = item && isWeaponType(type) ? weaponDetails(item as Weapon, ash, affinity) : null;
@@ -100,32 +106,38 @@ function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
 
   if (!editable) return <Row>{content}</Row>;
 
-  const details = [
-    ...(weapon ? weaponDetailLabels(weapon) : []),
-    ...(warning ? [warning.text] : []),
-  ];
-  const label = item
-    ? `Change ${item.name}${details.length ? ` (${details.join(', ')})` : ''}`
-    : `Choose ${SLOT_LABELS[type]}`;
-
   return (
     <RowButton
       type="button"
-      aria-label={label}
-      onClick={() =>
-        dispatch(
-          openPicker({
-            slotType: type,
-            editSlot: id,
-            editAffinitySlot: affinityId ?? null,
-            editSubSlot: subId ?? null,
-          }),
-        )
-      }>
+      aria-label={changeLabel(entry, weapon)}
+      onClick={() => dispatch(openPickerFor(entry))}>
       {content}
     </RowButton>
   );
 }
+
+/**
+ * An editable slot's accessible name: "Choose talisman" when empty, "Change Uchigatana (Blood
+ * affinity, Seppuku skill)" when filled, with any warning. Shared by rows and icon tiles.
+ */
+export function changeLabel(entry: SlotEntry, weapon: WeaponDetails | null = null) {
+  const { item, type, warning } = entry;
+  if (!item) return `Choose ${SLOT_LABELS[type]}`;
+  const details = [
+    ...(weapon ? weaponDetailLabels(weapon) : []),
+    ...(warning ? [warning.text] : []),
+  ];
+  return `Change ${item.name}${details.length ? ` (${details.join(', ')})` : ''}`;
+}
+
+/** The action that opens the item picker for a slot. */
+export const openPickerFor = ({ id, type, affinityId, subId }: SlotEntry) =>
+  openPicker({
+    slotType: type,
+    editSlot: id,
+    editAffinitySlot: affinityId ?? null,
+    editSubSlot: subId ?? null,
+  });
 
 /** A list of slot rows (view mode passes only the filled ones). */
 export function ItemRows({
@@ -159,14 +171,7 @@ export const GroupHeading = styled.h3`
   text-transform: uppercase;
 `;
 
-/** A group of rows under its heading; groups after the first get space above. */
-export const ItemGroup = styled.div`
-  & + & {
-    margin-top: 18px;
-  }
-`;
-
-/** The rows of a group: two columns, one on phones (`$columns={1}` for narrow panels). */
+/** The rows of a group: two columns, one on phones (`$columns={1}` for narrow panels and hands). */
 const ItemList = styled.ul<{ $columns?: 1 | 2 }>`
   display: grid;
   gap: 2px ${SPACE_SM};
