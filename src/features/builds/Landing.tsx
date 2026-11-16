@@ -47,8 +47,8 @@ const SORTS = [
 
 /**
  * `/`: the current game's builds, most liked or newest first, a page at a time, or a search by name.
- * The first tag filters in Firestore; further tags and the level range filter the loaded builds.
- * Filters live in the URL.
+ * The search, the first tag and the level range filter in Firestore; further tags filter the loaded
+ * builds (a page can come back short: "Load more" fetches the next). Filters live in the URL.
  */
 function Landing() {
   const game = useCurrentGame();
@@ -58,6 +58,8 @@ function Landing() {
     sort: filters.sort,
     tag: filters.tags[0],
     search: filters.search || undefined,
+    minLevel: filters.minLevel,
+    maxLevel: filters.maxLevel,
   });
 
   const [searchText, setSearchText] = useState(filters.search);

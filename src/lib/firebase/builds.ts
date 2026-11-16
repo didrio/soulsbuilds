@@ -19,7 +19,7 @@ import {
   type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { customAlphabet } from 'nanoid';
-import { calculateLevel } from '@/lib/buildMath';
+import { calculateLevel, MAX_LEVEL } from '@/lib/buildMath';
 import { GAME_ELDEN_RING, type Build, type BuildContent, type BuildDoc } from '@/lib/models';
 import { firestore } from './app';
 
@@ -85,52 +85,84 @@ export async function getBuild(id: string): Promise<Build | null> {
   return snapshot.exists() ? toBuild(snapshot) : null;
 }
 
-/** One page of Elden Ring builds, most liked or newest first, optionally with one tag. */
+/** A level range (inclusive) to filter builds by; omit an end for no limit on that side. */
+export interface LevelRange {
+  minLevel?: number;
+  maxLevel?: number;
+}
+
+interface PageOptions extends LevelRange {
+  /** Only builds with this tag. */
+  tag?: string;
+  pageSize?: number;
+  cursor?: BuildCursor | null;
+}
+
+/**
+ * The level range as Firestore range filters. They sit next to an `orderBy` on another field (likes,
+ * date or name), which works with Firestore's multi-field range support and an index that ends in
+ * `level` (equality fields, then the order field, then the range): see firestore.indexes.json.
+ */
+function levelConstraints({ minLevel, maxLevel }: LevelRange): QueryConstraint[] {
+  const constraints: QueryConstraint[] = [];
+  if (minLevel !== undefined && minLevel > 1) constraints.push(where('level', '>=', minLevel));
+  if (maxLevel !== undefined && maxLevel < MAX_LEVEL)
+    constraints.push(where('level', '<=', maxLevel));
+  return constraints;
+}
+
+async function fetchPage(
+  constraints: QueryConstraint[],
+  pageSize: number,
+  cursor?: BuildCursor | null,
+) {
+  const all = [...constraints];
+  if (cursor) all.push(startAfter(cursor));
+  all.push(limit(pageSize));
+  const snapshot = await getDocs(query(buildsCollection(), ...all));
+  return {
+    builds: snapshot.docs.map(toBuild),
+    nextCursor: snapshot.docs.length === pageSize ? (snapshot.docs.at(-1) ?? null) : null,
+  } satisfies BuildPage;
+}
+
+/**
+ * One page of Elden Ring builds, most liked or newest first, optionally with one tag and a level
+ * range (all in Firestore).
+ */
 export async function listBuilds({
   sort = 'top',
   tag,
   pageSize = 24,
   cursor,
-}: {
-  sort?: BuildSort;
-  tag?: string;
-  pageSize?: number;
-  cursor?: BuildCursor | null;
-} = {}): Promise<BuildPage> {
+  ...levels
+}: PageOptions & { sort?: BuildSort } = {}): Promise<BuildPage> {
   const constraints: QueryConstraint[] = [where('game', '==', GAME_ELDEN_RING)];
   if (tag) constraints.push(where('tags', 'array-contains', tag));
+  constraints.push(...levelConstraints(levels));
   constraints.push(orderBy(sort === 'top' ? 'likeCount' : 'createdAt', 'desc'));
-  if (cursor) constraints.push(startAfter(cursor));
-  constraints.push(limit(pageSize));
-  const snapshot = await getDocs(query(buildsCollection(), ...constraints));
-  return {
-    builds: snapshot.docs.map(toBuild),
-    nextCursor: snapshot.docs.length === pageSize ? (snapshot.docs.at(-1) ?? null) : null,
-  };
+  return fetchPage(constraints, pageSize, cursor);
 }
 
 /**
- * One page of Elden Ring builds whose name starts with `text` (case-insensitive), by name. Firestore
- * has no full-text search; a prefix query on `nameLower` is the free option.
+ * One page of Elden Ring builds whose name starts with `text` (case-insensitive), by name, optionally
+ * with one tag and a level range. Firestore has no full-text search; a prefix query on `nameLower` is
+ * the free option.
  */
 export async function searchBuilds(
   text: string,
-  { pageSize = 24, cursor }: { pageSize?: number; cursor?: BuildCursor | null } = {},
+  { tag, pageSize = 24, cursor, ...levels }: PageOptions = {},
 ): Promise<BuildPage> {
   const prefix = text.trim().toLowerCase();
-  const constraints: QueryConstraint[] = [
-    where('game', '==', GAME_ELDEN_RING),
+  const constraints: QueryConstraint[] = [where('game', '==', GAME_ELDEN_RING)];
+  if (tag) constraints.push(where('tags', 'array-contains', tag));
+  constraints.push(
     where('nameLower', '>=', prefix),
     where('nameLower', '<=', `${prefix}\uf8ff`),
+    ...levelConstraints(levels),
     orderBy('nameLower'),
-  ];
-  if (cursor) constraints.push(startAfter(cursor));
-  constraints.push(limit(pageSize));
-  const snapshot = await getDocs(query(buildsCollection(), ...constraints));
-  return {
-    builds: snapshot.docs.map(toBuild),
-    nextCursor: snapshot.docs.length === pageSize ? (snapshot.docs.at(-1) ?? null) : null,
-  };
+  );
+  return fetchPage(constraints, pageSize, cursor);
 }
 
 /** Every build a user owns, newest first. */

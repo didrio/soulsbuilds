@@ -190,6 +190,37 @@ describe('data layer against the rules', () => {
     expect(await listUserBuilds('bob')).toEqual([]);
   });
 
+  it('lists: level range, search with a tag, all in the query', async () => {
+    actAs('alice');
+    const low = await createBuild('alice', {
+      ...input,
+      name: 'Moon Squire',
+      tags: ['Godrick'],
+      stats: { ...input.stats, vigor: 10, mind: 10, int: 20 },
+    });
+    actAs(null);
+    const lowLevel = (await getBuild(low))!.level;
+    expect(lowLevel).toBeLessThan(132);
+    const ids = async (p: Promise<{ builds: { id: string }[] }>) =>
+      (await p).builds.map((b) => b.id);
+    // min only, max only, both; with either sort, a tag, and search
+    expect(await ids(listBuilds({ sort: 'top', minLevel: 100 }))).not.toContain(low);
+    expect(await ids(listBuilds({ sort: 'new', minLevel: 100 }))).toContain(buildId);
+    expect(await ids(listBuilds({ sort: 'new', maxLevel: lowLevel }))).toEqual([low]);
+    expect(await ids(listBuilds({ minLevel: lowLevel, maxLevel: lowLevel }))).toEqual([low]);
+    expect(await ids(listBuilds({ tag: 'Godrick', minLevel: 100 }))).not.toContain(low);
+    expect(await ids(listBuilds({ tag: 'Godrick', maxLevel: 131 }))).toEqual([low]);
+    expect(await ids(searchBuilds('moon', { maxLevel: 131 }))).toEqual([low]);
+    expect(await ids(searchBuilds('moon', { tag: 'Godrick' }))).toEqual([low]);
+    expect(await ids(searchBuilds('moon', { tag: 'Rennala', minLevel: 100 }))).toEqual([buildId]);
+    expect(await ids(searchBuilds('moon', { tag: 'Rennala', maxLevel: 50 }))).toEqual([]);
+    // a page is full of matches, not of a page of everything filtered afterwards
+    const first = await listBuilds({ sort: 'new', minLevel: 132, pageSize: 1 });
+    expect(first.builds.map((b) => b.level)).toEqual([132]);
+    actAs('alice');
+    await deleteBuild(low);
+  });
+
   it('delete: only the owner, and the likes and comments go with it', async () => {
     actAs('bob');
     await expect(deleteBuild(buildId)).rejects.toThrow();

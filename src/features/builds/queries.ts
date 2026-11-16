@@ -12,25 +12,29 @@ import { queryKeys } from '@/lib/queryKeys';
 export const BUILDS_PAGE_SIZE = 24;
 
 /**
- * Elden Ring builds a page at a time (`fetchNextPage`): most liked or newest first, optionally with
- * one tag; or, with `search`, the builds whose name starts with it (by name; `sort`/`tag` ignored).
+ * Elden Ring builds a page at a time (`fetchNextPage`), all filtered in Firestore: most liked or newest
+ * first (or by name when `search` is a name prefix), optionally one tag and a level range.
  */
 export function useBuilds({
   sort,
   tag,
   search,
+  minLevel,
+  maxLevel,
 }: {
   sort: BuildSort;
   tag?: string;
   search?: string;
+  minLevel?: number;
+  maxLevel?: number;
 }) {
-  const filters = search ? { sort, search } : { sort, tag };
+  const filters = { sort: search ? ('top' as const) : sort, search, tag, minLevel, maxLevel };
   return useInfiniteQuery({
     queryKey: queryKeys.buildList(filters),
-    queryFn: ({ pageParam }) =>
-      search
-        ? searchBuilds(search, { cursor: pageParam, pageSize: BUILDS_PAGE_SIZE })
-        : listBuilds({ sort, tag, cursor: pageParam, pageSize: BUILDS_PAGE_SIZE }),
+    queryFn: ({ pageParam }) => {
+      const options = { tag, minLevel, maxLevel, cursor: pageParam, pageSize: BUILDS_PAGE_SIZE };
+      return search ? searchBuilds(search, options) : listBuilds({ sort, ...options });
+    },
     initialPageParam: null as BuildCursor | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });

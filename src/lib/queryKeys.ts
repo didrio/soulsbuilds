@@ -4,8 +4,13 @@ import type { BuildSort } from './firebase';
 
 export const queryKeys = {
   builds: ['builds'] as const,
-  buildList: (filters: { sort: BuildSort; tag?: string; search?: string }) =>
-    ['builds', 'list', filters] as const,
+  buildList: (filters: {
+    sort: BuildSort;
+    tag?: string;
+    search?: string;
+    minLevel?: number;
+    maxLevel?: number;
+  }) => ['builds', 'list', filters] as const,
   build: (id: string) => ['builds', 'detail', id] as const,
   userBuilds: (userId: string) => ['builds', 'user', userId] as const,
   likedBuilds: (userId: string) => ['builds', 'liked', userId] as const,

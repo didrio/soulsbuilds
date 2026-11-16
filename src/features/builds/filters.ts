@@ -1,6 +1,6 @@
 // Landing page filters: parsed from / written to the URL
 // (?q=moon&sort=new&tag=Malenia&tag=Mohg&min=50&max=150) so filtered views are shareable, and
-// applied to the loaded builds.
+// applied to the loaded builds (the Landing also sends the level range and the first tag to Firestore).
 import { MAX_LEVEL } from '@/lib/buildMath';
 import type { BuildSort } from '@/lib/firebase';
 import type { Build } from '@/lib/models';

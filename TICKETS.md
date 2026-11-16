@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T20
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T9, Browse and discovery (remainder) · Sonnet · medium · plan mode off.
+**Next:** T18, Account deletion and admin rename · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -21,7 +21,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
-(T16, T17), the headline feature "How to get this build" (T14, T19, T15) and build math (T8) are done; next T9. T18
+(T16, T17), "How to get this build" (T14, T19, T15), build math (T8) and browse (T9) are done. T18
 (account deletion) can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
 
 ## In progress
@@ -29,24 +29,6 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 (none)
 
 ## Up next
-
-### T9 — Browse and discovery (remainder)
-
-- **Status:** ready
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Make finding builds pleasant at scale.
-- **Done when:**
-  - [x] Sort by top/new; cursor pagination ("Load more"); one tag as a Firestore query, further tags
-        client-side; name search (prefix on `nameLower`, the free option); filters and search in the URL.
-  - [ ] Level range as a Firestore query instead of client-side (it filters loaded pages today, so narrow
-        ranges show sparse pages). Firestore needs `orderBy('level')` first, or the newer multi-field range
-        support: check the current docs, add the index, and a data-layer test in `tests/rules/data-layer.test.ts`.
-  - [ ] Search combined with the tag filter server-side (index `tags` CONTAINS + `game` + `nameLower`), or keep
-        it client-side and say so in the UI.
-  - [x] DLC bosses in tags (T7's `src/data/er/tags.json`, read by the tag picker since T13).
-- **Context:** `src/features/builds/` (`Landing`, `filters.ts`, `queries.ts`), `src/lib/firebase/builds.ts`
-  (`listBuilds`, `searchBuilds`), `firestore.indexes.json`. If the owner wants real full-text search, that's a
-  new service (Algolia/Typesense): ask.
 
 ### T18 — Account deletion (in-app) and admin rename
 
@@ -93,6 +75,11 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T9 — Browse and discovery — 2026-11-15 — level range and search + tag now Firestore queries (multi-field range
+  next to the sort `orderBy`; 7 new composite indexes ending in `level`, plus `tags`+`game`+`nameLower`); data-layer
+  test. Indexes are untested against production (the emulator ignores them): check the first level/search
+  queries after the next deploy.
 
 - T8 — Build math — 2026-11-15 — `character.json` (classes + CalcCorrectGraph curves) and talisman `modifiers`
   from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory

@@ -112,7 +112,9 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   of a build that no longer exists). Signed-in users report builds and comments; only admins read reports
   (a reporter may read their own). Moderation runs from `scripts/admin.mjs` (`docs/firebase.md`).
 - **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
-  (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`), by
+  (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`; optionally
+  with a tag), each optionally with a `level` range (`>=`/`<=` next to an `orderBy` on another field, which Firestore's
+  multi-field range support allows; the index lists equality fields, the order field, then `level`), by
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
   The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
@@ -123,9 +125,9 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
 
 ## Known problems (fixed by the ticket in brackets)
 
-- Landing filters: only the first tag is a Firestore query; further tags and the level range filter the loaded
-  pages, so a narrow filter can show few results per page ("Load more" fetches more). Search is a name prefix
-  match only, and ignores sort and the server-side tag [T9].
+- Landing filters: the search, the first tag and the level range are Firestore queries; further tags filter the
+  loaded pages, so a page can come back short ("Load more" fetches more). Search is a name prefix match only, and
+  ignores sort (it is ordered by name).
 - The rules check the types of positional equipment lists and single slots, but only the sizes of the
   talisman/spell/tear/consumable lists (Firestore's per-request expression budget; `firestore.rules`). The app
   ignores IDs it doesn't know.
