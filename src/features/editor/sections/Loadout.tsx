@@ -140,6 +140,11 @@ function Loadout({ editable }: { editable: boolean }) {
   // Weapon slots 1–3 are the right hand, 4–6 the left; the left hand is shown first (on the left).
   const leftHand = [3, 4, 5].map(weaponEntry);
   const rightHand = [0, 1, 2].map(weaponEntry);
+  // Read-only: a weapon row (slot n, left | right) with nothing in either hand is left out (T39); a row
+  // with one hand filled keeps the other's placeholder, so it isn't blank space.
+  const rowShown = (index: number) => editable || leftHand[index]!.item || rightHand[index]!.item;
+  const shownLeft = leftHand.filter((_, index) => rowShown(index));
+  const shownRight = rightHand.filter((_, index) => rowShown(index));
   const armor = ARMOR_SLOTS.map((id): SlotEntry => ({
     id,
     type: ARMOR_TYPES[id],
@@ -195,7 +200,12 @@ function Loadout({ editable }: { editable: boolean }) {
   const free = Math.max(0, available - used);
   const nextSpell = editable && free > 0 ? spellEntries.find((entry) => !entry.item) : undefined;
   const spellCells = [...filledSpells, ...(nextSpell ? [nextSpell] : [])];
-  const freeCells = Array.from({ length: free - (nextSpell ? 1 : 0) }, (_, index) => index);
+  // Free memory slots show as placeholders only while editing; read-only, no spells = no section (T39).
+  const freeCells = Array.from(
+    { length: editable ? free - (nextSpell ? 1 : 0) : 0 },
+    (_, index) => index,
+  );
+  const showSpells = editable || filledSpells.length > 0;
 
   const summary =
     itemCount + filledSpells.length > 0
@@ -210,10 +220,12 @@ function Loadout({ editable }: { editable: boolean }) {
         <SectionHeading id="loadout-title">Loadout</SectionHeading>
         {summary ? <Summary>{summary}</Summary> : null}
       </Head>
-      <Hands>
-        <Group title="Left hand" entries={leftHand} editable={editable} size={64} />
-        <Group title="Right hand" entries={rightHand} editable={editable} size={64} />
-      </Hands>
+      {shownLeft.length > 0 ? (
+        <Hands>
+          <Group title="Left hand" entries={shownLeft} editable={editable} size={64} />
+          <Group title="Right hand" entries={shownRight} editable={editable} size={64} />
+        </Hands>
+      ) : null}
       <Columns>
         <Group title="Armor" entries={armor} editable={editable} />
         <Group title="Talismans" entries={talismans} editable={editable} />
@@ -232,31 +244,33 @@ function Loadout({ editable }: { editable: boolean }) {
           ) : null}
         </Columns>
       ) : null}
-      <Spells aria-labelledby="spells-title">
-        <SpellsHead>
-          <GroupHeading id="spells-title">Spells</GroupHeading>
-          <SlotCount $over={used > available}>
-            <strong>{used}</strong>
-            {` of ${available} memory slots`}
-          </SlotCount>
-        </SpellsHead>
-        <SpellGrid aria-labelledby="spells-title">
-          {spellCells.map((entry) => (
-            <SpellCell key={entry.id} $span={memoryCost(entry)}>
-              <ItemRow entry={entry} editable={editable} />
-            </SpellCell>
-          ))}
-          {freeCells.map((index) => (
-            <SpellCell key={`free-${index}`} $span={1}>
-              {/* A free memory slot: a read-only placeholder (the id isn't used). */}
-              <ItemRow
-                entry={{ id: SPELL_SLOTS[0], type: SLOT_TYPE_SPELL, item: null }}
-                editable={false}
-              />
-            </SpellCell>
-          ))}
-        </SpellGrid>
-      </Spells>
+      {showSpells ? (
+        <Spells aria-labelledby="spells-title">
+          <SpellsHead>
+            <GroupHeading id="spells-title">Spells</GroupHeading>
+            <SlotCount $over={used > available}>
+              <strong>{used}</strong>
+              {` of ${available} memory slots`}
+            </SlotCount>
+          </SpellsHead>
+          <SpellGrid aria-labelledby="spells-title">
+            {spellCells.map((entry) => (
+              <SpellCell key={entry.id} $span={memoryCost(entry)}>
+                <ItemRow entry={entry} editable={editable} />
+              </SpellCell>
+            ))}
+            {freeCells.map((index) => (
+              <SpellCell key={`free-${index}`} $span={1}>
+                {/* A free memory slot: a read-only placeholder (the id isn't used). */}
+                <ItemRow
+                  entry={{ id: SPELL_SLOTS[0], type: SLOT_TYPE_SPELL, item: null }}
+                  editable={false}
+                />
+              </SpellCell>
+            ))}
+          </SpellGrid>
+        </Spells>
+      ) : null}
     </Frame>
   );
 }

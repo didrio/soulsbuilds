@@ -1,9 +1,9 @@
 import { act, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { spells, talismans } from '@/data';
+import { spells, talismans, weapons } from '@/data';
 import { EditorWithPicker, searchItems } from '@/test/editor';
 import { renderWithProviders } from '@/test/render';
-import { updateTal } from '../store/equipment';
+import { updateTal, updateWeapon } from '../store/equipment';
 import { updateSpell } from '../store/spells';
 import { updateStat } from '../store/stats';
 import Loadout from './Loadout';
@@ -90,11 +90,8 @@ describe('Loadout', () => {
     act(() => store.dispatch(updateTal({ id: 'tal2', item: talisman("Erdtree's Favor") })));
 
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
-    // Left hand first, three slots per hand; four armor and talisman slots; two tears.
-    const hands = screen.getAllByRole('heading', { name: /hand$/ }).map((h) => h.textContent);
-    expect(hands).toEqual(['Left hand', 'Right hand']);
-    expect(within(group('Left hand')).getAllByRole('listitem')).toHaveLength(3);
-    expect(within(group('Right hand')).getAllByRole('listitem')).toHaveLength(3);
+    // No weapons: no hands at all. Four armor and talisman slots; two tears.
+    expect(screen.queryByRole('heading', { name: /hand$/ })).not.toBeInTheDocument();
     expect(within(group('Armor')).getAllByRole('listitem')).toHaveLength(4);
     expect(within(group('Flask of Wondrous Physick')).getAllByRole('listitem')).toHaveLength(2);
     expect(within(group('Great rune and spirit ash')).getAllByRole('listitem')).toHaveLength(2);
@@ -106,6 +103,28 @@ describe('Loadout', () => {
       'No talisman',
     ]);
     expect(screen.getByText('1 item · 0 spells')).toBeInTheDocument();
+  });
+
+  it('read-only: weapon rows hide when both hands are empty, one-handed rows keep the placeholder', () => {
+    const { store } = renderWithProviders(<Loadout editable={false} />);
+    const weapon = (name: string) => weapons.find((entry) => entry.name === name) ?? null;
+    // weapon1 = right hand 1, weapon4 = left hand 1: one row with both hands.
+    act(() => {
+      store.dispatch(updateWeapon({ id: 'weapon1', item: weapon('Uchigatana') }));
+      store.dispatch(updateWeapon({ id: 'weapon4', item: weapon('Dagger') }));
+    });
+    expect(screen.getAllByRole('heading', { name: /hand$/ }).map((h) => h.textContent)).toEqual([
+      'Left hand',
+      'Right hand',
+    ]);
+    expect(within(group('Left hand')).getAllByRole('listitem')).toHaveLength(1);
+    expect(within(group('Right hand')).getAllByRole('listitem')).toHaveLength(1);
+
+    // Slot 3 right hand only: a second row, with a placeholder on the left.
+    act(() => store.dispatch(updateWeapon({ id: 'weapon3', item: weapon('Uchigatana') })));
+    expect(within(group('Left hand')).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(group('Right hand')).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(group('Left hand')).getAllByRole('listitem')[1]).toHaveTextContent('No weapon');
   });
 
   it('read-only: arrows and consumables only when the build has some', () => {
@@ -124,18 +143,16 @@ describe('Loadout', () => {
     expect(store.getState().app).toMatchObject({ slotType: 'SLOT_TYPE_HELM', editSlot: 'helm' });
   });
 
-  it('spells: one cell per memory slot, the free ones as placeholders', () => {
+  it('spells: hidden without any; then one cell per spell, no placeholders', () => {
     const { store } = renderWithProviders(<Loadout editable={false} />);
     const cells = () => within(group('Spells')).getAllByRole('listitem');
-    expect(cells()).toHaveLength(10);
-    expect(screen.getByText(/of 10 memory slots/)).toHaveTextContent('0 of 10 memory slots');
+    expect(screen.queryByRole('heading', { name: 'Spells' })).not.toBeInTheDocument();
 
     act(() => {
       store.dispatch(updateSpell({ id: 'spell1', item: spell("Rennala's Full Moon") })); // 2 slots
       store.dispatch(updateSpell({ id: 'spell2', item: spell('Glintstone Pebble') })); // 1 slot
     });
-    // The 2-slot spell is one cell spanning two, so 2 spells + 7 free.
-    expect(cells()).toHaveLength(9);
+    expect(cells()).toHaveLength(2);
     expect(screen.getByText(/of 10 memory slots/)).toHaveTextContent('3 of 10 memory slots');
     expect(screen.getByText('0 items · 2 spells')).toBeInTheDocument();
   });

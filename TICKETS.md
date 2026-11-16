@@ -2,7 +2,7 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T39**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T41**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
@@ -150,6 +150,31 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
   - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
 - **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
   replaces the backlog's "Per-build share previews".
+
+### T40 — Choose the build's main image
+
+- **Status:** ready; owner decisions first
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The author picks the image that represents their build: any item saved on it (a weapon, armor piece,
+  talisman, spell, spirit ash…), shown as the hero portrait on the build page and in the landing rows (owner,
+  2026-11-16).
+- **Done when:** (ask the owner the ★ in one question first)
+  - Model: an optional field on the build holding the chosen item (slot and game ID), validated in
+    `firestore.rules` (cheap: mind the expression budget, Gotchas) and `src/lib/models.ts`; rules tests for a
+    valid pick, a bad one, and none.
+  - The editor lets the author choose: ★ e.g. a "Use as build image" action on any filled slot's item, or a
+    picker in the title block. Saved with the build.
+  - If the chosen item is no longer on the build (removed or swapped), the image falls back to the default, which
+    is `mainWeaponId` (first right-hand weapon); nothing is stored for that, it's decided at read time. A pure,
+    tested function in `src/lib/equipment.ts` (`buildImageId(build)`) replaces direct `mainWeaponId` calls in
+    T28's hero and T29's rows. Icons for spells and spirit ashes come from the full data (the landing uses
+    `@/data/core`, so check that card accessors cover every slot type).
+  - Existing builds have no field: no migration. Tests: unit (fallback logic), rules, an e2e (pick a talisman, see
+    it in the hero, remove it, back to the weapon). `npm run check`, `npm run test:rules`, `npm run e2e` pass.
+  - Docs: the model in `docs/architecture.md`, a decision row.
+- **Context:** `src/lib/{models,equipment}.ts`, `features/editor/{useBuildEditor.ts,store/build.ts}`,
+  `sections/BuildHeader.tsx`, `features/builds/BuildsList.tsx`, `firestore.rules` with `tests/rules/`,
+  `src/data/core` accessors (`getCardWeapon`, `getCardArmor`).
 
 ### T30 — Sign up and log in: low friction, done properly
 
@@ -306,6 +331,11 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T39 — Loadout without empty rows — 2026-11-16 — read-only: a weapon row with both hands empty is hidden (one-handed
+  rows keep the other hand's placeholder), Spells hidden without spells and never shows free-slot placeholders; edit
+  mode unchanged. Not seen on screen: mobile Loadout, the Spells section; with no weapons the Armor row's top rule sits
+  right under the heading.
 
 - T29 — Landing: slim toolbar, rows with a portrait — 2026-11-16 — no framed card: h1 + "N builds by M players" on
   a line, then search | sort | level, then a sideways-scrolling top-tags row ("More tags" after it, outside the
