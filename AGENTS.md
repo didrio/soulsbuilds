@@ -14,19 +14,19 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T24 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
-TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TS. Firestore model v2 + tested rules (2022 data
+As of 2026-11-16 (T1–T25 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules (2022 data
 migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`. Redesign
 (T16/17/22): tokens + per-game skin; build page = view and edit in one layout. T14/19/15: "How to get this
 build". T8: build math. T21: smooth scrolling, `npm run perf`. T18: account deletion. T20: daily `stats/{game}`
 → top tags, activity. T23: App Check wait measured, `enterprise.js` preloaded, 1-day token TTL. Left: enforcing.
-T24: blocked reCAPTCHA → a notice, not a blank page. **Next:** see `TICKETS.md`.
+T24: blocked reCAPTCHA → a notice, not a blank page. T25: Firebase SDK 13. **Next:** see `TICKETS.md`.
 
 ## Golden rules
 
 1. **Your training data is out of date for this stack.** React 19, react-router 7, Redux Toolkit 2,
-   styled-components 6, Firebase JS SDK 12, Vite 8, Vitest 5, ESLint 9 flat config all changed APIs. Before
+   styled-components 6, Firebase JS SDK 13, Vite 8, Vitest 5, ESLint 9 flat config all changed APIs. Before
    using an API you're not sure of, check the installed types (`node_modules/<pkg>/dist/*.d.ts`) or the
    package's current docs. Known traps are under **Gotchas**.
 2. **Local work never touches production.** `npm run dev` uses the emulators under `demo-soulsbuilds` (a

@@ -7,7 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T26
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T25, Firebase JS SDK 13 · Sonnet · medium · plan mode off (a suggestion: no owner order past T24).
+**Next:** nothing queued (T25 was the last ticket; the owner sets no order). Pick from the Backlog or the owner to-dos below,
+and turn the chosen item into a ticket with `/ticket`.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -25,7 +26,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait) and T24 (blocked reCAPTCHA).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait) T24 (blocked reCAPTCHA) and T25 (Firebase SDK 13).
 
 ## In progress
 
@@ -33,25 +34,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 
 ## Up next
 
-### T25 — Firebase JS SDK 13
-
-- **Status:** ready (suggested by T24's wrap; the owner set no order past T24, so pick another if you prefer)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Upgrade `firebase` 12 → 13 and `@firebase/rules-unit-testing` 5 → 6 (it requires 13) without
-  changing behavior.
-- **Done when:**
-  - [ ] Changelog/release notes read for breaking changes in the APIs we use (`src/lib/firebase/` only imports
-        the SDK; rules tests and `scripts/` use the admin side); code adjusted.
-  - [ ] `npm run check`, `npm run test:rules`, `npm run e2e` all pass.
-  - [ ] App Check still right: the URL `@firebase/app-check` injects still matches the `<link rel="preload">`
-        in `index.html` (docs/firebase.md "App Check → Things to know"), and the T24 check still shows the notice.
-- **Context:** T24's watcher (`src/lib/firebase/appCheckStatus.ts`, wired in `app.ts`) assumes a blocked
-  `enterprise.js` makes `getToken` hang forever. If 13 adds an `onerror`, `getToken` rejects instead, the watcher
-  reads that as "settled" (ok), and Firestore goes on with a placeholder token, which fails once App Check is
-  enforced (generic "Something went wrong"). Then make the watcher (or `errorMessage`) treat a reCAPTCHA load
-  failure as blocked. Re-run T24's check: `npm run build`, Playwright serving `dist/` at
-  `https://soulsbuilds.com` with `**/recaptcha/**` aborted (reads only; owner OK'd it at T24), or the manual
-  DevTools check in docs/firebase.md. Grep the SDK, don't Read `node_modules` files whole.
+(none: T25 done; add tickets with `/ticket`)
 
 ## Backlog
 
@@ -74,6 +57,9 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T25 — Firebase JS SDK 13 — 2026-11-16 — `firebase` 13.3.0 + `@firebase/rules-unit-testing` 6.0.0, no code changes
+  (13.0's breaks are AI-only); check, rules (103) and e2e pass; preload URL still matches, blocked notice at ~2.4 s.
 
 - T24 — No blank page when reCAPTCHA is blocked — 2026-11-16 — owner: error only, one notice in the shell;
   `appCheckStatus.ts` (blocked = no token 2 s after a reCAPTCHA load error, or 10 s) + `AppCheckNotice`;

@@ -135,7 +135,9 @@ Things to know (T23, from the SDK source and measurements):
   build served at soulsbuilds.com: notice at ~2.4 s, normal loads unchanged (first Firestore request ~1.2 s).
 - `index.html` preloads `https://www.google.com/recaptcha/enterprise.js?render=explicit`, the exact URL
   `@firebase/app-check` injects. Re-check it after an SDK upgrade (a mismatch means a wasted download and a
-  console warning).
+  console warning). Re-checked at SDK 13.3.0 (T25): same URL, requested once (the preload is reused), and the
+  blocked-reCAPTCHA notice still shows at ~2.4 s. Method that needs no SDK source: serve `dist/` with Playwright at
+  `https://soulsbuilds.com` (`page.route`), record `/recaptcha/` requests, then abort them and wait for the alert.
 - Automated browsers (Playwright) often get a 403 from the exchange (reCAPTCHA scores them as bots). That's
   expected and shows up as unverified requests in the App Check metrics.
 
