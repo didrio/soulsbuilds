@@ -10,7 +10,8 @@ convention or the layout changes, update the matching doc in the same change.
 (stats, weapons with affinities and skills, armor, talismans, spells, flask tears, tags, a markdown write-up),
 browse everyone's builds, like them, and comment. Other FromSoftware games may follow (selector is a stub).
 Hand-coded in April–May 2022 and ~90% done; now being modernized and finished for a **public relaunch** on
-Firebase Hosting (soulsbuilds.web.app).
+Firebase Hosting (soulsbuilds.web.app). Where it fits and who it's for (share, get and improve builds; tracking,
+copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
@@ -152,7 +153,8 @@ scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, scre
                            names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
 firestore.rules            v2 security rules (deployed by CI with hosting); firestore.indexes.json
-docs/                      architecture, firebase, data, decisions, game-data-extraction, tickets-archive
+docs/                      architecture, firebase, data, decisions, product (positioning), game-data-extraction,
+                           tickets-archive
 TICKETS.md                 Ordered backlog; one ticket per session
 ```
 
