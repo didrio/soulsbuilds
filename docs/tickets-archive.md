@@ -60,3 +60,7 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory
   slots) tested against Fextralife; `startingClass` saved (rules + tests), spells ≤ 12; Character panel,
   class picker with minimums, requirement and memory-slot warnings.
+- T9 — Browse and discovery — 2026-11-15 — level range and search + tag now Firestore queries (multi-field range
+  next to the sort `orderBy`; 7 new composite indexes ending in `level`, plus `tags`+`game`+`nameLower`); data-layer
+  test. Indexes are untested against production (the emulator ignores them): check the first level/search
+  queries after the next deploy.

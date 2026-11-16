@@ -2,12 +2,12 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T25**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T26**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T24, No blank page when reCAPTCHA is blocked · Opus · high · plan mode on.
+**Next:** T25, Firebase JS SDK 13 · Sonnet · medium · plan mode off (a suggestion: no owner order past T24).
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -25,7 +25,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel) and T23 (App Check wait). Then: T24.
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait) and T24 (blocked reCAPTCHA).
 
 ## In progress
 
@@ -33,31 +33,25 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel) and 
 
 ## Up next
 
-### T24 — No blank page when reCAPTCHA is blocked
+### T25 — Firebase JS SDK 13
 
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** If `https://www.google.com/recaptcha/enterprise.js` can't load (a blocker, a network that blocks
-  Google), every page that reads Firestore stays empty forever, with no error. Show a clear message instead
-  (and, while App Check isn't enforced, maybe still load the data), without weakening App Check.
+- **Status:** ready (suggested by T24's wrap; the owner set no order past T24, so pick another if you prefer)
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Upgrade `firebase` 12 → 13 and `@firebase/rules-unit-testing` 5 → 6 (it requires 13) without
+  changing behavior.
 - **Done when:**
-  - [ ] With `enterprise.js` blocked, a build page and the landing show an error with a hint ("couldn't verify
-        your browser: an ad or tracker blocker may be blocking Google reCAPTCHA") within a few seconds, not a
-        blank page. Normal loads are unchanged (no added wait).
-  - [ ] Owner decides whether to degrade gracefully before enforcement (let Firestore go without a token) or
-        always show the error; after enforcement only the error makes sense.
-  - [ ] A test covers the detection logic; a Playwright check (blocked route) or a documented manual check.
-- **Context:** Cause (T23, SDK source on GitHub): `@firebase/app-check` `loadReCAPTCHAEnterpriseScript` sets only
-  `script.onload` (no `onerror`, no timeout), so `reCAPTCHAState.initialized` never resolves, `getToken` never
-  returns, and Firestore's `Datastore` waits on `Promise.all([auth.getToken(), appCheck.getToken()])` before
-  every RPC, so no request is ever sent and TanStack queries stay pending (never `isError`). Reproduced on
-  prod: Playwright `page.route('**/recaptcha/enterprise.js*', r => r.abort())` on `/build/HWRU9439SODE` →
-  0 Firestore requests after 15 s, empty `<main>`. Ideas: watch the `<link rel="preload">` for
-  `enterprise.js` in `index.html` (it fires `error`), or the SDK's injected script tag, and set a flag in
-  `src/lib/firebase/app.ts`; or a timeout on reads in `src/lib/firebase/`; surface it through the existing
-  `ErrorMessage` path (`BuildEditorPage` `buildQuery.isError`, `Landing`). Dev uses the emulators with no App
-  Check, so test against a production build (`npm run preview` uses a debug token, but still loads
-  `enterprise.js`) or prod with a blocked route. docs/firebase.md "App Check" → "Things to know".
+  - [ ] Changelog/release notes read for breaking changes in the APIs we use (`src/lib/firebase/` only imports
+        the SDK; rules tests and `scripts/` use the admin side); code adjusted.
+  - [ ] `npm run check`, `npm run test:rules`, `npm run e2e` all pass.
+  - [ ] App Check still right: the URL `@firebase/app-check` injects still matches the `<link rel="preload">`
+        in `index.html` (docs/firebase.md "App Check → Things to know"), and the T24 check still shows the notice.
+- **Context:** T24's watcher (`src/lib/firebase/appCheckStatus.ts`, wired in `app.ts`) assumes a blocked
+  `enterprise.js` makes `getToken` hang forever. If 13 adds an `onerror`, `getToken` rejects instead, the watcher
+  reads that as "settled" (ok), and Firestore goes on with a placeholder token, which fails once App Check is
+  enforced (generic "Something went wrong"). Then make the watcher (or `errorMessage`) treat a reCAPTCHA load
+  failure as blocked. Re-run T24's check: `npm run build`, Playwright serving `dist/` at
+  `https://soulsbuilds.com` with `**/recaptcha/**` aborted (reads only; owner OK'd it at T24), or the manual
+  DevTools check in docs/firebase.md. Grep the SDK, don't Read `node_modules` files whole.
 
 ## Backlog
 
@@ -73,8 +67,6 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel) and 
 - Per-build share previews (Open Graph image/title per build): needs SSR or a Cloud Function (Blaze plan).
 - Build comparison view; "copy this build" to start from someone else's.
 - Firebase MCP server for agents (local emulator use only) once its emulator support is clear.
-- Firebase JS SDK 13 (and `@firebase/rules-unit-testing` 6, which requires it): check the changelog, upgrade,
-  run all three test suites.
 - Build history / "updated" badge using `updatedAt`; edit comments (rules allow no comment updates today).
 - Admin page in the app (list reports, remove/dismiss) if `scripts/admin.mjs` gets tedious; the rules already
   let admins list reports and delete content.
@@ -83,6 +75,9 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel) and 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T24 — No blank page when reCAPTCHA is blocked — 2026-11-16 — owner: error only, one notice in the shell;
+  `appCheckStatus.ts` (blocked = no token 2 s after a reCAPTCHA load error, or 10 s) + `AppCheckNotice`;
+  checked on a local build served at soulsbuilds.com: notice at ~2.4 s, normal first Firestore request ~1.2 s.
 - T23 — Content sooner: the App Check wait — 2026-11-16 — cause confirmed in the SDK (Firestore awaits the App
   Check token; a cached IndexedDB token skips reCAPTCHA; T21's "warm" wait was perf's 403'd bot exchange);
   `enterprise.js` preloaded (cold first Firestore request ~1.29 → ~1.21 s, via `--head` before deploy; warm real
@@ -105,7 +100,3 @@ Older entries: `docs/tickets-archive.md`.
   `--off` attribution); `background-attachment: fixed` → fixed layer behind content (landing 72 → 118 fps, 40% →
   2% dropped), grain on its own layer, `<main>` ≥ 1 screen (CLS 0.17 → 0), hosting cache headers, preconnects.
   Prod "after" numbers not yet measured (needs the deploy); App Check wait → T23.
-- T9 — Browse and discovery — 2026-11-15 — level range and search + tag now Firestore queries (multi-field range
-  next to the sort `orderBy`; 7 new composite indexes ending in `level`, plus `tags`+`game`+`nameLower`); data-layer
-  test. Indexes are untested against production (the emulator ignores them): check the first level/search
-  queries after the next deploy.

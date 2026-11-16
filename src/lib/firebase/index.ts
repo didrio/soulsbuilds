@@ -1,5 +1,6 @@
 // All Firebase access for the app goes through this folder (AGENTS.md conventions).
 export { auth, firestore, USE_EMULATORS, EMULATOR_PROJECT_ID } from './app';
+export { getAppCheckStatus, onAppCheckStatus, type AppCheckStatus } from './appCheckStatus';
 export * from './account';
 export * from './auth';
 export * from './builds';

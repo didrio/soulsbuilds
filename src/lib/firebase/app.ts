@@ -1,8 +1,9 @@
 // The Firebase app, Auth and Firestore instances, wired to the emulators in dev and tests.
 import { initializeApp } from 'firebase/app';
-import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
+import { getToken, initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 import { connectAuthEmulator, getAuth } from 'firebase/auth';
 import { connectFirestoreEmulator, getFirestore } from 'firebase/firestore';
+import { isRecaptchaResource, watchAppCheck } from './appCheckStatus';
 
 // Local dev (`npm run dev`) and tests always talk to the Firebase emulators under the `demo-soulsbuilds`
 // project. A `demo-` project has no real backend, so local work can never touch production.
@@ -51,9 +52,23 @@ if (!USE_EMULATORS && APP_CHECK_SITE_KEY) {
   if (['127.0.0.1', 'localhost'].includes(window.location.hostname)) {
     globalThis.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
   }
-  initializeAppCheck(firebaseApp, {
+  // T24: if reCAPTCHA is blocked, the SDK waits forever and so does every request. Listen for its scripts
+  // failing (capture phase: resource errors don't bubble) before the SDK injects them, then watch the token.
+  const recaptchaErrors: (() => void)[] = [];
+  document.addEventListener(
+    'error',
+    (event) => {
+      if (isRecaptchaResource(event.target)) recaptchaErrors.forEach((callback) => callback());
+    },
+    true,
+  );
+  const appCheck = initializeAppCheck(firebaseApp, {
     provider: new ReCaptchaEnterpriseProvider(APP_CHECK_SITE_KEY),
     isTokenAutoRefreshEnabled: true,
+  });
+  watchAppCheck({
+    getToken: () => getToken(appCheck),
+    onRecaptchaError: (callback) => recaptchaErrors.push(callback),
   });
 }
 export const auth = getAuth(firebaseApp);

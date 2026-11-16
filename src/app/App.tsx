@@ -18,6 +18,7 @@ import Footer from './Footer';
 import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppSelector } from './hooks';
+import AppCheckNotice from './AppCheckNotice';
 import AppRoutes from './routes';
 import { useScrollToTop } from './useScrollToTop';
 
@@ -50,6 +51,7 @@ function App() {
         onSignUp={() => setAuthDialog('signup')}
       />
       <Main id="main" tabIndex={-1}>
+        <AppCheckNotice />
         <AppRoutes />
       </Main>
       <Footer />

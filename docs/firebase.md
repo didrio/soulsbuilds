@@ -124,9 +124,15 @@ or the live site breaks):
 
 Things to know (T23, from the SDK source and measurements):
 
-- Every Firestore request waits for an App Check token, enforced or not. If `enterprise.js` can't load (a
-  blocker, a network that blocks Google), the SDK waits forever: no Firestore request, no error, an empty page
-  (T24 in `TICKETS.md`).
+- Every Firestore and Auth request waits for an App Check token, enforced or not. If `enterprise.js` can't load (a
+  blocker, a network that blocks Google), the SDK waits forever (it sets only `script.onload`): no request, no
+  error. T24: `src/lib/firebase/appCheckStatus.ts` watches the token (`app.ts` feeds it reCAPTCHA script load
+  errors) and goes `blocked` if it hasn't arrived 2 s after such an error, or 10 s after start; the shell's
+  `AppCheckNotice` then explains it (blocker hint + Reload) at the top of every page. A cached token (returning
+  visitor) or a failed exchange (bots' 403: Firestore goes on with a placeholder token) is not "blocked". We
+  don't fake a token while unenforced (owner's call). Manual check: an incognito window (no cached token) →
+  DevTools → Network request blocking → `*recaptcha*` → reload: the notice shows in ~2.5 s. Measured on a local
+  build served at soulsbuilds.com: notice at ~2.4 s, normal loads unchanged (first Firestore request ~1.2 s).
 - `index.html` preloads `https://www.google.com/recaptcha/enterprise.js?render=explicit`, the exact URL
   `@firebase/app-check` injects. Re-check it after an SDK upgrade (a mismatch means a wasted download and a
   console warning).
