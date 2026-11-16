@@ -11,8 +11,10 @@ test('top tags, community line, comment link and More by', async ({ page }) => {
   await expect(page).toHaveURL(/[?&]tag=Mohg/);
   await expect(page.getByRole('link', { name: /Carian Moon Knight/ })).toHaveCount(0);
   await page.getByRole('link', { name: /Bloodhound Samurai/ }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Bloodhound Samurai' })).toBeVisible();
 
-  await page.getByRole('link', { name: '1 Comment' }).click();
+  // Exact: a string name is otherwise a substring match, and the landing row reads "… 1 comment".
+  await page.getByRole('link', { name: '1 Comment', exact: true }).click();
   await expect(page).toHaveURL(/#comments-title$/);
   await expect(page.getByRole('heading', { name: 'Comments · 1' })).toBeInViewport();
 
