@@ -22,7 +22,7 @@ approved production deploys on `main`. Redesign (T16, T17, T22): tokens + per-ga
 view and edit in one layout (title pane, equipment as icon tiles, write-up beside the numbers, guide collapsed).
 T14/T19/T15: "How to get this build" from `acquisition.json`. T8: build math (class, vitals, load, poise,
 warnings). T21: smooth scrolling, `npm run perf`. T18: in-app account deletion, admin `rename`/`delete-user`.
-T20: daily `stats/{game}` (CI) → top tags, community line; activity on rows. Left: App Check, stats SA (owner).
+T20: daily `stats/{game}` (CI) → top tags, community line; activity on rows. Left: App Check enforcing.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules

@@ -20,10 +20,6 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). If it goes:
   `node scripts/admin.mjs rename <uid> "<new name>" --project soulsbuilds` (dry run), then `--write`.
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
-- T20 stats job: create the `github-stats` service account (three gcloud commands in `docs/firebase.md` "Daily
-  stats job"), then Actions → Community stats → Run workflow once and check its log; the landing's top tags and
-  "N builds by M players" appear after it.
-- After the next deploy (T20): check the landing and a build page on soulsbuilds.com (rows, "More by").
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
@@ -84,9 +80,9 @@ Older entries: `docs/tickets-archive.md`.
 
 - T20 — Community feel — 2026-11-16 — HTML mockup, owner picked layout A with counts; public `stats/elden-ring`
   (builds, distinct authors, accounts, builds per tag) from `admin.mjs stats`, daily in `stats.yml` as its own
-  `github-stats` SA (setup pending, owner to-do); top tags as the Tags row's first chips (scrolling row on phones),
+  `github-stats` SA; top tags as the Tags row's first chips (scrolling row on phones),
   "N builds by M players", rows with comments + age, build page comment link, warmer empty state, "More by",
-  profile build/like counts; scroll to top on navigation.
+  profile build/like counts; scroll to top on navigation. SA set up and first run done by the owner (same day).
 - T22 — Layout: lean landing, compact build page — 2026-11-16 — HTML mockup, owner picked "title first";
   landing: no hero, small `<h1>` in the Find builds frame, fixed-height rows with tags on one line + "+N"
   (`tags.ts` `fitCount`); build page: title pane, equipment across the page (weapons as rows, other slots as
