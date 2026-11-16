@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T20
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T15, "How to get this build" on the build page · Opus · high · plan mode on.
+**Next:** T8, Build math · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -21,41 +21,14 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
-(T16 design system and shell, T17 the remaining pages: done), then the headline feature, "How to get this build" (T14
-acquisition pipeline and T19 facts: done; T15 route + UI), then T8 and T9. T18 (account
-deletion) can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
+(T16, T17) and the headline feature, "How to get this build" (T14, T19, T15), are done; next T8, then T9. T18
+(account deletion) can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T15 — "How to get this build" on the build page
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** A short, numbered route from a fresh save to the whole build, in an efficient order. Plain,
-  scannable steps: where to go, in what order, not a walkthrough.
-- **Done when:**
-  - [ ] Pure solver (`src/lib/route.ts`, or under `src/features/editor/guide/`): build equipment → for each
-        item the source that's reachable earliest; add the gates it implies (the affinity's whetblade, the
-        Spirit Calling Bell for an ash, the Divine Tower for a great rune, DLC entry…); topological sort with
-        the canonical route order as the tie-breaker; merge items at the same location; group by region.
-        "Efficient" = a sensible earliest-first order through the usual progression, not a proven shortest
-        path (say so in a comment).
-  - [ ] Table-driven tests: gates respected, earliest source chosen, shared locations merged, DLC items after
-        Mohg + Radahn, starting-class gear shown as "start as X".
-  - [ ] "How to get this build" section on the build view: numbered one-line steps (region, grace, what to do:
-        beat X, buy from Y for N runes, pick up) with item icons; collapsible by region on mobile; real
-        heading and list markup.
-  - [ ] Component test + an e2e check on a seeded build; desktop and `--mobile` screenshots.
-  - [ ] Backlog entries for what's out of scope: upgrade materials (builds don't store upgrade levels), rune
-        farming to the build's level, a suggested starting class (needs T8's class data).
-- **Context:** T14's `acquisition.json` + accessors in `src/data/acquisition.ts` (lazy-load it; docs/data.md
-  "Acquisition": `item` on a source = needed first, `region` without `location` = region-only, `implied` gates); `BuildEditorPage` (a comment marks
-  where the section goes, between Equipment and About this build); since T19 every item has a placed source, but some are region-only (Gowry, Pidia, DLC quest ends in Enir-Ilim) and quest sources carry their conditions only in `detail` and `sections/` in T17's design (`Frame` +
-  `SectionHeading` panels, `ItemTile` for icons); `add-feature` skill.
 
 ### T8 — Build math
 
@@ -114,6 +87,9 @@ deletion) can slot in anywhere; the privacy policy promises deletion by GitHub i
 
 ## Backlog
 
+- Route (T15 follow-ups): upgrade materials (Smithing/Somber stones, needs upgrade levels on builds), rune
+  farming to the build's level (where and how long), and a suggested starting class (needs T8's class data; the
+  route already notes "or start as X" for kit items).
 - Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup).
 - Other games (owner, 2026-11-15: Dark Souls 1–3, maybe Demon's Souls and Bloodborne; Sekiro and Nightreign
   need their own build models) on top of T3's `game` field: data per game, per-game routes (`/ds3/...`) read by
@@ -132,6 +108,10 @@ deletion) can slot in anywhere; the privacy policy promises deletion by GitHub i
 
 Older entries: `docs/tickets-archive.md`.
 
+- T15 — "How to get this build" — 2026-11-15 — pure route solver (`features/editor/guide/route.ts`: earliest
+  reachable source, item prerequisites, implied and any-of gates, topological order, steps by grace, legs by
+  region) + lazy `GuideSection` on the build view (numbered, collapsible regions, item icons); unit, component
+  and e2e tests. Upgrade materials, rune farming and a starting-class suggestion are in the Backlog.
 - T19 — Acquisition facts — 2026-11-15 — every pickable item placed (Ragged set → `NO_SOURCE`): ~100 enemy farm
   spots, base-game NPC/quest/painting rewards, DLC bosses and quests, Husks/Moore/Enia shop ranges, reversions;
   pipeline reads weapons that come with an Ash of War and enemy lots by ID. Owner shown a 30-item sample.
@@ -157,10 +137,3 @@ Older entries: `docs/tickets-archive.md`.
   of War/affinity/talisman rules), builds store game IDs + great rune and spirit ash slots, picker follows the
   game's rules, rules type-check within Firestore's expression budget, names→IDs folded into the v1→v2
   migration, "Great Hammer" tag, footer; 2022 data and icons deleted.
-- T11 — Performance and polish — 2026-11-15 — lazy routes and editor chunk, a11y/contrast/focus pass, meta and OG tags,
-  self-hosted EB Garamond + Cinzel, generated icons and og:image, `core.ts` + `cards.json` data split (full data lazy),
-  paged picker, light markdown view, spacing scale.
-- T12 — Deploy pipeline and relaunch — 2026-11-15 — production relaunched on soulsbuilds.com: backup, v2 rules +
-  indexes, 52 builds / 102 users migrated, smoke test passed; CI preview channels + approved production deploys via
-  Workload Identity; Analytics dropped, privacy and terms pages, default domains redirect, `admin.mjs export`,
-  Auth domains + enumeration protection, owner is admin. App Check enforcement left to the owner.

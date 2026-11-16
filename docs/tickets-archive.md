@@ -20,3 +20,10 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.
 - T6 — Missing core features — 2026-11-15 — delete/cancel/change item in place, password reset, profile rename
   and tabs, 404s, send-only email verification (notice + resend), consumables restored; e2e covers them.
+- T12 — Deploy pipeline and relaunch — 2026-11-15 — production relaunched on soulsbuilds.com: backup, v2 rules +
+  indexes, 52 builds / 102 users migrated, smoke test passed; CI preview channels + approved production deploys via
+  Workload Identity; Analytics dropped, privacy and terms pages, default domains redirect, `admin.mjs export`,
+  Auth domains + enumeration protection, owner is admin. App Check enforcement left to the owner.
+- T11 — Performance and polish — 2026-11-15 — lazy routes and editor chunk, a11y/contrast/focus pass, meta and OG tags,
+  self-hosted EB Garamond + Cinzel, generated icons and og:image, `core.ts` + `cards.json` data split (full data lazy),
+  paged picker, light markdown view, spacing scale.

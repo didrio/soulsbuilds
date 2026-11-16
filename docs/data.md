@@ -83,6 +83,14 @@ classes and graces, plus hand-written facts. Read it through `src/data/acquisiti
 `getLocation`, `getRegion`, `getGate`, `keyItemName`, `implied`): its own module, never imported by `core.ts`
 or `index.ts`, so load it lazily. Shape: `acquisitionSchema` in `src/data/schema.ts`.
 
+**How the build page uses it (T15)**: `src/features/editor/guide/route.ts` (`planRoute`, pure, data passed in)
+takes each item's source reachable earliest (grace order, pushed back by the gates it needs; starting-class gear
+only when nothing else is reachable, otherwise an "or start as X" note), follows `item` prerequisites
+(remembrance, cookbook, base armor, unrestored rune) and `implied` gates, settles any-of gates with members the
+route needs anyway, sorts topologically (earliest first, staying at the same grace on ties), then merges
+consecutive things at one grace into a step and consecutive steps in one region into a leg. `GuideSection`
+(lazy chunk, view mode only) renders it; `phrases.ts` holds the wording.
+
 - **regions**: the 54 travel-menu sub-categories (Limgrave, Stormveil Castle, Gravesite Plain…) in canonical
   route order, each with the gates it needs. **locations**: the 419 Sites of Grace (BonfireWarpParam IDs).
   **gates**: bosses (`margit`, `two-great-runes`, `dlc` = Mohg + Radahn…), medallions and tools

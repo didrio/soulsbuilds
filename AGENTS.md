@@ -14,13 +14,13 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T7, T10–T14, T16, T17, T19 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T7, T10–T17, T19 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
 approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
 page; the build page is view and edit in one layout, the picker a Dialog. T14 + T19: `acquisition.json` places
-every pickable item (enemy farm spots, quest rewards, DLC bosses). Left from T12: the owner enforces App Check.
+every pickable item; T15 turns it into "How to get this build" on the build view. Left from T12: App Check enforcing.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -112,7 +112,8 @@ src/
                            OwnerActions, BuildDetailsForm (edit title block), Equipment/Stat/SpellEditor panels,
                            DescriptionSection, CommentsSection); ItemRow (a slot as tile + name; button in edit
                            mode) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
-                           with WeaponOptions), slots.ts; store/ = Redux slices for the build being edited +
+                           with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
+                           phrases.ts, GuideSection, lazy); store/ = Redux slices for the build being edited +
                            selectors + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, PageMessage, ErrorMessage,

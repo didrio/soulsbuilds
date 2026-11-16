@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Link, useParams } from 'react-router';
 import styled, { css } from 'styled-components';
 import Button from '@/components/ui/Button';
@@ -29,6 +30,9 @@ import SpellEditor from './sections/SpellEditor';
 import StatEditor from './sections/StatEditor';
 import { selectLevel } from './store/build';
 import { useBuildEditor } from './useBuildEditor';
+
+// The route needs the ~400 KB acquisition data: its own chunk, loaded on the build view only.
+const GuideSection = lazy(() => import('./guide/GuideSection'));
 
 /** `/build/:buildId` (or `/build/new`): one editor per build, so state never leaks between builds. */
 function BuildEditorPage() {
@@ -110,7 +114,11 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
       <Layout>
         <Main>
           <EquipmentEditor editable={editable} />
-          {/* T15: "How to get this build" goes here, between the equipment and the write-up. */}
+          {!editable && build ? (
+            <Suspense fallback={null}>
+              <GuideSection equipment={build.equipment} />
+            </Suspense>
+          ) : null}
           <DescriptionSection
             description={editor.description}
             editable={editable}

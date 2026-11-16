@@ -47,10 +47,11 @@ export const getConsumable = lookup(consumables);
 export const getGreatRune = lookup(greatRunes);
 export const getSpiritAsh = lookup(spiritAshes);
 
-const armorById = lookup(armor);
+/** An armor piece by ID, whatever its slot. */
+export const getArmorById = lookup(armor);
 /** An armor piece by ID, only if it goes in `slot` (a helm ID in the chest slot is undefined). */
 export const getArmor = (id: number | null | undefined, slot: Armor['slot']): Armor | undefined => {
-  const piece = armorById(id);
+  const piece = getArmorById(id);
   return piece?.slot === slot ? piece : undefined;
 };
 
