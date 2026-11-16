@@ -100,17 +100,23 @@ item?, requires? }`; kinds: `pickup boss enemy shop remembrance quest start alte
 | Open-world lot `1 0XX ZZ …`     | tile m60_XX_ZZ (`2…` = m61, DLC; `9XXZZ…` = carriages) → nearest grace                               |
 | Dungeon lot `AABB …`            | mAA_BB → its entrance grace (lowest menu sort); no grace → WorldMapLegacyConvParam → nearest         |
 | Event lot (ID < 10⁷)            | row-name hint `[Place - Boss]` (+ `ALIASES`; a boss named like a grace gets that grace), or `EVENTS` |
-| Enemy lot                       | `ENEMIES` farm spot by enemy type                                                                    |
+| Enemy lot                       | `ENEMIES` farm spot by lot ID, else by enemy type (the lot's hint)                                   |
 | Shop / remembrance / alteration | `SHOPS` ID ranges (unclassified range = build fails); material from EquipMtrlSetParam                |
 | Recipe                          | its release flag is the cookbook's own lot/shop flag; flag 0 = known from the start                  |
 | Starting class                  | CharaInitParam 3000–3009                                                                             |
+
+A lot or shop entry of category "custom weapon" (`EquipParamCustomWeapon`: Edgar's halberd, Yura's Nagakiba,
+the DLC's new weapon types) gives both the weapon and the Ash of War on it, since the ash can be taken off.
+Reverting an altered armor piece is an `alteration` source too (the only way to some unaltered pieces).
 
 Limits: every item in a big dungeon shows at its entrance grace; open-world items at the grace nearest their
 tile, which may be across a cliff. Good enough for "go here"; not a walkthrough.
 
 **Hand-written inputs** (TypeScript, commented): `scripts/data/progression.ts` (regions in route order, gates,
 implied gates), `places.ts` (shop ranges, hint aliases, enemy farm spots), `events.ts` (event lots, extra
-sources such as keepsakes, `NO_SOURCE` with reasons, `PENDING_FACTS`). Facts may be checked on a wiki, facts
+sources such as keepsakes, `NO_SOURCE` with reasons, `PENDING_FACTS`, empty since T19). Enemy spots are a
+good farm, not every place the enemy appears; quest rewards sit where the quest pays out, with who and when in
+`detail`; a few facts are region-only where no grace fits (Gowry, Pidia, some DLC field bosses). Facts may be checked on a wiki, facts
 only (`docs/decisions.md`). **Validation**: every pickable item has a placed source unless allow-listed, an
 allow-listed item that has one fails (keeps the lists true), references resolve, gates are acyclic.
 

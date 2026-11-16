@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T20
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T19, acquisition facts (place every pending item) · Opus · high · plan mode off.
+**Next:** T15, "How to get this build" on the build page · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -22,7 +22,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16 design system and shell, T17 the remaining pages: done), then the headline feature, "How to get this build" (T14
-acquisition pipeline: done; T19 the remaining hand-written facts; T15 route + UI), then T8 and T9. T18 (account
+acquisition pipeline and T19 facts: done; T15 route + UI), then T8 and T9. T18 (account
 deletion) can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
 
 ## In progress
@@ -31,38 +31,9 @@ deletion) can slot in anywhere; the privacy policy promises deletion by GitHub i
 
 ## Up next
 
-### T19 — Acquisition facts: place every pending item
-
-- **Status:** ready (after T14; before T15)
-- **Session:** Opus · high effort · plan mode off
-- **Goal:** Empty `PENDING_FACTS` in `scripts/data/events.ts` (~670 items at T14's end) so every pickable item
-  has a placed source, as T14's "Done when" asked; T14 landed the pipeline and split the hand-written facts off
-  (owner's call, 2026-11-15).
-- **Done when:**
-  - [ ] `places.ts ENEMIES`: a farm grace + short note for the 88 enemy types whose drops have no other source
-        (Banished Knight, Godrick Soldier, Cuckoo Knight, Horned Warrior…; `node scripts/data/build.ts --out
-/tmp/x` lists them in its notes). This alone places ~300 items and the altered armor built on them.
-  - [ ] `events.ts EVENTS`: the NPC/quest hint labels (`Knight Bernahl`, `Corpse - Patches`, `Latenna`,
-        `Reward - "…" Painting`, `Gideon Ofnir - …`, `Gurranq - Nth Deathroot`…) and the 120 unnamed DLC event
-        lots (DLC bosses like Rellana, Bayle and Romina; quest rewards like Freyja, Ansbach, Thiollier), by lot
-        ID. Quest rewards say who and roughly when in `detail`.
-  - [ ] `EXTRA_SOURCES` for items no param hands out (Nagakiba from Yura, Rogier's Rapier, Dryleaf Arts, the
-        Ragged set, Knight set, Finger Robe…), the DLC merchant lineup `102250–102269` (who and where), Twin
-        Maiden Husks' Bell Bearing lineups (`101808–101899`, today ignored: classify with the bearing as `needs`
-        if any item depends on them), and region-only merchants that deserve a grace (Gowry, Iji, Thops, Pidia).
-  - [ ] The coverage pins in `src/data/data.test.ts` rise to the item totals (or the remaining entries move to
-        `NO_SOURCE` with a reason); the 20 pending key items (DLC remembrances, Forager Brood cookbooks, Haligtree
-        Medallion right half) are placed.
-  - [ ] The owner spot-checks 30 items (`node scripts/data/sample-acquisition.ts 30 <seed>`).
-- **Context:** `docs/data.md` "Acquisition". Facts may be checked on the wiki (facts only, no text copied;
-  `docs/decisions.md`). Work file by file with `node scripts/data/build.ts --out <scratch dir>` (the pipeline
-  fails on a stale pending entry, so drop entries as facts land). Places are grace names (`'Church of Elleh'`,
-  `'Elden Throne@Leyndell, Royal Capital'`), IDs, or `'region:<name>'`; grace names are in the generated
-  `locations`.
-
 ### T15 — "How to get this build" on the build page
 
-- **Status:** ready (after T19)
+- **Status:** ready
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** A short, numbered route from a fresh save to the whole build, in an efficient order. Plain,
   scannable steps: where to go, in what order, not a walkthrough.
@@ -83,7 +54,7 @@ deletion) can slot in anywhere; the privacy policy promises deletion by GitHub i
         farming to the build's level, a suggested starting class (needs T8's class data).
 - **Context:** T14's `acquisition.json` + accessors in `src/data/acquisition.ts` (lazy-load it; docs/data.md
   "Acquisition": `item` on a source = needed first, `region` without `location` = region-only, `implied` gates); `BuildEditorPage` (a comment marks
-  where the section goes, between Equipment and About this build) and `sections/` in T17's design (`Frame` +
+  where the section goes, between Equipment and About this build); since T19 every item has a placed source, but some are region-only (Gowry, Pidia, DLC quest ends in Enir-Ilim) and quest sources carry their conditions only in `detail` and `sections/` in T17's design (`Frame` +
   `SectionHeading` panels, `ItemTile` for icons); `add-feature` skill.
 
 ### T8 — Build math
@@ -161,6 +132,9 @@ deletion) can slot in anywhere; the privacy policy promises deletion by GitHub i
 
 Older entries: `docs/tickets-archive.md`.
 
+- T19 — Acquisition facts — 2026-11-15 — every pickable item placed (Ragged set → `NO_SOURCE`): ~100 enemy farm
+  spots, base-game NPC/quest/painting rewards, DLC bosses and quests, Husks/Moore/Enia shop ranges, reversions;
+  pipeline reads weapons that come with an Ash of War and enemy lots by ID. Owner shown a 30-item sample.
 - T14 — Acquisition data — 2026-11-15 — `npm run data` writes `acquisition.json`: sources per item (lots placed by ID →
   nearest grace, event hints, shops by range, recipes by cookbook flag, classes), 54 regions in route order, 419
   graces, 27 gates, key items, validation with explicit allow-lists; ~670 items' facts pending (T19).

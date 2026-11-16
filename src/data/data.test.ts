@@ -242,7 +242,7 @@ describe('acquisition data (T14)', () => {
     expect(acquisition.gates.map((g) => g.id)).toContain('dlc');
   });
 
-  it('pins coverage: items with a placed source per file (T19 raises these to the totals)', () => {
+  it('places every pickable item but the allow-listed ones (T19)', () => {
     const coverage = Object.fromEntries(
       Object.entries(files)
         .filter(([file]) => file !== 'skills.json')
@@ -251,18 +251,19 @@ describe('acquisition data (T14)', () => {
           return [key, items.filter((item) => placed(key, item.id)).length];
         }),
     );
-    // Out of 116 / 487 / 68 / 728 / 154 / 213 / 37 / 262 / 6 / 84.
+    // The totals, less scripts/data/events.ts NO_SOURCE: the Ragged set (6 armor pieces, removed in patch
+    // 1.03) and the 3 phantom-only multiplayer consumables.
     expect(coverage).toEqual({
-      ashesOfWar: 88,
-      weapons: 321,
-      arrows: 64,
-      armor: 358,
-      talismans: 130,
-      spells: 192,
-      tears: 36,
-      consumables: 233,
+      ashesOfWar: 116,
+      weapons: 487,
+      arrows: 68,
+      armor: 722,
+      talismans: 154,
+      spells: 213,
+      tears: 37,
+      consumables: 259,
       greatRunes: 6,
-      spiritAshes: 71,
+      spiritAshes: 84,
     });
   });
 
@@ -294,6 +295,24 @@ describe('acquisition data (T14)', () => {
       /\[Nokron, Eternal City\]/,
     );
     expect(summary('weapons', weapons, "Astrologer's Staff")).toContain('start  [] Astrologer');
+  });
+
+  it('places enemy drops, quest rewards, DLC bosses and weapons that come with an Ash of War (T19)', () => {
+    expect(summary('armor', armor, 'Godrick Knight Helm')).toContain(
+      'enemy Gatefront [Limgrave] Godrick Knight (the knights around Gatefront Ruins)',
+    );
+    expect(summary('weapons', weapons, 'Nagakiba')[0]).toMatch(/Yura/);
+    // Edgar's halberd comes with Spinning Strikes on it; the ash counts too.
+    expect(summary('ashesOfWar', ashesOfWar, 'Ash of War: Spinning Strikes')[0]).toBe(
+      "quest Revenger's Shack [Liurnia of the Lakes] Edgar, invading at the Revenger's Shack (Irina's quest)",
+    );
+    expect(summary('weapons', weapons, 'Greatsword of Solitude')).toEqual([
+      'boss Scorched Ruins [Gravesite Plain] Blackgaol Knight (Western Nameless Mausoleum)',
+    ]);
+    expect(summary('armor', armor, 'Knight Helm')[0]).toBe(
+      'shop Table of Lost Grace [Roundtable Hold] Twin Maiden Husks',
+    );
+    expect(summary('armor', armor, 'War Surgeon Gown')[0]).toMatch(/^alteration /);
   });
 
   it('knows shops with their prices and what a trade or a restored rune needs first', () => {

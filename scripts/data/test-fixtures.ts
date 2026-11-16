@@ -542,6 +542,7 @@ export function fixtureAcquisitionParams(): Record<AcquisitionParamName, Param> 
           lot(1043360000, '', [[3, 40000]]), // no grace on 43_36: nearest is the Waypoint
           lot(1044360020, '', [[1, 9300]], 67000), // a cookbook; its flag releases a recipe
           lot(1042370050, '', [[1, 191]]), // restored Great Rune at a tower
+          lot(1042360030, '', [[6, 5000]]), // a weapon with an Ash of War on it: both
           lot(31000010, '', [[4, 1000]]), // a cave without a grace (legacy conversion)
           lot(10000100, '[LD - Stormveil] Glintstone Pebble', [[1, 4000]]),
           lot(942370070, '[Troll Carriage] Arrow', [[2, 50000000]]),
@@ -583,6 +584,13 @@ export function fixtureAcquisitionParams(): Record<AcquisitionParamName, Param> 
           equipType: 1,
         },
         { ID: 110200, Name: '[Reversion] Iron Armor', equipId: 40100, equipType: 1 },
+        {
+          ID: 100501,
+          Name: '[Merchant Kale] Milady - Bloody Slash',
+          equipId: 5000,
+          value: 2000,
+          equipType: 5,
+        },
       ]),
     ),
     ShopLineupParam_Recipe: parseParamCsv(
@@ -609,6 +617,12 @@ export function fixtureAcquisitionParams(): Record<AcquisitionParamName, Param> 
           },
           { ID: 900100, Name: '', materialId01: 40000, materialCate01: 1 },
         ],
+      ),
+    ),
+    EquipParamCustomWeapon: parseParamCsv(
+      csv(
+        ['baseWepId', 'gemId'],
+        [{ ID: 5000, Name: 'Milady +1 - Bloody Slash', baseWepId: 23510001, gemId: 10100 }],
       ),
     ),
     CharaInitParam: parseParamCsv(
@@ -686,10 +700,6 @@ export function fixtureAcquisitionInputs(): AcquisitionInputs {
       ],
     },
     noSource: { 'spells:Heal': 'Not in this fixture' },
-    pending: [
-      'ashesOfWar:Ash of War: Bloody Slash',
-      'tears:Crimsonspill Crystal Tear',
-      'spiritAshes:Black Knife Tiche',
-    ],
+    pending: ['tears:Crimsonspill Crystal Tear', 'spiritAshes:Black Knife Tiche'],
   };
 }

@@ -96,14 +96,14 @@ export const SHOPS: ShopRange[] = [
     to: 100249,
     kind: 'shop',
     merchant: 'War Counselor Iji',
-    at: 'region:Liurnia of the Lakes',
+    at: 'Road to the Manor',
   },
   {
     from: 100250,
     to: 100274,
     kind: 'shop',
-    merchant: 'Sorcerer Thops',
-    at: 'region:Liurnia of the Lakes',
+    merchant: 'Sorcerer Thops (Church of Irith)',
+    at: 'Lake-Facing Cliffs',
   },
   { from: 100275, to: 100324, kind: 'shop', merchant: 'Preceptor Seluvis', at: "Ranni's Rise" },
   {
@@ -332,7 +332,29 @@ export const SHOPS: ShopRange[] = [
     requires: ['mohg'],
   },
   // Bell Bearing restocks: what a merchant (or a killed NPC) already sold elsewhere.
-  { from: 101808, to: 101899, kind: 'ignore' },
+  { from: 101808, to: 101858, kind: 'ignore' },
+  // The Husks' own stock (Memory Stone, Stonesword Keys, trick-mirrors, basic weapons, the Knight set).
+  { from: 101859, to: 101877, kind: 'shop', merchant: 'Twin Maiden Husks', at: ROUNDTABLE },
+  { from: 101878, to: 101893, kind: 'ignore' }, // restocks: key tools, DLC mushroom/grease/mold bearings
+  {
+    from: 101894,
+    to: 101894,
+    kind: 'shop',
+    merchant: "Twin Maiden Husks (Igon's Bell Bearing)",
+    at: ROUNDTABLE,
+    needs: "goods:Igon's Bell Bearing",
+  },
+  {
+    from: 101895,
+    to: 101895,
+    kind: 'shop',
+    merchant: "Twin Maiden Husks (Spellmachinist's Bell Bearing)",
+    at: ROUNDTABLE,
+    needs: "goods:Spellmachinist's Bell Bearing",
+  },
+  { from: 101896, to: 101896, kind: 'shop', merchant: 'Twin Maiden Husks', at: ROUNDTABLE },
+  // Enia trades the Remembrance of the Dancing Lion from the Husks' list.
+  { from: 101897, to: 101899, kind: 'remembrance', merchant: 'Finger Reader Enia', at: ROUNDTABLE },
   { from: 101900, to: 101949, kind: 'remembrance', merchant: 'Finger Reader Enia', at: ROUNDTABLE },
   {
     from: 101950,
@@ -348,14 +370,7 @@ export const SHOPS: ShopRange[] = [
     merchant: 'Dragon Communion',
     at: 'Church of Dragon Communion',
   },
-  // A DLC merchant whose place isn't written yet (T19): unplaced, so it counts for nothing.
-  {
-    from: 102250,
-    to: 102269,
-    kind: 'shop',
-    merchant: 'Merchant (Shadow of the Erdtree)',
-    at: null,
-  },
+  { from: 102250, to: 102269, kind: 'shop', merchant: 'Moore', at: 'Main Gate Cross' },
   { from: 102270, to: 102299, kind: 'shop', merchant: 'Thiollier', at: 'Pillar Path Cross' },
   {
     from: 102300,
@@ -373,7 +388,9 @@ export const SHOPS: ShopRange[] = [
   },
   { from: 102700, to: 102899, kind: 'ignore' }, // remembrances returned (DLC Enia)
   { from: 110000, to: 110199, kind: 'alteration', merchant: 'Alter at a Site of Grace', at: null },
-  { from: 110200, to: 112999, kind: 'ignore' }, // reversion, a duplicate alteration menu, Ash of War copies
+  // Reverting an altered piece gives the original back (the only way to the unaltered War Surgeon Gown…).
+  { from: 110200, to: 110399, kind: 'alteration', merchant: 'Revert at a Site of Grace', at: null },
+  { from: 110400, to: 112999, kind: 'ignore' }, // a duplicate alteration/reversion menu, Ash of War copies
   { from: 600000, to: 600099, kind: 'ignore' }, // unused lineups (no NPC sells them)
   { from: 900000, to: 900099, kind: 'ignore' },
   { from: 1600000, to: 1699999, kind: 'ignore' },
@@ -413,7 +430,157 @@ export const ALIASES: AcquisitionInputs['aliases'] = {
   'Limgrave Coast': 'Seaside Ruins',
   Mistwood: 'Mistwood Outskirts',
   'Divine Tower of Limgrave': 'Divine Tower of Limgrave',
+  Dragonbarrow: "region:Greyoll's Dragonbarrow",
+  "Fringefolk Hero's Grave": 'region:Stranded Graveyard',
 };
 
-/** Enemy type (the enemy lot's hint) → where to farm it. */
-export const ENEMIES: AcquisitionInputs['enemies'] = {};
+/**
+ * Enemy type (the enemy lot's hint) → a good spot to farm it: the grace nearest the usual farm, not every
+ * place it appears. A lot ID overrides the type where one enemy type drops different things in different
+ * places (the Alabaster Lords). Checked against the wiki and farming guides (T19).
+ */
+export const ENEMIES: AcquisitionInputs['enemies'] = {
+  // Limgrave, Stormhill, Weeping Peninsula
+  'Godrick Soldier': { at: 'Stormveil Main Gate' },
+  'Godrick Foot Soldier': { at: 'Stormveil Main Gate' },
+  'Godrick Knight': { at: 'Gatefront', note: 'the knights around Gatefront Ruins' },
+  'Castle Exile': { at: 'Rampart Tower' },
+  'Large Castle Exile': { at: 'Rampart Tower', note: 'the large axe-wielding exiles' },
+  Warhawk: { at: 'Rampart Tower' },
+  'Kaiden Sellsword': { at: 'Agheel Lake North', note: 'the camp toward Murkwater Coast' },
+  Highwayman: { at: 'Murkwater Cave' },
+  'Large Demi-Human': { at: 'Coastal Cave' },
+  'Demi-Human': { at: 'Mistwood Outskirts', note: 'the demi-humans under the bridge' },
+  'Mad Pumpkin Head': { at: 'Fort Haight West' },
+  'Wandering Noble': {
+    at: 'Waypoint Ruins Cellar',
+    note: 'the nobles by the carriage to the west',
+  },
+  'Guardian Golem': { at: 'Limgrave Tower Bridge' },
+  Imp: { at: 'Stormfoot Catacombs' },
+  'Alabaster Lord': { at: 'Yelough Anix Tunnel' },
+  '360010000': { at: 'Seaside Ruins', note: 'the Alabaster Lord on the beach' },
+  '360000010': { at: 'Schoolhouse Classroom', note: 'the Alabaster Lord by the academy lift' },
+  Misbegotten: { at: 'Castle Morne Rampart' },
+  'Scaly Misbegotten': { at: 'Morne Tunnel' },
+  Commoner: { at: 'Ailing Village Outskirts' },
+  'Catacomb Skeleton': { at: 'Tombsward Catacombs' },
+  'Skeleton (Scimitar)': { at: 'Tombsward Catacombs' },
+  Stonedigger: { at: 'Limgrave Tunnels' },
+  // Liurnia, Caria Manor, the Academy
+  'Raya Lucaria Soldier': { at: 'Academy Gate Town' },
+  'Raya Lucaria Foot Soldier': { at: 'Academy Gate Town' },
+  Albinauric: { at: 'Academy Gate Town', note: 'the Albinaurics northwest of the town' },
+  'Albinauric (Variant)': { at: 'Academy Gate Town' },
+  'Cuckoo Knight': { at: 'The Four Belfries', note: 'the knights on the road from the lake shore' },
+  'Giant Beast Skeleton': { at: 'Church of Vows', note: 'the skeletons down the hill to the east' },
+  'Skeleton (Curved Sword)': {
+    at: 'Church of Vows',
+    note: 'the skeletons down the hill to the east',
+  },
+  'Giant Skeleton': { at: 'Lake-Facing Cliffs', note: 'the graveyard behind the Church of Irith' },
+  'Undead Mariner': { at: 'Lake-Facing Cliffs', note: 'the graveyard behind the Church of Irith' },
+  Page: { at: 'Royal Moongazing Grounds', note: 'the pages on the stairs to the east' },
+  'Troll Knight': { at: 'Manor Upper Level', note: 'the troll knight on the stairs to Loretta' },
+  'Glintstone Sorcerer': { at: 'Schoolhouse Classroom' },
+  Marionette: { at: 'Church of the Cuckoo', note: 'the room beside the grace' },
+  'Marionette Soldier': { at: 'Church of the Cuckoo', note: 'the room beside the grace' },
+  'Glintstone Digger': { at: 'Raya Lucaria Crystal Tunnel' },
+  'Mausoleum Knight': { at: 'Black Knife Catacombs', note: 'the knight at the entrance' },
+  'Mausoleum Soldier': { at: 'Black Knife Catacombs' },
+  'Mausoleum Foot Soldier': { at: 'Black Knife Catacombs' },
+  // Caelid, Dragonbarrow
+  'Radahn Soldier': { at: 'Redmane Castle Plaza' },
+  'Radahn Foot Soldier': { at: 'Redmane Castle Plaza' },
+  'Redmane Knight': { at: 'Redmane Castle Plaza' },
+  'Cleanrot Knight': { at: 'Inner Aeonia' },
+  Avionette: { at: 'Sellia Under-Stair' },
+  Crystalian: { at: 'Sellia Hideaway', note: 'the putrid crystalians' },
+  'Banished Knight': { at: 'Cathedral of Dragon Communion', note: 'the knight west of the church' },
+  'Vulgar Militia': { at: 'Bestial Sanctum', note: 'southeast along the cliffs' },
+  // Underground
+  'Ancestral Follower': { at: 'Siofra River Bank' },
+  'Ancestral Follower Shaman': { at: 'Siofra River Bank' },
+  'Fallen Hawk Soldier': { at: 'Nokron, Eternal City' },
+  'Nox Swordstress': { at: 'Nokstella, Eternal City' },
+  'Fallen Tree Sentinel': { at: 'Nokstella, Eternal City', note: 'the Nox around the city' },
+  Clayman: { at: 'Ainsel River Main', note: 'south of the Uhl Palace Ruins' },
+  'Small Land Octopus': { at: 'Ainsel River Main', note: 'small land octopuses by the water' },
+  'Erdtree Burial Watchdog': {
+    at: "Giant-Conquering Hero's Grave",
+    note: 'the sword-wielding watchdog',
+  },
+  // Altus, Mt. Gelmir, Volcano Manor
+  'Dominula Celebrant': { at: 'Windmill Village' },
+  Battlemage: { at: 'Windmill Heights', note: 'the battlemage near East Windmill Pasture' },
+  Perfumer: { at: "Perfumer's Grotto" },
+  'Depraved Perfumer': { at: 'Shaded Castle Ramparts' },
+  Omenkiller: { at: "Perfumer's Grotto", note: "the Omenkiller at the Perfumer's Ruins" },
+  '482000400': { at: 'Lower Capital Church', note: 'the Omenkiller outside the church' },
+  'Cemetery Shade': { at: "Gelmir Hero's Grave", note: 'the shade in the alcove by the chariot' },
+  'Bloodhound Knight': { at: "Gelmir Hero's Grave" },
+  '429000700': { at: 'Volcano Manor', note: 'the knight at the end of the hidden passage' },
+  'Man-Serpent': { at: 'Volcano Manor' },
+  'Elder Albinauric': { at: 'Volcano Manor', note: 'the lower half of the manor' },
+  'Blackflame Monk': { at: 'Temple of Eiglay', note: 'the monk on the temple stairs' },
+  'Kindred of Rot': { at: 'Seethewater Cave' },
+  Guilty: { at: 'region:Mt. Gelmir', note: 'the thorn sorcerers at Fort Laiedd' },
+  'Demi-Human Chief': { at: 'Volcano Cave' },
+  'Demi-Human Beastman': { at: 'Volcano Cave' },
+  // Leyndell and the late game
+  'Leyndell Soldier': { at: 'Outer Wall Battleground' },
+  'Leyndell Foot Soldier': { at: 'Outer Wall Battleground' },
+  'Leyndell Knight': { at: 'Outer Wall Battleground' },
+  Guardian: {
+    at: 'Erdtree Sanctuary@Leyndell, Royal Capital',
+    note: 'the Erdtree Guardians on the root south of the grace, before the capital burns',
+  },
+  'Oracle Envoy': { at: 'East Capital Rampart@Leyndell, Royal Capital' },
+  'Grave Warden Duelist': {
+    at: 'West Capital Rampart',
+    note: 'the duelists in the southwest of the capital, before it burns',
+  },
+  Omen: { at: 'Underground Roadside' },
+  'Winged Misbegotten': { at: 'Haligtree Town' },
+  'Fire Monk': { at: "Giant-Conquering Hero's Grave", note: 'the monk by the flame trap' },
+  'Fire Prelate': { at: "Giants' Mountaintop Catacombs", note: 'the prelate outside' },
+  'Albinauric Archer': { at: 'Ordina, Liturgical Town', note: 'the wolf-riding archers' },
+  '621000707': {
+    at: 'Shadow Keep, Back Gate',
+    note: "the wolf-riding archer by the Albinauric's Shack, after Commander Gaius",
+  },
+  'Haligtree Soldier': { at: 'Haligtree Town' },
+  'Haligtree Foot Soldier': { at: 'Haligtree Town' },
+  'Haligtree Knight': { at: 'Elphael Inner Wall' },
+  'Azula Beastman': { at: 'Crumbling Beast Grave' },
+  // Realm of Shadow
+  'Messmer Soldier': { at: 'Castle Front', note: 'the camps before Castle Ensis' },
+  'Messmer Foot Soldier': { at: 'Castle Front', note: 'the camps before Castle Ensis' },
+  'Black Knight': { at: 'Castle Front', note: 'the knight in the camp below the lift' },
+  'Curseblade Labirith': { at: 'Stagefront' },
+  'Horned Warrior': { at: 'Small Private Altar', note: 'up the stairs outside' },
+  // The Horned Warrior lots 5250000xx/1xx hand out the Divine Bird and Divine Beast sets.
+  ...Object.fromEntries(
+    [11, 12, 13, 14].map((n) => [
+      `5250000${n}`,
+      { at: 'Church of the Bud', note: 'the Divine Bird Warrior' },
+    ]),
+  ),
+  ...Object.fromEntries(
+    [110, 111, 120, 121, 130, 131].map((n) => [
+      `525000${n}`,
+      { at: 'Spiral Rise', note: 'the Divine Beast Warriors down the stairs' },
+    ]),
+  ),
+  Bloodfiend: { at: 'Ancient Ruins Base', note: 'the bloodfiends in the pond to the north' },
+  '508000702': {
+    at: 'region:Gravesite Plain',
+    note: 'the club-wielding bloodfiends in Prospect Town',
+  },
+  'Fire Knight': { at: 'Storehouse, First Floor', note: 'the knight down the lift' },
+  'Shadow Militia': { at: 'West Rampart', note: 'south of the grace' },
+  'Golem Smith': { at: "Taylew's Ruined Forge", note: 'the golem that throws its fist' },
+  'Imp (Lion Head)': { at: 'Scorpion River Catacombs' },
+  Runebear: { at: 'Across the Roots', note: 'the runebear in the cave behind the waterfall' },
+  'Commoner (Pot)': { at: 'Temple Town Ruins', note: 'the cave in the ravine to the north' },
+};

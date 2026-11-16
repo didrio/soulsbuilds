@@ -68,6 +68,31 @@ describe('extractAcquisition', () => {
     expect(graceName(sources('arrows', 50000000)[0]!.location)).toBe('Church of Elleh'); // carriage
   });
 
+  it('places an enemy lot by its ID before its enemy type', () => {
+    const inputs = fixtureAcquisitionInputs();
+    inputs.enemies['431100000'] = { at: 'Church of Elleh', note: 'the one by the church' };
+    const placed = run(inputs).acquisition.items.weapons[23510000] ?? [];
+    expect(placed).toContainEqual({
+      kind: 'enemy',
+      location: 61423600,
+      region: 61000,
+      detail: 'Godrick Soldier (the one by the church)',
+    });
+  });
+
+  it('gives a weapon that comes with an Ash of War (lot or shop) as both items', () => {
+    const pickup = { kind: 'pickup', location: 61423600, region: 61000, detail: '' };
+    const shop = {
+      kind: 'shop',
+      location: 61423600,
+      region: 61000,
+      detail: 'Merchant Kalé',
+      cost: { amount: 2000, currency: 'runes' },
+    };
+    expect(sources('weapons', 23510000)).toEqual(expect.arrayContaining([pickup, shop]));
+    expect(sources('ashesOfWar', 10100)).toEqual([pickup, shop]);
+  });
+
   it("places dungeon lots at the dungeon's entrance grace, or via its overworld spot when it has none", () => {
     expect(graceName(sources('spells', 4000)[0]!.location)).toBe('Stormveil Main Gate');
     expect(graceName(sources('talismans', 1000)[0]!.location)).toBe('Waypoint Ruins Cellar');
@@ -91,9 +116,12 @@ describe('extractAcquisition', () => {
   });
 
   it('reads enemies, shops, remembrance trades, alterations, recipes and starting classes', () => {
-    expect(sources('weapons', 23510000)).toEqual([
-      { kind: 'enemy', location: 100008, region: 10000, detail: 'Godrick Soldier (by the gate)' },
-    ]);
+    expect(sources('weapons', 23510000)).toContainEqual({
+      kind: 'enemy',
+      location: 100008,
+      region: 10000,
+      detail: 'Godrick Soldier (by the gate)',
+    });
     expect(sources('consumables', 1050)).toEqual([
       {
         kind: 'shop',
@@ -174,7 +202,7 @@ describe('extractAcquisition problems', () => {
       regions: [...inputs().regions, { name: 'Atlantis', requires: [] }],
     });
     expect(result.problems).toContain(
-      'shop lineup 100500…: 1 row(s) not in places.ts SHOPS (classify the range)',
+      'shop lineup 100500…: 2 row(s) not in places.ts SHOPS (classify the range)',
     );
     expect(result.problems).toContain('event 101000: no place "Nowhere"');
     expect(result.problems).toContain('progression: no region "Atlantis" in the game');
@@ -193,7 +221,7 @@ describe('validateAcquisition', () => {
 
   it('reports items without a placed source unless allow-listed, and stale allow-list entries', () => {
     const gap = validateAcquisition(acquisition, data, { ...inputs(), pending: [] });
-    expect(gap.some((p) => p.startsWith('3 item(s) without a placed source: '))).toBe(true);
+    expect(gap.some((p) => p.startsWith('2 item(s) without a placed source: '))).toBe(true);
     const stale = validateAcquisition(acquisition, data, {
       ...inputs(),
       pending: [...inputs().pending, 'weapons:Dagger'],

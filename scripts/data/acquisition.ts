@@ -35,6 +35,7 @@ export const ACQUISITION_PARAMS = [
   'BonfireWarpSubCategoryParam',
   'WorldMapLegacyConvParam',
   'CharaInitParam',
+  'EquipParamCustomWeapon',
 ] as const;
 export type AcquisitionParamName = (typeof ACQUISITION_PARAMS)[number];
 
@@ -96,7 +97,7 @@ export interface AcquisitionInputs {
   aliases: Record<string, PlaceRef>;
   /** Event lots the hint can't place: by lot ID (`'20661'`) or by hint label (`'Knight Bernahl'`). */
   events: Record<string, SourceInput>;
-  /** Enemy type (the enemy lot's hint label) → where to farm it. */
+  /** Enemy type (the enemy lot's hint label) → where to farm it; a lot ID wins over the type. */
   enemies: Record<string, { at: PlaceRef; note?: string }>;
   /** Sources the params don't have (quest rewards, keepsakes), by `'<file>:<name>'`. */
   extraSources: Record<ItemName, SourceInput[]>;
@@ -115,20 +116,26 @@ export interface AcquisitionResult {
 // --- Helpers -------------------------------------------------------------------------------------
 
 const TILE = 256;
-/** Lot categories (ITEMLOT_ITEMCATEGORY) and shop equip types (SHOP_LINEUP_EQUIPTYPE). */
-const LOT_CATEGORY: Record<number, Category> = {
+/**
+ * Lot categories (ITEMLOT_ITEMCATEGORY) and shop equip types (SHOP_LINEUP_EQUIPTYPE). `custom` is a weapon
+ * with an Ash of War already on it (EquipParamCustomWeapon: Edgar's halberd, the DLC's new weapon types); it
+ * gives both, since the ash can be taken off.
+ */
+const LOT_CATEGORY: Record<number, LotCategory> = {
   1: 'goods',
   2: 'weapon',
   3: 'protector',
   4: 'accessory',
   5: 'gem',
+  6: 'custom',
 };
-const SHOP_CATEGORY: Record<number, Category> = {
+const SHOP_CATEGORY: Record<number, LotCategory> = {
   0: 'weapon',
   1: 'protector',
   2: 'accessory',
   3: 'goods',
   4: 'gem',
+  5: 'custom',
 };
 /** EquipMtrlSetParam materialCate. */
 const MATERIAL_CATEGORY: Record<number, Category> = {
@@ -138,6 +145,7 @@ const MATERIAL_CATEGORY: Record<number, Category> = {
   4: 'goods',
 };
 type Category = 'weapon' | 'protector' | 'accessory' | 'goods' | 'gem';
+type LotCategory = Category | 'custom';
 
 const normalize = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
 const isDlcArea = (area: number) => area === 61 || (area >= 20 && area <= 28);
@@ -437,16 +445,31 @@ export function extractAcquisition({
   };
 
   // --- Key items: gate items, cookbooks, remembrances, prerequisites --------------------------
+  /** A lot/shop entry → the param rows it gives (a custom weapon: its base weapon and its Ash of War). */
+  const expand = (category: LotCategory, id: number): { category: Category; id: number }[] => {
+    if (category !== 'custom') return [{ category, id }];
+    const row = params.EquipParamCustomWeapon.get(id);
+    if (!row) return [];
+    const gem = num(row, 'gemId');
+    return [
+      { category: 'weapon', id: num(row, 'baseWepId') },
+      ...(gem > 0 ? [{ category: 'gem' as const, id: gem }] : []),
+    ];
+  };
   const lotEntries = (row: Row) => {
     const entries: { category: Category; id: number }[] = [];
     for (let i = 1; i <= 8; i += 1) {
       const category = LOT_CATEGORY[num(row, `lotItemCategory0${i}`)];
       const id = num(row, `lotItemId0${i}`);
       if (category && id > 0 && num(row, `lotItemBasePoint0${i}`) > 0)
-        entries.push({ category, id });
+        entries.push(...expand(category, id));
     }
     return entries;
   };
+  const shopItems = (row: Row) =>
+    expand(SHOP_CATEGORY[num(row, 'equipType')] ?? 'gem', num(row, 'equipId'))
+      .map((entry) => resolveItem(entry.category, entry.id))
+      .filter((item) => item !== null);
   // Flag → the goods a lot or a once-only shop row gives (how a recipe names its cookbook).
   const goodsByFlag = new Map<number, number>();
   for (const name of ['ItemLotParam_map', 'ItemLotParam_enemy'] as const)
@@ -567,10 +590,10 @@ export function extractAcquisition({
 
   // Enemy drops.
   const unknownEnemies = new Set<string>();
-  for (const [, row] of params.ItemLotParam_enemy) {
+  for (const [id, row] of params.ItemLotParam_enemy) {
     const enemy = label(row);
     if (!enemy) continue;
-    const spot = inputs.enemies[enemy];
+    const spot = inputs.enemies[String(id)] ?? inputs.enemies[enemy];
     const placed = spot ? resolveRef(spot.at, `enemy "${enemy}"`) : undefined;
     if (!spot) unknownEnemies.add(enemy);
     for (const entry of lotEntries(row))
@@ -585,8 +608,8 @@ export function extractAcquisition({
   // Shops, remembrance trades and armor alteration.
   const unclassified = new Map<string, number>();
   for (const [id, row] of params.ShopLineupParam) {
-    const item = resolveItem(SHOP_CATEGORY[num(row, 'equipType')] ?? 'gem', num(row, 'equipId'));
-    if (!item) continue;
+    const shopped = shopItems(row);
+    if (!shopped.length) continue;
     const range = inputs.shops.find((shop) => id >= shop.from && id <= shop.to);
     if (!range) {
       const block = `${Math.floor(id / 100) * 100}`;
@@ -616,7 +639,7 @@ export function extractAcquisition({
       if (needed) source.item = needed;
     }
     if (range.requires?.length) source.requires = range.requires;
-    add(item, source);
+    for (const item of shopped) add(item, { ...source });
   }
   for (const [block, count] of unclassified)
     problems.push(
@@ -625,7 +648,7 @@ export function extractAcquisition({
 
   // Crafting: the release flag is the cookbook's own pickup/purchase flag; flag 0 = known from the start.
   for (const [, row] of params.ShopLineupParam_Recipe) {
-    const item = resolveItem(SHOP_CATEGORY[num(row, 'equipType')] ?? 'gem', num(row, 'equipId'));
+    const item = shopItems(row)[0];
     if (!item) continue;
     const flag = num(row, 'eventFlag_forRelease');
     const cookbook = flag > 0 ? goodsByFlag.get(flag) : undefined;

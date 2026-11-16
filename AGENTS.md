@@ -14,13 +14,13 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T7, T10–T14, T16, T17 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T7, T10–T14, T16, T17, T19 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
 approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
-page; the build page is view and edit in one layout, the picker a Dialog. T14: `acquisition.json` (where every item
-comes from; ~670 items still pending, T19). Left from T12: the owner enforces App Check.
+page; the build page is view and edit in one layout, the picker a Dialog. T14 + T19: `acquisition.json` places
+every pickable item (enemy farm spots, quest rewards, DLC bosses). Left from T12: the owner enforces App Check.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
