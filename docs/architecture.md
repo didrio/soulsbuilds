@@ -204,7 +204,11 @@ Measure with `npm run perf -- <url or /route>` (`scripts/perf.mjs`): a headed Ch
 load numbers (LCP, CLS, TBT, when the network settled, bytes by type), then a fast scroll down and back with
 frame times and a performance trace (main-thread rendering steps, GPU-process time, dropped frames).
 `--off grain,bg,dropshadow,shadows` switches one suspect off with injected CSS, to attribute cost before changing
-code; `--cpu 4` throttles, `--mobile`, `--warm` (returning visitor), `--list` (largest requests). Results and the
+code; `--cpu 4` throttles, `--mobile`, `--warm` (HTTP cache primed), `--list` (largest requests). It also prints an
+**App Check** table (T23): when `enterprise.js` starts, the token exchange (start, end, HTTP status, token TTL;
+-1 = no exchange) and when Firestore's first request starts. `--head '<markup>'` inserts markup into the page's
+`<head>` (CDP Fetch; the HTTP cache stays on), to measure an `index.html` change against production before
+deploying it. Results and the
 last trace (DevTools → Performance → Load profile) go to `.perf/`. It's fine against soulsbuilds.com (page loads
 only) and `npm run preview`; on the dev server the numbers are a dev build's.
 
@@ -222,9 +226,17 @@ What's expensive here, and why (2026-11 measurements, Mac + Chrome):
 - **No list virtualization or `content-visibility`** needed: 100+ landing rows scroll at ~118 fps.
 - **Layout shift**: `<main>` is at least a screen tall, so the footer starts below the fold and doesn't jump
   away when content arrives (it was ~all of the CLS).
-- **Time to content is App Check's reCAPTCHA chain**: Firestore's first request waits for the App Check token
-  (reCAPTCHA Enterprise script, iframe, worker, token exchange): ~1.1 s on a cold visit. `index.html`
-  preconnects to those origins; anything more is an App Check decision (`TICKETS.md`).
+- **Time to content is App Check's token** (T23, from the SDK source): every Firestore request waits for
+  `appCheck.getToken()`. A valid token cached in IndexedDB is used at once (a returning visitor: first Firestore
+  request at ~0.33 s, no exchange). Without one, the reCAPTCHA chain runs first: `enterprise.js` → `recaptcha__en.js`
+  → anchor iframe → ~0.3 s of reCAPTCHA work → exchange (~0.2 s), so the first request starts at ~1.2 s on a
+  cold visit. `index.html` preloads `enterprise.js` (~80 ms sooner) and preconnects to the rest; the token TTL
+  (1 day, console) decides how often a returning visitor pays the cold path. The rest is reCAPTCHA's own work.
+- **Automated Chrome fails App Check**: reCAPTCHA often scores a fresh Playwright Chrome as a bot and the
+  exchange returns 403, so no token is cached and `npm run perf -- … --warm` exchanges again (the script says so).
+  Cold timings still hold. Measure a returning visitor in a normal browser (DevTools, or the built-in browser
+  pane with `performance.getEntriesByType('resource')`). Once App Check is enforced, automated runs against
+  production may not get data at all.
 - **Caching**: hashed `/assets/*` files are immutable for a year, `/assets/icons/**` a week (names aren't
   hashed), everything else (HTML routes, favicon, manifest) `no-cache`, so a deploy shows up at once and an old
   `index.html` never asks for deleted chunks (`firebase.json` "headers"; `docs/firebase.md`).

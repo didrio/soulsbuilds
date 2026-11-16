@@ -56,3 +56,7 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   reachable source, item prerequisites, implied and any-of gates, topological order, steps by grace, legs by
   region) + lazy `GuideSection` on the build view (numbered, collapsible regions, item icons); unit, component
   and e2e tests. Upgrade materials, rune farming and a starting-class suggestion are in the Backlog.
+- T8 — Build math — 2026-11-15 — `character.json` (classes + CalcCorrectGraph curves) and talisman `modifiers`
+  from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory
+  slots) tested against Fextralife; `startingClass` saved (rules + tests), spells ≤ 12; Character panel,
+  class picker with minimums, requirement and memory-slot warnings.

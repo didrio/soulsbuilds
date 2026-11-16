@@ -13,10 +13,16 @@
         );
       }
     </script>
-    <!-- Open connections early (T21): App Check's reCAPTCHA chain (scripts on google.com/gstatic, then the
-         token exchange) runs before the first Firestore request, so every handshake saved shows up as
-         earlier content. The fetch/XHR origins need crossorigin, the script origins must not have it. -->
-    <link rel="preconnect" href="https://www.google.com" />
+    <!-- Start App Check early (T21, T23): without a cached token, Firestore's first request waits for App
+         Check's reCAPTCHA chain (enterprise.js, recaptcha__en.js, an iframe, then the token exchange).
+         The preload starts enterprise.js at HTML parse instead of after the app bundle runs (~0.1 s sooner).
+         Its URL must match what @firebase/app-check injects exactly (RECAPTCHA_ENTERPRISE_URL +
+         '?render=explicit'), or it's a wasted download: re-check after SDK upgrades. No crossorigin on
+         the script ones (the SDK's script tag has none); the fetch origins need it. -->
+    <link
+      rel="preload"
+      as="script"
+      href="https://www.google.com/recaptcha/enterprise.js?render=explicit" />
     <link rel="preconnect" href="https://www.gstatic.com" />
     <link rel="preconnect" href="https://content-firebaseappcheck.googleapis.com" crossorigin />
     <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />

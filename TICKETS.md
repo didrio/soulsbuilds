@@ -2,19 +2,21 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T24**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T25**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T23, Content sooner: the App Check wait before Firestore · Opus · high · plan mode on.
+**Next:** T24, No blank page when reCAPTCHA is blocked · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
 - Approve the first CI production run (Actions → the run → Review deployments); it proves Workload Identity end to
   end. Open a throwaway PR once to see the preview comment.
 - In a day or two: App Check → APIs, check that nearly all requests are verified, then **Enforce** for Firestore
-  and Auth (`docs/firebase.md` "App Check" step 4).
+  and Auth (`docs/firebase.md` "App Check" step 4). Automated browsers (perf runs, bots) count as unverified.
+- App Check token TTL → **1 day** (T23; App Check → Apps → the web app → reCAPTCHA Enterprise → Token time to
+  live). Then `npm run perf -- https://soulsbuilds.com/ --runs 1` should print `token ttl 86400s`.
 - Console: delete the disposable test account "claude" (Authentication → Users); unlink Google Analytics if it's
   linked (Project settings → Integrations); set the email templates' sender name to "Souls Builds".
 - Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). If it goes:
@@ -23,7 +25,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout) and T20 (community feel). Then: T23 (App Check wait).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel) and T23 (App Check wait). Then: T24.
 
 ## In progress
 
@@ -31,28 +33,31 @@ done, and so are T18 (account deletion), T22 (layout) and T20 (community feel). 
 
 ## Up next
 
-### T23 — Content sooner: the App Check wait before Firestore
+### T24 — No blank page when reCAPTCHA is blocked
 
 - **Status:** ready
 - **Session:** Opus · high effort · plan mode on
-- **Goal:** On soulsbuilds.com the app has its code by ~0.25 s but the first Firestore request starts at ~1.3 s
-  (cold) / ~0.6 s (warm), right when the App Check token arrives: reCAPTCHA Enterprise loads two scripts, an
-  iframe and a worker, then exchanges a token (T21 waterfall). Show builds sooner without weakening App Check
-  (enforcement is still an owner to-do).
+- **Goal:** If `https://www.google.com/recaptcha/enterprise.js` can't load (a blocker, a network that blocks
+  Google), every page that reads Firestore stays empty forever, with no error. Show a clear message instead
+  (and, while App Check isn't enforced, maybe still load the data), without weakening App Check.
 - **Done when:**
-  - [ ] Confirm the cause in the SDK (`@firebase/firestore`'s App Check token provider and
-        `@firebase/app-check` `getToken`: does Firestore block on the first token? Why does a warm visit
-        exchange a new token when one is cached in IndexedDB?). Grepping `node_modules/@firebase/*/dist` was
-        blocked by a permission rule in T21: read the files, or ask the owner to allow it.
-  - [ ] Owner picks from the options, each measured with `npm run perf -- https://soulsbuilds.com/build/<id>
---list` (and `--warm`): a longer App Check token TTL (console, owner); Firestore `persistentLocalCache`
-        so returning visitors see cached builds at once; starting App Check earlier (preload the exact
-        `enterprise.js` URL); reCAPTCHA v3 instead of Enterprise; or accept it.
-  - [ ] Time to the first Firestore request before vs after, cold and warm, in the Done line.
-- **Context:** `src/lib/firebase/app.ts` (`initializeAppCheck`, `isTokenAutoRefreshEnabled`), `index.html`
-  (T21 preconnects), `docs/firebase.md` "App Check", `docs/architecture.md` "Performance". Production page
-  loads are fine; any console change is the owner's. `npm run preview` uses a debug token, so it can't show
-  this wait: measure on prod or a PR preview.
+  - [ ] With `enterprise.js` blocked, a build page and the landing show an error with a hint ("couldn't verify
+        your browser: an ad or tracker blocker may be blocking Google reCAPTCHA") within a few seconds, not a
+        blank page. Normal loads are unchanged (no added wait).
+  - [ ] Owner decides whether to degrade gracefully before enforcement (let Firestore go without a token) or
+        always show the error; after enforcement only the error makes sense.
+  - [ ] A test covers the detection logic; a Playwright check (blocked route) or a documented manual check.
+- **Context:** Cause (T23, SDK source on GitHub): `@firebase/app-check` `loadReCAPTCHAEnterpriseScript` sets only
+  `script.onload` (no `onerror`, no timeout), so `reCAPTCHAState.initialized` never resolves, `getToken` never
+  returns, and Firestore's `Datastore` waits on `Promise.all([auth.getToken(), appCheck.getToken()])` before
+  every RPC, so no request is ever sent and TanStack queries stay pending (never `isError`). Reproduced on
+  prod: Playwright `page.route('**/recaptcha/enterprise.js*', r => r.abort())` on `/build/HWRU9439SODE` →
+  0 Firestore requests after 15 s, empty `<main>`. Ideas: watch the `<link rel="preload">` for
+  `enterprise.js` in `index.html` (it fires `error`), or the SDK's injected script tag, and set a flag in
+  `src/lib/firebase/app.ts`; or a timeout on reads in `src/lib/firebase/`; surface it through the existing
+  `ErrorMessage` path (`BuildEditorPage` `buildQuery.isError`, `Landing`). Dev uses the emulators with no App
+  Check, so test against a production build (`npm run preview` uses a debug token, but still loads
+  `enterprise.js`) or prod with a blocked route. docs/firebase.md "App Check" → "Things to know".
 
 ## Backlog
 
@@ -78,6 +83,10 @@ done, and so are T18 (account deletion), T22 (layout) and T20 (community feel). 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T23 — Content sooner: the App Check wait — 2026-11-16 — cause confirmed in the SDK (Firestore awaits the App
+  Check token; a cached IndexedDB token skips reCAPTCHA; T21's "warm" wait was perf's 403'd bot exchange);
+  `enterprise.js` preloaded (cold first Firestore request ~1.29 → ~1.21 s, via `--head` before deploy; warm real
+  visit ~0.33 s); perf App Check table + `--head`; owner sets a 1-day TTL. Blocked reCAPTCHA = blank page → T24.
 - T20 — Community feel — 2026-11-16 — HTML mockup, owner picked layout A with counts; public `stats/elden-ring`
   (builds, distinct authors, accounts, builds per tag) from `admin.mjs stats`, daily in `stats.yml` as its own
   `github-stats` SA; top tags as the Tags row's first chips (scrolling row on phones),
@@ -100,7 +109,3 @@ Older entries: `docs/tickets-archive.md`.
   next to the sort `orderBy`; 7 new composite indexes ending in `level`, plus `tags`+`game`+`nameLower`); data-layer
   test. Indexes are untested against production (the emulator ignores them): check the first level/search
   queries after the next deploy.
-- T8 — Build math — 2026-11-15 — `character.json` (classes + CalcCorrectGraph curves) and talisman `modifiers`
-  from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory
-  slots) tested against Fextralife; `startingClass` saved (rules + tests), spells ≤ 12; Character panel,
-  class picker with minimums, requirement and memory-slot warnings.

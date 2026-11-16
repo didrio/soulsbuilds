@@ -76,6 +76,8 @@ export function isStreamingChannel(url: string): boolean {
 export interface RequestRecord {
   url: string;
   type: string;
+  /** ms after navigation start. */
+  startMs: number;
   /** ms after navigation start; null if it never finished. */
   endMs: number | null;
   bytes: number;
@@ -88,6 +90,35 @@ export function settledAt(requests: RequestRecord[]): number {
     if (r.endMs !== null && !isStreamingChannel(r.url)) last = Math.max(last, r.endMs);
   }
   return last;
+}
+
+export interface AppCheckTimeline extends Record<string, number> {
+  /** reCAPTCHA Enterprise's script starts loading (App Check's provider injects it at init). */
+  recaptchaJsMs: number;
+  /** The reCAPTCHA token is exchanged for an App Check token (none on a visit with a valid cached token). */
+  exchangeStartMs: number;
+  exchangeEndMs: number;
+  /** Firestore's first request starts: it waits for the App Check token (T23). */
+  firestoreFirstMs: number;
+}
+
+/** When App Check's steps and the first Firestore request happened (ms after navigation start; -1 = none). */
+export function appCheckTimeline(requests: RequestRecord[]): AppCheckTimeline {
+  // CORS preflights would count twice; they're not what the page waits on.
+  const real = requests.filter((r) => r.type !== 'Preflight');
+  const first = (test: (url: string) => boolean) =>
+    real.filter((r) => test(r.url)).sort((a, b) => a.startMs - b.startMs)[0];
+  const recaptcha = first((url) => url.includes('/recaptcha/enterprise.js'));
+  const exchange = first((url) =>
+    /content-firebaseappcheck\.googleapis\.com\/.*:exchange\w*Token/.test(url),
+  );
+  const firestore = first((url) => url.startsWith('https://firestore.googleapis.com/'));
+  return {
+    recaptchaJsMs: recaptcha?.startMs ?? -1,
+    exchangeStartMs: exchange?.startMs ?? -1,
+    exchangeEndMs: exchange?.endMs ?? -1,
+    firestoreFirstMs: firestore?.startMs ?? -1,
+  };
 }
 
 /** Transfer size (bytes over the wire) by resource type, plus a `total`. */

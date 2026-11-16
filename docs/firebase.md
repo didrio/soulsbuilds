@@ -114,9 +114,24 @@ or the live site breaks):
 4. **Watch, then enforce.** Firebase console → App Check → APIs: after a day or two of traffic, the
    Cloud Firestore and Authentication metrics should show almost all requests verified. Then click **Enforce**
    on both. Unverified requests (scripts using the public API key) are refused from then on.
-5. **Local preview** (`npm run preview` serves the production build on 127.0.0.1, which the key doesn't allow):
+5. **Token TTL: 1 day** (owner's call, T23; console: App Check → Apps → the web app → reCAPTCHA Enterprise →
+   Token time to live; default 1 hour). A returning visitor with a valid cached token skips the reCAPTCHA chain
+   (~0.9 s sooner content), and each exchange is one reCAPTCHA assessment (10,000 a month free). The cost: a
+   token copied out of a browser works for up to a day. `npm run perf` prints the TTL the exchange returned.
+6. **Local preview** (`npm run preview` serves the production build on 127.0.0.1, which the key doesn't allow):
    the app switches to debug mode there and logs a debug token in the browser console. Register it under
    App Check → Apps → ⋮ → Manage debug tokens. Never commit a debug token.
+
+Things to know (T23, from the SDK source and measurements):
+
+- Every Firestore request waits for an App Check token, enforced or not. If `enterprise.js` can't load (a
+  blocker, a network that blocks Google), the SDK waits forever: no Firestore request, no error, an empty page
+  (T24 in `TICKETS.md`).
+- `index.html` preloads `https://www.google.com/recaptcha/enterprise.js?render=explicit`, the exact URL
+  `@firebase/app-check` injects. Re-check it after an SDK upgrade (a mismatch means a wasted download and a
+  console warning).
+- Automated browsers (Playwright) often get a 403 from the exchange (reCAPTCHA scores them as bots). That's
+  expected and shows up as unverified requests in the App Check metrics.
 
 ## Deploys (owner-approved only)
 

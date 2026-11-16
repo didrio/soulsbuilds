@@ -6,6 +6,8 @@
 //   npm run perf -- <url or /route> [--load-more N] [--cpu 4] [--mobile] [--runs 3] [--warm]
 //                   [--off grain,bg,dropshadow,shadows,all] [--wait 6000] [--headless] [--label name]
 //                   [--list]   (also print the largest requests)
+//                   [--head '<link rel=preload …>']   (insert markup into the page's <head>: try an
+//                   index.html change against production before deploying it; T23)
 //
 //   npm run perf -- https://soulsbuilds.com/ --load-more 3          (production, read-only page loads)
 //   npm run perf -- /build/SEEDBLEED001 --cpu 4                     (BASE_URL, default the dev server)
@@ -13,6 +15,8 @@
 // Per run: load (LCP, CLS, TBT, settled = last request that isn't a Firestore stream, bytes by type), then
 // a fast scroll to the bottom and back (CDP synthesizeScrollGesture, like Chrome's own smoothness
 // benchmarks): rAF frame times + a performance trace (rendering steps, long tasks, dropped frames).
+// Also an App Check timeline (T23): reCAPTCHA script, token exchange (none = a valid cached token was
+// used), first Firestore request, and the token TTL the exchange returned.
 // Prints the median of the runs; saves the results and the last run's trace (open it in DevTools →
 // Performance → Load profile) under .perf/.
 // Functions passed to page.evaluate/addInitScript run in the browser.
@@ -24,6 +28,7 @@ import { gzipSync } from 'node:zlib';
 import { chromium } from 'playwright-core';
 import { CHROME } from './lib/chrome.mjs';
 import {
+  appCheckTimeline,
   bytesByType,
   frameStats,
   medianRecord,
@@ -77,6 +82,7 @@ function parseArgs(argv) {
     headless: false,
     label: null,
     list: false,
+    head: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -91,6 +97,7 @@ function parseArgs(argv) {
     else if (arg === '--headless') opts.headless = true;
     else if (arg === '--label') opts.label = next();
     else if (arg === '--list') opts.list = true;
+    else if (arg === '--head') opts.head = next();
     else if (arg === '--help' || arg === '-h') opts.help = true;
     else if (!arg.startsWith('--')) opts.url = arg;
     else throw new Error(`Unknown option ${arg}`);
@@ -102,6 +109,27 @@ function parseArgs(argv) {
   return opts;
 }
 
+/** `--head`: rewrites every HTML document response to insert `markup` right after `<head>` (CDP Fetch,
+ * which unlike Playwright's page.route leaves the HTTP cache on, so --warm still means something). */
+async function injectHead(cdp, markup) {
+  cdp.on('Fetch.requestPaused', async ({ requestId, responseStatusCode, responseHeaders }) => {
+    if (responseStatusCode !== 200) return cdp.send('Fetch.continueRequest', { requestId });
+    const { body, base64Encoded } = await cdp.send('Fetch.getResponseBody', { requestId });
+    const html = base64Encoded ? Buffer.from(body, 'base64').toString('utf8') : body;
+    if (!html.includes('<head>')) console.warn('--head: no <head> tag in the document');
+    await cdp.send('Fetch.fulfillRequest', {
+      requestId,
+      responseCode: 200,
+      // The body is re-sent decoded, so drop the original encoding and length.
+      responseHeaders: responseHeaders.filter((h) => !/^content-(length|encoding)$/i.test(h.name)),
+      body: Buffer.from(html.replace('<head>', `<head>${markup}`)).toString('base64'),
+    });
+  });
+  await cdp.send('Fetch.enable', {
+    patterns: [{ resourceType: 'Document', requestStage: 'Response' }],
+  });
+}
+
 /** Records every request over CDP (cross-origin sizes included) with times relative to the navigation. */
 function trackNetwork(cdp) {
   const requests = new Map();
@@ -109,12 +137,28 @@ function trackNetwork(cdp) {
   cdp.on('Network.requestWillBeSent', ({ requestId, request, type, timestamp }) => {
     if (t0 === null && type === 'Document') t0 = timestamp;
     if (!requests.has(requestId))
-      requests.set(requestId, { url: request.url, type: type ?? 'Other', endMs: null, bytes: 0 });
+      requests.set(requestId, {
+        url: request.url,
+        type: type ?? 'Other',
+        startMs: t0 === null ? 0 : (timestamp - t0) * 1000,
+        endMs: null,
+        bytes: 0,
+      });
+  });
+  cdp.on('Network.responseReceived', ({ requestId, response }) => {
+    const r = requests.get(requestId);
+    if (r) r.status = response.status;
   });
   cdp.on('Network.loadingFinished', ({ requestId, timestamp, encodedDataLength }) => {
     const r = requests.get(requestId);
     if (r && t0 !== null)
       Object.assign(r, { endMs: (timestamp - t0) * 1000, bytes: encodedDataLength });
+    // The App Check exchange answers { token, ttl }: keep only the TTL (never print the token).
+    if (r && r.type !== 'Preflight' && /firebaseappcheck.*:exchange\w*Token/.test(r.url))
+      cdp
+        .send('Network.getResponseBody', { requestId })
+        .then(({ body }) => (r.tokenTtl = JSON.parse(body).ttl))
+        .catch(() => {});
   });
   cdp.on('Network.loadingFailed', ({ requestId }) => requests.delete(requestId));
   return () => [...requests.values()];
@@ -176,6 +220,7 @@ async function measureOnce(browser, opts) {
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
   await page.addInitScript(observeVitals);
+  if (opts.head) await injectHead(cdp, opts.head);
   if (opts.warm) {
     // Prime the HTTP cache with a first visit, so this run is a returning visitor's load.
     await page.goto(opts.url, { waitUntil: 'load' });
@@ -191,6 +236,11 @@ async function measureOnce(browser, opts) {
   const vitals = await page.evaluate(() => window.__vitals);
   const reqs = requests();
   const settled = settledAt(reqs);
+  const appCheck = appCheckTimeline(reqs);
+  const tokenTtl = reqs.find((r) => r.tokenTtl)?.tokenTtl ?? null;
+  const exchangeStatus =
+    reqs.find((r) => r.type !== 'Preflight' && /firebaseappcheck.*:exchange\w*Token/.test(r.url))
+      ?.status ?? null;
   const bytes = bytesByType(reqs);
   const load = {
     fcpMs: vitals.fcp,
@@ -251,7 +301,15 @@ async function measureOnce(browser, opts) {
   const frames = frameStats(deltas);
   const trace = summarizeTrace(events);
   await context.close();
-  return { load, scroll: { distancePx: distance, ...frames, ...trace }, events, requests: reqs };
+  return {
+    load,
+    appCheck,
+    tokenTtl,
+    exchangeStatus,
+    scroll: { distancePx: distance, ...frames, ...trace },
+    events,
+    requests: reqs,
+  };
 }
 
 const fmt = (value) =>
@@ -268,7 +326,8 @@ async function main() {
   if (opts.help) {
     console.log(
       'npm run perf -- <url or /route> [--load-more N] [--cpu 4] [--mobile] [--runs 3] [--warm]\n' +
-        '                [--off grain,bg,dropshadow,shadows,all] [--wait 6000] [--headless] [--label name] [--list]',
+        '                [--off grain,bg,dropshadow,shadows,all] [--wait 6000] [--headless] [--label name] [--list]\n' +
+        "                [--head '<markup inserted into <head>>']",
     );
     return;
   }
@@ -294,6 +353,10 @@ async function main() {
   }
 
   const load = medianRecord(runs.map((r) => r.load));
+  const appCheck = medianRecord(runs.map((r) => r.appCheck));
+  const exchanges = runs.filter((r) => r.appCheck.exchangeStartMs >= 0).length;
+  const ttls = [...new Set(runs.map((r) => r.tokenTtl).filter(Boolean))];
+  const statuses = runs.map((r) => r.exchangeStatus).filter(Boolean);
   const scroll = medianRecord(runs.map((r) => r.scroll));
   const setup = [
     opts.mobile ? 'mobile 390×844@3x' : 'desktop 1440×900@2x',
@@ -301,6 +364,7 @@ async function main() {
     opts.warm ? 'warm cache' : 'cold cache',
     opts.loadMore ? `load more ×${opts.loadMore}` : null,
     opts.off.length ? `off: ${opts.off.join(',')}` : null,
+    opts.head ? 'with --head' : null,
     opts.headless ? 'headless' : null,
     `median of ${opts.runs}`,
   ]
@@ -308,6 +372,20 @@ async function main() {
     .join(' · ');
   console.log(`\n${opts.url}\n${setup}`);
   printTable('Load', load);
+  printTable(
+    `App Check (ms; -1 = didn't happen; exchanged in ${exchanges}/${runs.length} runs` +
+      `${statuses.length ? `, HTTP ${statuses.join(' ')}` : ''}` +
+      `${ttls.length ? `; token ttl ${ttls.join(', ')}` : ''})`,
+    appCheck,
+  );
+  // reCAPTCHA often scores a fresh automated Chrome as a bot: the exchange fails (403) and no token is
+  // cached, so a --warm run exchanges again (its priming visit's exchange failed). A real returning
+  // visitor uses the cached token: measure that in a normal browser (docs/architecture.md "Performance").
+  if (statuses.some((status) => status !== 200) || (opts.warm && exchanges > 0))
+    console.log(
+      '  (403 = reCAPTCHA scored automated Chrome as a bot: timings hold, but no token gets cached, so\n' +
+        '   --warm runs exchange again; a real returning visitor skips the exchange)',
+    );
   printTable('Scroll (down and back up)', scroll);
   if (opts.list) {
     // The last run's requests, largest first: what the page waits on.
@@ -326,7 +404,14 @@ async function main() {
   const dir = join(root, '.perf');
   await mkdir(dir, { recursive: true });
   const base = join(dir, `${slug}-${stamp}`);
-  await writeFile(`${base}.json`, JSON.stringify({ url: opts.url, setup, load, scroll }, null, 2));
+  await writeFile(
+    `${base}.json`,
+    JSON.stringify(
+      { url: opts.url, setup, load, appCheck, exchanges, statuses, ttls, scroll },
+      null,
+      2,
+    ),
+  );
   await writeFile(`${base}.trace.json.gz`, gzipSync(JSON.stringify(runs.at(-1).events)));
   console.log(`\nSaved ${base}.json and .trace.json.gz`);
 }

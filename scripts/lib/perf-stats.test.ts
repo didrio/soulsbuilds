@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  appCheckTimeline,
   bytesByType,
   frameStats,
   median,
@@ -65,21 +66,35 @@ describe('totalBlockingTime', () => {
 
 describe('network', () => {
   const requests = [
-    { url: 'https://soulsbuilds.com/', type: 'Document', endMs: 120, bytes: 2000 },
+    { url: 'https://soulsbuilds.com/', type: 'Document', startMs: 0, endMs: 120, bytes: 2000 },
     {
       url: 'https://soulsbuilds.com/assets/index-abc.js',
       type: 'Script',
+      startMs: 100,
       endMs: 600,
       bytes: 90000,
     },
     {
       url: 'https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel?VER=8',
       type: 'XHR',
+      startMs: 1200,
       endMs: 9000,
       bytes: 500,
     },
-    { url: 'https://soulsbuilds.com/assets/icons/1.webp', type: 'Image', endMs: 1400, bytes: 8000 },
-    { url: 'https://soulsbuilds.com/assets/icons/2.webp', type: 'Image', endMs: null, bytes: 0 },
+    {
+      url: 'https://soulsbuilds.com/assets/icons/1.webp',
+      type: 'Image',
+      startMs: 900,
+      endMs: 1400,
+      bytes: 8000,
+    },
+    {
+      url: 'https://soulsbuilds.com/assets/icons/2.webp',
+      type: 'Image',
+      startMs: 950,
+      endMs: null,
+      bytes: 0,
+    },
   ];
 
   it('settles at the last finished request that is not a Firestore stream', () => {
@@ -94,6 +109,33 @@ describe('network', () => {
       XHR: 500,
       Image: 8000,
     });
+  });
+
+  it('times App Check and the first Firestore request, ignoring preflights', () => {
+    const exchange =
+      'https://content-firebaseappcheck.googleapis.com/v1/projects/p/apps/a:exchangeRecaptchaEnterpriseToken';
+    const timeline = appCheckTimeline([
+      ...requests,
+      {
+        url: 'https://www.google.com/recaptcha/enterprise.js?render=explicit',
+        type: 'Script',
+        startMs: 300,
+        endMs: 450,
+        bytes: 1000,
+      },
+      { url: exchange, type: 'Preflight', startMs: 1000, endMs: 1050, bytes: 0 },
+      { url: exchange, type: 'Fetch', startMs: 1060, endMs: 1150, bytes: 900 },
+    ]);
+    expect(timeline).toEqual({
+      recaptchaJsMs: 300,
+      exchangeStartMs: 1060,
+      exchangeEndMs: 1150,
+      firestoreFirstMs: 1200,
+    });
+  });
+
+  it('reports -1 for steps that did not happen (a valid cached token: no exchange)', () => {
+    expect(appCheckTimeline(requests)).toMatchObject({ exchangeStartMs: -1, recaptchaJsMs: -1 });
   });
 });
 
