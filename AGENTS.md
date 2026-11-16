@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T29, T34–T36, T39–T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T30, T34–T36, T39–T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step. App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -101,13 +101,15 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
 index.html                 Vite entry (meta, theme-color, icons) → src/main.tsx
 src/
   main.tsx                 createRoot + <AppProviders><App/>
-  app/                     App (shell: global styles + game skin, header (phone menu, T26), log in/sign up dialog (pages open
-                           it with authDialog.ts useOpenAuthDialog(kind, onSignedIn)), item-picker modal, footer; useScrollToTop; AppCheckNotice =
+  app/                     App (shell: global styles + game skin, header (phone menu, T26), auth dialog state (pages open
+                           it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; AppCheckNotice =
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
-  features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
+  features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
+                           ForgotPassword, ChooseName = the display-name step for any account without a profile;
+                           GoogleButton, FormField + useFieldErrors: errors by field, focus the first)
   features/builds/         Landing (title + community line, one-line toolbar: search, sort, level; scrolling top-tags row;
                            filters in the URL; load more), BuildsList (88px rows: main-weapon portrait, name, author,
                            age, tags, left-hand-first slot strip with faint empty cells, level, likes + comments;
@@ -138,7 +140,7 @@ src/
                            selectors + derived.ts (build math selectors) + build.ts (loadBuild /
                            selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
-                           DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
+                           PasswordInput (Show/Hide), DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
                            ErrorMessage, FocusScope, icons, Label + typography.ts (type tiers); Frame (panel,
                            `$hero`), SectionHeading, Ornament, PageHero, ItemTile, inWorld.ts (panel, hero frame,
                            selection-bar CSS)…

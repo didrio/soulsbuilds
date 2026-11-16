@@ -6,6 +6,7 @@ import Profile from './Profile';
 const firebase = vi.hoisted(() => ({
   deleteAccount: vi.fn(),
   getUserProfile: vi.fn(),
+  hasPassword: vi.fn(),
   listUserBuilds: vi.fn(),
 }));
 vi.mock('@/lib/firebase', () => ({
@@ -25,6 +26,7 @@ beforeEach(() => {
   firebase.getUserProfile.mockResolvedValue(alice);
   firebase.listUserBuilds.mockResolvedValue([]);
   firebase.deleteAccount.mockReset();
+  firebase.hasPassword.mockReturnValue(true);
 });
 
 describe('Delete account', () => {
@@ -58,12 +60,39 @@ describe('Delete account', () => {
   });
 
   it('goes home once the account is deleted', async () => {
-    firebase.deleteAccount.mockResolvedValue(undefined);
+    firebase.deleteAccount.mockResolvedValue(true);
     const { user } = asProfile('alice');
     await user.click(await screen.findByRole('button', { name: 'Delete account' }));
     await user.type(screen.getByLabelText('Your password'), 'secret-123');
     await user.click(screen.getByRole('button', { name: 'Delete my account' }));
     expect(await screen.findByText('other page')).toBeInTheDocument();
+  });
+
+  it('a Google-only account confirms with Google instead of a password (T30)', async () => {
+    firebase.hasPassword.mockReturnValue(false);
+    firebase.deleteAccount.mockResolvedValue(true);
+    const { user } = asProfile('alice');
+    await user.click(await screen.findByRole('button', { name: 'Delete account' }));
+    const dialog = screen.getByRole('dialog', { name: 'Delete your account?' });
+    expect(within(dialog).queryByLabelText('Your password')).not.toBeInTheDocument();
+    await user.click(
+      within(dialog).getByRole('button', { name: 'Confirm with Google and delete' }),
+    );
+    expect(firebase.deleteAccount).toHaveBeenCalledWith(null, expect.any(Function));
+    expect(await screen.findByText('other page')).toBeInTheDocument();
+  });
+
+  it('closing the Google window deletes nothing and keeps the dialog', async () => {
+    firebase.hasPassword.mockReturnValue(false);
+    firebase.deleteAccount.mockResolvedValue(false);
+    const { user } = asProfile('alice');
+    await user.click(await screen.findByRole('button', { name: 'Delete account' }));
+    await user.click(screen.getByRole('button', { name: 'Confirm with Google and delete' }));
+    expect(
+      await screen.findByRole('button', { name: 'Confirm with Google and delete' }),
+    ).toBeEnabled();
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.queryByText('other page')).not.toBeInTheDocument();
   });
 
   it('offers to finish on your own profile once the profile doc is gone', async () => {

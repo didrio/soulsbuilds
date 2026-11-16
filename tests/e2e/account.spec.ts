@@ -1,6 +1,7 @@
 // Account deletion (T18): sign up → create a build → like and comment on someone else's build →
 // delete the account from the profile → the build, the comment and the like are gone. `npm run e2e`.
 import { expect, test } from '@playwright/test';
+import { pickGoogleAccount, signUpWithEmail } from './helpers';
 
 const unique = Date.now().toString(36);
 const email = `delete-${unique}@example.test`;
@@ -13,12 +14,7 @@ const SEED_BUILD = '/build/SEEDBLEED001';
 test('delete your account and everything you published', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign up' }).click();
-  const form = page.getByRole('form', { name: 'Sign up' });
-  await form.getByLabel('Email').fill(email);
-  await form.getByLabel('Password').fill(password);
-  await form.getByLabel('Display name').fill(displayName);
-  await form.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await signUpWithEmail(page, email, displayName, password);
 
   // A build of their own.
   await page.getByRole('link', { name: 'New build' }).click();
@@ -72,4 +68,36 @@ test('delete your account and everything you published', async ({ page }) => {
   await login.getByLabel('Password').fill(password);
   await login.getByRole('button', { name: 'Log in' }).click();
   await expect(login.getByRole('alert')).toHaveText('Wrong email or password.');
+});
+
+test('a Google account confirms its deletion with Google (T30)', async ({ page }) => {
+  const googleEmail = `google-delete-${unique}@example.test`;
+  const name = `Google Leaving ${unique}`;
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Sign up' }).click();
+  await pickGoogleAccount(
+    page,
+    page.getByRole('button', { name: 'Continue with Google' }),
+    googleEmail,
+  );
+  const step = page.getByRole('dialog', { name: 'Choose a display name' });
+  await step.getByLabel('Display name', { exact: true }).fill(name);
+  await step.getByRole('button', { name: 'Continue' }).click();
+
+  await page.getByRole('link', { name: 'Profile' }).click();
+  await expect(page.getByRole('heading', { name })).toBeVisible();
+  const profile = new URL(page.url()).pathname;
+  await page.getByRole('button', { name: 'Delete account' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Delete your account?' });
+  await expect(dialog.getByLabel('Your password')).toHaveCount(0);
+  await pickGoogleAccount(
+    page,
+    dialog.getByRole('button', { name: 'Confirm with Google and delete' }),
+    googleEmail,
+    { existing: true },
+  );
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
+  await page.goto(profile);
+  await expect(page.getByRole('heading', { name: 'User not found' })).toBeVisible();
 });

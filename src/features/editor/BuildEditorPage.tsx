@@ -6,6 +6,7 @@ import ErrorMessage from '@/components/ui/ErrorMessage';
 import PageMessage from '@/components/ui/PageMessage';
 import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
+import { useOpenAuthDialog } from '@/app/authDialog';
 import { errorMessage } from '@/lib/firebase';
 import { firstParagraph } from '@/lib/markdown';
 import {
@@ -66,13 +67,20 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
   const { auth, build, buildQuery, editable, isNew } = editor;
   const tracking = useBuildTracking(editable ? null : build);
   const routeId = buildId ?? 'new';
+  const openAuthDialog = useOpenAuthDialog();
 
   if (isNew) {
     if (auth.loading) return <PageMessage loading />;
     if (!auth.uid) {
       return (
         <PageMessage title="Log in to create a build">
-          <p>Use Log in or Sign up at the top of the page, then come back here.</p>
+          <p>Builds are saved to your account. Once you’re in, the editor opens right here.</p>
+          <SignInActions>
+            <Button onClick={() => openAuthDialog('signup')}>Create account</Button>
+            <Button variant="secondary" onClick={() => openAuthDialog('login')}>
+              Log in
+            </Button>
+          </SignInActions>
         </PageMessage>
       );
     }
@@ -328,6 +336,13 @@ const EditButtons = styled.div`
   display: flex;
   gap: ${SPACE_SM};
   margin-left: auto;
+`;
+
+const SignInActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM};
+  justify-content: center;
 `;
 
 export default BuildEditorPage;

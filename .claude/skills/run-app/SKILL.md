@@ -38,7 +38,8 @@ npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"   # click a
 
 `--click` presses the button with that accessible name before the shot (signed out). Signed-in pages (tracking
 progress, the signed-in intro) need a session: drive `http://127.0.0.1:5180` in the browser pane and sign up
-there, or cover them in an e2e test (`tests/e2e/helpers.ts` `completeSignUp`).
+there (email + password, then "Choose a display name"; "Continue with Google" opens the Auth emulator's fake
+account picker), or cover them in an e2e test (`tests/e2e/helpers.ts` `completeSignUp`).
 
 It prints a PNG path under `.artifacts/screenshots/`: open it with your image reader (Read). It also prints
 console errors, HTTP errors and failed requests from the page: read those first, they're often the real answer.

@@ -19,7 +19,9 @@ const FIRESTORE_EMULATOR_PORT = 8085;
 
 const productionConfig = {
   apiKey: 'AIzaSyB2A_BSdKqYsLDe2jPSKbnMyu8JxhJFtow',
-  authDomain: 'soulsbuilds.firebaseapp.com',
+  // The site's own domain (T30): the Google sign-in popup says "continue to soulsbuilds.com" and runs
+  // same-origin. Hosting serves /__/auth/* there too; the OAuth client lists its handler as a redirect URI.
+  authDomain: 'soulsbuilds.com',
   projectId: 'soulsbuilds',
   storageBucket: 'soulsbuilds.appspot.com',
   messagingSenderId: '981152509260',

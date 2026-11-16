@@ -254,14 +254,42 @@ is gitignored: keep a copy somewhere safe. Moving to Blaze would allow PITR (7 d
 - [ ] Hosting deployed; smoke test on soulsbuilds.com: sign up, create, like, comment, delete; the default domains
       redirect.
 - [ ] App Check: metrics show nearly all requests verified, then **enforced** for Firestore and Auth (below).
-- [ ] Auth providers: Email/Password only (Console → Authentication → Sign-in method); email enumeration
-      protection on (Settings → User actions).
+- [ ] Auth providers: Email/Password and Google (T30; "Sign-in setup" below); email enumeration protection on
+      (Settings → User actions).
 - [ ] Authorized domains: `soulsbuilds.com`, `soulsbuilds.web.app`, `soulsbuilds.firebaseapp.com` (plus the
       preview domains the CI adds); remove `localhost` (local work uses the emulators).
 - [ ] Email templates (Authentication → Templates): sender name "Souls Builds", the verification and reset texts.
 - [ ] Analytics: none in the code; unlink Google Analytics in Project settings → Integrations if it's linked.
 - [ ] Billing: Spark can't bill, so no budget alert is needed. If the project ever moves to Blaze, add one first.
 - [ ] The owner has the admin claim (`admin.mjs grant`), and `admin.mjs reports --project soulsbuilds` works.
+
+## Sign-in setup (T30, owner, before approving T30's deploy)
+
+T30 adds "Continue with Google" and moves the production `authDomain` (`src/lib/firebase/app.ts`) to
+`soulsbuilds.com`, so the Google popup runs on the site's own domain (Hosting serves `/__/auth/*` there). Do steps
+1 and 2 **before** approving the deploy, or Google sign-in fails with `redirect_uri_mismatch` (email sign-in is
+unaffected).
+
+1. **Google provider.** Console → Authentication → Sign-in method → Add new provider → Google → Enable; public name
+   "Souls Builds", support email the owner's. Google Cloud console → APIs & Services → OAuth consent screen
+   (Branding): app name "Souls Builds", logo, home page `https://soulsbuilds.com`, privacy policy
+   `https://soulsbuilds.com/privacy`, terms `https://soulsbuilds.com/terms`, authorized domain `soulsbuilds.com`.
+2. **Redirect URI.** Google Cloud console → APIs & Services → Credentials → the "Web client (auto created by Google
+   Service)" OAuth client → Authorized redirect URIs: add `https://soulsbuilds.com/__/auth/handler` (keep the
+   firebaseapp.com one). Authentication → Settings → Authorized domains: `soulsbuilds.com` is listed.
+3. **Password policy.** Authentication → Settings → Password policy: enforce, minimum length 8, no character
+   requirements; leave "force upgrade on sign-in" off (existing accounts keep working). Matches
+   `LIMITS.password`.
+4. **Email enumeration protection.** Authentication → Settings → User actions: on (the app already answers
+   neutrally; this makes the API itself stop telling).
+5. Smoke test on soulsbuilds.com: Continue with Google → the popup says "continue to soulsbuilds.com" → choose a
+   display name; then delete that test account from its profile (re-authenticates with Google).
+
+Locally the Auth emulator fakes Google (a "Sign-in with Google.com" popup where you add an account), and it doesn't
+enforce the password policy or enumeration protection. Account linking: an email/password account and a Google
+sign-in with the same address are the same person to Firebase ("one account per email"); Google is trusted for
+gmail.com addresses, so it can take over an unverified password account there, and for other addresses it fails
+with "That email already has an account" (`auth/account-exists-with-different-credential`).
 
 ## Credentials and admin scripts
 

@@ -1,81 +1,78 @@
 import { useState, type FormEvent } from 'react';
+import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import TextInput from '@/components/ui/TextInput';
 import { TextButton } from '@/components/ui/TextButton';
-import { errorMessage, sendPasswordReset, signIn } from '@/lib/firebase';
-import styled from 'styled-components';
-import { AuthField, AuthForm, AuthNotice, AuthSwitch } from './styles';
+import { signIn } from '@/lib/firebase';
+import FormField from './FormField';
+import GoogleButton from './GoogleButton';
+import { AuthDivider, AuthForm, AuthSwitch } from './styles';
+import { authErrors, useFieldErrors, type FieldErrors } from './useFieldErrors';
 
-/** Email + password sign-in (and "Forgot password?"), shown in the auth dialog. */
-function Login({ onDone, onSwitch }: { onDone: (uid: string) => void; onSwitch: () => void }) {
-  const [email, setEmail] = useState('');
+interface LoginProps {
+  /** Shared with the other views, so "Forgot password?" and "Create an account" keep it. */
+  email: string;
+  onEmail: (email: string) => void;
+  onDone: (uid: string) => Promise<void>;
+  onForgot: () => void;
+  onSwitch: () => void;
+}
+
+/** Log in: Google, or email and password (T30), in the auth dialog. */
+function Login({ email, onEmail, onDone, onForgot, onSwitch }: LoginProps) {
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
+  const { errors, show, clear, ref, edit } = useFieldErrors(['email', 'password'] as const);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
+    const missing: FieldErrors<'email' | 'password'> = {};
+    if (!email.trim()) missing.email = 'Enter your email address.';
+    if (!password) missing.password = 'Enter your password.';
+    if (Object.keys(missing).length > 0) {
+      show(missing);
+      return;
+    }
     setBusy(true);
-    setError('');
-    setNotice('');
+    clear();
     try {
-      const uid = await signIn(email, password);
-      setPassword('');
-      onDone(uid);
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
+      await onDone(await signIn(email, password));
+    } catch (error) {
+      show(authErrors(error));
       setBusy(false);
     }
   };
 
-  const handleReset = async () => {
-    setError('');
-    setNotice('');
-    if (!email.trim()) {
-      setError('Enter your email above, then choose “Forgot password?” again.');
-      return;
-    }
-    try {
-      await sendPasswordReset(email);
-      setNotice('If there is an account for that email, a reset link is on its way.');
-    } catch (err) {
-      setError(errorMessage(err));
-    }
-  };
-
   return (
-    <AuthForm onSubmit={handleSubmit} aria-label="Log in">
-      <AuthField>
-        <label htmlFor="login-email">Email</label>
-        <TextInput
-          id="login-email"
-          autoComplete="email"
-          onChange={setEmail}
-          required
-          type="email"
-          value={email}
-        />
-      </AuthField>
-      <AuthField>
-        <label htmlFor="login-password">Password</label>
-        <TextInput
-          id="login-password"
-          autoComplete="current-password"
-          onChange={setPassword}
-          required
-          type="password"
-          value={password}
-        />
-      </AuthField>
+    <AuthForm onSubmit={handleSubmit} aria-label="Log in" noValidate>
+      <GoogleButton onDone={onDone} onError={(form) => show(form ? { form } : {})} />
+      <AuthDivider>or</AuthDivider>
+      <FormField
+        id="login-email"
+        label="Email"
+        ref={ref('email')}
+        autoComplete="username"
+        error={errors.email}
+        onChange={edit('email', onEmail)}
+        type="email"
+        value={email}
+      />
+      <FormField
+        id="login-password"
+        label="Password"
+        password
+        ref={ref('password')}
+        autoComplete="current-password"
+        error={errors.password}
+        onChange={edit('password', setPassword)}
+        value={password}
+      />
       <Forgot>
-        <TextButton onClick={() => void handleReset()}>Forgot password?</TextButton>
+        <TextButton onClick={onForgot}>Forgot password?</TextButton>
       </Forgot>
-      <ErrorMessage>{error}</ErrorMessage>
-      {notice ? <AuthNotice role="status">{notice}</AuthNotice> : null}
-      <Button type="submit" disabled={busy || !email || !password}>
+      <ErrorMessage>{errors.form}</ErrorMessage>
+      <Button type="submit" disabled={busy}>
         {busy ? 'Logging in…' : 'Log in'}
       </Button>
       <AuthSwitch>

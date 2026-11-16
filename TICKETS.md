@@ -2,15 +2,16 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T43**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T44**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T30 — Sign up and log in · Opus · high · plan mode on. Up next follows `docs/product.md`
+**Next:** T31 — Profile and account settings · Opus · high · plan mode on. Up next follows `docs/product.md`
 "Priorities": usage counts (T38, blocked on the owner), link previews (T37, blocked on the Blaze decision),
-sign-in and account (T30, T31), then rules budget (T42) before copies and variations (T32 → T33).
-T30–T33 start with owner questions (★ in each ticket).
+account settings (T31; sign-in, T30, is done), then rules budget (T42) before copies and variations (T32 → T33),
+and the branded email action page (T43).
+T31–T33 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -33,15 +34,21 @@ and spacing, and the canvas notes say why.
   `node scripts/admin.mjs counts --project soulsbuilds` (dry run), then `--write` (`docs/firebase.md`
   "Tracking counters backfill").
 
+- **Before approving T30's production deploy:** enable Google sign-in, add the redirect URI
+  `https://soulsbuilds.com/__/auth/handler`, set the password policy (8) and turn on email enumeration protection
+  (`docs/firebase.md` "Sign-in setup", steps 1–4); after the deploy, step 5's smoke test.
+
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
-T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed)
-and T40 (the build image).
+T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
+T40 (the build image) and T30 (sign up and log in).
 
 ## In progress
 
 (none)
+
+## Up next
 
 ### T38 — Cookie-free usage counts
 
@@ -74,54 +81,9 @@ and T40 (the build image).
 - **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
   replaces the backlog's "Per-build share previews".
 
-### T30 — Sign up and log in: low friction, done properly
-
-- **Status:** ready; owner decisions first
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Sign-up and log-in that feel like a professional site, with as little friction as possible and no
-  added risk (owner, 2026-11-16: the 2022 flows were thrown together and never checked properly).
-- **Done when:** (a proposal: ask the owner about the ★ items in one question at the start, then mock the dialog
-  states as new artboards on the redesign canvas and get an OK before building)
-  - ★ "Continue with Google" as the first option (one click, no password to leak, an already-verified email),
-    plus email and password. The owner enables the Google provider and the OAuth consent screen (app name, logo)
-    in the console; the Auth emulator supports it for tests.
-  - ★ The display name is chosen after the account exists, in a one-field "Choose a display name" step, never
-    taken from the Google account's real name by default. Sign-up itself is then email + password, or one
-    click. Every signed-in user without a `users/{uid}` doc lands on that step, which also repairs today's gap:
-    `signUp` creates the Auth user before the profile, so a failed `createUserProfile` leaves an account with
-    no profile.
-  - Email and password form: a show-password toggle; ★ at least 8 characters, set as the Firebase Auth password
-    policy so it's enforced server-side (today: Firebase's default of 6), with a matching hint; `autocomplete`
-    right for password managers; errors next to the field they're about; focus moves to the first error.
-  - "Forgot password?" opens its own small view in the dialog (email prefilled from the log-in form) instead of
-    "enter your email above, then choose Forgot password again"; the same neutral "if there's an account…"
-    message.
-  - Under the sign-up button: "By creating an account you agree to the Terms and Privacy policy", with links
-    (no checkbox).
-  - After signing up or logging in, the user stays where they were; "Log in to create a build" continues to
-    `/build/new`.
-  - Risk: ★ email enumeration protection on in the console (the messages already say "Wrong email or
-    password"); bots are App Check's job (enforcement is an owner to-do); verification stays send-only (decision
-    "Email verification").
-  - ★ Optional: a branded `/auth/action` page for reset and verification links (`confirmPasswordReset`,
-    `applyActionCode`) on the site's domain, instead of Firebase's default page; the action URL is set in the
-    console.
-  - Google users can delete their account: T18's deletion asks for a password, so it re-authenticates with
-    Google instead (`reauthenticateWithPopup`).
-  - Tests: form unit tests; rules tests if profile creation changes; `tests/e2e/account.spec.ts` covers sign up →
-    choose a name → log out → log in → reset request; `npm run check`, `npm run test:rules` and `npm run e2e`
-    pass; screenshots of each dialog state, desktop and `--mobile`.
-  - Docs: decisions (sign-in methods, password policy, display-name step), the privacy page if Google sign-in
-    stores anything new, console steps in `docs/firebase.md`.
-- **Context:** `features/auth/{Login,SignUp,AuthProvider,styles}`, the auth dialog in `app/App.tsx`,
-  `lib/firebase/{auth,users,account}.ts` (`errorMessage` maps the Auth error codes),
-  `features/profile/DeleteAccount.tsx`, `firestore.rules` (users) with `tests/rules/`,
-  `features/legal/Privacy.tsx`. Decisions "Emails" (not stored in Firestore) and "Email verification". The owner
-  to-dos already include the email templates' sender name.
-
 ### T31 — Profile and account settings
 
-- **Status:** ready (after T30 if T30 adds Google sign-in)
+- **Status:** ready (T30 added Google sign-in: Google-only accounts have no password to change)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** A public profile in the redesign v2 look, and the account settings people expect from a real site,
   kept apart from it. Today the profile page mixes both (rename at the top, the verify notice, Delete account at
@@ -225,6 +187,26 @@ and T40 (the build image).
   `features/editor/queries.ts` and `lib/queryKeys.ts`. A side-by-side compare view (Backlog) is the natural next
   step: each variation row could link to "Compare with the original".
 
+### T43 — Branded email action page (reset password, verify email)
+
+- **Status:** ready (owner, 2026-11-16: later than T30)
+- **Session:** Sonnet · high effort · plan mode off
+- **Goal:** The links in password-reset and verification emails open a page on soulsbuilds.com in the site's
+  look, instead of Firebase's default page on soulsbuilds.firebaseapp.com.
+- **Done when:**
+  - A route `/auth/action` reads `mode` and `oobCode`: `resetPassword` → `verifyPasswordResetCode` (shows the
+    email), a new-password form (`PasswordInput`, `LIMITS.password`) → `confirmPasswordReset`, then "Log in";
+    `verifyEmail` → `applyActionCode`, then a confirmation; expired or used links get a clear message and a way
+    to ask again (the reset view, or Resend on the profile).
+  - The owner sets the action URL in the console (Authentication → Templates → Customize action URL →
+    `https://soulsbuilds.com/auth/action`); steps in `docs/firebase.md` "Sign-in setup".
+  - Unit tests for the page's states (Auth calls mocked); e2e with the Auth emulator's out-of-band codes
+    (`/emulator/v1/projects/demo-soulsbuilds/oobCodes`); `npm run check`, `npm run e2e`; screenshots desktop and
+    `--mobile`.
+- **Context:** `lib/firebase/auth.ts` (add the calls there), `features/auth/` (FormField, useFieldErrors,
+  styles), `app/routes.tsx`, decision "Email verification" (send-only). The emulator's links point at its own
+  handler, so e2e builds the `/auth/action?mode=…&oobCode=…` URL from the oobCodes endpoint.
+
 ## Backlog
 
 - Route (T15 follow-ups): upgrade materials (Smithing/Somber stones, needs upgrade levels on builds), rune
@@ -255,6 +237,13 @@ and T40 (the build image).
 
 Older entries: `docs/tickets-archive.md`.
 
+- T30 — Sign up and log in — 2026-11-16 — owner: Google + email, display name in its own step, 8 characters,
+  action page later (T43), no canvas mock. `features/auth/AuthDialog` (views Login, SignUp, ForgotPassword,
+  ChooseName; any signed-in account without `users/{uid}` gets the name step, closing it logs out), GoogleButton
+  (popup; emulator fakes it), `PasswordInput`, FormField + `useFieldErrors` (errors by field, focus the first);
+  `signUp` no longer writes the profile; reset answers the same for unknown emails (was a leak); Google-only
+  deletion re-auths with a popup; production `authDomain` → soulsbuilds.com. Console steps: docs/firebase.md
+  "Sign-in setup" (owner, before the deploy). Dialog focus starts on "Continue with Google".
 - T40 — Choose the build's main image — 2026-11-16 — owner: picker in edit mode's title block ("Change image" →
   `BuildImageDialog`, radio rows), gear only (no arrows/consumables); `image: { kind, id } | null` (rules check the
   shape, optional on create), `buildImage` / `imageChoices` in `lib/equipment.ts` (read-time fallback to the main
@@ -275,13 +264,3 @@ Older entries: `docs/tickets-archive.md`.
   items (`route.ts` `usedFor`/`gate`, `phrases.ts` `itemReason`), region-only stops named by who/what; key items
   with icons (+80 webp); `guide/progress.ts` (done/next), "N of M stops done" + folding, `NextStop` card on Loadout.
   Mid-session: tracking becomes account-only → T41.
-- T34 — Track a build — 2026-11-16 — owner: local storage signed out (merged into the account on sign-in, not
-  anonymous auth), gear + spells counted (not arrows/consumables), no class = 10 per stat, Share = the link;
-  `users/{uid}/tracking/{buildId}` (owner-only rules), pure `lib/tracking.ts` (item keys, progress, changes,
-  merge), `features/tracking/` (debounced saves, local storage, hero progress / Build complete, Keep my progress,
-  new-items notice, stats with − +); Loadout toggles with "3/4"; account deletion + `admin.mjs delete-user`;
-  `screenshot --storage`. Kept the full data out of the shell (`LOCAL_OWNER` in `localTracking.ts`).
-- T39 — Loadout without empty rows — 2026-11-16 — read-only: a weapon row with both hands empty is hidden (one-handed
-  rows keep the other hand's placeholder), Spells hidden without spells and never shows free-slot placeholders; edit
-  mode unchanged. Not seen on screen: mobile Loadout, the Spells section; with no weapons the Armor row's top rule sits
-  right under the heading.

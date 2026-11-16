@@ -22,6 +22,12 @@ function Privacy() {
           password. It is never shown on the site.
         </li>
         <li>
+          <strong>Signing in with Google:</strong> instead of a password, Google tells Firebase
+          Authentication your Google account’s email address, name and profile picture, which it
+          keeps with your account. The site uses only the email, to sign you in; it never shows your
+          Google name or picture. You choose your display name yourself.
+        </li>
+        <li>
           <strong>What you publish:</strong> your display name, your builds, your comments and which
           builds you like. These are public: anyone can see them, and your profile lists your builds
           and the builds you liked.
@@ -67,10 +73,10 @@ function Privacy() {
       </p>
       <p>
         To delete your account, open your profile, choose <strong>Delete account</strong> at the
-        bottom and enter your password. This deletes your account, your builds (with their likes and
-        comments), your comments and likes on other builds, your reports and the builds you track,
-        straight away. Copies may stay for a while in the backups the site’s maintainer keeps
-        privately.
+        bottom and enter your password (or, if you signed up with Google, confirm with Google). This
+        deletes your account, your builds (with their likes and comments), your comments and likes
+        on other builds, your reports and the builds you track, straight away. Copies may stay for a
+        while in the backups the site’s maintainer keeps privately.
       </p>
       <p>
         If you can’t sign in any more, <a href={ISSUES_URL}>open an issue on GitHub</a> titled

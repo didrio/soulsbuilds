@@ -17,6 +17,7 @@ import {
   type DocumentReference,
 } from 'firebase/firestore';
 import { auth, firestore } from './app';
+import { hasPassword, reauthenticateWithGoogle } from './auth';
 import { deleteBuild, listUserBuilds } from './builds';
 import { trackingStatus, type TrackingStatus } from '@/lib/tracking';
 import { deleteTracking, listTracking } from './tracking';
@@ -145,14 +146,26 @@ export async function deleteAccountData(uid: string, onProgress?: AccountProgres
 }
 
 /**
- * Deletes the signed-in user's account: re-authenticates with their password first (Auth refuses
- * `deleteUser` after an old sign-in, and checking first means a wrong password deletes nothing),
- * then their data, then the Auth account, which signs them out.
+ * Deletes the signed-in user's account: re-authenticates first (Auth refuses `deleteUser` after an old
+ * sign-in, and checking first means a wrong password deletes nothing), with their password, or with
+ * Google for a Google-only account (T30), then their data, then the Auth account, which signs them
+ * out. Resolves to false, having deleted nothing, when they close the Google window.
  */
-export async function deleteAccount(password: string, onProgress?: AccountProgress): Promise<void> {
+export async function deleteAccount(
+  password: string | null,
+  onProgress?: AccountProgress,
+): Promise<boolean> {
   const user = auth.currentUser;
   if (!user?.email) throw new FirebaseError('auth/user-not-found', 'Not signed in');
-  await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, password));
+  if (hasPassword(user)) {
+    await reauthenticateWithCredential(
+      user,
+      EmailAuthProvider.credential(user.email, password ?? ''),
+    );
+  } else if (!(await reauthenticateWithGoogle(user))) {
+    return false;
+  }
   await deleteAccountData(user.uid, onProgress);
   await deleteUser(user);
+  return true;
 }

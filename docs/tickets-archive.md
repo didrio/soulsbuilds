@@ -108,3 +108,13 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   scroller so its popover isn't clipped); 88px rows by named grid areas (portrait = `mainWeaponId`, strip
   left hand first, empty cells faint, "Level" label); tablet 140px, phones auto height (60px portrait, name on two
   lines). The phone Filters button is gone (sort and level always show).
+- T34 — Track a build — 2026-11-16 — owner: local storage signed out (merged into the account on sign-in, not
+  anonymous auth), gear + spells counted (not arrows/consumables), no class = 10 per stat, Share = the link;
+  `users/{uid}/tracking/{buildId}` (owner-only rules), pure `lib/tracking.ts` (item keys, progress, changes,
+  merge), `features/tracking/` (debounced saves, local storage, hero progress / Build complete, Keep my progress,
+  new-items notice, stats with − +); Loadout toggles with "3/4"; account deletion + `admin.mjs delete-user`;
+  `screenshot --storage`. Kept the full data out of the shell (`LOCAL_OWNER` in `localTracking.ts`).
+- T39 — Loadout without empty rows — 2026-11-16 — read-only: a weapon row with both hands empty is hidden (one-handed
+  rows keep the other hand's placeholder), Spells hidden without spells and never shows free-slot placeholders; edit
+  mode unchanged. Not seen on screen: mobile Loadout, the Spells section; with no weapons the Armor row's top rule sits
+  right under the heading.

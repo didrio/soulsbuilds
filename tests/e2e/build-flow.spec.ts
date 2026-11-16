@@ -1,6 +1,7 @@
 // The main user journey on the emulators: sign up → create a build → like → comment → edit →
 // profile → delete → logout. `npm run e2e`.
 import { expect, test, type Page } from '@playwright/test';
+import { signUpWithEmail } from './helpers';
 
 const unique = Date.now().toString(36);
 const email = `e2e-${unique}@example.test`;
@@ -10,12 +11,7 @@ const buildName = `E2E Build ${unique}`;
 
 async function register(page: Page) {
   await page.getByRole('button', { name: 'Sign up' }).click();
-  const form = page.getByRole('form', { name: 'Sign up' });
-  await form.getByLabel('Email').fill(email);
-  await form.getByLabel('Password').fill(password);
-  await form.getByLabel('Display name').fill(displayName);
-  await form.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await signUpWithEmail(page, email, displayName, password);
 }
 
 test('sign up, create, like, comment, edit, delete, log out', async ({ page }) => {
@@ -167,18 +163,18 @@ test('report a build once; the login dialog closes with Escape', async ({ page }
   await page.goto('/');
   const login = page.getByRole('button', { name: 'Log in' });
   await login.click();
-  await expect(page.getByRole('form', { name: 'Log in' }).getByLabel('Email')).toBeFocused();
+  // Focus starts on the first option, "Continue with Google" (T30).
+  await expect(
+    page
+      .getByRole('form', { name: 'Log in' })
+      .getByRole('button', { name: 'Continue with Google' }),
+  ).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(login).toBeFocused();
   await expect(login).toHaveAttribute('aria-expanded', 'false');
 
   await page.getByRole('button', { name: 'Sign up' }).click();
-  const form = page.getByRole('form', { name: 'Sign up' });
-  await form.getByLabel('Email').fill(`report-${unique}@example.test`);
-  await form.getByLabel('Password').fill(password);
-  await form.getByLabel('Display name').fill(`Reporter ${unique}`);
-  await form.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await signUpWithEmail(page, `report-${unique}@example.test`, `Reporter ${unique}`, password);
 
   await page.goto('/build/SEEDBLEED001');
   await page.getByRole('button', { name: 'Report this build' }).click();
@@ -197,12 +193,7 @@ test('rename, password reset, verification notice and consumables', async ({ pag
   const resetEmail = `t6-${unique}@example.test`;
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign up' }).click();
-  const form = page.getByRole('form', { name: 'Sign up' });
-  await form.getByLabel('Email').fill(resetEmail);
-  await form.getByLabel('Password').fill(password);
-  await form.getByLabel('Display name').fill(`T6 ${unique}`);
-  await form.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await signUpWithEmail(page, resetEmail, `T6 ${unique}`, password);
 
   // Profile: unverified notice with resend, and rename.
   await page.getByRole('link', { name: 'Profile' }).click();
@@ -232,5 +223,8 @@ test('rename, password reset, verification notice and consumables', async ({ pag
   const login = page.getByRole('form', { name: 'Log in' });
   await login.getByLabel('Email').fill(resetEmail);
   await login.getByRole('button', { name: 'Forgot password?' }).click();
+  const reset = page.getByRole('form', { name: 'Reset your password' });
+  await expect(reset.getByLabel('Email')).toHaveValue(resetEmail);
+  await reset.getByRole('button', { name: 'Send reset link' }).click();
   await expect(page.getByText(/a reset link is on its way/)).toBeVisible();
 });

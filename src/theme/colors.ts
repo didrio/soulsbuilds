@@ -66,3 +66,9 @@ export const COLOR_TINT = 'var(--sb-tint)';
 /** Tracking (T34): a collected item's border, and the glow of collecting one or finishing a build. */
 export const COLOR_ACCENT_LINE = 'var(--sb-accent-line)';
 export const COLOR_CELEBRATE = 'var(--sb-celebrate)';
+
+// Third-party marks, exactly as their owners publish them (T30: Google's "G" on "Continue with Google").
+export const BRAND_GOOGLE_BLUE = '#4285f4';
+export const BRAND_GOOGLE_GREEN = '#34a853';
+export const BRAND_GOOGLE_YELLOW = '#fbbc05';
+export const BRAND_GOOGLE_RED = '#ea4335';

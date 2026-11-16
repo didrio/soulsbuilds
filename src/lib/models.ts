@@ -14,6 +14,8 @@ export const LIMITS = {
   description: 20000,
   tags: 20,
   displayName: 40,
+  /** Minimum password length (T30), also set as the Firebase Auth password policy (docs/firebase.md). */
+  password: 8,
   comment: 1000,
   reportNote: 500,
 } as const;

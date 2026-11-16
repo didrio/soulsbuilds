@@ -1,9 +1,8 @@
 import { lazy, Suspense, useState } from 'react';
 import styled from 'styled-components';
-import Dialog from '@/components/ui/Dialog';
-import Login from '@/features/auth/Login';
-import SignUp from '@/features/auth/SignUp';
+import AuthDialog, { type AuthDialogState } from '@/features/auth/AuthDialog';
 import useAuth from '@/features/auth/useAuth';
+import { useUserProfile } from '@/features/profile/queries';
 import { selectSlotType } from '@/features/editor/store/selectors';
 import {
   BELOW_MOBILE,
@@ -19,7 +18,7 @@ import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppSelector } from './hooks';
 import AppCheckNotice from './AppCheckNotice';
-import { AuthDialogContext, type AuthDialogKind, type OpenAuthDialog } from './authDialog';
+import { AuthDialogContext, type OpenAuthDialog } from './authDialog';
 import AppRoutes from './routes';
 import { useScrollToTop } from './useScrollToTop';
 
@@ -35,20 +34,16 @@ function App() {
   const slotType = useAppSelector(selectSlotType);
   const { uid } = useAuth();
   const game = useCurrentGame();
-  const [authDialog, setAuthDialog] = useState<{
-    kind: AuthDialogKind;
-    onSignedIn?: (uid: string) => void;
-  } | null>(null);
-
-  const openAuthDialog: OpenAuthDialog = (kind, onSignedIn) => setAuthDialog({ kind, onSignedIn });
-  // Switching between log in and sign up keeps what happens after.
-  const switchAuth = (kind: AuthDialogKind) =>
-    setAuthDialog((open) => (open ? { ...open, kind } : { kind }));
-  const closeAuth = () => setAuthDialog(null);
-  const signedIn = (newUid: string) => {
-    authDialog?.onSignedIn?.(newUid);
-    closeAuth();
-  };
+  const [authDialog, setAuthDialog] = useState<AuthDialogState | null>(null);
+  const openAuthDialog: OpenAuthDialog = (kind, onSignedIn) =>
+    setAuthDialog({ view: kind, onSignedIn });
+  // T30: a signed-in account without a profile (a closed tab mid-sign-up, a profile write that
+  // failed) gets the "Choose a display name" step.
+  const profile = useUserProfile(uid);
+  const needsName = Boolean(uid) && profile.isSuccess && profile.data === null;
+  const dialog: AuthDialogState | null = authDialog ?? (needsName ? { view: 'name' } : null);
+  const openDialog =
+    dialog?.view === 'signup' ? 'signup' : dialog && dialog.view !== 'name' ? 'login' : null;
   useScrollToTop();
 
   return (
@@ -58,7 +53,7 @@ function App() {
         <GameSkinStyle $game={game.id} />
         <SkipLink href="#main">Skip to content</SkipLink>
         <Header
-          openDialog={uid ? null : (authDialog?.kind ?? null)}
+          openDialog={openDialog}
           onLogIn={() => openAuthDialog('login')}
           onSignUp={() => openAuthDialog('signup')}
         />
@@ -67,17 +62,7 @@ function App() {
           <AppRoutes />
         </Main>
         <Footer />
-        {authDialog && !uid ? (
-          <Dialog
-            title={authDialog.kind === 'login' ? 'Log in' : 'Create your account'}
-            onClose={closeAuth}>
-            {authDialog.kind === 'login' ? (
-              <Login onDone={signedIn} onSwitch={() => switchAuth('signup')} />
-            ) : (
-              <SignUp onDone={signedIn} onSwitch={() => switchAuth('login')} />
-            )}
-          </Dialog>
-        ) : null}
+        {dialog ? <AuthDialog state={dialog} uid={uid} onChange={setAuthDialog} /> : null}
         {slotType === null ? null : (
           <Suspense fallback={null}>
             <ItemSelector />
