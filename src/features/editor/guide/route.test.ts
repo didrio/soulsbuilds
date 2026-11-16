@@ -118,7 +118,7 @@ const data: Acquisition = {
   regions,
   locations,
   gates: [
-    { id: 'margit', label: 'Defeat Margit', requires: [], at: 11 },
+    { id: 'margit', label: 'Defeat Margit', requires: [], at: 11, reason: 'Main-path boss' },
     { id: 'godrick', label: 'Defeat Godrick', requires: ['margit'], at: 21 },
     { id: 'radahn', label: 'Defeat Radahn', requires: [], at: 30 },
     { id: 'mohg', label: 'Defeat Mohg', requires: [], at: 31 },
@@ -129,12 +129,12 @@ const data: Acquisition = {
       anyOf: { count: 1, gates: ['godrick', 'radahn'] },
     },
     { id: 'dlc', label: 'Enter the DLC', requires: ['mohg', 'radahn'] },
-    { id: 'knife', label: 'Get the knife', requires: [], item: key(900) },
+    { id: 'knife', label: 'Get the knife', requires: [], item: key(900), reason: 'For ashes' },
     { id: 'whetblade', label: 'Get the whetblade', requires: ['knife'], item: key(901) },
     { id: 'bell', label: 'Get the bell', requires: [], item: key(902) },
     { id: 'flask', label: 'Get the flask', requires: [], item: key(903) },
   ],
-  keyItems: [900, 901, 902, 903, 910, 920, 930].map((id) => ({ id, name: `Key ${id}` })),
+  keyItems: [900, 901, 902, 903, 910, 920, 930].map((id) => ({ id, name: `Key ${id}`, icon: id })),
   implied: {
     ashesOfWar: 'knife',
     spiritAshes: 'bell',
@@ -301,6 +301,33 @@ describe('planRoute', () => {
       data,
     );
     expect(route.legs).toEqual([]);
+  });
+
+  it('says why things are on the route: gate reasons, gate items and what prerequisites unlock', () => {
+    const route = planRoute(
+      build({
+        weapons: weapons(6, 7),
+        weaponSkills: [null, 60, null, null, null, null],
+        consumables: [90],
+        greatRune: 50,
+      }),
+      data,
+    );
+    const actions = route.legs.flatMap((leg) => leg.steps.flatMap((step) => step.actions));
+    const itemOf = (id: number) =>
+      actions.flatMap((a) => a.items).find((routeItem) => routeItem.ref.id === id);
+    expect(actions.find((a) => a.detail === 'Defeat Margit')?.reason).toBe('Main-path boss');
+    expect(itemOf(900)?.gate?.reason).toBe('For ashes');
+    expect(itemOf(910)?.usedFor).toEqual([
+      { kind: 'remembrance', detail: 'Enia', items: [{ file: 'weapons', id: 6 }] },
+    ]);
+    expect(itemOf(930)?.usedFor).toEqual([
+      { kind: 'craft', detail: 'Cookbook [1]', items: [{ file: 'consumables', id: 90 }] },
+    ]);
+    expect(itemOf(920)?.usedFor?.[0]?.kind).toBe('restore');
+    // The build's own items need no reason.
+    expect(itemOf(6)?.usedFor).toBeUndefined();
+    expect(itemOf(6)?.gate).toBeUndefined();
   });
 
   it('lists recipes known from the start first and placeless sources last', () => {

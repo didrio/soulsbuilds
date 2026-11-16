@@ -60,7 +60,11 @@ Function and UX are the same for every game; only the skin (accent colors) chang
   `soulsbuilds.tracking.v1`, guarded: blocked storage just means no saved progress). `useSyncLocalTracking`
   (mounted in `App`) moves local progress into the account when a uid appears, merged with what's there
   (`mergeTracking`), and keeps a build local if its write fails. The math is pure, in `src/lib/tracking.ts`.
-  "Keep my progress" opens sign-up through `useOpenAuthDialog` (`src/app/authDialog.ts`).
+  "Keep my progress" opens sign-up through `useOpenAuthDialog` (`src/app/authDialog.ts`). The route follows
+  progress (T35): `guide/progress.ts` maps a route item to its tracking keys (`isCollected`) and decides which
+  numbered stops are done (`stopProgress`: a stop with the build's tracked items when all are collected, any
+  other stop once a later tracked one is); How to get folds done stops and marks the next, and the Loadout tab
+  shows a Next stop card (`guide/NextStop`).
 - **Game data** is static JSON in `src/data/er/` (from the game files, T7), bundled, read through typed
   accessors by ID in `src/data/index.ts`; the equipment rules are pure functions in `src/data/rules.ts`, shared
   with the seed and migration scripts (see `docs/data.md`). Builds store **game IDs**; an ID the data no longer
@@ -198,7 +202,9 @@ The in-world feel comes from layout, the item art and the build hero, not from d
 - **Accent budget** (T26): the accent appears only on the primary button, links and hover, the active tab/sort
   state, the level figure, stat bar fills, the liked state and the focus ring; while tracking (T34), collected
   items (`COLOR_ACCENT_LINE` border, check badge), reached stats, the progress figure and pips, and the
-  new-items notice's border (`COLOR_CELEBRATE` is the glow of collecting an item or finishing a build). Panel
+  new-items notice's border (`COLOR_CELEBRATE` is the glow of collecting an item or finishing a build), and the
+  route's next stop (T35: accent marker, `COLOR_ACCENT_LINE` border on a `COLOR_TINT` box, the Next stop card's
+  border and label). Panel
   borders are `COLOR_LINE`,
   headings are the text color, tags and chips are neutral (inset fill, `COLOR_LINE_STRONG` border), counts and
   icons are muted. Check a new use of `COLOR_ACCENT*` against this list.
@@ -240,8 +246,9 @@ attributes, HP/FP/stamina, the gear as icon buttons that name themselves on hove
 short windows). Tablets and phones: one column, the stats card then the loadout on the Loadout tab only.
 **Description**: the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
 `user-content-<slug>` on the highest heading level used twice). **How to get** (`GuideSection`): the route shown
-at once as a numbered path of areas (`GuideRoute`: stops with place, Boss mark, what to do, the build's items as
-icon tiles and others as dashed ones). **Comments**: the thread at a readable 72ch. `sections/Loadout` (T27) is a fixed layout: every slot always shows, so it takes the same space on
+at once as numbered stops (T35, `GuideRoute`: area label, place, what to do with a boss's reason, every item's
+icon, the build's lit and others dimmed, and why a key item is needed; tracking adds "N of M stops done", folds
+the finished stops and boxes the next one). **Comments**: the thread at a readable 72ch. `sections/Loadout` (T27) is a fixed layout: every slot always shows, so it takes the same space on
 every build: left hand | right hand (3 weapons each, 64px tiles; stacked on phones, left hand first), then armor,
 talismans, and the flask's tears with the great rune and spirit ash in three columns (44px), arrows and bolts and
 consumables only when the build has some (always while editing), then spells as one cell per memory slot (a
@@ -261,7 +268,8 @@ the tile button's accessible name.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited; the guide's route and its ~400 KB
 acquisition data (`guide/GuideRoute`) only when the How to get tab opens (fetched early on hover/focus of the
-Loadout tab's "See the route" card).
+Loadout tab's "See the route" card), or on the Loadout tab while tracking, for the Next stop card
+(`guide/NextStop`, a 1 KB chunk that pulls in the route chunk: ~52 KB gzipped).
 
 ## Performance (T21)
 

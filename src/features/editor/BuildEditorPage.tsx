@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
@@ -31,7 +32,7 @@ import LoadoutPanel from './sections/LoadoutPanel';
 import MoreByAuthor from './sections/MoreByAuthor';
 import { STATS_COLUMN_WIDTH } from './sections/StatsCard';
 import TabLinkCard from './sections/TabLinkCard';
-import GuideSection, { hasItems, loadRoute } from './guide/GuideSection';
+import GuideSection, { hasItems, loadRoute, NextStop } from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
 import { TrackButton, TrackingHero } from '@/features/tracking/TrackingHero';
 import { KeepProgressCard, NewItemsNotice } from '@/features/tracking/TrackingCards';
@@ -56,7 +57,8 @@ function BuildEditorPage() {
  * one panel with the gear, elsewhere a condensed summary. Tablets and phones: one column, the stats
  * on the Loadout tab only. Editing (and new builds): Loadout and Description only, and a sticky
  * Save/Cancel bar. Tracking (T34, view mode): "Track this build" in the hero, the progress there on
- * every tab, and the Loadout tab as a checklist.
+ * every tab, the Loadout tab as a checklist under the route's next stop (T35), and progress along
+ * the route on How to get.
  */
 function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
   const editor = useBuildEditor(buildId);
@@ -150,6 +152,15 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
         />
         {tab === 'loadout' ? (
           <Content>
+            {!editable && build && tracking.state && hasItems(build.equipment) ? (
+              <Suspense fallback={null}>
+                <NextStop
+                  buildId={build.id}
+                  equipment={build.equipment}
+                  collected={tracking.state.collected}
+                />
+              </Suspense>
+            ) : null}
             <LoadoutPanel
               editable={editable}
               level={level}
@@ -207,7 +218,9 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
                   onChange={editor.setDescription}
                 />
               ) : null}
-              {tab === 'route' && build ? <GuideSection equipment={build.equipment} /> : null}
+              {tab === 'route' && build ? (
+                <GuideSection equipment={build.equipment} collected={tracking.state?.collected} />
+              ) : null}
               {tab === 'comments' && build ? (
                 <CommentsSection buildId={build.id} ownerId={build.ownerId} />
               ) : null}

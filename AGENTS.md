@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T29, T34, T39 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T29, T34, T35, T39 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, signed out in local storage, private
-`users/{uid}/tracking`. App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+`users/{uid}/tracking`; the route follows it (T35: stops done, Next stop card). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -129,7 +129,9 @@ src/
                            DescriptionSection, MarkdownView + rehypeJumpTo ("Jump to"), CommentsSection, MoreByAuthor); ItemRow (any slot as tile + name; button in
                            edit mode; placeholder when empty; warnings for unmet requirements) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
                            with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
-                           phrases.ts, GuideSection (the How to get tab) → GuideRoute (lazy: numbered areas)); store/ = Redux slices for the build being edited +
+                           phrases.ts (+ reasons, stop titles), progress.ts (T35: numbered stops, done/next from
+                           tracking), GuideSection (the How to get tab) → GuideRoute (lazy: numbered stops),
+                           NextStop (lazy: the Loadout tab's card while tracking)); store/ = Redux slices for the build being edited +
                            selectors + derived.ts (build math selectors) + build.ts (loadBuild /
                            selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,

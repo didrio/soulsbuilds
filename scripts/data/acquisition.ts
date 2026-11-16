@@ -71,6 +71,8 @@ export interface GateInput {
   /** A key item's goods name, e.g. 'Spirit Calling Bell'. */
   item?: string;
   anyOf?: { count: number; gates: string[] };
+  /** Why it's on the route (T35), shown with the boss or the gate's item; every gate but any-of ones. */
+  reason?: string;
 }
 
 export interface ShopRange {
@@ -215,6 +217,11 @@ export function extractAcquisition({
     goodsIdsByName.set(base, [...(goodsIdsByName.get(base) ?? []), id]);
   }
   const keyItems = new Map<number, string>();
+  /** A key item's icon (EquipParamGoods iconId, T35); 0 when the row has none. */
+  const goodsIcon = (id: number) => {
+    const row = params.EquipParamGoods.get(id);
+    return row ? num(row, 'iconId') : 0;
+  };
   const greatRuneNames = new Set(data.greatRunes.map((rune) => rune.name));
   const addKeyItem = (id: number) => {
     const name = goodsText.get(id)?.text;
@@ -729,6 +736,7 @@ export function extractAcquisition({
     const item = gateItems.get(input.id);
     if (item !== undefined) gate.item = item;
     if (input.anyOf) gate.anyOf = input.anyOf;
+    if (input.reason) gate.reason = input.reason;
     return gate;
   });
   for (const [ref, requires] of inputs.locationRequires) {
@@ -774,7 +782,9 @@ export function extractAcquisition({
       regions,
       locations,
       gates,
-      keyItems: [...keyItems].map(([id, name]) => ({ id, name })).sort((a, b) => a.id - b.id),
+      keyItems: [...keyItems]
+        .map(([id, name]) => ({ id, name, icon: goodsIcon(id) }))
+        .sort((a, b) => a.id - b.id),
       implied: inputs.implied,
       items,
     },
@@ -839,6 +849,7 @@ export function validateAcquisition(
     checkGates([...gate.requires, ...(gate.anyOf?.gates ?? [])], `gate ${gate.id}`);
     if (gate.item && !acquisition.items[gate.item.file][gate.item.id])
       problems.push(`gate ${gate.id}: item ${gate.item.file} ${gate.item.id} has no source`);
+    if (!gate.anyOf && !gate.reason) problems.push(`gate ${gate.id}: no reason`);
     if (gate.anyOf && gate.anyOf.count > gate.anyOf.gates.length)
       problems.push(
         `gate ${gate.id}: needs ${gate.anyOf.count} of ${gate.anyOf.gates.length} gates`,

@@ -1,5 +1,6 @@
-// The route's two tile kinds besides real item icons (T28): a lit tile with no icon (the legend's "in
-// this build") and a dashed one for items the build doesn't use (key items, prayerbooks…).
+// The route's legend tiles (T28, T35): a lit one (the build's items, or collected ones while tracking)
+// and a dashed one like a dimmed item (`ItemTile track="missing"`); the dashed one also stands in for
+// an item without an icon.
 import styled from 'styled-components';
 import {
   COLOR_LINE_STRONG,

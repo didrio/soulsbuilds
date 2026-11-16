@@ -2,15 +2,15 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T41**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T42**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T35 — The route during a run · Opus · high · plan mode on. Up next is in the
-order of `docs/product.md` "Priorities": usage counts (T38,
-blocked on the owner), tracking (T35 → T36, after T34), link previews (T37, blocked on the Blaze decision), sign-in and
-account (T30, T31), copies and variations (T32 → T33). T30–T38 start with owner questions (★ in each ticket).
+**Next:** T41 — Tracking needs an account · Opus · high · plan mode on. Up next is in the
+order of `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), tracking (T41 → T36), link
+previews (T37, blocked on the Blaze decision), sign-in and account (T30, T31), copies and variations (T32 → T33).
+T30–T41 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -33,7 +33,7 @@ and spacing, and the canvas notes say why.
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
-T34 (tracking).
+T34 (tracking) and T35 (the route during a run).
 
 ## In progress
 
@@ -57,38 +57,31 @@ T34 (tracking).
 - **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
   (performance notes).
 
-### T35 — The route during a run: progress, next stop, reasons
+### T41 — Tracking needs an account: an intro modal instead of local progress
 
-- **Status:** ready (T34 done: tracking exists)
+- **Status:** ready (after T35)
 - **Session:** Opus · high effort · plan mode on
-- **Goal:** The route becomes the guide you keep open during a run, and stops being confusing: it knows what
-  you've collected, says what's next, and explains every stop. The owner found today's route hard to follow.
+- **Goal:** Tracking lives on the account only (owner, 2026-11-16). "Track this build" still shows signed out,
+  but pressing it opens a modal that explains tracking (check off gear as you find it, level your stats, the
+  route's next stop, progress on every device) and invites the visitor to sign up or log in. A signed-in user
+  sees the same modal, with "Start tracking", the first time: while they track no build yet (one small query;
+  nothing new stored, no rules change; owner's call).
 - **Done when:**
-  - With tracking on, How to get shows "17 of 27 stops done" with a bar, folds finished stops behind "Show the 17
-    finished stops", and highlights the next stop. A stop with only key items or a boss counts as done once a
-    later stop is done. Without tracking it's the plain guide.
-  - A "Next stop" card at the top of the Loadout tab in tracking mode (place, area, what to do, the items, "See
-    the whole route").
-  - Every key item and boss says why it's on the route: the Whetstone Knife "Lets you put Ashes of War on
-    weapons", the Haligtree Secret Medallion halves "Half of the key to the Haligtree", the prayerbooks "Give it to
-    Brother Corhyn…", bosses "Main-path boss". The reasons live with the hand-written progression data in
-    `scripts/data/` (re-run `npm run data`), not in components.
-  - Where the data allows, a better phrase than "Somewhere in <area>".
-  - Tests: done/next logic and reasons in `route.ts` / `phrases.ts` tests, a data test that every key item has a
-    reason, `guide.spec.ts` with tracking; screenshots desktop and `--mobile`.
-- **Context:** artboards `TrackMobile.dc.html` and `TrackDesktop.dc.html` (How to get tab), T28's route tab,
-  `features/editor/guide/{route,phrases,GuideRoute}`, `scripts/data/{acquisition,progression,places,events}.ts`,
-  `src/data/acquisition.ts`, `docs/data.md`. T34's tracking: `useBuildTracking(build)` (already called in
-  `BuildEditorPage`; `state.collected` holds item keys) and the keys in `src/lib/tracking.ts`
-  (`weapon1:<id>`, `helm:<id>`, `talisman:<id>`, `spell:<id>`…; a route item is collected when any key with its
-  game ID is), docs/architecture.md "Tracking". The Next stop card goes above `LoadoutPanel`, beside T34's
-  `KeepProgressCard`/`NewItemsNotice`. See tracking states without clicking: `npm run screenshot --
-/build/SEEDBLEED001 --storage <file.json>` (run-app skill).
+  - The modal (`Dialog`, one component for both cases); sign up / log in continues into tracking after auth
+    (`useOpenAuthDialog`).
+  - Signed-out local-storage tracking is gone: `localTracking.ts`, `useSyncLocalTracking`, `KeepProgressCard`,
+    `mergeTracking` if unused, and the tracking use of `screenshot --storage`. ★ Whether existing local progress
+    is merged once on sign-in before the code goes (T34 shipped 2026-11-16, so little exists).
+  - The privacy page matches; unit tests and `tracking.spec.ts` (and T35's tracked `guide.spec.ts`) updated;
+    `npm run check` and `npm run e2e` pass; screenshots of the modal both ways, desktop and `--mobile`.
+- **Context:** `features/tracking/` (`useBuildTracking`, `TrackingHero` `TrackButton`, `TrackingCards`,
+  `localTracking`, `useSyncLocalTracking`), `lib/firebase/tracking.ts` (`listTrackingRefs`), `app/authDialog.ts`,
+  `features/legal/Privacy.tsx`, docs/architecture.md "Tracking", the run-app skill (`--storage`).
 
 ### T36 — Playing and Completed: the profile, and counts on the build
 
-- **Status:** ready (T34 done; T31 reworks the profile too, so do them in either order and keep the other in
-  mind)
+- **Status:** ready after T41 (which removes signed-out tracking, so `useSyncLocalTracking`'s doc creates go
+  away); T31 reworks the profile too, so do them in either order and keep the other in mind
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Your tracked builds in one place, finished builds as a small trophy shelf, and the author sees how many
   people play and finish their build.
@@ -306,6 +299,12 @@ T34 (tracking).
 
 Older entries: `docs/tickets-archive.md`.
 
+- T35 — The route during a run — 2026-11-16 — owner: flat numbered stops (mockup), reasons hand-written on gates
+  (`progression.ts` `reason`, pipeline fails without) and worded from the route's links for prerequisite key
+  items (`route.ts` `usedFor`/`gate`, `phrases.ts` `itemReason`), region-only stops named by who/what; key items
+  with icons (+80 webp); `guide/progress.ts` (done/next), "N of M stops done" + folding, `NextStop` card on Loadout.
+  Mid-session: tracking becomes account-only → T41.
+
 - T34 — Track a build — 2026-11-16 — owner: local storage signed out (merged into the account on sign-in, not
   anonymous auth), gear + spells counted (not arrows/consumables), no class = 10 per stat, Share = the link;
   `users/{uid}/tracking/{buildId}` (owner-only rules), pure `lib/tracking.ts` (item keys, progress, changes,
@@ -332,7 +331,3 @@ Older entries: `docs/tickets-archive.md`.
   left | right hand 64px, armor/talismans/flask + great rune and spirit ash 44px, spells one cell per memory slot;
   arrows/consumables only when used, owner) and `sections/StatsCard` (attributes, vitals, load bar with 30/70% marks;
   phones 4×2); stats first below 900px; hands stacked on phones; `ItemSlot` gone (`Tooltip` now unused).
-- T26 — Redesign v2 foundations — 2026-11-16 — EB Garamond 600 names/headings, `Label`/`labelText` the only caps,
-  Inter values (14px, tabular); accent budget (neutral panels, tags, icons); `Frame` plain + `$hero` (corner marks,
-  skin `tint`) on the build title pane; 1240px, `SPACE_PANEL/GROUP/REGION`; header with phone "+" and menu;
-  write-up headings. Not seen on screen: write-up h1–h4 (no seeded write-up has headings).

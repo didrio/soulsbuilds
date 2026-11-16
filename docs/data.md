@@ -108,7 +108,11 @@ consecutive things at one grace into a step and consecutive steps in one region 
   route order, each with the gates it needs. **locations**: the 419 Sites of Grace (BonfireWarpParam IDs).
   **gates**: bosses (`margit`, `two-great-runes`, `dlc` = Mohg + Radahn…), medallions and tools
   (`spirit-bell`, `whetstone-knife`, the whetblades), acyclic. **implied**: the gate an item type or affinity
-  needs. **keyItems**: whetblades, cookbooks, remembrances, unrestored Great Runes… (no icons).
+  needs; each gate but the any-of ones has a hand-written `reason` (`progression.ts`, T35: "Main-path boss: …",
+  "Lets you put Ashes of War on weapons"), and the pipeline fails without one. **keyItems**: whetblades,
+  cookbooks, remembrances, unrestored Great Runes…, with `icon` (EquipParamGoods `iconId`, T35; written with the
+  other icons). Every key item is a gate's item (the gate's reason) or some source's `item`, from which the route
+  words its reason ("Teaches the recipe for …", `guide/phrases.ts` `itemReason`; `data.test.ts` checks it).
 - **items**: file → item ID → sources, earliest first. A source is `{ kind, location, region, detail, cost?,
 item?, requires? }`; kinds: `pickup boss enemy shop remembrance quest start alteration craft`. `item` is what
   you need first (the remembrance to trade, the cookbook, the armor to alter, the unrestored rune). `location`

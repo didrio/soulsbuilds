@@ -11,6 +11,8 @@ import { DashedTile, SolidTile } from './GuideTiles';
 // reader points at a link to it: `loadRoute` is the prefetch).
 export const loadRoute = () => import('./GuideRoute');
 const GuideRoute = lazy(loadRoute);
+/** The Loadout tab's Next stop card while tracking (T35): same data, its own small chunk. */
+export const NextStop = lazy(() => import('./NextStop'));
 
 /** Whether the build has any item to find (no route otherwise). */
 export const hasItems = (equipment: Equipment) =>
@@ -20,9 +22,10 @@ export const hasItems = (equipment: Equipment) =>
 
 /**
  * The How to get tab (T28): what the route is, a legend for its tiles, and the route itself
- * (`GuideRoute`, loaded with its data on the tab's first open).
+ * (`GuideRoute`, loaded with its data on the tab's first open). `collected`: the player's tracked
+ * items (T35), for progress along the route.
  */
-function GuideSection({ equipment }: { equipment: Equipment }) {
+function GuideSection({ equipment, collected }: { equipment: Equipment; collected?: string[] }) {
   const items = hasItems(equipment);
   return (
     <Frame aria-labelledby="guide-title">
@@ -35,12 +38,12 @@ function GuideSection({ equipment }: { equipment: Equipment }) {
               upgrade materials and runes aren’t included.
             </Hint>
             <Legend aria-hidden="true">
-              <SolidTile $size={20} /> in this build
-              <DashedTile $size={20} /> other items
+              <SolidTile $size={20} /> {collected ? 'collected' : 'in this build'}
+              <DashedTile $size={20} /> {collected ? 'still to get' : 'other items'}
             </Legend>
           </Intro>
           <Suspense fallback={<LoadingAnimation size={30} />}>
-            <GuideRoute equipment={equipment} />
+            <GuideRoute equipment={equipment} collected={collected} />
           </Suspense>
         </>
       ) : (

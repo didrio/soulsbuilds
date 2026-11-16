@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { MOONVEIL } from '@/test/fixtures';
-import { actionLead, actionNote, itemInfo, itemNotes, legTitle, stepPlace } from './phrases';
-import type { RouteAction, RouteItem, RouteLeg } from './route';
+import { GODRICKS_GREAT_RUNE, MOONVEIL, SEPPUKU_ASH, UCHIGATANA } from '@/test/fixtures';
+import {
+  actionLead,
+  actionNote,
+  itemInfo,
+  itemNotes,
+  itemReason,
+  legTitle,
+  stopHow,
+  stopTitle,
+} from './phrases';
+import type { RouteAction, RouteItem, RouteLeg, RouteStep } from './route';
 
 const action = (kind: RouteAction['kind'], detail = ''): RouteAction => ({
   kind,
@@ -35,12 +44,52 @@ describe('guide phrases', () => {
     expect(actionNote(action('boss', 'Godrick'))).toBe('');
   });
 
-  it('names items, key items without an icon', () => {
+  it('names items and key items, with their icons', () => {
     expect(itemInfo(item.ref)).toMatchObject({ name: 'Moonveil', icon: expect.any(Number) });
-    expect(itemInfo({ file: 'keyItems', id: 8590 })).toEqual({
+    expect(itemInfo({ file: 'keyItems', id: 8590 })).toMatchObject({
       name: 'Whetstone Knife',
-      icon: null,
+      icon: expect.any(Number),
     });
+    expect(itemInfo({ file: 'keyItems', id: 1 })).toEqual({ name: 'Unknown item', icon: null });
+  });
+
+  it('says why an item is on the route', () => {
+    const knife = { file: 'keyItems' as const, id: 8590 };
+    const gate = { id: 'whetstone-knife', label: 'Get it', requires: [], reason: 'Lets you…' };
+    expect(itemReason({ ref: knife, gate })).toBe('Lets you…');
+    const use = (kind: RouteAction['kind'], detail: string, n = 1) => ({
+      ref: knife,
+      usedFor: [{ kind, detail, items: Array.from({ length: n }, () => item.ref) }],
+    });
+    expect(itemReason(use('remembrance', 'Finger Reader Enia'))).toBe(
+      'Trade it to Finger Reader Enia for Moonveil',
+    );
+    expect(itemReason(use('shop', 'Twin Maiden Husks (Igon’s Bell Bearing)'))).toBe(
+      'Unlocks Moonveil at Twin Maiden Husks',
+    );
+    expect(itemReason(use('craft', 'Cookbook [1]'))).toBe('Teaches the recipe for Moonveil');
+    expect(itemReason(use('restore', ''))).toBe('Restore it at its Divine Tower');
+    expect(itemReason(use('alteration', 'Alter'))).toBe('Alter it into Moonveil');
+    expect(itemReason(use('quest', 'Someone'))).toBe('Needed for Moonveil');
+    // The build's own gear needs no reason.
+    expect(itemReason(item)).toBe('');
+    // Several different items: listed, then counted.
+    const many = {
+      ref: knife,
+      usedFor: [
+        {
+          kind: 'craft' as const,
+          detail: '',
+          items: [
+            { file: 'weapons' as const, id: MOONVEIL },
+            { file: 'weapons' as const, id: UCHIGATANA },
+            { file: 'ashesOfWar' as const, id: SEPPUKU_ASH },
+            { file: 'greatRunes' as const, id: GODRICKS_GREAT_RUNE },
+          ],
+        },
+      ],
+    };
+    expect(itemReason(many)).toMatch(/^Teaches the recipe for .+, .+ and 2 more$/);
   });
 
   it('notes prices, trades, alterations and starting classes', () => {
@@ -68,8 +117,23 @@ describe('guide phrases', () => {
     expect(legTitle(leg('region'))).toBe('Caelid');
     expect(legTitle(leg('start'))).toBe('At the start');
     expect(legTitle(leg('elsewhere'))).toBe('No fixed place');
-    expect(stepPlace(leg('region'), null)).toBe('Somewhere in Caelid');
-    expect(stepPlace(leg('region'), { name: 'Gael Tunnel' })).toBe('Gael Tunnel');
-    expect(stepPlace(leg('start'), null)).toBeNull();
+    const step = (actions: RouteAction[], location: { name: string } | null = null) =>
+      ({ location, actions }) as RouteStep;
+    expect(stopTitle(leg('region'), step([action('pickup')]))).toBe('Somewhere in Caelid');
+    expect(stopTitle(leg('region'), step([], { name: 'Gael Tunnel' }))).toBe('Gael Tunnel');
+    expect(stopTitle(leg('start'), step([action('start', 'Samurai')]))).toBeNull();
+    // Only the region known: named by who or what it's about.
+    expect(stopTitle(leg('region'), step([action('boss', 'Erdtree Avatar')]))).toBe(
+      'Erdtree Avatar',
+    );
+    expect(stopTitle(leg('region'), step([action('pickup', 'Teardrop Scarab')]))).toBe(
+      'Teardrop Scarab',
+    );
+    expect(stopTitle(leg('region'), step([action('quest', 'Someone’s quest')]))).toBe(
+      'Somewhere in Caelid',
+    );
+    expect(stopHow(step([action('gate', 'Defeat Margit'), action('pickup')]))).toBe(
+      'Defeat Margit · Pick up',
+    );
   });
 });

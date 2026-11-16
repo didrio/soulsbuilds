@@ -19,6 +19,13 @@ describe('GuideSection', () => {
     renderWithProviders(<GuideSection equipment={withMoonveil()} />);
     expect(screen.getByRole('region', { name: 'How to get this build' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Show the route' })).not.toBeInTheDocument();
-    expect((await screen.findAllByRole('heading', { level: 3 })).length).toBeGreaterThan(0);
+    expect(await screen.findByText('Moonveil')).toBeInTheDocument();
+    expect(screen.getByText(/in this build/)).toBeInTheDocument();
+  });
+
+  it('shows progress along the route while tracking', async () => {
+    renderWithProviders(<GuideSection equipment={withMoonveil()} collected={[]} />);
+    expect(await screen.findByText(/stops done/)).toBeInTheDocument();
+    expect(screen.getByText(/still to get/)).toBeInTheDocument();
   });
 });

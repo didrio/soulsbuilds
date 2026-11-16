@@ -168,15 +168,16 @@ describe('extractAcquisition', () => {
   it('makes a restored Great Rune need the boss drop, and lists key items with their sources', () => {
     expect(sources('greatRunes', 191)[0]?.item).toEqual({ file: 'keyItems', id: 8148 });
     expect(acquisition.keyItems).toEqual([
-      { id: 2950, name: 'Remembrance of the Grafted' },
-      { id: 8148, name: "Godrick's Great Rune (unrestored)" },
-      { id: 8158, name: 'Spirit Calling Bell' },
-      { id: 9300, name: "Nomadic Warrior's Cookbook [1]" },
+      { id: 2950, name: 'Remembrance of the Grafted', icon: 51 },
+      { id: 8148, name: "Godrick's Great Rune (unrestored)", icon: 49 },
+      { id: 8158, name: 'Spirit Calling Bell', icon: 50 },
+      { id: 9300, name: "Nomadic Warrior's Cookbook [1]", icon: 52 },
     ]);
     expect(acquisition.gates.find((g) => g.id === 'spirit-bell')).toMatchObject({
       item: { file: 'keyItems', id: 8158 },
     });
     expect(acquisition.gates.find((g) => g.id === 'godrick')?.at).toBe(100000);
+    expect(acquisition.gates.find((g) => g.id === 'godrick')?.reason).toBe('Shardbearer');
   });
 
   it('orders sources earliest first (placed before unplaced)', () => {
@@ -239,6 +240,8 @@ describe('validateAcquisition', () => {
     const result = validateAcquisition(broken, data, inputs());
     expect(result).toContain('region Limgrave: unknown gate "nope"');
     expect(result.some((p) => p.startsWith('gate cycle: a → b → a'))).toBe(true);
+    // Every gate but any-of ones says why it's on the route (T35).
+    expect(result).toContain('gate a: no reason');
   });
 
   it('reports references to unknown locations and items', () => {

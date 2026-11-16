@@ -803,9 +803,20 @@ export function fixtureAcquisitionInputs(): AcquisitionInputs {
     ],
     locationRequires: [['Starscourge Radahn', ['godrick']]],
     gates: [
-      { id: 'margit', label: 'Defeat Margit' },
-      { id: 'godrick', label: 'Defeat Godrick', at: 'Godrick the Grafted', requires: ['margit'] },
-      { id: 'spirit-bell', label: 'Get the Spirit Calling Bell', item: 'Spirit Calling Bell' },
+      { id: 'margit', label: 'Defeat Margit', reason: 'Main-path boss' },
+      {
+        id: 'godrick',
+        label: 'Defeat Godrick',
+        at: 'Godrick the Grafted',
+        requires: ['margit'],
+        reason: 'Shardbearer',
+      },
+      {
+        id: 'spirit-bell',
+        label: 'Get the Spirit Calling Bell',
+        item: 'Spirit Calling Bell',
+        reason: 'Lets you summon Spirit Ashes',
+      },
       { id: 'two', label: 'Any one boss', anyOf: { count: 1, gates: ['margit', 'godrick'] } },
     ],
     implied: {

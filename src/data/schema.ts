@@ -352,13 +352,16 @@ export const gateSchema = z.strictObject({
   anyOf: z
     .strictObject({ count: z.number().int().positive(), gates: z.array(gateId).min(1) })
     .optional(),
+  /** Why it's on the route (T35): "Main-path boss: …", "Lets you put Ashes of War on weapons". */
+  reason: z.string().optional(),
 });
 
 export const acquisitionSchema = z.strictObject({
   regions: z.array(regionSchema),
   locations: z.array(locationSchema),
   gates: z.array(gateSchema),
-  keyItems: z.array(z.strictObject({ id, name })),
+  /** Whetblades, cookbooks, remembrances, unrestored Great Runes…; `icon` as items' (T35). */
+  keyItems: z.array(z.strictObject({ id, name, icon: id })),
   /** Gates an item implies by what it is: an Ash of War needs the Whetstone Knife, and so on. */
   implied: z.strictObject({
     ashesOfWar: gateId,

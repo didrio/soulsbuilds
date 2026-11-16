@@ -243,6 +243,26 @@ describe('acquisition data (T14)', () => {
     expect(acquisition.gates.map((g) => g.id)).toContain('dlc');
   });
 
+  it('says why every key item and gate is on the route, with an icon for each key item (T35)', () => {
+    // A gate's item takes the gate's reason; any other key item is something a source needs first
+    // (remembrance, cookbook, prayerbook, unrestored rune), and the route words its reason from that.
+    const gateItems = new Set(acquisition.gates.flatMap((g) => (g.item ? [g.item.id] : [])));
+    const prerequisites = new Set(
+      Object.values(acquisition.items)
+        .flatMap((byId) => Object.values(byId).flat())
+        .flatMap((s) => (s.item?.file === 'keyItems' ? [s.item.id] : [])),
+    );
+    const noReason = acquisition.keyItems.filter(
+      (k) => !gateItems.has(k.id) && !prerequisites.has(k.id),
+    );
+    expect(noReason.map((k) => k.name)).toEqual([]);
+    expect(acquisition.gates.filter((g) => !g.anyOf && !g.reason).map((g) => g.id)).toEqual([]);
+    const noIcon = acquisition.keyItems.filter(
+      (k) => !k.icon || !existsSync(join(ICONS, `${k.icon}.webp`)),
+    );
+    expect(noIcon.map((k) => k.name)).toEqual([]);
+  });
+
   it('places every pickable item but the allow-listed ones (T19)', () => {
     const coverage = Object.fromEntries(
       Object.entries(files)

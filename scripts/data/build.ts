@@ -204,7 +204,10 @@ async function main() {
   });
   console.log(`\n${counts.join(' · ')}\n`);
 
-  const missingIcons = [...usedIcons(data)].filter((icon) => !iconFiles.has(icon));
+  // Key items' icons too (T35): the route shows them, though no data file lists them.
+  const icons = usedIcons(data);
+  for (const item of acquired.acquisition.keyItems) if (item.icon) icons.add(item.icon);
+  const missingIcons = [...icons].filter((icon) => !iconFiles.has(icon));
   if (missingIcons.length) errors.push(`icons missing from the export: ${missingIcons.join(', ')}`);
   if (errors.length) {
     console.error(`✗ ${errors.length} problem(s); nothing written:`);
@@ -222,12 +225,12 @@ async function main() {
   writeFileSync(join(outDir, 'character.json'), formatCharacter(character));
   console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 4} files to ${outDir}`);
 
-  const icons = await writeIcons(usedIcons(data), iconFiles, opts.iconDir, {
+  const written = await writeIcons(icons, iconFiles, opts.iconDir, {
     force: opts.forceIcons,
     onProgress: (done, total) => process.stdout.write(`  icons ${done}/${total}\r`),
   });
   console.log(
-    `✓ Icons: ${icons.written} written, ${icons.kept} unchanged, ${icons.removed} removed (${opts.iconDir})`,
+    `✓ Icons: ${written.written} written, ${written.kept} unchanged, ${written.removed} removed (${opts.iconDir})`,
   );
 }
 

@@ -31,6 +31,17 @@ export interface RouteItem {
   needs?: ItemRef;
   /** Starting classes that begin with it, when the route gets it elsewhere ("or start as …"). */
   startAlso?: string[];
+  /** What it's needed for on this route (T35): the trade, purchase, recipe or restoring it unlocks. */
+  usedFor?: ItemUse[];
+  /** The gate it meets (T35): the Whetstone Knife, a whetblade, a medallion half; its `reason` says why. */
+  gate?: Gate;
+}
+
+/** Things on the route that need an item first, by how they use it: "buy from Corhyn" → [two spells]. */
+export interface ItemUse {
+  kind: ActionKind;
+  detail: string;
+  items: ItemRef[];
 }
 
 /**
@@ -45,6 +56,8 @@ export interface RouteAction {
   /** The boss, merchant, enemy, NPC, class, cookbook… ('' for a pickup), or a gate's label. */
   detail: string;
   items: RouteItem[];
+  /** A gate's reason (T35): "Main-path boss: …". */
+  reason?: string;
 }
 
 export interface RouteStep {
@@ -326,6 +339,24 @@ export function planRoute(equipment: Equipment, data: Acquisition): Route {
 
   const order = topoSort(chosen, ct, placeOfChosen);
 
+  // Why prerequisites are on the route (T35): what each one unlocks, in route order, and the gates
+  // that key items meet.
+  const uses = new Map<Key, ItemUse[]>();
+  const gateItems = new Map<Key, Gate>();
+  for (const key of order) {
+    const entry = chosen.get(key);
+    if (entry?.node.type === 'gate' && entry.node.gate.item)
+      gateItems.set(itemKey(entry.node.gate.item), entry.node.gate);
+    const source = entry?.option?.source;
+    if (entry?.node.type !== 'item' || !source?.item || !chosen.has(itemKey(source.item))) continue;
+    const kind = sourceKind(entry.node, source);
+    const list = uses.get(itemKey(source.item)) ?? [];
+    const use = list.find((u) => u.kind === kind && u.detail === source.detail);
+    if (use) use.items.push(entry.node.ref);
+    else list.push({ kind, detail: source.detail, items: [entry.node.ref] });
+    uses.set(itemKey(source.item), list);
+  }
+
   // 5. Steps and legs.
   const legs: RouteLeg[] = [];
   let lastPlace: Place | null = null;
@@ -334,6 +365,12 @@ export function planRoute(equipment: Equipment, data: Acquisition): Route {
     if (!entry) continue;
     const action = actionOf(entry.node, entry.option);
     if (!action) continue;
+    for (const item of action.items) {
+      const usedFor = uses.get(itemKey(item.ref));
+      const gate = gateItems.get(itemKey(item.ref));
+      if (usedFor) item.usedFor = usedFor;
+      if (gate) item.gate = gate;
+    }
     const place = placeOfChosen(key);
     const legKind = place === START ? 'start' : place === ELSEWHERE ? 'elsewhere' : 'region';
     let leg = legs.at(-1);
@@ -458,7 +495,9 @@ function topoSort(
 function actionOf(node: Node, option: Option | undefined): RouteAction | null {
   if (node.type === 'gate') {
     if (node.gate.anyOf || (node.gate.item && node.gate.at == null)) return null;
-    return { kind: 'gate', detail: node.gate.label, items: [] };
+    const action: RouteAction = { kind: 'gate', detail: node.gate.label, items: [] };
+    if (node.gate.reason) action.reason = node.gate.reason;
+    return action;
   }
   const item: RouteItem = { ref: node.ref };
   if (!option) {
@@ -471,9 +510,14 @@ function actionOf(node: Node, option: Option | undefined): RouteAction | null {
   if (source.cost) item.cost = source.cost;
   if (source.item) item.needs = source.item;
   if (node.starts.length > 0) item.startAlso = node.starts.map((start) => start.detail);
-  const restore = source.kind === 'pickup' && node.ref.file === 'greatRunes' && source.item;
-  return { kind: restore ? 'restore' : source.kind, detail: source.detail, items: [item] };
+  return { kind: sourceKind(node, source), detail: source.detail, items: [item] };
 }
+
+/** A source's action kind: a Great Rune picked up with its unrestored one is restored. */
+const sourceKind = (node: ItemNode, source: Source): ActionKind =>
+  source.kind === 'pickup' && node.ref.file === 'greatRunes' && source.item
+    ? 'restore'
+    : source.kind;
 
 /**
  * Adds an action to a step, merging it with a matching one (same kind and who). A boss that's also a

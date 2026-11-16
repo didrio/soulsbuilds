@@ -46,7 +46,7 @@ export const COLOR_BG_TOP = '#1c1912';
 // ---- Game skin (values per game in skins.ts) ----
 // The accent budget (T26): the accent appears only on the primary button, links and hover, the active
 // tab/sort state, the level figure, stat bar fills, the liked state and the focus ring; and while
-// tracking (T34), collected items, reached stats and the progress figure. Panels,
+// tracking (T34), collected items, reached stats and the progress figure, and the route's next stop (T35). Panels,
 // headings, tags and chips are neutral; corner marks only on the build hero.
 /** Links, active states, the accent as text. */
 export const COLOR_ACCENT = 'var(--sb-accent)';
