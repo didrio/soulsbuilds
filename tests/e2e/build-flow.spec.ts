@@ -28,7 +28,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   // a stat.
   await page.getByRole('link', { name: 'New build' }).click();
   await page.getByLabel('Build name').fill(buildName);
-  await page.getByRole('button', { name: 'Choose weapon' }).first().click();
+  // The right hand's first slot (the left hand is shown first, T27).
+  await page.getByRole('list', { name: 'Right hand' }).getByRole('button').first().click();
   await page.getByLabel('Search items').fill('Moonveil');
   await page.getByRole('button', { name: /^Moonveil/ }).click();
   // A unique weapon: nothing to choose, so the picker closes; reopened, it shows the fixed skill.
@@ -62,8 +63,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await page
     .getByRole('combobox', { name: 'Starting class' })
     .selectOption({ label: 'Samurai · level 9' });
-  const attributes = page.getByRole('region', { name: 'Attributes' });
-  await expect(attributes).toContainText('14Rune level');
+  const stats = page.getByRole('region', { name: 'Stats' });
+  await expect(stats).toContainText('Rune level14');
   await expect(
     page.getByRole('button', { name: 'Change Uchigatana (Blood affinity, Seppuku skill)' }),
   ).toBeVisible();
@@ -75,16 +76,16 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   const vigor = page.getByLabel('Vigor');
   await vigor.fill('40');
   await vigor.blur();
-  await expect(attributes).toContainText('42Rune level');
-  await expect(page.getByRole('region', { name: 'Character' })).toContainText('HP1450');
+  await expect(stats).toContainText('Rune level42');
+  await expect(page.getByRole('region', { name: 'Character' })).toContainText('HP1,450');
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
   // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune.
   await expect(page.getByText('Blood · Seppuku')).toBeVisible();
-  // Icon slots (T22) are tiles named after the item.
-  await expect(page.getByRole('button', { name: "Radahn's Great Rune" })).toBeVisible();
+  // Every item is shown by name (T27).
+  await expect(page.getByText("Radahn's Great Rune")).toBeVisible();
   await expect(page.getByText('Starting class: Samurai')).toBeVisible();
   await expect(page.getByRole('link', { name: displayName })).toBeVisible();
 

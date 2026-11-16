@@ -64,3 +64,16 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   next to the sort `orderBy`; 7 new composite indexes ending in `level`, plus `tags`+`game`+`nameLower`); data-layer
   test. Indexes are untested against production (the emulator ignores them): check the first level/search
   queries after the next deploy.
+- T21 — Performance — 2026-11-15 — `npm run perf` (headed Chrome + CDP: load vitals, scroll frames, GPU time,
+  `--off` attribution); `background-attachment: fixed` → fixed layer behind content (landing 72 → 118 fps, 40% →
+  2% dropped), grain on its own layer, `<main>` ≥ 1 screen (CLS 0.17 → 0), hosting cache headers, preconnects.
+  Prod "after" numbers not yet measured (needs the deploy); App Check wait → T23.
+- T18 — Account deletion and admin rename — 2026-11-15 — profile "Delete account" (password re-auth; finds
+  everything, then deletes builds, likes/comments elsewhere with counters, reports, profile, Auth user;
+  re-runnable), rules for own profile/report delete + comments collection-group read, `admin.mjs rename` and
+  `delete-user` (backup first), privacy page updated; e2e `account.spec.ts`.
+- T22 — Layout: lean landing, compact build page — 2026-11-16 — HTML mockup, owner picked "title first";
+  landing: no hero, small `<h1>` in the Find builds frame, fixed-height rows with tags on one line + "+N"
+  (`tags.ts` `fitCount`); build page: title pane, equipment across the page (weapons as rows, other slots as
+  `ItemSlot` icon tiles with a `Tooltip` name on hover/focus/tap), write-up beside the numbers, guide collapsed
+  with `GuideRoute` + acquisition data loaded on expand, comments across the page at 72ch.

@@ -193,17 +193,22 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   build (or Sign up) as the primary button; on phones a labelled "+" (New build) or Sign up, and a Menu button
   that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
-**Build page** (T17, reshaped in T22, `features/editor/`): view and edit share one layout, top to bottom: the
-**title pane** (`BuildHeader`, in the hero frame since T26: name as `<h1>`, author and level, Like/Report/owner actions on the right, tags; in
-edit mode `BuildDetailsForm` takes its place), **Equipment** across the page, the write-up beside Attributes,
-Character and Spells (a 330 px side panel; under the write-up on tablets and phones), then **"How to get this
-build"** collapsed and **Comments** across the page (thread at a readable 72ch). Weapons and spells are
-`ItemRow`s: `ItemTile` + name + a muted detail line (affinity and skill, memory slots) + any warning (T8). Every
-other slot (armor, talismans, great rune, spirit ash, tears, arrows, consumables) is an `ItemSlot`: an icon tile
-that is a `<button>` named after the item, with the name in a `components/ui/Tooltip` bubble on hover, keyboard
-focus or tap (Escape or a tap elsewhere closes it). In view mode only filled slots and groups show; in edit mode
-each row or tile opens the picker ("Choose talisman", "Change Uchigatana (Blood affinity, Seppuku skill)"; empty
-tiles show "+"), and spells and consumables (saved without positions) show the filled slots plus one empty one.
+**Build page** (T17, reshaped in T22 and T27, `features/editor/`): view and edit share one layout, top to bottom:
+the **title pane** (`BuildHeader`, in the hero frame since T26: name as `<h1>`, author and level, Like/Report/owner
+actions on the right, tags; in edit mode `BuildDetailsForm` takes its place), the **Loadout** across the page, the
+write-up beside the **Stats** card (340 px; on tablets and phones the Stats card comes first, then the Loadout,
+then the write-up), then **"How to get this build"** collapsed and **Comments** across the page (thread at a
+readable 72ch). `sections/Loadout` (T27) is a fixed layout: every slot always shows, so it takes the same space on
+every build: left hand | right hand (3 weapons each, 64px tiles; stacked on phones, left hand first), then armor,
+talismans, and the flask's tears with the great rune and spirit ash in three columns (44px), arrows and bolts and
+consumables only when the build has some (always while editing), then spells as one cell per memory slot (a
+2-slot spell spans two; free slots are placeholders). Every slot is an `ItemRow`: `ItemTile` + name + a muted
+detail line (affinity and skill, memory slots) + any warning (T8); an empty read-only slot is a faint placeholder
+tile (`ItemTile placeholder`, "No helm" for screen readers). In edit mode each row is a button that opens the
+picker ("Choose talisman", "Change Uchigatana (Blood affinity, Seppuku skill)"), and spells and consumables
+(saved without positions) show the filled slots plus one "Choose". `sections/StatsCard` (T27): rune level,
+starting class, the 8 attributes as rows (a 4×2 grid with short names on tablets and phones; inputs in the same
+place when editing), HP/FP/stamina, the equip load bar marked at 30% and 70% with the roll, poise.
 The **picker** is a tall
 `Dialog` (`ItemSelector`): search, weapon type / spell kind / base game–DLC filters (`picker.ts`), the current item
 marked (`aria-current`), "Show more" paging; picking a weapon with Ashes of War moves to its Ash of War and

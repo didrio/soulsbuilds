@@ -7,8 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T39
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T27 — Loadout panel and stats card · Opus · high · plan mode off. Up next is in the order of
-`docs/product.md` "Priorities": the redesign (T27 → T28; T29 any time now), usage counts (T38,
+**Next:** T28 — Build page tabs · Opus · high · plan mode on. Up next is in the order of
+`docs/product.md` "Priorities": the redesign (T28; T29 any time now), usage counts (T38,
 blocked on the owner), tracking (T34 → T35 → T36), link previews (T37, blocked on the Blaze decision), sign-in and
 account (T30, T31), copies and variations (T32 → T33). T30–T38 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -32,7 +32,7 @@ and spacing, and the canvas notes say why.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13) and T26 (redesign v2 foundations).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations) and T27 (loadout and stats card).
 
 ## In progress
 
@@ -40,47 +40,9 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 
 ## Up next
 
-### T27 — Loadout panel and stats card
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode off
-- **Goal:** Every item visible by name, spells inside the loadout, and attributes plus character stats in one
-  card, in both view and edit mode. Today armor, talismans and tears are icon-only with names on hover or tap.
-- **Done when:**
-  - One Loadout panel (`EquipmentEditor` and `SpellEditor` merged). **Left hand on the left, Right hand on the
-    right** (owner, 2026-11-16: the game lists the right hand first; the mockups still show it that way), as 64px
-    tiles with the name and "affinity · skill". Armor, Talismans and Flask of Wondrous Physick in three columns,
-    plus great rune and spirit ash: 44px tiles with the name beside them. Then Spells: "8 of 10 memory slots".
-    Requirement warnings stay.
-  - **Every slot always shows** (owner, 2026-11-16; decision "Empty slots", revised): a fixed layout, so the
-    equipment and spells take the same space on every build. Empty slots are a very subtle placeholder (fainter
-    than today's empty `ItemTile`, the slot name muted or nothing) at the same size as a filled one: 3 weapon
-    slots per hand, 4 armor, 4 talismans, great rune, spirit ash, 2 tears. Spells: one cell per memory slot
-    (`memorySlots` in `buildMath.ts`, usually 10), a 2-slot spell spanning two cells, the free ones as
-    placeholders; this replaces the separate slot pips. ★ Arrows and bolts (4) and consumables (up to 10): the
-    same rule, or shown only when the build uses them (ask the owner; most builds have none).
-  - Phones: Left hand and Right hand side by side too, names wrapping to two lines; if that's too cramped in
-    screenshots, stack them with Left hand first.
-  - Edit mode keeps the same layout: every slot is a button that opens the picker (accessible name = slot and
-    item); empty slots keep the empty tile and "Choose helm" (decision "Empty slots").
-  - One stats card (`StatEditor` and `CharacterStats` merged): the rune level figure in the accent; 8 attribute
-    rows about 30px tall (name, thin bar, value, +N talisman bonus kept); HP, FP and Stamina side by side; Equip
-    load as a bar marked at 30% and 70% (`rollType` in `buildMath.ts`) with the roll name; Poise. Edit mode: the
-    attribute inputs sit in the same rows.
-  - Phones: the stats card first (attributes in a 4×2 grid as Vig, Mnd, End, Str, Dex, Int, Fai, Arc; HP, FP,
-    Stamina and Poise in a row; the load bar), then the loadout (hands side by side, the other groups in one
-    column).
-  - Tests updated (EquipmentEditor, SpellEditor, StatEditor, CharacterStats, ItemSlot); `npm run check` and
-    `npm run e2e` pass; screenshots of a build in view mode and `/build/new`, desktop and `--mobile`.
-- **Context:** Artboards `Main.dc.html` (loadout and stats card) and `BuildMobile.dc.html`. Files:
-  `features/editor/sections/{EquipmentEditor,SpellEditor,StatEditor,CharacterStats}.tsx`, `ItemRow.tsx`,
-  `ItemSlot.tsx` (today: icon tile + `Tooltip` name), `itemDetails.ts`, `slots.ts`, `store/derived.ts`. The page
-  keeps the T22 layout until T28 (the stats card takes the aside's place). View and edit stay one layout
-  (decision "Build page and editor").
-
 ### T28 — Build page tabs: hero, Loadout / Description / How to get / Comments
 
-- **Status:** ready (after T27)
+- **Status:** ready
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Split the build page into tabs under a hero, so each section gets the whole page and visitors see at
   once that a route and comments exist (owner's idea, 2026-11-16; the long one-page layout tried to fit too
@@ -109,6 +71,8 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
     tiles, others as dashed tiles, bosses marked.
   - Comments tab: `CommentsSection`.
   - Desktop: the stats card is a sticky 340px right rail on every tab. Phones: stats only in the Loadout tab.
+    (T27: `StatsCard` is already 340px in the aside, and `Loadout` assumes ~800px+ on desktop: at 900–1100px a
+    loadout beside the rail gets narrow, so check its 3 columns and the 5-column spell grid there.)
   - Edit mode and `/build/new`: only the Loadout and Description tabs, with the sticky Save bar as today.
   - Tests: component tests for the tab bar and the tab param; e2e updated (`guide.spec.ts` opens the tab,
     `community.spec.ts` comment heading and link) plus a tab check (deep link, Back button); `npm run check`
@@ -412,13 +376,16 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 Older entries: `docs/tickets-archive.md`.
 
+- T27 — Loadout panel and stats card — 2026-11-16 — `sections/Loadout` (every slot always shown, items by name:
+  left | right hand 64px, armor/talismans/flask + great rune and spirit ash 44px, spells one cell per memory slot;
+  arrows/consumables only when used, owner) and `sections/StatsCard` (attributes, vitals, load bar with 30/70% marks;
+  phones 4×2); stats first below 900px; hands stacked on phones; `ItemSlot` gone (`Tooltip` now unused).
 - T26 — Redesign v2 foundations — 2026-11-16 — EB Garamond 600 names/headings, `Label`/`labelText` the only caps,
   Inter values (14px, tabular); accent budget (neutral panels, tags, icons); `Frame` plain + `$hero` (corner marks,
   skin `tint`) on the build title pane; 1240px, `SPACE_PANEL/GROUP/REGION`; header with phone "+" and menu;
   write-up headings. Not seen on screen: write-up h1–h4 (no seeded write-up has headings).
 - T25 — Firebase JS SDK 13 — 2026-11-16 — `firebase` 13.3.0 + `@firebase/rules-unit-testing` 6.0.0, no code changes
   (13.0's breaks are AI-only); check, rules (103) and e2e pass; preload URL still matches, blocked notice at ~2.4 s.
-
 - T24 — No blank page when reCAPTCHA is blocked — 2026-11-16 — owner: error only, one notice in the shell;
   `appCheckStatus.ts` (blocked = no token 2 s after a reCAPTCHA load error, or 10 s) + `AppCheckNotice`;
   checked on a local build served at soulsbuilds.com: notice at ~2.4 s, normal first Firestore request ~1.2 s.
@@ -431,16 +398,3 @@ Older entries: `docs/tickets-archive.md`.
   `github-stats` SA; top tags as the Tags row's first chips (scrolling row on phones),
   "N builds by M players", rows with comments + age, build page comment link, warmer empty state, "More by",
   profile build/like counts; scroll to top on navigation. SA set up and first run done by the owner (same day).
-- T22 — Layout: lean landing, compact build page — 2026-11-16 — HTML mockup, owner picked "title first";
-  landing: no hero, small `<h1>` in the Find builds frame, fixed-height rows with tags on one line + "+N"
-  (`tags.ts` `fitCount`); build page: title pane, equipment across the page (weapons as rows, other slots as
-  `ItemSlot` icon tiles with a `Tooltip` name on hover/focus/tap), write-up beside the numbers, guide collapsed
-  with `GuideRoute` + acquisition data loaded on expand, comments across the page at 72ch.
-- T18 — Account deletion and admin rename — 2026-11-15 — profile "Delete account" (password re-auth; finds
-  everything, then deletes builds, likes/comments elsewhere with counters, reports, profile, Auth user;
-  re-runnable), rules for own profile/report delete + comments collection-group read, `admin.mjs rename` and
-  `delete-user` (backup first), privacy page updated; e2e `account.spec.ts`.
-- T21 — Performance — 2026-11-15 — `npm run perf` (headed Chrome + CDP: load vitals, scroll frames, GPU time,
-  `--off` attribution); `background-attachment: fixed` → fixed layer behind content (landing 72 → 118 fps, 40% →
-  2% dropped), grain on its own layer, `<main>` ≥ 1 screen (CLS 0.17 → 0), hosting cache headers, preconnects.
-  Prod "after" numbers not yet measured (needs the deploy); App Check wait → T23.

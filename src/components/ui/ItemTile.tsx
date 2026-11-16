@@ -19,28 +19,48 @@ interface ItemTileProps {
   size?: number;
   /** Shown in an empty slot instead of the small diamond (e.g. "+" on a button that fills it). */
   emptyMark?: string;
+  /**
+   * An empty slot that only holds the place (read-only fixed layouts, T27): fainter than an empty
+   * tile, with no diamond.
+   */
+  placeholder?: boolean;
   className?: string;
 }
 
 /**
  * An inventory-style item slot: dark, lit from above, with the item icon as the hero. Empty slots are
- * a faint frame with a small diamond, so filled slots stand out.
+ * a faint frame with a small diamond, so filled slots stand out; `placeholder` ones are fainter still.
  */
-function ItemTile({ src, title, size = 56, emptyMark, className }: ItemTileProps) {
+function ItemTile({
+  src,
+  title,
+  size = 56,
+  emptyMark,
+  placeholder = false,
+  className,
+}: ItemTileProps) {
   return (
-    <Tile className={className} title={title} $empty={!src} $mark={Boolean(emptyMark)} $size={size}>
+    <Tile
+      className={className}
+      title={title}
+      $empty={!src}
+      $mark={Boolean(emptyMark) || placeholder}
+      $placeholder={!src && placeholder}
+      $size={size}>
       {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : null}
       {!src && emptyMark ? <Mark aria-hidden="true">{emptyMark}</Mark> : null}
     </Tile>
   );
 }
 
-const Tile = styled.span<{ $empty: boolean; $mark: boolean; $size: number }>`
+const Tile = styled.span<{ $empty: boolean; $mark: boolean; $placeholder: boolean; $size: number }>`
   align-items: center;
-  background: ${({ $empty }) =>
-    $empty
-      ? 'rgba(0, 0, 0, 0.25)'
-      : `radial-gradient(circle at 50% 38%, ${COLOR_TILE_SHINE}, transparent 65%), linear-gradient(${COLOR_TILE_TOP}, ${COLOR_TILE_BOTTOM})`};
+  background: ${({ $empty, $placeholder }) =>
+    $placeholder
+      ? 'rgba(0, 0, 0, 0.12)'
+      : $empty
+        ? 'rgba(0, 0, 0, 0.25)'
+        : `radial-gradient(circle at 50% 38%, ${COLOR_TILE_SHINE}, transparent 65%), linear-gradient(${COLOR_TILE_TOP}, ${COLOR_TILE_BOTTOM})`};
   border: 1px solid ${({ $empty }) => ($empty ? COLOR_TILE_EMPTY_BORDER : COLOR_TILE_BORDER)};
   box-shadow: ${({ $empty }) =>
     $empty ? 'none' : `inset 0 0 0 1px ${COLOR_BLACK}, inset 0 -10px 18px rgba(0, 0, 0, 0.5)`};
@@ -48,6 +68,7 @@ const Tile = styled.span<{ $empty: boolean; $mark: boolean; $size: number }>`
   flex: none;
   height: ${({ $size }) => $size}px;
   justify-content: center;
+  opacity: ${({ $placeholder }) => ($placeholder ? 0.55 : 1)};
   transition: border-color 120ms;
   width: ${({ $size }) => $size}px;
 

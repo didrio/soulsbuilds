@@ -4,7 +4,7 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { EditorWithPicker, searchItems } from '@/test/editor';
 import { renderWithProviders } from '@/test/render';
-import SpellEditor from './sections/SpellEditor';
+import Loadout from './sections/Loadout';
 
 const optionLabels = (name: string) =>
   within(screen.getByRole('combobox', { name }))
@@ -78,7 +78,7 @@ describe('ItemSelector', () => {
   it('filters spells by kind', async () => {
     const { user } = renderWithProviders(
       <>
-        <SpellEditor editable />
+        <Loadout editable />
         <EditorWithPicker />
       </>,
     );

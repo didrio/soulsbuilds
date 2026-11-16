@@ -18,9 +18,9 @@ vi.mock('@/lib/firebase', () => ({
   errorMessage: (error: unknown) => (error instanceof Error ? error.message : 'error'),
 }));
 
-/** The rune level the Attributes panel shows. */
+/** The rune level the Stats card shows. */
 const shownLevel = () =>
-  within(screen.getByRole('region', { name: 'Attributes' })).getByText('Rune level').previousSibling
+  within(screen.getByRole('region', { name: 'Stats' })).getByText('Rune level').nextSibling
     ?.textContent;
 
 const renderPage = (route: string, uid: string | null = null) =>

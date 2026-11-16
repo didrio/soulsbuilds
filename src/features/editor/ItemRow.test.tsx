@@ -44,4 +44,12 @@ describe('ItemRow', () => {
       'Choose talisman',
     );
   });
+
+  it('read-only and empty: a placeholder that says what is missing to screen readers', () => {
+    renderWithProviders(
+      <ItemRow entry={{ id: 'helm', type: 'SLOT_TYPE_HELM', item: null }} editable={false} />,
+    );
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.getByText('No helm')).toBeInTheDocument();
+  });
 });

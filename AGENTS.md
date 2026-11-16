@@ -15,15 +15,14 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T26 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
-TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules (2022 data
-migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms; Playwright e2e. Game data v2
-(base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`. Redesign
-(T16/17/22): tokens + per-game skin; build page = view and edit in one layout. T14/19/15: "How to get this
-build". T8: build math. T21: smooth scrolling, `npm run perf`. T18: account deletion. T20: daily `stats/{game}`
-→ top tags, activity. T23: App Check wait measured, `enterprise.js` preloaded, 1-day token TTL. Left: enforcing.
-T24: blocked reCAPTCHA → a notice, not a blank page. T25: Firebase SDK 13. T26: redesign v2 foundations (type
-tiers, accent budget, plain panels + hero frame, phone header menu); T27–T29 reshape the pages. **Next:** `TICKETS.md`.
+As of 2026-11-16 (T1–T27 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
+likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
+(base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
+`stats/{game}`. Build page = view and edit in one layout, with build math (T8), "How to get this build"
+(T14/19/15), and since T27 a fixed-layout Loadout + Stats card. App Check: wait measured, blocked reCAPTCHA → a
+notice; left: enforcing. Redesign v2: foundations (T26), loadout (T27); T28–T29 reshape the build page and the
+landing. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -117,14 +116,14 @@ src/
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete, one layout) + useBuildEditor; queries.ts
                            (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader = title pane with like/report/tags,
-                           OwnerActions, BuildDetailsForm (edit title block), Equipment/Stat/SpellEditor panels,
-                           DescriptionSection, CommentsSection, MoreByAuthor); ItemRow (weapon/spell slot as tile + name; button in
-                           edit mode; warnings for unmet requirements), ItemSlot (other slots: icon tile button,
-                           name in a Tooltip) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
+                           OwnerActions, BuildDetailsForm (edit title block), Loadout (every slot, fixed layout, T27),
+                           StatsCard (attributes + HP, load, poise, T27),
+                           DescriptionSection, CommentsSection, MoreByAuthor); ItemRow (any slot as tile + name; button in
+                           edit mode; placeholder when empty; warnings for unmet requirements) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
                            with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
                            phrases.ts, GuideSection (collapsed shell) → GuideRoute (lazy, on expand)); store/ = Redux slices for the build being edited +
                            selectors + derived.ts (build math selectors) + build.ts (loadBuild /
-                           selectBuildFields: build ⇄ editor state); sections/CharacterStats (HP, load, poise)
+                           selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
                            ErrorMessage, FocusScope, icons, Label + typography.ts (type tiers); Frame (panel,

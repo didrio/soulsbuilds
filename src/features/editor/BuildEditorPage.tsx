@@ -23,13 +23,11 @@ import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildHeader from './sections/BuildHeader';
 import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
-import CharacterStats from './sections/CharacterStats';
-import EquipmentEditor from './sections/EquipmentEditor';
+import Loadout from './sections/Loadout';
 import MoreByAuthor from './sections/MoreByAuthor';
 import GuideSection from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
-import SpellEditor from './sections/SpellEditor';
-import StatEditor from './sections/StatEditor';
+import StatsCard from './sections/StatsCard';
 import { selectLevel } from './store/build';
 import { useBuildEditor } from './useBuildEditor';
 
@@ -41,9 +39,9 @@ function BuildEditorPage() {
 }
 
 /**
- * View, create and edit a build in one layout (T22): the title pane, equipment across the page, the
- * write-up beside attributes, character stats and spells (after it on phones), then "How to get this
- * build" (collapsed) and comments across the page. Edit mode turns the same panels into controls,
+ * View, create and edit a build in one layout (T22, T27): the title pane, the loadout across the page,
+ * the write-up beside the stats card (on tablets and phones: the stats card, the loadout, then the
+ * write-up), then "How to get this build" (collapsed) and comments across the page. Edit mode turns the same panels into controls,
  * leaves out the guide and comments, and adds a sticky Save/Cancel bar.
  */
 function BuildEditor({ buildId }: { buildId: string | null }) {
@@ -110,8 +108,10 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
           }
         />
       ) : null}
-      <EquipmentEditor editable={editable} />
       <Layout>
+        <LoadoutArea>
+          <Loadout editable={editable} />
+        </LoadoutArea>
         <Main>
           <DescriptionSection
             description={editor.description}
@@ -120,9 +120,7 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
           />
         </Main>
         <Aside>
-          <StatEditor editable={editable} level={level} />
-          <CharacterStats />
-          <SpellEditor editable={editable} />
+          <StatsCard editable={editable} level={level} />
         </Aside>
       </Layout>
       {!editable && build ? <GuideSection equipment={build.equipment} /> : null}
@@ -157,18 +155,24 @@ const Back = styled(TextLink)`
   margin: ${SPACE_MD} 0 -${SPACE_SM};
 `;
 
-// The write-up + a 330 px side panel; on tablets and phones one column, the write-up first.
+// The loadout across the page, then the write-up + the 340 px stats card; on tablets and phones one
+// column, the stats card first (T27).
 const Layout = styled.div`
   align-items: start;
   display: grid;
-  gap: ${SPACE_REGION};
-  grid-template-areas: 'main aside';
-  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: ${SPACE_LG} ${SPACE_REGION};
+  grid-template-areas: 'loadout loadout' 'main aside';
+  grid-template-columns: minmax(0, 1fr) 340px;
 
   @media ${BELOW_TABLET} {
-    grid-template-areas: 'main' 'aside';
+    grid-template-areas: 'aside' 'loadout' 'main';
     grid-template-columns: minmax(0, 1fr);
   }
+`;
+
+const LoadoutArea = styled.div`
+  grid-area: loadout;
+  min-width: 0;
 `;
 
 const column = css`

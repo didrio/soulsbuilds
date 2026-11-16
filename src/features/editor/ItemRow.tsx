@@ -1,5 +1,6 @@
 import styled, { css } from 'styled-components';
 import ItemTile from '@/components/ui/ItemTile';
+import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { selectionBar } from '@/components/ui/inWorld';
 import { useAppDispatch } from '@/app/hooks';
 import {
@@ -10,13 +11,12 @@ import {
   type Weapon,
 } from '@/data/core';
 import {
-  BELOW_MOBILE,
   COLOR_DANGER,
   COLOR_GLOW,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  SPACE_SM,
   SPACE_XS,
+  TEXT_MD,
   TEXT_SM,
   TEXT_XS,
 } from '@/theme';
@@ -74,15 +74,36 @@ export const filledAndNext = (entries: SlotEntry[]) => {
   return next ? [...filled, next] : filled;
 };
 
+/** Tile sizes in the Loadout panel (T27): weapons, and every other slot. */
+export type TileSize = 64 | 44;
+
 /**
  * One slot as a row: the item's tile, its name, a muted detail line (a weapon's affinity and skill, a
- * spell's memory slots) and a warning line when it can't be used as built. Editable rows are buttons that open the item picker for the slot,
- * named "Choose talisman" when empty and "Change Uchigatana (Blood affinity, Seppuku skill)" when
- * filled; read-only rows are plain text.
+ * spell's memory slots) and a warning line when it can't be used as built. Editable rows are buttons
+ * that open the item picker for the slot, named "Choose talisman" when empty and "Change Uchigatana
+ * (Blood affinity, Seppuku skill)" when filled; read-only rows are plain text, and an empty read-only
+ * slot is a faint placeholder tile that keeps the layout the same on every build (T27).
  */
-function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
+function ItemRow({
+  entry,
+  editable,
+  size = 44,
+}: {
+  entry: SlotEntry;
+  editable: boolean;
+  size?: TileSize;
+}) {
   const dispatch = useAppDispatch();
   const { type, item, affinity = null, ash = null, warning = null } = entry;
+
+  if (!item && !editable) {
+    return (
+      <Row $size={size}>
+        <ItemTile src={null} size={size} placeholder />
+        <VisuallyHidden>{`No ${SLOT_LABELS[type]}`}</VisuallyHidden>
+      </Row>
+    );
+  }
 
   // A weapon slot holds a weapon (the editor state's items are full data objects).
   const weapon = item && isWeaponType(type) ? weaponDetails(item as Weapon, ash, affinity) : null;
@@ -90,24 +111,21 @@ function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
 
   const content = (
     <>
-      <ItemTile src={item ? iconUrl(item.icon) : null} size={TILE_SIZE} />
+      <ItemTile src={item ? iconUrl(item.icon) : null} size={size} />
       <Text>
-        {item ? (
-          <Name>{item.name}</Name>
-        ) : (
-          <Empty>{editable ? `Choose ${SLOT_LABELS[type]}` : 'Empty'}</Empty>
-        )}
+        {item ? <Name>{item.name}</Name> : <Empty>{`Choose ${SLOT_LABELS[type]}`}</Empty>}
         {subline ? <Sub>{subline}</Sub> : null}
         {item && warning ? <Warning $severity={warning.severity}>{warning.text}</Warning> : null}
       </Text>
     </>
   );
 
-  if (!editable) return <Row>{content}</Row>;
+  if (!editable) return <Row $size={size}>{content}</Row>;
 
   return (
     <RowButton
       type="button"
+      $size={size}
       aria-label={changeLabel(entry, weapon)}
       onClick={() => dispatch(openPickerFor(entry))}>
       {content}
@@ -117,7 +135,7 @@ function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
 
 /**
  * An editable slot's accessible name: "Choose talisman" when empty, "Change Uchigatana (Blood
- * affinity, Seppuku skill)" when filled, with any warning. Shared by rows and icon tiles.
+ * affinity, Seppuku skill)" when filled, with any warning.
  */
 export function changeLabel(entry: SlotEntry, weapon: WeaponDetails | null = null) {
   const { item, type, warning } = entry;
@@ -138,64 +156,27 @@ export const openPickerFor = ({ id, type, affinityId, subId }: SlotEntry) =>
     editSubSlot: subId ?? null,
   });
 
-/** A list of slot rows (view mode passes only the filled ones). */
-export function ItemRows({
-  entries,
-  editable,
-  columns = 2,
-}: {
-  entries: SlotEntry[];
-  editable: boolean;
-  columns?: 1 | 2;
-}) {
-  return (
-    <ItemList $columns={columns}>
-      {entries.map((entry) => (
-        <li key={entry.id}>
-          <ItemRow entry={entry} editable={editable} />
-        </li>
-      ))}
-    </ItemList>
-  );
-}
-
 /** A heading over a group of rows ("Talismans"): small muted capitals. */
 export const GroupHeading = styled.h3`
   ${labelText}
   margin: 0 0 ${SPACE_XS};
 `;
 
-/** The rows of a group: two columns, one on phones (`$columns={1}` for narrow panels and hands). */
-const ItemList = styled.ul<{ $columns?: 1 | 2 }>`
-  display: grid;
-  gap: 2px ${SPACE_SM};
-  grid-template-columns: ${({ $columns = 2 }) => `repeat(${$columns}, minmax(0, 1fr))`};
-  list-style: none;
-  margin: 0;
-  padding: 0;
-
-  @media ${BELOW_MOBILE} {
-    grid-template-columns: minmax(0, 1fr);
-  }
-`;
-
-const TILE_SIZE = 52;
-
-const rowStyles = css`
+const rowStyles = css<{ $size: TileSize }>`
   align-items: center;
   display: flex;
-  gap: 12px;
-  min-height: 62px;
-  padding: 5px 6px;
+  gap: ${({ $size }) => ($size === 64 ? '14px' : '12px')};
+  min-height: ${({ $size }) => $size + 6}px;
+  padding: 3px 0;
   position: relative;
   width: 100%;
 `;
 
-const Row = styled.div`
+const Row = styled.div<{ $size: TileSize }>`
   ${rowStyles}
 `;
 
-const RowButton = styled.button`
+const RowButton = styled.button<{ $size: TileSize }>`
   ${rowStyles}
   ${selectionBar}
   background: none;
@@ -219,10 +200,10 @@ const Text = styled.span`
 
 const Name = styled.span`
   color: ${COLOR_TEXT};
-  font-size: ${TEXT_SM};
+  font-size: ${TEXT_MD};
   font-weight: 600;
   line-height: 1.3;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 `;
 
 const Empty = styled.span`
@@ -232,8 +213,8 @@ const Empty = styled.span`
 
 const Sub = styled.span`
   color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_XS};
-  line-height: 1.4;
+  font-size: ${TEXT_SM};
+  line-height: 1.3;
 `;
 
 const Warning = styled.span<{ $severity: ItemWarning['severity'] }>`
