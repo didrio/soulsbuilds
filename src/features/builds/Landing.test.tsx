@@ -39,7 +39,7 @@ describe('Landing', () => {
     expect(await screen.findByText('Bleed')).toBeInTheDocument();
     expect(firebase.listBuilds).toHaveBeenCalledWith(expect.objectContaining({ sort: 'top' }));
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Elden Ring Builds' }),
+      screen.getByRole('heading', { level: 1, name: 'Elden Ring builds' }),
     ).toBeInTheDocument();
   });
 

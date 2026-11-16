@@ -7,8 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T39
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T29 — Landing: slim toolbar, rows with a portrait · Sonnet · medium · plan mode off. Up next is in the
-order of `docs/product.md` "Priorities": the redesign (T29), usage counts (T38,
+**Next:** T34 — Track a build: the Loadout as a checklist · Opus · extra high · plan mode on. Up next is in the
+order of `docs/product.md` "Priorities": usage counts (T38,
 blocked on the owner), tracking (T34 → T35 → T36), link previews (T37, blocked on the Blaze decision), sign-in and
 account (T30, T31), copies and variations (T32 → T33). T30–T38 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -32,39 +32,13 @@ and spacing, and the canvas notes say why.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card) and T28 (build page tabs).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs) and T29 (landing).
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T29 — Landing: slim toolbar, rows with a portrait
-
-- **Status:** ready (independent of T27 and T28)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** The first build higher up the page, and rows you can read at a glance. Today a ~200px framed filter
-  card comes first, and each row shows 8 small dark tiles (empty ones included) with the level as its loudest
-  element.
-- **Done when:**
-  - No framed card. The `<h1>` "Elden Ring builds" (serif) and "N builds by M players" share a line, then a
-    one-line toolbar: search (fills the width), Sort (Most liked / Newest), Level min–max. The Tags row below
-    scrolls sideways (top tags with counts first, then "More tags").
-  - Rows of about 88px: the main weapon (same rule as T28's hero) as a 72px portrait; the name in the serif on
-    one line with an ellipsis; "by author · age" and tags (fit + "+N" as today); the slot strip with today's fixed
-    cells (weapon slots 1–2 of each hand, a divider, the 4 armor slots; 38px tiles), **left hand first**, and empty
-    cells as a very subtle placeholder instead of the diamond, so every row lines up (owner, 2026-11-16; this
-    replaces the mockup's "filled slots only"); a small "Level" label and the number (not in the accent); likes
-    and comments with icons. The selection-bar hover stays.
-  - Phones: 60px portrait, the name on up to 2 lines, "by author · age", then "Level · likes · comments"; tags;
-    the strip below.
-  - Rows, not cards (the canvas recommendation; the cards alternative stays on the canvas if wanted later).
-  - `BuildsList`, `Landing` and `tags` tests updated; `npm run check` and `npm run e2e` pass; screenshots desktop
-    and `--mobile`.
-- **Context:** Artboards `Landing.dc.html` (Tweaks › Layout = Rows) and `LandingMobile.dc.html`. Files:
-  `features/builds/{Landing,BuildsList,tags,filters}`, `components/ui/{SegmentedControl,Chips,ItemTile}`. The main
-  weapon is `mainWeaponId` in `src/lib/equipment.ts` (T28).
 
 ### T38 — Cookie-free usage counts
 
@@ -332,6 +306,12 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T29 — Landing: slim toolbar, rows with a portrait — 2026-11-16 — no framed card: h1 + "N builds by M players" on
+  a line, then search | sort | level, then a sideways-scrolling top-tags row ("More tags" after it, outside the
+  scroller so its popover isn't clipped); 88px rows by named grid areas (portrait = `mainWeaponId`, strip
+  left hand first, empty cells faint, "Level" label); tablet 140px, phones auto height (60px portrait, name on two
+  lines). The phone Filters button is gone (sort and level always show).
 
 - T28 — Build page tabs — 2026-11-16 — hero (main weapon, `lib/equipment.ts`) + tabs at `/build/:id/:tab?`
   (`tabs.ts`, sticky `BuildTabs`); owner, mid-session: stats in a left column on every desktop tab (one panel with

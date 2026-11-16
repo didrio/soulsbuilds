@@ -6,6 +6,7 @@ import { selectionBar } from '@/components/ui/inWorld';
 import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
+import { mainWeaponId } from '@/lib/equipment';
 import { getCardArmor, getCardWeapon, iconUrl } from '@/data/core';
 import type { Build, UserProfile } from '@/lib/models';
 import { formatFullDate, relativeTime } from '@/lib/relativeTime';
@@ -15,6 +16,7 @@ import {
   COLOR_ACCENT_STRONG,
   COLOR_FRAME,
   COLOR_LINE,
+  COLOR_LINE_STRONG,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
@@ -25,9 +27,9 @@ import {
 import { fitCount } from './tags';
 import { labelText } from '@/components/ui/typography';
 
-// Rows preview the first two slots of each hand (weapon slots 1, 2 main hand and 4, 5 off hand) and
-// the four armor pieces, always in the same positions so the columns line up for scanning.
-export const PREVIEW_WEAPONS = [0, 1, 3, 4] as const;
+// Rows preview the first two slots of each hand, left hand first (weapon slots 4, 5, then 1, 2), and
+// the four armor pieces, always in the same cells so the strips line up for scanning (empty = faint).
+export const PREVIEW_WEAPONS = [3, 4, 0, 1] as const;
 const ARMOR = [
   ['helm', 'head'],
   ['chest', 'chest'],
@@ -35,14 +37,16 @@ const ARMOR = [
   ['leg', 'legs'],
 ] as const;
 
-const TILE = 56;
-const TILE_MOBILE = 38;
-const GAP = 6;
-// Fixed row heights (name, author, one line of tags; on tablets and phones the tiles go underneath).
-const ROW_HEIGHT = 96;
-const ROW_HEIGHT_TABLET = 156;
-const ROW_HEIGHT_PHONE = 136;
-const SLOTS_WIDTH = `${4 * TILE + 3 * GAP}px`;
+const TILE = 38;
+const GAP = 4;
+const PORTRAIT = 72;
+const PORTRAIT_PHONE = 60;
+// Fixed row heights on desktop and tablets (name, author, one line of tags; the strip goes underneath
+// on tablets). Phones size to their content: names may take two lines.
+const ROW_HEIGHT = 88;
+const ROW_HEIGHT_TABLET = 140;
+// 8 tiles, the gaps around them, and the divider with 6px of air on each side.
+const STRIP_WIDTH = `${8 * TILE + 8 * GAP + 13}px`;
 
 interface BuildsListProps {
   builds: Build[];
@@ -51,99 +55,95 @@ interface BuildsListProps {
 }
 
 /**
- * Builds as full-width rows (one link each): name, author, age and tags; armaments and armor as item
- * tiles; level, likes and comments. Dense on purpose, so many builds fit on screen, and all the same height
- * (tags on one line, the rest as "+N").
+ * Builds as full-width rows (one link each): the main weapon as a portrait, name, author, age and tags;
+ * a strip of item tiles (hands, then armor); level, likes and comments. Dense on purpose, so many builds
+ * fit on screen, and all the same height on desktop (tags on one line, the rest as "+N").
  */
 function BuildsList({ builds, authors }: BuildsListProps) {
   return (
-    <div>
-      <ListHead aria-hidden="true">
-        <span>Build</span>
-        <span>Armaments</span>
-        <span>Armor</span>
-        <End>Level</End>
-        <End>Activity</End>
-      </ListHead>
-      <Rows>
-        {builds.map((build) => {
-          const { equipment } = build;
-          const author = authors?.[build.ownerId];
-          return (
-            <li key={build.id}>
-              <Row to={`/build/${build.id}`}>
-                <Who>
-                  <Name>{build.name}</Name>
-                  <Meta>
-                    {author ? (
-                      <>
-                        by <b>{author.displayName}</b>
-                        <Dot aria-hidden="true">·</Dot>
-                      </>
-                    ) : null}
-                    <time
-                      dateTime={build.createdAt.toISOString()}
-                      title={formatFullDate(build.createdAt)}>
-                      {relativeTime(build.createdAt)}
-                    </time>
-                  </Meta>
-                  <RowTags tags={build.tags} />
-                </Who>
-                <Slots>
-                  <SlotGroup>
-                    {PREVIEW_WEAPONS.map((index) => {
-                      const weapon = getCardWeapon(equipment.weapons[index]);
-                      return (
-                        <Tile
-                          key={index}
-                          src={weapon ? iconUrl(weapon.icon) : null}
-                          title={weapon?.name}
-                          size={TILE}
-                        />
-                      );
-                    })}
-                  </SlotGroup>
-                  <SlotGroup>
-                    {ARMOR.map(([slot, armorSlot]) => {
-                      const piece = getCardArmor(equipment[slot], armorSlot);
-                      return (
-                        <Tile
-                          key={slot}
-                          src={piece ? iconUrl(piece.icon) : null}
-                          title={piece?.name}
-                          size={TILE}
-                        />
-                      );
-                    })}
-                  </SlotGroup>
-                </Slots>
-                <Numbers>
-                  <Level>
-                    <VisuallyHidden>Level </VisuallyHidden>
-                    {build.level}
-                  </Level>
-                  <Activity>
-                    <Likes>
-                      <HeartIcon size={15} />
-                      {build.likeCount}
-                      <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
-                    </Likes>
-                    <Comments>
-                      <CommentIcon size={14} />
-                      {build.commentCount}
-                      <VisuallyHidden>
-                        {' '}
-                        {build.commentCount === 1 ? 'comment' : 'comments'}
-                      </VisuallyHidden>
-                    </Comments>
-                  </Activity>
-                </Numbers>
-              </Row>
-            </li>
-          );
-        })}
-      </Rows>
-    </div>
+    <Rows>
+      {builds.map((build) => {
+        const { equipment } = build;
+        const author = authors?.[build.ownerId];
+        const main = getCardWeapon(mainWeaponId(equipment));
+        return (
+          <li key={build.id}>
+            <Row to={`/build/${build.id}`}>
+              <Portrait
+                src={main ? iconUrl(main.icon) : null}
+                title={main?.name}
+                size={PORTRAIT}
+                placeholder
+              />
+              <Head>
+                <Name>{build.name}</Name>
+                <Meta>
+                  {author ? (
+                    <>
+                      by <b>{author.displayName}</b>
+                      <Dot aria-hidden="true">·</Dot>
+                    </>
+                  ) : null}
+                  <time
+                    dateTime={build.createdAt.toISOString()}
+                    title={formatFullDate(build.createdAt)}>
+                    {relativeTime(build.createdAt)}
+                  </time>
+                </Meta>
+              </Head>
+              <RowTags tags={build.tags} />
+              <Strip data-testid="slots">
+                {PREVIEW_WEAPONS.map((index) => {
+                  const weapon = getCardWeapon(equipment.weapons[index]);
+                  return (
+                    <Tile
+                      key={index}
+                      src={weapon ? iconUrl(weapon.icon) : null}
+                      title={weapon?.name}
+                      size={TILE}
+                      placeholder
+                    />
+                  );
+                })}
+                <Divider aria-hidden="true" />
+                {ARMOR.map(([slot, armorSlot]) => {
+                  const piece = getCardArmor(equipment[slot], armorSlot);
+                  return (
+                    <Tile
+                      key={slot}
+                      src={piece ? iconUrl(piece.icon) : null}
+                      title={piece?.name}
+                      size={TILE}
+                      placeholder
+                    />
+                  );
+                })}
+              </Strip>
+              <Numbers>
+                <Level>
+                  <LevelLabel>Level</LevelLabel> <LevelNumber>{build.level}</LevelNumber>
+                </Level>
+                <Activity>
+                  <Likes>
+                    <HeartIcon size={15} />
+                    {build.likeCount}
+                    <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
+                  </Likes>
+                  <Comments>
+                    <CommentIcon size={14} />
+                    {build.commentCount}
+                    <VisuallyHidden>
+                      {' '}
+                      {build.commentCount === 1 ? 'comment' : 'comments'}
+                    </VisuallyHidden>
+                  </Comments>
+                </Activity>
+              </Numbers>
+            </Row>
+          </li>
+        );
+      })}
+    </Rows>
   );
 }
 
@@ -188,24 +188,6 @@ function RowTags({ tags }: { tags: string[] }) {
   );
 }
 
-const columns = `minmax(0, 1fr) ${SLOTS_WIDTH} ${SLOTS_WIDTH} 70px 72px`;
-
-const ListHead = styled.div`
-  ${labelText}
-  column-gap: 24px;
-  display: grid;
-  grid-template-columns: ${columns};
-  padding: 0 16px 8px;
-
-  @media ${BELOW_TABLET} {
-    display: none;
-  }
-`;
-
-const End = styled.span`
-  text-align: right;
-`;
-
 const Rows = styled.ul`
   border-top: 1px solid ${COLOR_LINE};
   list-style: none;
@@ -217,12 +199,18 @@ const Rows = styled.ul`
   }
 `;
 
+// One grid for every width, by named areas: desktop is portrait | name over tags | strip | level |
+// likes and comments; tablets move the numbers to the right and the strip underneath; phones stack.
 const Row = styled(Link)`
   ${selectionBar}
-  align-items: center;
-  column-gap: 24px;
+  align-content: center;
+  column-gap: 20px;
   display: grid;
-  grid-template-columns: ${columns};
+  grid-template-areas:
+    'portrait head strip level activity'
+    'portrait tags strip level activity';
+  grid-template-columns: ${PORTRAIT}px minmax(0, 1fr) ${STRIP_WIDTH} 56px 84px;
+  grid-template-rows: auto auto;
   height: ${ROW_HEIGHT}px;
   padding: 0 16px;
   position: relative;
@@ -232,27 +220,46 @@ const Row = styled(Link)`
   }
 
   @media ${BELOW_TABLET} {
+    column-gap: 14px;
     grid-template-areas:
-      'who numbers'
-      'slots slots';
-    grid-template-columns: minmax(0, 1fr) auto;
-    row-gap: 10px;
-    column-gap: 12px;
-    align-content: center;
+      'portrait head numbers'
+      'portrait tags numbers'
+      'strip strip strip';
+    grid-template-columns: ${PORTRAIT}px minmax(0, 1fr) auto;
     height: ${ROW_HEIGHT_TABLET}px;
+    row-gap: 0;
   }
 
   @media ${BELOW_MOBILE} {
-    height: ${ROW_HEIGHT_PHONE}px;
-    padding: 0 4px;
+    grid-template-areas:
+      'portrait head'
+      'portrait numbers'
+      'tags tags'
+      'strip strip';
+    grid-template-columns: ${PORTRAIT_PHONE}px minmax(0, 1fr);
+    height: auto;
+    padding: 12px 4px;
   }
 `;
 
-const Who = styled.div`
+const Portrait = styled(ItemTile)`
+  align-self: center;
+  grid-area: portrait;
+
+  @media ${BELOW_MOBILE} {
+    align-self: start;
+    height: ${PORTRAIT_PHONE}px;
+    width: ${PORTRAIT_PHONE}px;
+  }
+`;
+
+const Head = styled.div`
+  align-self: end;
+  grid-area: head;
   min-width: 0;
 
-  @media ${BELOW_TABLET} {
-    grid-area: who;
+  @media ${BELOW_MOBILE} {
+    align-self: start;
   }
 `;
 
@@ -260,7 +267,7 @@ const Name = styled.span`
   color: ${COLOR_TEXT};
   display: block;
   font-family: ${FONT_DISPLAY};
-  font-size: 19px;
+  font-size: 20px;
   font-weight: ${WEIGHT_DISPLAY};
   line-height: 1.25;
   overflow: hidden;
@@ -269,6 +276,13 @@ const Name = styled.span`
 
   ${Row}:hover & {
     color: ${COLOR_ACCENT_STRONG};
+  }
+
+  @media ${BELOW_MOBILE} {
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    white-space: normal;
   }
 `;
 
@@ -293,12 +307,21 @@ const Dot = styled.span`
 
 // Always there (empty too) and one line tall, so every row has the same height.
 const Tags = styled.span`
+  align-self: start;
   display: flex;
   gap: ${TAG_GAP}px;
+  grid-area: tags;
   height: 22px;
   margin-top: 6px;
   overflow: hidden;
   position: relative;
+
+  /* Phones: no empty line between the numbers and the strip. */
+  @media ${BELOW_MOBILE} {
+    &:empty {
+      display: none;
+    }
+  }
 `;
 
 // Tags that don't fit are taken out of the line but kept measurable and readable to screen readers.
@@ -318,38 +341,34 @@ const More = styled(Tag)`
   height: 22px;
 `;
 
-// Desktop: the two slot groups are grid columns of the row; tablet and phone: one line under the name.
-const Slots = styled.div`
-  display: contents;
+const Strip = styled.span`
+  align-items: center;
+  display: flex;
+  gap: ${GAP}px;
+  grid-area: strip;
 
   @media ${BELOW_TABLET} {
-    display: flex;
-    gap: 10px;
-    grid-area: slots;
-  }
-
-  @media ${BELOW_MOBILE} {
-    gap: 8px;
+    margin-top: 10px;
   }
 `;
 
-const SlotGroup = styled.div`
-  display: flex;
-  gap: ${GAP}px;
-
-  @media ${BELOW_MOBILE} {
-    gap: 4px;
-  }
+const Divider = styled.span`
+  align-self: stretch;
+  background: ${COLOR_LINE_STRONG};
+  flex: none;
+  margin: 6px 6px;
+  width: 1px;
 `;
 
 const Tile = styled(ItemTile)`
   @media ${BELOW_MOBILE} {
-    height: ${TILE_MOBILE}px;
-    width: ${TILE_MOBILE}px;
+    height: ${TILE}px;
+    width: ${TILE}px;
   }
 `;
 
-// Desktop: two grid columns; tablet and phone: stacked at the top right.
+// Desktop: two grid columns (level, then likes over comments); tablets: stacked at the top right;
+// phones: one line under the name.
 const Numbers = styled.div`
   display: contents;
 
@@ -358,29 +377,55 @@ const Numbers = styled.div`
     align-self: start;
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 4px;
     grid-area: numbers;
+  }
+
+  @media ${BELOW_MOBILE} {
+    align-items: center;
+    align-self: start;
+    flex-direction: row;
+    gap: 14px;
   }
 `;
 
 const Level = styled.span`
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  grid-area: level;
+  text-align: right;
+
+  @media ${BELOW_MOBILE} {
+    align-items: baseline;
+    flex-direction: row;
+    gap: 6px;
+  }
+`;
+
+const LevelLabel = styled.span`
+  ${labelText}
+`;
+
+const LevelNumber = styled.span`
   color: ${COLOR_TEXT};
   font-size: ${TEXT_LG};
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  text-align: right;
 `;
 
-// Likes over comments (T20); on tablets and phones side by side, under the level.
+// Likes over comments (T20); on tablets and phones side by side.
 const Activity = styled.span`
   align-items: flex-end;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  grid-area: activity;
 
   @media ${BELOW_TABLET} {
     flex-direction: row;
     gap: 10px;
+    grid-area: auto;
   }
 `;
 
@@ -402,10 +447,6 @@ const Likes = styled.span`
 const Comments = styled(Likes)`
   color: ${COLOR_TEXT_MUTED};
   font-weight: 500;
-
-  & > svg {
-    color: ${COLOR_TEXT_MUTED};
-  }
 `;
 
 export default BuildsList;

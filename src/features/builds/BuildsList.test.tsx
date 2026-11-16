@@ -43,8 +43,25 @@ describe('BuildsList', () => {
   it('shows the item icons, named in a tooltip, and empty slots', () => {
     const { container } = renderWithProviders(<BuildsList builds={[makeBuild()]} />);
     expect(container.querySelector('[title="Moonveil"] img')).toHaveAttribute('alt', '');
-    // 4 weapon + 4 armor slots per row, whatever is equipped.
-    expect(container.querySelectorAll('li a > div:nth-child(2) span')).toHaveLength(8);
+    // 4 weapon + 4 armor cells per row (plus the divider), whatever is equipped; left hand first.
+    const strip = container.querySelector('[data-testid="slots"]');
+    expect(strip?.children).toHaveLength(9);
+    // The fixture has Moonveil in slot 1 only: it is the one icon in the strip.
+    expect(strip?.querySelectorAll('img')).toHaveLength(1);
+  });
+
+  it('shows the main weapon as the portrait', () => {
+    const { container } = renderWithProviders(<BuildsList builds={[makeBuild()]} />);
+    const portrait = container.querySelector('li a')?.firstElementChild;
+    expect(portrait).toHaveAttribute('title', 'Moonveil');
+    expect(portrait?.querySelector('img')).not.toBeNull();
+  });
+
+  it('leaves the portrait empty for a build without weapons', () => {
+    const empty = makeBuild();
+    empty.equipment = { ...empty.equipment, weapons: [null, null, null, null, null, null] };
+    const { container } = renderWithProviders(<BuildsList builds={[empty]} />);
+    expect(container.querySelector('li a')?.firstElementChild?.querySelector('img')).toBeNull();
   });
 
   it('shows builds that share a name (rows are keyed by id)', () => {

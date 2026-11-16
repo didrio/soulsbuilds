@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T28 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T29 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs at their own URLs (Loadout, Description, How to get, Comments), stats
 in a left column on desktop, build math (T8), the route (T14/19/15). App Check: wait measured, blocked reCAPTCHA →
-a notice; left: enforcing. Redesign v2: foundations (T26), loadout (T27), build page (T28); T29 the landing. **Next:** `TICKETS.md`.
+a notice; left: enforcing. Redesign v2: foundations (T26), loadout (T27), build page (T28), landing (T29). **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -105,9 +105,10 @@ src/
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
-  features/builds/         Landing (sort, tag/level filters in the URL, top tags + community line from stats,
-                           load more), BuildsList (fixed-height rows: age, likes + comments; tags.ts fits tags
-                           on one line + "+N"), filters.ts (+ topTags, toggleTag), queries.ts (useBuilds,
+  features/builds/         Landing (title + community line, one-line toolbar: search, sort, level; scrolling top-tags row;
+                           filters in the URL; load more), BuildsList (88px rows: main-weapon portrait, name, author,
+                           age, tags, left-hand-first slot strip with faint empty cells, level, likes + comments;
+                           tags.ts fits tags on one line + "+N"), filters.ts (+ topTags, toggleTag), queries.ts (useBuilds,
                            useUserBuilds, useGameStats)
   features/profile/        Profile (rename, Builds/Liked tabs), DeleteAccount (T18), queries.ts
                            (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
