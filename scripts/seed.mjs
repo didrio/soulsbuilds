@@ -127,6 +127,7 @@ const BUILDS = [
     name: 'Carian Moon Knight',
     description: 'Moonveil and full-moon sorceries. Quality-of-life INT build.',
     tags: ['Rennala', 'Rykard'],
+    image: { kind: 'spell', name: "Rennala's Full Moon" }, // T40: a non-weapon build image
     likedBy: [],
     comments: [],
     stats: stats(40, 30, 15, 12, 18, 80, 7, 9),
@@ -246,6 +247,27 @@ function toEquipmentIds({ id: buildId, equipment: e }) {
   };
 }
 
+// The build image (T40): { kind, name } → { kind, id } (null for the default, the main weapon).
+const IMAGE_FILES = {
+  weapon: 'weapons',
+  helm: 'armor',
+  chest: 'armor',
+  gauntlet: 'armor',
+  leg: 'armor',
+  talisman: 'talismans',
+  spell: 'spells',
+  tear: 'tears',
+  greatRune: 'greatRunes',
+  spiritAsh: 'spiritAshes',
+};
+function imageOf(build) {
+  if (!build.image) return null;
+  const { kind, name } = build.image;
+  const found = DATA[IMAGE_FILES[kind]]?.find((item) => item.name === name);
+  if (!found) throw new Error(`Seed build ${build.id}: no ${kind} "${name}" for the image`);
+  return { kind, id: found.id };
+}
+
 // A starting class name → its CharaInitParam ID (null for none), from src/data/er/character.json.
 function classId(name) {
   if (!name) return null;
@@ -269,6 +291,7 @@ async function main() {
       {
         ...buildContent({ ...build, equipment: toEquipmentIds(build) }),
         startingClass: classId(build.startingClass),
+        image: imageOf(build),
       },
     ]),
   );

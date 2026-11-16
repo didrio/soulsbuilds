@@ -117,6 +117,12 @@ builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED
     talismans ≤4, spells ≤12 (T8), tears ≤2, consumables ≤10: id[]   compacted
     helm, chest, gauntlet, leg, greatRune, spiritAsh: id|null
   }
+  image: { kind, id }|null        T40: the author's pick for the build's picture; kind = weapon, helm, chest,
+                                  gauntlet, leg, talisman, spell, tear, greatRune or spiritAsh (no arrows or
+                                  consumables); null = the default. Optional on create (an older tab can still
+                                  create builds) and absent on older builds. Shown only while the item is on
+                                  the build: `buildImage` in lib/equipment.ts falls back to the main weapon at
+                                  read time; the editor saves a pick that left the build as null
   likeCount, commentCount: int    0 on create; only change by ±1 with a like/comment (see below)
   playerCount, finishedCount: int T36: everyone tracking it (playing or finished) / those finished; 0 on
                                   create; move by ±1 with the caller's own tracking doc; absent on builds
@@ -248,10 +254,12 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
 **Build page** (T17, reshaped in T22, T27 and T28, `features/editor/`): view and edit share one layout. The
-**hero** (`BuildHeader`, the hero frame: the main weapon (`lib/equipment.ts` `mainWeaponId`) as a 112px tile with
+**hero** (`BuildHeader`, the hero frame: the build image (T40: `lib/equipment.ts` `buildImage`, the author's pick
+else the main weapon; `getCardItem` in `@/data/core` shows any kind) as a 112px tile with
 the skin's tint glow, name as `<h1>`, author, level and age, tags, then Like/Report/owner actions on the right; on
 tablets and phones a 76px tile and the actions in a row under the tags; in edit mode `BuildDetailsForm` takes its
-place), then a **tab bar** (`sections/BuildTabs`: `NavLink`s, sticky at the window's top, sideways-scrolling on
+place, with the name, tags and "Build image": the current tile and "Change image", which opens
+`BuildImageDialog`, radio rows of the default and the build's gear), then a **tab bar** (`sections/BuildTabs`: `NavLink`s, sticky at the window's top, sideways-scrolling on
 phones; Comments shows the stored count), then the tab. Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`):
 `/build/x` Loadout, `/description`, `/route`, `/comments`; an unknown tab, or one the build doesn't show (no
 write-up: no Description tab, for the owner too; editing and `/build/new`: Loadout and Description only), redirects

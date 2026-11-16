@@ -202,7 +202,17 @@ describe('game data v2', () => {
 
   it('has cards.json (the light data the landing page loads) matching the full files', () => {
     const cards = cardsSchema.parse(JSON.parse(readFileSync(join(DIR, 'cards.json'), 'utf8')));
-    expect(cards).toEqual(makeCards(weapons, armor));
+    expect(cards).toEqual(
+      makeCards({
+        weapons,
+        armor,
+        talismans,
+        spells,
+        tears: goods('tears.json'),
+        greatRunes: goods('greatRunes.json'),
+        spiritAshes: goods('spiritAshes.json'),
+      }),
+    );
   });
 
   it('keeps core.ts, which every page loads, from importing the full data (T11)', () => {

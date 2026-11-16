@@ -111,6 +111,9 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
         <BuildDetailsForm
           isNew={isNew}
           name={editor.name}
+          image={editor.image}
+          equipment={editor.equipment}
+          onImageChange={editor.setImage}
           onAddTag={editor.handleAddTag}
           onNameChange={editor.setName}
           onRemoveTag={editor.handleRemoveTag}

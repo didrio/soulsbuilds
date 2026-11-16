@@ -60,6 +60,20 @@ describe('BuildHeader', () => {
     expect(bare.querySelector('img')).toBeNull();
   });
 
+  it("shows the author's image pick while it's on the build, else the main weapon (T40)", () => {
+    const equipment = { ...makeBuild().equipment, talismans: [2160] };
+    const image = { kind: 'talisman', id: 2160 } as const;
+    const { container, unmount } = renderWithProviders(
+      <BuildHeader build={makeBuild({ equipment, image })} />,
+    );
+    expect(container.querySelector('[title="Lord of Blood\'s Exultation"] img')).not.toBeNull();
+    unmount();
+    const { container: removed } = renderWithProviders(
+      <BuildHeader build={makeBuild({ image })} />,
+    );
+    expect(removed.querySelector('[title="Moonveil"] img')).not.toBeNull();
+  });
+
   it('signed out: shows the count, not a button', async () => {
     renderWithProviders(<BuildHeader build={makeBuild({ likeCount: 3 })} />);
     expect(await screen.findByText('3 Likes')).toBeInTheDocument();

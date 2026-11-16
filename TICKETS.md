@@ -2,15 +2,15 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T42**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T43**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T40 — Choose the build's main image · Opus · high · plan mode on. Up next follows
-`docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37, blocked on the
-Blaze decision), the build image (T40), sign-in and account (T30, T31), copies and variations (T32 → T33).
-T30–T40 start with owner questions (★ in each ticket).
+**Next:** T30 — Sign up and log in · Opus · high · plan mode on. Up next follows `docs/product.md`
+"Priorities": usage counts (T38, blocked on the owner), link previews (T37, blocked on the Blaze decision),
+sign-in and account (T30, T31), then rules budget (T42) before copies and variations (T32 → T33).
+T30–T33 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -36,7 +36,8 @@ and spacing, and the canvas notes say why.
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
-T34 (tracking), T35 (the route during a run), T41 (tracking needs an account) and T36 (Playing and Completed).
+T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed)
+and T40 (the build image).
 
 ## In progress
 
@@ -72,31 +73,6 @@ T34 (tracking), T35 (the route during a run), T41 (tracking needs an account) an
   - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
 - **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
   replaces the backlog's "Per-build share previews".
-
-### T40 — Choose the build's main image
-
-- **Status:** ready; owner decisions first
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** The author picks the image that represents their build: any item saved on it (a weapon, armor piece,
-  talisman, spell, spirit ash…), shown as the hero portrait on the build page and in the landing rows (owner,
-  2026-11-16).
-- **Done when:** (ask the owner the ★ in one question first)
-  - Model: an optional field on the build holding the chosen item (slot and game ID), validated in
-    `firestore.rules` (cheap: mind the expression budget, Gotchas) and `src/lib/models.ts`; rules tests for a
-    valid pick, a bad one, and none.
-  - The editor lets the author choose: ★ e.g. a "Use as build image" action on any filled slot's item, or a
-    picker in the title block. Saved with the build.
-  - If the chosen item is no longer on the build (removed or swapped), the image falls back to the default, which
-    is `mainWeaponId` (first right-hand weapon); nothing is stored for that, it's decided at read time. A pure,
-    tested function in `src/lib/equipment.ts` (`buildImageId(build)`) replaces direct `mainWeaponId` calls in
-    T28's hero and T29's rows. Icons for spells and spirit ashes come from the full data (the landing uses
-    `@/data/core`, so check that card accessors cover every slot type).
-  - Existing builds have no field: no migration. Tests: unit (fallback logic), rules, an e2e (pick a talisman, see
-    it in the hero, remove it, back to the weapon). `npm run check`, `npm run test:rules`, `npm run e2e` pass.
-  - Docs: the model in `docs/architecture.md`, a decision row.
-- **Context:** `src/lib/{models,equipment}.ts`, `features/editor/{useBuildEditor.ts,store/build.ts}`,
-  `sections/BuildHeader.tsx`, `features/builds/BuildsList.tsx`, `firestore.rules` with `tests/rules/`,
-  `src/data/core` accessors (`getCardWeapon`, `getCardArmor`).
 
 ### T30 — Sign up and log in: low friction, done properly
 
@@ -169,9 +145,32 @@ T34 (tracking), T35 (the route during a run), T41 (tracking needs an account) an
 - **Context:** `features/profile/{Profile,DeleteAccount,queries}`, `lib/firebase/{auth,users,account}.ts`,
   `app/Header.tsx`, `app/routes.tsx`; decisions "Account deletion", "Emails", "Email verification".
 
+### T42 — Free up rules budget on builds before the next field
+
+- **Status:** ready (must land before T32, whose `basedOn` adds a field and a `get`)
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** Room in `builds/{id}`'s rules for new fields. After T40 (the build image) the full-equipment test
+  (`tests/rules/firestore.rules.test.ts`, "accepts a build with every slot filled…") fails if `validContent`
+  gains about five more comparisons: Firestore's ~1,000-expression limit, denied with a bare `PERMISSION_DENIED`.
+- **Done when:**
+  - The worst-case create and owner edit (every slot filled, an image set) have measured headroom, recorded in
+    the `firestore.rules` budget comment and `docs/firebase.md`: e.g. at least 100 padding comparisons still
+    pass.
+  - The same writes are accepted and rejected as before: every existing rules test passes unchanged, plus tests
+    for anything newly checked or no longer checked.
+  - `npm run test:rules`, `npm run check`, `npm run e2e` pass; a decision row if what's validated changes.
+- **Context:** budget comment above `isItemIdOrNull` in `firestore.rules`. What T40 learned: each use of a
+  function argument re-walks `request.resource.data…`. `let` bindings are **not** memoized (binding the
+  equipment lists in `validEquipment` made it worse). `d.get('image', null)` with no `hasAll` was cheaper than
+  `'image' in d` + `hasExactly`. Literal key lists instead of `contentKeys().concat(…)` on create gained
+  nothing. Ideas to measure: drop the per-entry type checks of `weaponSkills` (size only, like talismans: the
+  app ignores unknown IDs); check `slots6` entries with fewer re-walks; skip `validContent` parts whose fields
+  aren't in `changedKeys()` on update. How to measure: temporarily prepend `(1 == 1 && … ×N) &&` to a check in
+  `validContent` and run `npm run test:rules`; T40 found N = 5 already fails.
+
 ### T32 — Make a copy: a build based on another
 
-- **Status:** ready (the button goes in T28's build hero); owner decisions first
+- **Status:** ready after T42 (rules budget for `basedOn`; the button goes in T28's build hero); owner decisions first
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -256,6 +255,11 @@ T34 (tracking), T35 (the route during a run), T41 (tracking needs an account) an
 
 Older entries: `docs/tickets-archive.md`.
 
+- T40 — Choose the build's main image — 2026-11-16 — owner: picker in edit mode's title block ("Change image" →
+  `BuildImageDialog`, radio rows), gear only (no arrows/consumables); `image: { kind, id } | null` (rules check the
+  shape, optional on create), `buildImage` / `imageChoices` in `lib/equipment.ts` (read-time fallback to the main
+  weapon; the editor saves a gone pick as null), `getCardItem` + 5 new card kinds (cards.json +7 KB gzipped);
+  hero, landing rows, profile panels; e2e `build-image.spec.ts`. Rules budget nearly exhausted → T42.
 - T36 — Playing and Completed — 2026-11-16 — owner: both profile tabs private, "Most played" sort, stopping a
   finished build removes it from Completed; build counters `playerCount`/`finishedCount` (±1 in the tracking
   doc's batch, rules check both sides; `saveQueue` tracks the stored status), hero "N playing · M finished",
@@ -266,27 +270,18 @@ Older entries: `docs/tickets-archive.md`.
   `useOpenAuthDialog(kind, onSignedIn)` + `startAfterSignIn(uid)`; signed in with no tracked build, from
   `tracksAnyBuild` (`limit(1)`): Start tracking / Not now); local storage, sync, Keep my progress and
   `mergeTracking` gone; `screenshot --storage` → `--click`; e2e `helpers.ts` `completeSignUp`.
-
 - T35 — The route during a run — 2026-11-16 — owner: flat numbered stops (mockup), reasons hand-written on gates
   (`progression.ts` `reason`, pipeline fails without) and worded from the route's links for prerequisite key
   items (`route.ts` `usedFor`/`gate`, `phrases.ts` `itemReason`), region-only stops named by who/what; key items
   with icons (+80 webp); `guide/progress.ts` (done/next), "N of M stops done" + folding, `NextStop` card on Loadout.
   Mid-session: tracking becomes account-only → T41.
-
 - T34 — Track a build — 2026-11-16 — owner: local storage signed out (merged into the account on sign-in, not
   anonymous auth), gear + spells counted (not arrows/consumables), no class = 10 per stat, Share = the link;
   `users/{uid}/tracking/{buildId}` (owner-only rules), pure `lib/tracking.ts` (item keys, progress, changes,
   merge), `features/tracking/` (debounced saves, local storage, hero progress / Build complete, Keep my progress,
   new-items notice, stats with − +); Loadout toggles with "3/4"; account deletion + `admin.mjs delete-user`;
   `screenshot --storage`. Kept the full data out of the shell (`LOCAL_OWNER` in `localTracking.ts`).
-
 - T39 — Loadout without empty rows — 2026-11-16 — read-only: a weapon row with both hands empty is hidden (one-handed
   rows keep the other hand's placeholder), Spells hidden without spells and never shows free-slot placeholders; edit
   mode unchanged. Not seen on screen: mobile Loadout, the Spells section; with no weapons the Armor row's top rule sits
   right under the heading.
-
-- T29 — Landing: slim toolbar, rows with a portrait — 2026-11-16 — no framed card: h1 + "N builds by M players" on
-  a line, then search | sort | level, then a sideways-scrolling top-tags row ("More tags" after it, outside the
-  scroller so its popover isn't clipped); 88px rows by named grid areas (portrait = `mainWeaponId`, strip
-  left hand first, empty cells faint, "Level" label); tablet 140px, phones auto height (60px portrait, name on two
-  lines). The phone Filters button is gone (sort and level always show).

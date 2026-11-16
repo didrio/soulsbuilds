@@ -7,12 +7,12 @@ import Frame from '@/components/ui/Frame';
 import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
 import { HeartIcon } from '@/components/ui/icons';
-import { getCardWeapon, iconUrl } from '@/data/core';
+import { getCardItem, iconUrl } from '@/data/core';
 import useAuth from '@/features/auth/useAuth';
 import ReportButton from '@/features/reports/ReportButton';
 import { useUserProfile } from '@/features/profile/queries';
 import { errorMessage } from '@/lib/firebase';
-import { mainWeaponId } from '@/lib/equipment';
+import { buildImage } from '@/lib/equipment';
 import type { Build } from '@/lib/models';
 import { formatFullDate, relativeTime } from '@/lib/relativeTime';
 import {
@@ -48,7 +48,7 @@ interface BuildHeaderProps {
 }
 
 /**
- * View mode's hero (T22, T28): the main weapon as a large tile with the skin's glow, the build's name
+ * View mode's hero (T22, T28): the build image (T40: the author's pick, else the main weapon) as a large tile with the skin's glow, the build's name
  * (the page's `<h1>`), "by <author> · Level N · 3 days ago", the tags (each links to the builds with
  * it), and the actions: Track this build (T34), Like (a count when signed out), Report and the
  * owner's controls. Desktop: actions on the right; tablets and phones: a smaller tile, the actions in
@@ -61,11 +61,11 @@ function BuildHeader({ build, ownerActions, trackAction, progress }: BuildHeader
   const liked = useHasLiked(build.id, uid);
   const toggleLike = useToggleLike(build.id, uid);
   const isLiked = liked.data === true;
-  const weapon = getCardWeapon(mainWeaponId(build.equipment));
+  const image = getCardItem(buildImage(build));
 
   return (
-    <Pane $hero $tile={Boolean(weapon)} $progress={Boolean(progress)} aria-labelledby="build-title">
-      {weapon ? <Portrait src={iconUrl(weapon.icon)} title={weapon.name} size={112} /> : null}
+    <Pane $hero $tile={Boolean(image)} $progress={Boolean(progress)} aria-labelledby="build-title">
+      {image ? <Portrait src={iconUrl(image.icon)} title={image.name} size={112} /> : null}
       <Title id="build-title">{build.name}</Title>
       <Meta>
         {owner.data ? (
@@ -183,7 +183,7 @@ const Pane = styled(Frame)<{ $tile: boolean; $progress: boolean }>`
   }
 `;
 
-// The main weapon, lit by the skin's tint.
+// The build image, lit by the skin's tint.
 const Portrait = styled(ItemTile)`
   align-self: start;
   box-shadow: 0 0 48px ${COLOR_TINT};

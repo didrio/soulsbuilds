@@ -41,6 +41,31 @@ export interface Equipment {
   spiritAsh: number | null;
 }
 
+/**
+ * The kinds of item a build image can be (T40): gear, named like the `Equipment` fields (one kind per
+ * data file or armor slot, since game IDs only identify an item within its file). No arrows or
+ * consumables. firestore.rules lists the same kinds.
+ */
+export const IMAGE_KINDS = [
+  'weapon',
+  'helm',
+  'chest',
+  'gauntlet',
+  'leg',
+  'talisman',
+  'spell',
+  'tear',
+  'greatRune',
+  'spiritAsh',
+] as const;
+export type ImageKind = (typeof IMAGE_KINDS)[number];
+
+/** The item the author chose to represent the build (T40); see `buildImage` in ./equipment. */
+export interface BuildImage {
+  kind: ImageKind;
+  id: number;
+}
+
 /** What the build editor saves: the owner-editable part of a build. */
 export interface BuildContent {
   name: string;
@@ -55,12 +80,19 @@ export interface BuildContent {
    */
   startingClass: number | null;
   equipment: Equipment;
+  /**
+   * The author's pick for the build's picture (T40), or null for the default (the main weapon). Shown
+   * only while the item is still on the build (`buildImage`). Builds from before T40 don't store it.
+   */
+  image: BuildImage | null;
 }
 
 /** builds/{id} as stored. */
-export interface BuildDoc extends Omit<BuildContent, 'startingClass'> {
+export interface BuildDoc extends Omit<BuildContent, 'startingClass' | 'image'> {
   /** Absent on builds saved before T8. */
   startingClass?: number | null;
+  /** Absent on builds saved before T40. */
+  image?: BuildImage | null;
   ownerId: string;
   game: GameId;
   /** `name.toLowerCase()`, for prefix search (T9). */

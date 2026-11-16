@@ -152,7 +152,10 @@ service cloud.firestore {
     // costs ~25: checking all 42 list entries would blow it. So the positional lists, the single
     // slots and the affinities are type-checked, and the talisman/spell/tear/consumable lists only
     // by size, like every list in 2022 (docs/decisions.md). The full-equipment test in
-    // tests/rules/firestore.rules.test.ts guards the worst case.
+    // tests/rules/firestore.rules.test.ts guards the worst case. After T40 (the build image) it has
+    // almost no headroom: five more comparisons in validContent fail it. `let` bindings don't help
+    // (they aren't memoized; binding the lists here made it worse). A new build field needs budget
+    // reclaimed first.
     function isItemIdOrNull(value) {
       return value == null || value is int;
     }
@@ -194,7 +197,7 @@ service cloud.firestore {
     // The fields the owner writes. Everything else is set on create or changed by the counters.
     function contentKeys() {
       return ['name', 'nameLower', 'description', 'tags', 'level', 'stats', 'equipment',
-        'startingClass'];
+        'startingClass', 'image'];
     }
 
     // A starting class is its CharaInitParam ID (3000 Vagabond … 3009 Wretch) or null for none; builds
@@ -202,6 +205,18 @@ service cloud.firestore {
     function validStartingClass(d) {
       return !('startingClass' in d) || d.startingClass == null
         || (d.startingClass is int && d.startingClass >= 3000 && d.startingClass <= 3009);
+    }
+
+    // The build image (T40): the author's pick, as an item kind (src/lib/models.ts IMAGE_KINDS) and a
+    // game ID, or null for the default (the main weapon). Builds from before T40 don't have the field.
+    // Whether the item is on the build is the app's job (budget): it falls back to the main weapon.
+    // `get` and no hasAll keep it cheap: a missing kind or id fails the `is`/`in` checks anyway.
+    function validImage(d) {
+      let image = d.get('image', null);
+      return image == null
+        || (image is map && image.keys().hasOnly(['kind', 'id']) && image.id is int
+          && image.kind in ['weapon', 'helm', 'chest', 'gauntlet', 'leg', 'talisman', 'spell',
+            'tear', 'greatRune', 'spiritAsh']);
     }
 
     function validContent(d) {
@@ -212,16 +227,17 @@ service cloud.firestore {
         && validStats(d.stats)
         && validLevel(d.level, d.stats)
         && validStartingClass(d)
+        && validImage(d)
         && validEquipment(d.equipment);
     }
 
     match /builds/{buildId} {
       allow read: if true;
 
+      // `image` may be absent (T40), so a tab still running an older app can create builds.
       allow create: if signedIn()
-        && hasExactly(incoming(), contentKeys().concat(
-          ['ownerId', 'game', 'likeCount', 'commentCount', 'playerCount', 'finishedCount',
-            'createdAt', 'updatedAt']))
+        && incoming().keys().hasAll(contentKeys().removeAll(['image']).concat(createKeys()))
+        && incoming().keys().hasOnly(contentKeys().concat(createKeys()))
         && incoming().ownerId == request.auth.uid
         && incoming().game == 'elden-ring'
         && validContent(incoming())
@@ -231,6 +247,11 @@ service cloud.firestore {
         && incoming().finishedCount == 0
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
+
+      function createKeys() {
+        return ['ownerId', 'game', 'likeCount', 'commentCount', 'playerCount', 'finishedCount',
+          'createdAt', 'updatedAt'];
+      }
 
       allow update: if ownerEdit() || likeChange(buildId) || commentChange(buildId)
         || trackingCount(buildId);

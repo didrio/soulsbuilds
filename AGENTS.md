@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T29, T34–T36, T39, T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T29, T34–T36, T39–T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -125,8 +125,8 @@ src/
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete; hero + tabs, T28) + useBuildEditor; tabs.ts (tab
                            list, URLs, which show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments);
-                           sections/ (BuildHeader = hero: main weapon, like/report/tags, OwnerActions, BuildTabs
-                           (sticky tab bar), BuildDetailsForm (edit title block), LoadoutPanel (StatsCard | Loadout in
+                           sections/ (BuildHeader = hero: build image (T40), like/report/tags, OwnerActions, BuildTabs
+                           (sticky tab bar), BuildDetailsForm (edit title block + BuildImageDialog), LoadoutPanel (StatsCard | Loadout in
                            one panel on desktop), Loadout (every slot, fixed layout, T27), StatsCard (attributes + HP,
                            load, poise, T27), BuildSummary (the other tabs' condensed stats + gear column), TabLinkCard,
                            DescriptionSection, MarkdownView + rehypeJumpTo ("Jump to"), CommentsSection, MoreByAuthor); ItemRow (any slot as tile + name; button in
@@ -145,7 +145,7 @@ src/
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check; appCheckStatus watches
                            for a token that never comes, T24), auth, builds, likes,
                            comments, users, reports, account (deletion, T18), stats (T20), tracking (T34; tracksAnyBuild, T41)),
-                           models.ts (v2 types + LIMITS), queryKeys.ts, equipment.ts (mainWeaponId), markdown.ts
+                           models.ts (v2 types + LIMITS), queryKeys.ts, equipment.ts (mainWeaponId, buildImage, imageChoices), markdown.ts
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),

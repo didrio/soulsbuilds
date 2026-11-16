@@ -10,9 +10,9 @@ import PageMessage from '@/components/ui/PageMessage';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { LockIcon } from '@/components/ui/icons';
 import { TextButton, TextLink } from '@/components/ui/TextButton';
-import { getCardWeapon, iconUrl } from '@/data/core';
+import { getCardItem, iconUrl } from '@/data/core';
 import { errorMessage } from '@/lib/firebase';
-import { mainWeaponId } from '@/lib/equipment';
+import { buildImage } from '@/lib/equipment';
 import { formatMonthYear } from '@/lib/relativeTime';
 import {
   COLOR_ACCENT_LINE,
@@ -80,7 +80,7 @@ export function PlayingPanel({
   );
 }
 
-/** Every finished build as a trophy: the main weapon with a soft glow, the name, the month. */
+/** Every finished build as a trophy: the build image (T40) with a soft glow, the name, the month. */
 export function CompletedPanel({ uid }: { uid: string }) {
   const tracked = useTrackedBuilds(uid);
   if (tracked.isPending) return <PageMessage loading />;
@@ -113,11 +113,11 @@ function Shelf({ items }: { items: TrackedBuild[] }) {
   return (
     <Trophies>
       {items.map(({ build, state }) => {
-        const weapon = getCardWeapon(mainWeaponId(build.equipment));
+        const image = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
             <Trophy to={`/build/${build.id}`}>
-              <TrophyTile src={weapon ? iconUrl(weapon.icon) : null} size={76} />
+              <TrophyTile src={image ? iconUrl(image.icon) : null} size={76} />
               <TrophyName>{build.name}</TrophyName>
               {state.completedAt ? (
                 <TrophyDate dateTime={state.completedAt.toISOString()}>

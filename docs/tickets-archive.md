@@ -103,3 +103,8 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   (`tabs.ts`, sticky `BuildTabs`); owner, mid-session: stats in a left column on every desktop tab (one panel with
   the gear on Loadout, `BuildSummary` elsewhere), no Description tab without a write-up; Jump to (`rehypeJumpTo`);
   route as numbered areas; editor pinned dark (`index.html`); `BELOW_WIDE`, `screenshot --width`.
+- T29 — Landing: slim toolbar, rows with a portrait — 2026-11-16 — no framed card: h1 + "N builds by M players" on
+  a line, then search | sort | level, then a sideways-scrolling top-tags row ("More tags" after it, outside the
+  scroller so its popover isn't clipped); 88px rows by named grid areas (portrait = `mainWeaponId`, strip
+  left hand first, empty cells faint, "Level" label); tablet 140px, phones auto height (60px portrait, name on two
+  lines). The phone Filters button is gone (sort and level always show).

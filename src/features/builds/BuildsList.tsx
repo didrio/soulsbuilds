@@ -6,8 +6,8 @@ import { selectionBar } from '@/components/ui/inWorld';
 import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
-import { mainWeaponId } from '@/lib/equipment';
-import { getCardArmor, getCardWeapon, iconUrl } from '@/data/core';
+import { buildImage } from '@/lib/equipment';
+import { getCardArmor, getCardItem, getCardWeapon, iconUrl } from '@/data/core';
 import type { Build, UserProfile } from '@/lib/models';
 import { formatFullDate, relativeTime } from '@/lib/relativeTime';
 import {
@@ -55,7 +55,7 @@ interface BuildsListProps {
 }
 
 /**
- * Builds as full-width rows (one link each): the main weapon as a portrait, name, author, age and tags;
+ * Builds as full-width rows (one link each): the build image (T40) as a portrait, name, author, age and tags;
  * a strip of item tiles (hands, then armor); level, likes and comments. Dense on purpose, so many builds
  * fit on screen, and all the same height on desktop (tags on one line, the rest as "+N").
  */
@@ -65,7 +65,7 @@ function BuildsList({ builds, authors }: BuildsListProps) {
       {builds.map((build) => {
         const { equipment } = build;
         const author = authors?.[build.ownerId];
-        const main = getCardWeapon(mainWeaponId(equipment));
+        const main = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
             <Row to={`/build/${build.id}`}>

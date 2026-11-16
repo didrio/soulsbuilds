@@ -213,9 +213,10 @@ export const goodsSchema = z.strictObject({ ...item, effect });
 
 /** Tag group ("Bosses", "Melee Weapons", …) → tag names. Tags are plain strings on builds. */
 /**
- * The small subset of weapons and armor a build card or a slot needs to show an item (name, icon, skill
- * badge). `cards.json` is derived from weapons.json and armor.json by the pipeline, so the landing page
- * doesn't download the full 400 KB of stats (T11).
+ * The small subset of the items a build card or a slot needs to show one (name, icon, skill badge).
+ * `cards.json` is derived from the full files by the pipeline, so the landing page doesn't download the
+ * full ~1 MB of stats (T11). Weapons and armor for the slot strips; talismans, spells, tears, great runes
+ * and spirit ashes as name and icon for a build image (T40). No arrows or consumables (not choosable).
  */
 export const cardWeaponSchema = weaponSchema.pick({
   id: true,
@@ -225,25 +226,44 @@ export const cardWeaponSchema = weaponSchema.pick({
   ashesOfWar: true,
 });
 export const cardArmorSchema = armorSchema.pick({ id: true, name: true, icon: true, slot: true });
+export const cardItemSchema = z.strictObject({ id, name, icon });
 export const cardsSchema = z.strictObject({
   weapons: z.array(cardWeaponSchema),
   armor: z.array(cardArmorSchema),
+  talismans: z.array(cardItemSchema),
+  spells: z.array(cardItemSchema),
+  tears: z.array(cardItemSchema),
+  greatRunes: z.array(cardItemSchema),
+  spiritAshes: z.array(cardItemSchema),
 });
 
-/** weapons.json + armor.json → cards.json. */
-export function makeCards(
-  weapons: z.infer<typeof weaponSchema>[],
-  armor: z.infer<typeof armorSchema>[],
-): z.infer<typeof cardsSchema> {
+type Named = { id: number; name: string; icon: number };
+const cardItem = ({ id, name, icon }: Named) => ({ id, name, icon });
+
+/** The full item lists → cards.json. */
+export function makeCards(data: {
+  weapons: z.infer<typeof weaponSchema>[];
+  armor: z.infer<typeof armorSchema>[];
+  talismans: Named[];
+  spells: Named[];
+  tears: Named[];
+  greatRunes: Named[];
+  spiritAshes: Named[];
+}): z.infer<typeof cardsSchema> {
   return {
-    weapons: weapons.map(({ id, name, icon, skill, ashesOfWar }) => ({
+    weapons: data.weapons.map(({ id, name, icon, skill, ashesOfWar }) => ({
       id,
       name,
       icon,
       skill,
       ashesOfWar,
     })),
-    armor: armor.map(({ id, name, icon, slot }) => ({ id, name, icon, slot })),
+    armor: data.armor.map(({ id, name, icon, slot }) => ({ id, name, icon, slot })),
+    talismans: data.talismans.map(cardItem),
+    spells: data.spells.map(cardItem),
+    tears: data.tears.map(cardItem),
+    greatRunes: data.greatRunes.map(cardItem),
+    spiritAshes: data.spiritAshes.map(cardItem),
   };
 }
 
@@ -267,6 +287,7 @@ export type Goods = z.infer<typeof goodsSchema>;
 export type Tags = z.infer<typeof tagsSchema>;
 export type CardWeapon = z.infer<typeof cardWeaponSchema>;
 export type CardArmor = z.infer<typeof cardArmorSchema>;
+export type CardItem = z.infer<typeof cardItemSchema>;
 export type Cards = z.infer<typeof cardsSchema>;
 
 // --- Acquisition (T14): where every item comes from, for "How to get this build" (T15). ---------------

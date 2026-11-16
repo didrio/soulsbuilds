@@ -6,7 +6,8 @@ import { useNavigate } from 'react-router';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import useAuth from '@/features/auth/useAuth';
 import { errorMessage } from '@/lib/firebase';
-import { LIMITS } from '@/lib/models';
+import { hasImageItem } from '@/lib/equipment';
+import { LIMITS, type BuildImage } from '@/lib/models';
 import { useBuild, useDeleteBuild, useSaveBuild } from './queries';
 import { clearEditor, loadBuild, selectBuildFields } from './store/build';
 
@@ -14,9 +15,11 @@ interface Draft {
   name: string;
   description: string;
   tags: string[];
+  /** The build image (T40): the author's pick, or null for the default. */
+  image: BuildImage | null;
 }
 
-const EMPTY_DRAFT: Draft = { name: '', description: '', tags: [] };
+const EMPTY_DRAFT: Draft = { name: '', description: '', tags: [], image: null };
 
 /** `buildId` is null for /build/new. Mount with `key={buildId}` so each build starts fresh. */
 export function useBuildEditor(buildId: string | null) {
@@ -48,7 +51,12 @@ export function useBuildEditor(buildId: string | null) {
 
   const handleEdit = () => {
     if (!build) return;
-    setDraft({ name: build.name, description: build.description, tags: build.tags });
+    setDraft({
+      name: build.name,
+      description: build.description,
+      tags: build.tags,
+      image: build.image,
+    });
     setValidationError('');
     save.reset();
     setEditing(true);
@@ -79,6 +87,9 @@ export function useBuildEditor(buildId: string | null) {
           stats: buildFields.stats,
           startingClass: buildFields.startingClass,
           equipment: buildFields.equipment,
+          // A pick that's no longer on the build (removed or swapped while editing) saves as the default.
+          image:
+            draft.image && hasImageItem(buildFields.equipment, draft.image) ? draft.image : null,
         },
       },
       {
@@ -99,6 +110,7 @@ export function useBuildEditor(buildId: string | null) {
 
   const setName = (name: string) => setDraft((d) => ({ ...d, name }));
   const setDescription = (description: string) => setDraft((d) => ({ ...d, description }));
+  const setImage = (image: BuildImage | null) => setDraft((d) => ({ ...d, image }));
   const handleAddTag = (tag: string) =>
     setDraft((d) =>
       d.tags.includes(tag) || d.tags.length >= LIMITS.tags ? d : { ...d, tags: [...d.tags, tag] },
@@ -119,6 +131,9 @@ export function useBuildEditor(buildId: string | null) {
     name: shown.name,
     description: shown.description,
     tags: shown.tags,
+    /** The image draft while editing (view mode shows `build.image` through `buildImage`). */
+    image: draft.image,
+    equipment: buildFields.equipment,
     saving: save.isPending,
     saveError: validationError || (save.error ? errorMessage(save.error) : ''),
     deleting: remove.isPending,
@@ -127,6 +142,7 @@ export function useBuildEditor(buildId: string | null) {
     setConfirmingDelete,
     setName,
     setDescription,
+    setImage,
     handleAddTag,
     handleRemoveTag,
     handleEdit,

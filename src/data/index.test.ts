@@ -5,9 +5,13 @@ import {
   ashLabel,
   getArmor,
   getAsh,
+  getCardItem,
+  getGreatRune,
   getSkill,
   getSpell,
+  getSpiritAsh,
   getTalisman,
+  getTear,
   getWeapon,
   iconUrl,
   NO_SKILL_ID,
@@ -15,6 +19,30 @@ import {
   weapons,
   weaponSkill,
 } from '.';
+
+describe('getCardItem (T40: a build image from the light data)', () => {
+  it.each([
+    ['weapon', 9000000, getWeapon(9000000)],
+    ['helm', 680000, getArmor(680000, 'head')],
+    ['chest', 580100, getArmor(580100, 'chest')],
+    ['gauntlet', 580200, getArmor(580200, 'arms')],
+    ['leg', 580300, getArmor(580300, 'legs')],
+    ['talisman', 2160, getTalisman(2160)],
+    ['spell', 4000, getSpell(4000)],
+    ['tear', 11011, getTear(11011)],
+    ['greatRune', 191, getGreatRune(191)],
+    ['spiritAsh', 207000, getSpiritAsh(207000)],
+  ] as const)('shows a %s with the name and icon of the full data', (kind, id, full) => {
+    expect(full).toBeDefined();
+    expect(getCardItem({ kind, id })).toMatchObject({ id, name: full?.name, icon: full?.icon });
+  });
+
+  it('is undefined for no image, an unknown ID, or armor of another slot', () => {
+    expect(getCardItem(null)).toBeUndefined();
+    expect(getCardItem({ kind: 'talisman', id: 123 })).toBeUndefined();
+    expect(getCardItem({ kind: 'chest', id: 680000 })).toBeUndefined();
+  });
+});
 
 describe('game data accessors', () => {
   it('look items up by game ID', () => {

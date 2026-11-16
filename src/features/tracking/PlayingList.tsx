@@ -7,11 +7,11 @@ import ItemTile from '@/components/ui/ItemTile';
 import Label from '@/components/ui/Label';
 import { panel } from '@/components/ui/inWorld';
 import { displayText } from '@/components/ui/typography';
-import { getCardWeapon, iconUrl } from '@/data/core';
+import { getCardItem, iconUrl } from '@/data/core';
 import { routeProgress } from '@/features/editor/guide/GuideRoute';
 import { legTitle, stopTitle } from '@/features/editor/guide/phrases';
 import { useUserProfiles } from '@/features/profile/queries';
-import { mainWeaponId } from '@/lib/equipment';
+import { buildImage } from '@/lib/equipment';
 import type { Build } from '@/lib/models';
 import { formatDayMonth } from '@/lib/relativeTime';
 import { trackingProgress, type TrackingState } from '@/lib/tracking';
@@ -66,14 +66,14 @@ function PlayingCard({
   state: TrackingState;
   author: string | undefined;
 }) {
-  const weapon = getCardWeapon(mainWeaponId(build.equipment));
+  const image = getCardItem(buildImage(build));
   const progress = trackingProgress(state, trackingContext(build));
   const next = nextStopTitle(build, state);
   const { gear, level } = progress;
   return (
     <Card to={`/build/${build.id}`}>
       <Top>
-        <ItemTile src={weapon ? iconUrl(weapon.icon) : null} size={56} />
+        <ItemTile src={image ? iconUrl(image.icon) : null} size={56} />
         <Names>
           <Name>{build.name}</Name>
           <Sub>

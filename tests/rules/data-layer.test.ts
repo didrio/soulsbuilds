@@ -75,6 +75,7 @@ const input: BuildInput = {
     greatRune: null,
     spiritAsh: 207000, // Mimic Tear Ashes
   },
+  image: { kind: 'spell', id: 4000 }, // T40: Glintstone Pebble as the build image
 };
 
 describe('data layer against the rules', () => {
@@ -108,6 +109,7 @@ describe('data layer against the rules', () => {
       name: 'Carian Moon Knight',
       level: 132,
       startingClass: 3004,
+      image: { kind: 'spell', id: 4000 },
       likeCount: 0,
       commentCount: 0,
     });
@@ -128,6 +130,8 @@ describe('data layer against the rules', () => {
     expect(await getBuild(buildId)).toMatchObject({ name: 'Moon Knight', level: 112 });
     await updateBuild(buildId, { ...input, name: 'Moon Knight', startingClass: null });
     expect(await getBuild(buildId)).toMatchObject({ startingClass: null });
+    await updateBuild(buildId, { ...input, name: 'Moon Knight', image: null });
+    expect(await getBuild(buildId)).toMatchObject({ image: null });
   });
 
   it('likes: like once, list, unlike', async () => {

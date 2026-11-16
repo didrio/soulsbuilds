@@ -8,6 +8,7 @@ import cardsJson from './er/cards.json';
 import skillsJson from './er/skills.json';
 import tagsJson from './er/tags.json';
 import * as rules from './rules';
+import type { BuildImage } from '@/lib/models';
 import type {
   Affinity,
   AffinityKey,
@@ -15,6 +16,7 @@ import type {
   Armor,
   Cards,
   CardArmor,
+  CardItem,
   CardWeapon,
   Skill,
   Tags,
@@ -57,6 +59,43 @@ export const getCardArmor = (
 
 /** What a slot needs to show any item: its name and icon (every item in the data has both). */
 export type SlotDisplayItem = { id: number; name: string; icon: number };
+
+const getCardTalisman = lookup<CardItem>(cards.talismans);
+const getCardSpell = lookup<CardItem>(cards.spells);
+const getCardTear = lookup<CardItem>(cards.tears);
+const getCardGreatRune = lookup<CardItem>(cards.greatRunes);
+const getCardSpiritAsh = lookup<CardItem>(cards.spiritAshes);
+
+/**
+ * A build image's item as a card shows it (T40; `buildImage` in @/lib/equipment picks which), or
+ * undefined for none or an ID that isn't in the data.
+ */
+export function getCardItem(image: BuildImage | null): SlotDisplayItem | undefined {
+  if (!image) return undefined;
+  const { id } = image;
+  switch (image.kind) {
+    case 'weapon':
+      return getCardWeapon(id);
+    case 'helm':
+      return getCardArmor(id, 'head');
+    case 'chest':
+      return getCardArmor(id, 'chest');
+    case 'gauntlet':
+      return getCardArmor(id, 'arms');
+    case 'leg':
+      return getCardArmor(id, 'legs');
+    case 'talisman':
+      return getCardTalisman(id);
+    case 'spell':
+      return getCardSpell(id);
+    case 'tear':
+      return getCardTear(id);
+    case 'greatRune':
+      return getCardGreatRune(id);
+    case 'spiritAsh':
+      return getCardSpiritAsh(id);
+  }
+}
 
 /** The image of an item's `icon`. */
 export const iconUrl = (icon: number) => `/assets/icons/${icon}.webp`;

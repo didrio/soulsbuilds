@@ -58,6 +58,7 @@ export function toBuild(snapshot: DocumentSnapshot): Build {
     stats: data.stats,
     startingClass: data.startingClass ?? null, // absent on builds saved before T8
     equipment: data.equipment,
+    image: data.image ?? null, // absent on builds saved before T40
     likeCount: data.likeCount,
     commentCount: data.commentCount,
     playerCount: data.playerCount ?? 0, // absent on builds saved before T36 (until backfilled)
@@ -79,6 +80,7 @@ export function contentFields(input: BuildInput) {
     stats: input.stats,
     startingClass: input.startingClass,
     equipment: input.equipment,
+    image: input.image,
   };
 }
 

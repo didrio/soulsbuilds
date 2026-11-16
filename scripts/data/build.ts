@@ -61,11 +61,12 @@ export function formatJson(value: unknown): string {
 }
 
 /** cards.json: one entry per line, like the other files. */
-export function formatCards(data: Pick<GameData, 'weapons' | 'armor'>): string {
-  const cards = makeCards(data.weapons, data.armor);
+export function formatCards(data: GameData): string {
+  const cards = makeCards(data);
   const lines = (items: unknown[]) =>
     items.map((item) => `    ${JSON.stringify(item)}`).join(',\n');
-  return `{\n  "weapons": [\n${lines(cards.weapons)}\n  ],\n  "armor": [\n${lines(cards.armor)}\n  ]\n}\n`;
+  const groups = Object.entries(cards).map(([key, items]) => `  "${key}": [\n${lines(items)}\n  ]`);
+  return `{\n${groups.join(',\n')}\n}\n`;
 }
 
 /** character.json: a class or a curve per line. */

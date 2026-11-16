@@ -73,6 +73,7 @@ const content = () => ({
     greatRune: 191, // Godrick's Great Rune
     spiritAsh: null,
   },
+  image: { kind: 'talisman', id: 2160 }, // T40: the author's pick
 });
 
 /** A build as the client creates it. */
@@ -519,6 +520,33 @@ describe('builds/{id}: create', () => {
     await assertFails(setDoc(doc(as('alice'), 'builds/N1'), withoutClass));
   });
 
+  // T40: the build image is an item kind and a game ID, or null; optional on create (older tabs).
+  it.each([
+    ['no image (null)', null],
+    ['a weapon', { kind: 'weapon', id: 9040000 }],
+    ['a spirit ash', { kind: 'spiritAsh', id: 207000 }],
+    ['a great rune', { kind: 'greatRune', id: 191 }],
+  ])('accepts a build image that is %s', async (_label, image) => {
+    await assertSucceeds(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { image })));
+  });
+
+  it.each([
+    ['an arrow (not choosable)', { kind: 'arrow', id: 50000000 }],
+    ['an unknown kind', { kind: 'ring', id: 1 }],
+    ['an ID as text', { kind: 'talisman', id: '2160' }],
+    ['missing its ID', { kind: 'talisman' }],
+    ['carrying an extra key', { kind: 'talisman', id: 2160, slot: 'tal1' }],
+    ['a bare ID', 2160],
+  ])('rejects a build image that is %s', async (_label, image) => {
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { image })));
+  });
+
+  it('creates a build without the image field (an app from before T40)', async () => {
+    const { image: _image, ...withoutImage } = newBuild('alice');
+    await assertSucceeds(setDoc(doc(as('alice'), 'builds/N1'), withoutImage));
+    await assertFails(setDoc(doc(as('alice'), 'builds/N2'), { ...withoutImage, extra: 1 }));
+  });
+
   it('accepts 12 spells (Moon of Nokstella), not 13', async () => {
     const spells = Array.from({ length: 13 }, (_, i) => 4000 + i * 10);
     const equipment = (count: number) => ({
@@ -588,6 +616,24 @@ describe('builds/{id}: update and delete', () => {
     await assertFails(updateDoc(doc(db, 'builds/B1'), edit({ startingClass: 42 })));
     await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit({ startingClass: 3001 })));
     await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit({ startingClass: null })));
+  });
+
+  it('a build from before T40 (no image) can be edited, and gain one', async () => {
+    await seed(async (db) => {
+      const { image: _image, ...old } = newBuild('alice');
+      await setDoc(doc(db, 'builds/B1'), {
+        ...old,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
+    });
+    const db = as('alice');
+    await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit()));
+    await assertFails(updateDoc(doc(db, 'builds/B1'), edit({ image: { kind: 'arrow', id: 1 } })));
+    await assertSucceeds(
+      updateDoc(doc(db, 'builds/B1'), edit({ image: { kind: 'spell', id: 4000 } })),
+    );
+    await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit({ image: null })));
   });
 
   it('nobody else edits the build', async () => {

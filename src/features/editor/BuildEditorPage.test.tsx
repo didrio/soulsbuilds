@@ -79,6 +79,52 @@ describe('BuildEditorPage', () => {
     expect(firebase.updateBuild).not.toHaveBeenCalled();
   });
 
+  describe('build image (T40)', () => {
+    const equipment = { ...makeBuild().equipment, talismans: [2160] }; // + Lord of Blood's Exultation
+
+    it("chooses one of the build's items and saves it", async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild({ equipment }));
+      firebase.updateBuild.mockResolvedValue(undefined);
+      const { user } = renderPage('/build/SEEDMOON0001', 'seed-ranni');
+      await user.click(await screen.findByRole('button', { name: 'Edit' }));
+      expect(screen.getByText('Main weapon (default)')).toBeInTheDocument();
+
+      // Cancel keeps the default.
+      await user.click(screen.getByRole('button', { name: 'Change image' }));
+      const dialog = screen.getByRole('dialog', { name: 'Build image' });
+      expect(within(dialog).getByRole('radio', { name: /^Default/ })).toBeChecked();
+      await user.click(within(dialog).getByRole('radio', { name: /Lord of Blood/ }));
+      await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+      expect(screen.getByText('Main weapon (default)')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Change image' }));
+      await user.click(screen.getByRole('radio', { name: /Lord of Blood/ }));
+      await user.click(screen.getByRole('button', { name: 'Use image' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(screen.getByText('Talisman')).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(firebase.updateBuild).toHaveBeenCalledWith(
+        'SEEDMOON0001',
+        expect.objectContaining({ image: { kind: 'talisman', id: 2160 } }),
+      );
+    });
+
+    it('saves a pick that is no longer on the build as the default', async () => {
+      const image = { kind: 'talisman', id: 1040 } as const; // not on the build
+      firebase.getBuild.mockResolvedValue(makeBuild({ equipment, image }));
+      firebase.updateBuild.mockResolvedValue(undefined);
+      const { user } = renderPage('/build/SEEDMOON0001', 'seed-ranni');
+      await user.click(await screen.findByRole('button', { name: 'Edit' }));
+      expect(screen.getByText('Main weapon (default)')).toBeInTheDocument();
+      await user.click(screen.getByRole('button', { name: 'Save' }));
+      expect(firebase.updateBuild).toHaveBeenCalledWith(
+        'SEEDMOON0001',
+        expect.objectContaining({ image: null }),
+      );
+    });
+  });
+
   it('cancelling an edit restores the saved build', async () => {
     firebase.getBuild.mockResolvedValue(makeBuild());
     const { user } = renderPage('/build/SEEDMOON0001', 'seed-ranni');
