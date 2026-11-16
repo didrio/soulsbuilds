@@ -9,13 +9,13 @@ const displayName = `E2E ${unique}`;
 const buildName = `E2E Build ${unique}`;
 
 async function register(page: Page) {
-  await page.getByRole('button', { name: 'Register' }).click();
-  const form = page.getByRole('form', { name: 'Register' });
+  await page.getByRole('button', { name: 'Sign up' }).click();
+  const form = page.getByRole('form', { name: 'Sign up' });
   await form.getByLabel('Email').fill(email);
   await form.getByLabel('Password').fill(password);
   await form.getByLabel('Display name').fill(displayName);
-  await form.getByRole('button', { name: 'Register' }).click();
-  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+  await form.getByRole('button', { name: 'Create account' }).click();
+  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
 }
 
 test('sign up, create, like, comment, edit, delete, log out', async ({ page }) => {
@@ -110,8 +110,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByText('You haven’t made any builds yet.')).toBeVisible();
 
   // Log out.
-  await page.getByRole('button', { name: 'Logout' }).click();
-  await expect(page.getByRole('button', { name: 'Login' })).toBeVisible();
+  await page.getByRole('button', { name: 'Log out' }).click();
+  await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
 });
 
 test('missing builds, users and pages show a not-found page', async ({ page }) => {
@@ -125,30 +125,30 @@ test('missing builds, users and pages show a not-found page', async ({ page }) =
 
 test('logging in with a wrong password shows an error', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('button', { name: 'Login' }).click();
+  await page.getByRole('button', { name: 'Log in' }).click();
   const form = page.getByRole('form', { name: 'Log in' });
   await form.getByLabel('Email').fill('tarnished@example.test');
   await form.getByLabel('Password').fill('not-the-password');
-  await form.getByRole('button', { name: 'Login' }).click();
+  await form.getByRole('button', { name: 'Log in' }).click();
   await expect(form.getByRole('alert')).toHaveText('Wrong email or password.');
 });
 
-test('report a build once; the login panel closes with Escape', async ({ page }) => {
+test('report a build once; the login dialog closes with Escape', async ({ page }) => {
   await page.goto('/');
-  const login = page.getByRole('button', { name: 'Login' });
+  const login = page.getByRole('button', { name: 'Log in' });
   await login.click();
   await expect(page.getByRole('form', { name: 'Log in' }).getByLabel('Email')).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(login).toBeFocused();
   await expect(login).toHaveAttribute('aria-expanded', 'false');
 
-  await page.getByRole('button', { name: 'Register' }).click();
-  const form = page.getByRole('form', { name: 'Register' });
+  await page.getByRole('button', { name: 'Sign up' }).click();
+  const form = page.getByRole('form', { name: 'Sign up' });
   await form.getByLabel('Email').fill(`report-${unique}@example.test`);
   await form.getByLabel('Password').fill(password);
   await form.getByLabel('Display name').fill(`Reporter ${unique}`);
-  await form.getByRole('button', { name: 'Register' }).click();
-  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+  await form.getByRole('button', { name: 'Create account' }).click();
+  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
 
   await page.goto('/build/SEEDBLEED001');
   await page.getByRole('button', { name: 'Report this build' }).click();
@@ -166,13 +166,13 @@ test('report a build once; the login panel closes with Escape', async ({ page })
 test('rename, password reset, verification notice and consumables', async ({ page }) => {
   const resetEmail = `t6-${unique}@example.test`;
   await page.goto('/');
-  await page.getByRole('button', { name: 'Register' }).click();
-  const form = page.getByRole('form', { name: 'Register' });
+  await page.getByRole('button', { name: 'Sign up' }).click();
+  const form = page.getByRole('form', { name: 'Sign up' });
   await form.getByLabel('Email').fill(resetEmail);
   await form.getByLabel('Password').fill(password);
   await form.getByLabel('Display name').fill(`T6 ${unique}`);
-  await form.getByRole('button', { name: 'Register' }).click();
-  await expect(page.getByRole('button', { name: 'Logout' })).toBeVisible();
+  await form.getByRole('button', { name: 'Create account' }).click();
+  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
 
   // Profile: unverified notice with resend, and rename.
   await page.getByRole('link', { name: 'Profile' }).click();
@@ -185,7 +185,7 @@ test('rename, password reset, verification notice and consumables', async ({ pag
   await expect(page.getByRole('heading', { name: `Renamed ${unique}` })).toBeVisible();
 
   // Consumables: pick one, save, and see it in view mode.
-  await page.getByRole('link', { name: '+ Create New Build' }).click();
+  await page.getByRole('link', { name: 'Create a build' }).click();
   await page.getByLabel('Build Name').fill(`T6 Build ${unique}`);
   await page.getByRole('button', { name: 'Choose item' }).first().click();
   await page.getByLabel('Search items').fill('Acid Spraymist');
@@ -196,9 +196,9 @@ test('rename, password reset, verification notice and consumables', async ({ pag
   await page.reload();
   await expect(page.getByText('Consumables')).toBeVisible();
 
-  // Password reset from the login panel.
-  await page.getByRole('button', { name: 'Logout' }).click();
-  await page.getByRole('button', { name: 'Login' }).click();
+  // Password reset from the login dialog.
+  await page.getByRole('button', { name: 'Log out' }).click();
+  await page.getByRole('button', { name: 'Log in' }).click();
   const login = page.getByRole('form', { name: 'Log in' });
   await login.getByLabel('Email').fill(resetEmail);
   await login.getByRole('button', { name: 'Forgot password?' }).click();

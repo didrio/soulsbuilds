@@ -1,17 +1,16 @@
 import { useState, type FormEvent } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import styled from 'styled-components';
-import TextInput from '@/components/ui/TextInput';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
+import TextInput from '@/components/ui/TextInput';
+import { TextButton } from '@/components/ui/TextButton';
 import { errorMessage, signUp } from '@/lib/firebase';
 import { LIMITS } from '@/lib/models';
 import { queryKeys } from '@/lib/queryKeys';
-import { BELOW_800 } from '@/theme';
-import { AuthField, AuthForm } from './styles';
+import { AuthField, AuthForm, AuthSwitch } from './styles';
 
-/** Registration form (email, password, display name), shown in the slide-down panel. */
-function SignUp({ onDone }: { onDone: () => void }) {
+/** Registration form (email, password, display name), shown in the auth dialog. */
+function SignUp({ onDone, onSwitch }: { onDone: () => void; onSwitch: () => void }) {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,61 +36,50 @@ function SignUp({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <AuthForm onSubmit={handleSubmit} aria-label="Register">
-      <Fields>
-        <AuthField>
-          <label htmlFor="signup-email">Email</label>
-          <TextInput
-            id="signup-email"
-            autoComplete="email"
-            onChange={setEmail}
-            required
-            type="email"
-            value={email}
-          />
-        </AuthField>
-        <AuthField>
-          <label htmlFor="signup-password">Password</label>
-          <TextInput
-            id="signup-password"
-            autoComplete="new-password"
-            minLength={6}
-            onChange={setPassword}
-            required
-            type="password"
-            value={password}
-          />
-        </AuthField>
-        <AuthField>
-          <label htmlFor="signup-name">Display name</label>
-          <TextInput
-            id="signup-name"
-            autoComplete="nickname"
-            maxLength={LIMITS.displayName}
-            onChange={setName}
-            required
-            value={name}
-          />
-        </AuthField>
-        <Button type="submit" disabled={!canRegister}>
-          {busy ? 'Registering…' : 'Register'}
-        </Button>
-      </Fields>
+    <AuthForm onSubmit={handleSubmit} aria-label="Sign up">
+      <AuthField>
+        <label htmlFor="signup-email">Email</label>
+        <TextInput
+          id="signup-email"
+          autoComplete="email"
+          onChange={setEmail}
+          required
+          type="email"
+          value={email}
+        />
+      </AuthField>
+      <AuthField>
+        <label htmlFor="signup-password">Password</label>
+        <TextInput
+          id="signup-password"
+          autoComplete="new-password"
+          minLength={6}
+          onChange={setPassword}
+          required
+          type="password"
+          value={password}
+        />
+      </AuthField>
+      <AuthField>
+        <label htmlFor="signup-name">Display name</label>
+        <TextInput
+          id="signup-name"
+          autoComplete="nickname"
+          maxLength={LIMITS.displayName}
+          onChange={setName}
+          required
+          value={name}
+        />
+      </AuthField>
       <ErrorMessage>{error}</ErrorMessage>
+      <Button type="submit" disabled={!canRegister}>
+        {busy ? 'Creating account…' : 'Create account'}
+      </Button>
+      <AuthSwitch>
+        Already have an account?<TextButton onClick={onSwitch}>Log in</TextButton>
+      </AuthSwitch>
     </AuthForm>
   );
 }
-
-const Fields = styled.div`
-  align-items: flex-end;
-  display: flex;
-  gap: 20px;
-
-  @media ${BELOW_800} {
-    align-items: center;
-    flex-direction: column;
-    gap: 10px;
-  }
-`;
 
 export default SignUp;

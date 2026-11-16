@@ -1,56 +1,28 @@
-import styled from 'styled-components';
-import { COLOR_LIGHT_GRAY } from '@/theme';
+import styled, { keyframes } from 'styled-components';
+import { COLOR_ACCENT, COLOR_FRAME_SOFT } from '@/theme';
 
-/** A spinning ring, `size` px square. */
+/**
+ * A spinning ring, `size` px square, labelled "Loading". With reduced motion (GlobalStyle) it stops
+ * spinning but stays visible.
+ */
 function LoadingAnimation({ size = 20 }: { size?: number }) {
-  return (
-    <Container $size={`${size}px`}>
-      <div />
-      <div />
-      <div />
-      <div />
-    </Container>
-  );
+  return <Ring role="img" aria-label="Loading" $size={`${size}px`} />;
 }
 
-const Container = styled.div<{ $size: string }>`
+const spin = keyframes`
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const Ring = styled.span<{ $size: string }>`
+  animation: ${spin} 0.9s linear infinite;
+  border: 2px solid ${COLOR_FRAME_SOFT};
+  border-radius: 50%;
+  border-top-color: ${COLOR_ACCENT};
   display: inline-block;
-  position: relative;
-  width: ${({ $size }) => $size};
   height: ${({ $size }) => $size};
-
-  & div {
-    box-sizing: border-box;
-    display: block;
-    position: absolute;
-    width: ${({ $size }) => $size};
-    height: ${({ $size }) => $size};
-    border: 2px solid ${COLOR_LIGHT_GRAY};
-    border-radius: 50%;
-    animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    border-color: ${COLOR_LIGHT_GRAY} transparent transparent transparent;
-  }
-
-  & div:nth-child(1) {
-    animation-delay: -0.45s;
-  }
-
-  & div:nth-child(2) {
-    animation-delay: -0.3s;
-  }
-
-  & div:nth-child(3) {
-    animation-delay: -0.15s;
-  }
-
-  @keyframes lds-ring {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
+  width: ${({ $size }) => $size};
 `;
 
 export default LoadingAnimation;

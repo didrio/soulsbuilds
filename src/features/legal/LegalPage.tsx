@@ -1,10 +1,23 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { COLOR_LIGHTEST_GREEN, FONT_DISPLAY, SPACE_GUTTER, SPACE_LG, SPACE_XL } from '@/theme';
+import Frame from '@/components/ui/Frame';
+import Ornament from '@/components/ui/Ornament';
+import PageHero from '@/components/ui/PageHero';
+import {
+  COLOR_ACCENT,
+  COLOR_ACCENT_STRONG,
+  COLOR_FRAME,
+  COLOR_TEXT,
+  FONT_DISPLAY,
+  SPACE_LG,
+  SPACE_XL,
+  TEXT_LG,
+  TEXT_MD,
+} from '@/theme';
 
 export const ISSUES_URL = 'https://github.com/didrio/soulsbuilds/issues';
 
-/** Layout for the static legal pages: a readable column with a title and the last-updated date. */
+/** Layout for the static legal pages: a title, the last-updated date, and a readable framed column. */
 function LegalPage({
   title,
   updated,
@@ -15,43 +28,48 @@ function LegalPage({
   children: ReactNode;
 }) {
   return (
-    <Article>
-      <h1>{title}</h1>
-      <p>Last updated: {updated}</p>
-      {children}
-    </Article>
+    <>
+      <PageHero title={title} tagline={`Last updated ${updated}`} />
+      <Ornament />
+      <Article as="article">{children}</Article>
+    </>
   );
 }
 
-const Article = styled.article`
-  box-sizing: border-box;
-  font-size: 18px;
-  line-height: 1.6;
+const Article = styled(Frame)`
+  font-size: ${TEXT_MD};
+  line-height: 1.7;
   margin: 0 auto;
   max-width: 760px;
-  padding: 0 ${SPACE_GUTTER} ${SPACE_XL};
-  width: 100%;
+  padding: ${SPACE_XL};
 
-  & h1,
+  & > :first-child {
+    margin-top: 0;
+  }
+
   & h2 {
-    color: ${COLOR_LIGHTEST_GREEN};
+    color: ${COLOR_ACCENT};
     font-family: ${FONT_DISPLAY};
-    font-weight: normal;
+    font-size: ${TEXT_LG};
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin: ${SPACE_XL} 0 ${SPACE_LG};
   }
 
-  & h1 {
-    font-size: 32px;
-    margin: 0 0 ${SPACE_LG};
-  }
-
-  & h2 {
-    font-size: 22px;
-    margin: ${SPACE_XL} 0 0;
+  & p,
+  & li {
+    color: ${COLOR_TEXT};
   }
 
   & a {
-    color: ${COLOR_LIGHTEST_GREEN};
+    color: ${COLOR_ACCENT};
     text-decoration: underline;
+    text-decoration-color: ${COLOR_FRAME};
+    text-underline-offset: 3px;
+  }
+
+  & a:hover {
+    color: ${COLOR_ACCENT_STRONG};
   }
 
   & ul {

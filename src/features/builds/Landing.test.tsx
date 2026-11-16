@@ -39,7 +39,7 @@ describe('Landing', () => {
     firebase.searchBuilds.mockResolvedValue(page([makeBuild({ id: 'B', name: 'Moon' })]));
     const { user } = renderWithProviders(<Landing />);
     await user.type(screen.getByRole('searchbox', { name: 'Search builds by name' }), 'moo{Enter}');
-    expect(await screen.findByText('By name, while searching')).toBeInTheDocument();
+    expect(await screen.findByText('By name while searching')).toBeInTheDocument();
     expect(firebase.searchBuilds).toHaveBeenCalledWith('moo', expect.anything());
     expect(await screen.findByText('Moon')).toBeInTheDocument();
   });

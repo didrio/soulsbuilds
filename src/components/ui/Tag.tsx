@@ -1,19 +1,18 @@
 import styled from 'styled-components';
-import FlexGroup from './FlexGroup';
-import { COLOR_GREEN, COLOR_LIGHT_GREEN } from '@/theme';
+import { COLOR_LINE_STRONG, COLOR_TEXT_MUTED, TEXT_XS } from '@/theme';
 
-/** A small boxed label (build tags, the like counter). */
-const Tag = styled(FlexGroup)`
-  background-color: ${COLOR_GREEN};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
+/** A small framed label (build tags). Not interactive; wrap it in a button or link for that. */
+const Tag = styled.span`
   align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  height: 30px;
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
-  box-sizing: border-box;
-  padding: 0 10px;
-  font-size: 14px;
+  border: 1px solid ${COLOR_LINE_STRONG};
+  color: ${COLOR_TEXT_MUTED};
+  display: inline-flex;
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  padding: 1px 8px;
+  white-space: nowrap;
 `;
 
 export default Tag;

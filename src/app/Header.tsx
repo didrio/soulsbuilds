@@ -1,118 +1,167 @@
-import styled from 'styled-components';
 import { Link } from 'react-router';
+import styled from 'styled-components';
+import Button, { ButtonLink } from '@/components/ui/Button';
+import { LozengeIcon } from '@/components/ui/icons';
+import { fadingRule } from '@/components/ui/inWorld';
 import useAuth from '@/features/auth/useAuth';
 import { signOut } from '@/lib/firebase';
 import {
-  COLOR_LIGHTEST_GREEN,
-  COLOR_GOLD,
-  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
+  BELOW_MOBILE,
+  COLOR_ACCENT,
+  COLOR_HIGHLIGHT,
+  COLOR_TEXT_MUTED,
+  CONTENT_WIDTH,
   FONT_DISPLAY,
-  BELOW_500,
-  SPACE_LG,
-  SPACE_SM,
+  SPACE_GUTTER,
+  TEXT_SM,
+  TRACKING_CAPS,
 } from '@/theme';
+import { useCurrentGame } from './game';
 
 interface HeaderProps {
-  /** Which slide-down panel is open, for aria-expanded. */
-  openPanel: 'login' | 'register' | null;
-  onShowLogin: () => void;
-  onShowRegister: () => void;
+  /** Which auth dialog is open, for aria-expanded. */
+  openDialog: 'login' | 'signup' | null;
+  onLogIn: () => void;
+  onSignUp: () => void;
 }
 
-/** Logo plus New build/Profile/Logout when signed in, Login/Register (toggle the panel) when not. */
-function Header({ openPanel, onShowLogin, onShowRegister }: HeaderProps) {
+/** Full-width bar: logo and the current game; New build/Profile/Log out, or Log in/Sign up. */
+function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const { loading, uid } = useAuth();
+  const game = useCurrentGame();
 
   return (
-    <Container>
-      <Logo to="/">Souls Builds</Logo>
-      {loading ? null : (
-        <Nav aria-label="Account">
-          {uid ? (
-            <>
-              <NavLink to="/build/new">New build</NavLink>
-              <NavLink to={`/user/${uid}`}>Profile</NavLink>
-              <NavButton type="button" onClick={() => void signOut()}>
-                Logout
-              </NavButton>
-            </>
-          ) : (
-            <>
-              <NavButton type="button" aria-expanded={openPanel === 'login'} onClick={onShowLogin}>
-                Login
-              </NavButton>
-              <NavButton
-                type="button"
-                aria-expanded={openPanel === 'register'}
-                onClick={onShowRegister}>
-                Register
-              </NavButton>
-            </>
-          )}
-        </Nav>
-      )}
-    </Container>
+    <Bar>
+      <Inner>
+        <Brand>
+          <Logo to="/">Souls Builds</Logo>
+          <GameLabel>
+            <LozengeIcon />
+            {game.name}
+          </GameLabel>
+        </Brand>
+        {loading ? null : (
+          <Nav aria-label="Account">
+            {uid ? (
+              <>
+                <ButtonLink to="/build/new" variant="primary">
+                  New build
+                </ButtonLink>
+                <ButtonLink to={`/user/${uid}`} variant="ghost">
+                  Profile
+                </ButtonLink>
+                <Button variant="ghost" onClick={() => void signOut()}>
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  aria-haspopup="dialog"
+                  aria-expanded={openDialog === 'login'}
+                  onClick={onLogIn}>
+                  Log in
+                </Button>
+                <Button
+                  variant="primary"
+                  aria-haspopup="dialog"
+                  aria-expanded={openDialog === 'signup'}
+                  onClick={onSignUp}>
+                  Sign up
+                </Button>
+              </>
+            )}
+          </Nav>
+        )}
+      </Inner>
+    </Bar>
   );
 }
 
-const Container = styled.header`
-  align-items: flex-end;
-  border-bottom: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
+const Bar = styled.header`
+  background: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.25));
+  position: relative;
+
+  &::after {
+    background: ${fadingRule};
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
+`;
+
+const Inner = styled.div`
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: ${SPACE_SM};
-  justify-content: space-between;
-  padding-bottom: ${SPACE_SM};
-  width: 100%;
+  gap: 8px 18px;
+  margin: 0 auto;
+  max-width: ${CONTENT_WIDTH};
+  min-height: 68px;
+  padding: 8px 24px;
+
+  @media ${BELOW_MOBILE} {
+    padding: 6px ${SPACE_GUTTER};
+  }
+`;
+
+const Brand = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 18px;
 `;
 
 const Logo = styled(Link)`
-  color: ${COLOR_LIGHTEST_GREEN};
+  background: linear-gradient(${COLOR_HIGHLIGHT}, ${COLOR_ACCENT} 80%);
+  background-clip: text;
+  color: transparent;
   font-family: ${FONT_DISPLAY};
-  font-size: 44px;
-  font-weight: bold;
-  text-shadow: 0px 0px 7px ${COLOR_GOLD};
-  transition: text-shadow ease-in-out 0.1s;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 
-  &:hover {
-    text-shadow: 0px 0px 11px ${COLOR_GOLD};
+  @media ${BELOW_MOBILE} {
+    font-size: 19px;
+  }
+`;
+
+const GameLabel = styled.span`
+  align-items: center;
+  color: ${COLOR_TEXT_MUTED};
+  display: inline-flex;
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_SM};
+  font-weight: 600;
+  gap: 10px;
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
+  white-space: nowrap;
+
+  & > svg {
+    color: ${COLOR_ACCENT};
   }
 
-  @media ${BELOW_500} {
-    font-size: 34px;
+  @media ${BELOW_MOBILE} {
+    display: none;
   }
 `;
 
 const Nav = styled.nav`
+  align-items: center;
   display: flex;
-  gap: ${SPACE_LG};
-`;
+  gap: 6px;
+  margin-left: auto;
 
-const navItem = `
-  font-size: 20px;
-  font-weight: bold;
-`;
-
-const NavLink = styled(Link)`
-  ${navItem}
-  color: ${COLOR_GOLD};
-
-  &:hover {
-    color: ${COLOR_LIGHTEST_GREEN};
-  }
-`;
-
-const NavButton = styled.button`
-  ${navItem}
-  background: none;
-  border: none;
-  color: ${COLOR_GOLD};
-  cursor: pointer;
-  font-family: inherit;
-  padding: 0;
-
-  &:hover {
-    color: ${COLOR_LIGHTEST_GREEN};
+  @media ${BELOW_MOBILE} {
+    & > a,
+    & > button {
+      padding: 0 12px;
+    }
   }
 `;
 

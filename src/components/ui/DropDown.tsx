@@ -1,6 +1,8 @@
 import type { ChangeEvent } from 'react';
 import styled from 'styled-components';
-import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN, FONT_BODY } from '@/theme';
+import { COLOR_TEXT_MUTED } from '@/theme';
+import { fieldStyles } from './fieldStyles';
+import { ChevronDownIcon } from './icons';
 
 /** An option: a string is both value and label. */
 export type DropDownOption = string | { value: string; label: string };
@@ -18,41 +20,47 @@ interface DropDownProps {
 const optionOf = (option: DropDownOption) =>
   typeof option === 'string' ? { value: option, label: option } : option;
 
-/** A `<select>` with a placeholder option, which clears the value. */
+/** A native `<select>` in the field style, with a placeholder option that clears the value. */
 function DropDown({ label, onChange, options, placeholder, value }: DropDownProps) {
   const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
     onChange(e.target.value || null);
   };
 
   return (
-    <Container aria-label={label} onChange={handleChange} value={value}>
-      <Option value="">{placeholder}</Option>
-      {options.map(optionOf).map((option) => (
-        <Option key={option.value} value={option.value}>
-          {option.label}
-        </Option>
-      ))}
-    </Container>
+    <Wrapper>
+      <Select aria-label={label} onChange={handleChange} value={value}>
+        <option value="">{placeholder}</option>
+        {options.map(optionOf).map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </Select>
+      <Chevron />
+    </Wrapper>
   );
 }
 
-const Container = styled.select`
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  border-radius: 2px;
-  box-sizing: border-box;
-  height: 40px;
+const Wrapper = styled.span`
+  display: block;
+  position: relative;
   width: 100%;
-  outline: none;
-  background-color: ${COLOR_GREEN};
-  color: ${COLOR_GOLD};
-  font-size: 16px;
-  font-family: ${FONT_BODY};
-  box-shadow: inset 0 0 3px ${COLOR_DARK_GREEN};
-  cursor: pointer;
 `;
 
-const Option = styled.option`
-  text-align: center;
+const Select = styled.select`
+  ${fieldStyles}
+  appearance: none;
+  cursor: pointer;
+  padding-right: 36px;
+`;
+
+const Chevron = styled(ChevronDownIcon)`
+  color: ${COLOR_TEXT_MUTED};
+  pointer-events: none;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
 `;
 
 export default DropDown;

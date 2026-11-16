@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { COLOR_ERROR } from '@/theme';
+import { COLOR_DANGER, TEXT_SM } from '@/theme';
 
 interface ErrorMessageProps {
   children?: string;
@@ -23,8 +23,8 @@ function ErrorMessage({ children = '', onRetry }: ErrorMessageProps) {
 }
 
 const Container = styled.p`
-  color: ${COLOR_ERROR};
-  font-size: 14px;
+  color: ${COLOR_DANGER};
+  font-size: ${TEXT_SM};
   margin: 8px 0;
 `;
 
@@ -34,8 +34,12 @@ const Retry = styled.button`
   color: inherit;
   cursor: pointer;
   font: inherit;
-  margin-left: 8px;
+  font-weight: 600;
+  margin-left: 4px;
+  min-height: 44px;
+  padding: 0 4px;
   text-decoration: underline;
+  text-underline-offset: 3px;
 `;
 
 export default ErrorMessage;

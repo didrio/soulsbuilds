@@ -1,23 +1,33 @@
 import { useState, type FormEvent } from 'react';
 import { useSearchParams } from 'react-router';
 import styled from 'styled-components';
+import { useCurrentGame } from '@/app/game';
 import Button from '@/components/ui/Button';
 import Chips from '@/components/ui/Chips';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import FlexGroup from '@/components/ui/FlexGroup';
+import Frame from '@/components/ui/Frame';
+import { SearchIcon } from '@/components/ui/icons';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import Ornament from '@/components/ui/Ornament';
 import PageMessage from '@/components/ui/PageMessage';
+import SegmentedControl from '@/components/ui/SegmentedControl';
 import TextInput from '@/components/ui/TextInput';
+import { TextButton } from '@/components/ui/TextButton';
+import { useUserProfiles } from '@/features/profile/queries';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import { errorMessage, type BuildSort } from '@/lib/firebase';
 import {
-  COLOR_GOLD,
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  BELOW_800,
+  BELOW_MOBILE,
+  COLOR_ACCENT,
+  COLOR_ACCENT_STRONG,
+  COLOR_TEXT_MUTED,
+  FONT_DISPLAY,
   SPACE_LG,
   SPACE_MD,
   SPACE_SM,
+  TEXT_SM,
+  TEXT_XS,
+  TRACKING_CAPS,
 } from '@/theme';
 import BuildsList from './BuildsList';
 import {
@@ -27,14 +37,21 @@ import {
   toSearchParams,
   type BuildFilters,
 } from './filters';
+import PageHero from '@/components/ui/PageHero';
 import { useBuilds } from './queries';
 
+const SORTS = [
+  { value: 'top', label: 'Most liked' },
+  { value: 'new', label: 'Newest' },
+] as const satisfies readonly { value: BuildSort; label: string }[];
+
 /**
- * `/`: Elden Ring builds, most liked or newest first, a page at a time, or a search by name. The
- * first tag filters in Firestore; further tags and the level range filter the loaded builds.
+ * `/`: the current game's builds, most liked or newest first, a page at a time, or a search by name.
+ * The first tag filters in Firestore; further tags and the level range filter the loaded builds.
  * Filters live in the URL.
  */
 function Landing() {
+  const game = useCurrentGame();
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = parseFilters(searchParams);
   const builds = useBuilds({
@@ -46,6 +63,7 @@ function Landing() {
   const [searchText, setSearchText] = useState(filters.search);
   const [minText, setMinText] = useState(String(filters.minLevel));
   const [maxText, setMaxText] = useState(String(filters.maxLevel));
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const setFilters = (next: Partial<BuildFilters>) => {
     setSearchParams(toSearchParams({ ...filters, ...next }), { replace: true });
@@ -71,233 +89,283 @@ function Landing() {
     setFilters({ search: '' });
   };
 
+  const clearFilters = () => {
+    setSearchText('');
+    setMinText('1');
+    setMaxText(String(MAX_LEVEL));
+    setFilters({ search: '', tags: [], minLevel: 1, maxLevel: MAX_LEVEL });
+  };
+
   const loaded = builds.data?.pages.flatMap((page) => page.builds) ?? [];
   const shown = filterBuilds(loaded, filters);
+  const authors = useUserProfiles(shown.map((build) => build.ownerId));
   const filtered = toSearchParams({ ...filters, sort: 'top' }).size > 0;
+  const levelFiltered = filters.minLevel !== 1 || filters.maxLevel !== MAX_LEVEL;
+  const activeCount = filters.tags.length + (levelFiltered ? 1 : 0);
+
+  const status = filters.search
+    ? `Builds whose name starts with “${filters.search}”`
+    : filters.sort === 'top'
+      ? 'Most liked first'
+      : 'Newest first';
 
   return (
-    <Container vertical>
-      <SearchForm role="search" onSubmit={applySearch}>
-        <SearchInput>
-          <TextInput
-            aria-label="Search builds by name"
-            enterKeyHint="search"
-            maxLength={80}
-            onChange={setSearchText}
-            placeholder="Search builds by name"
-            type="search"
-            value={searchText}
-          />
-        </SearchInput>
-        <Button type="submit">Search</Button>
-        {filters.search ? (
-          <TextButton type="button" onClick={clearSearch}>
-            Clear search
-          </TextButton>
-        ) : null}
-      </SearchForm>
-      <Filters>
-        <FilterGroup>
-          <SubHeader>Sort</SubHeader>
-          {filters.search ? (
-            <SearchNote>By name, while searching</SearchNote>
-          ) : (
-            <SortToggle role="group" aria-label="Sort builds">
-              {(['top', 'new'] as BuildSort[]).map((sort) => (
-                <SortButton
-                  key={sort}
-                  type="button"
-                  aria-pressed={filters.sort === sort}
-                  $active={filters.sort === sort}
-                  onClick={() => setFilters({ sort })}>
-                  {sort === 'top' ? 'Most liked' : 'Newest'}
-                </SortButton>
-              ))}
-            </SortToggle>
-          )}
-        </FilterGroup>
-        <FilterGroup>
-          <SubHeader>Filter by Tags</SubHeader>
+    <>
+      <PageHero
+        title={`${game.name} Builds`}
+        tagline="Forge a build, share it, and find the one worth a new playthrough."
+      />
+      <Ornament />
+      <Frame aria-label="Find builds">
+        <Toolbar>
+          <SearchForm role="search" onSubmit={applySearch}>
+            <FieldLabel htmlFor="build-search">Search</FieldLabel>
+            <SearchField>
+              <TextInput
+                id="build-search"
+                aria-label="Search builds by name"
+                enterKeyHint="search"
+                maxLength={80}
+                onChange={setSearchText}
+                placeholder="Build name"
+                type="search"
+                value={searchText}
+              />
+              <SearchSubmit type="submit" aria-label="Search">
+                <SearchIcon />
+              </SearchSubmit>
+            </SearchField>
+          </SearchForm>
+          <FiltersToggle
+            variant="secondary"
+            aria-expanded={filtersOpen}
+            aria-controls="build-filters"
+            onClick={() => setFiltersOpen(!filtersOpen)}>
+            {activeCount ? `Filters · ${activeCount} active` : 'Filters'}
+          </FiltersToggle>
+          <Collapsible id="build-filters" $open={filtersOpen}>
+            <Field>
+              <FieldLabel as="span">Sort</FieldLabel>
+              {filters.search ? (
+                <Note>By name while searching</Note>
+              ) : (
+                <SegmentedControl
+                  label="Sort builds"
+                  options={SORTS}
+                  value={filters.sort}
+                  onChange={(sort) => setFilters({ sort })}
+                />
+              )}
+            </Field>
+            <Field as="form" onSubmit={applyLevels} aria-label="Level range">
+              <FieldLabel as="span">Level</FieldLabel>
+              <LevelRange>
+                <LevelInput>
+                  <TextInput
+                    aria-label="Minimum level"
+                    centered
+                    inputMode="numeric"
+                    onBlur={() => applyLevels()}
+                    onChange={setMinText}
+                    value={minText}
+                  />
+                </LevelInput>
+                <Dash aria-hidden="true">–</Dash>
+                <LevelInput>
+                  <TextInput
+                    aria-label="Maximum level"
+                    centered
+                    inputMode="numeric"
+                    onBlur={() => applyLevels()}
+                    onChange={setMaxText}
+                    value={maxText}
+                  />
+                </LevelInput>
+              </LevelRange>
+            </Field>
+          </Collapsible>
+        </Toolbar>
+        <TagsRow $open={filtersOpen}>
+          <FieldLabel as="span">Tags</FieldLabel>
           <Chips
             onAdd={(tag) => setFilters({ tags: [...new Set([...filters.tags, tag])] })}
             onRemove={(tag) => setFilters({ tags: filters.tags.filter((t) => t !== tag) })}
             values={filters.tags}
           />
-        </FilterGroup>
-        <FilterGroup as="form" onSubmit={applyLevels} aria-label="Level range">
-          <SubHeader>Filter by Level Range</SubHeader>
-          <LevelRangeRow>
-            <LevelRangeInput>
-              <TextInput
-                aria-label="Minimum level"
-                centered
-                inputMode="numeric"
-                onBlur={() => applyLevels()}
-                onChange={setMinText}
-                value={minText}
-              />
-            </LevelRangeInput>
-            <span aria-hidden="true">–</span>
-            <LevelRangeInput>
-              <TextInput
-                aria-label="Maximum level"
-                centered
-                inputMode="numeric"
-                onBlur={() => applyLevels()}
-                onChange={setMaxText}
-                value={maxText}
-              />
-            </LevelRangeInput>
-          </LevelRangeRow>
-        </FilterGroup>
-      </Filters>
-      <Results vertical>
-        {builds.isPending ? <PageMessage loading /> : null}
-        {builds.isError ? (
-          <PageMessage title="Couldn’t load builds">
-            <ErrorMessage onRetry={() => void builds.refetch()}>
-              {errorMessage(builds.error)}
-            </ErrorMessage>
-          </PageMessage>
-        ) : null}
-        {builds.isSuccess && shown.length === 0 && !builds.hasNextPage ? (
-          <PageMessage title={filtered ? 'No builds match these filters' : 'No builds yet'}>
-            {filtered ? (
-              <Button
-                onClick={() => {
-                  setSearchText('');
-                  setMinText('1');
-                  setMaxText(String(MAX_LEVEL));
-                  setFilters({ search: '', tags: [], minLevel: 1, maxLevel: MAX_LEVEL });
-                }}>
-                Clear filters
-              </Button>
-            ) : (
-              <p>Be the first: register and create one.</p>
-            )}
-          </PageMessage>
-        ) : null}
-        {shown.length > 0 ? <BuildsList builds={shown} /> : null}
-        {builds.hasNextPage ? (
-          <LoadMore>
-            {builds.isFetchingNextPage ? (
-              <LoadingAnimation size={30} />
-            ) : (
-              <Button onClick={() => void builds.fetchNextPage()}>Load more</Button>
-            )}
-          </LoadMore>
-        ) : null}
-        {builds.isFetchNextPageError ? (
-          <ErrorMessage onRetry={() => void builds.fetchNextPage()}>
+          {filters.search ? <TextButton onClick={clearSearch}>Clear search</TextButton> : null}
+          {filtered ? <TextButton onClick={clearFilters}>Clear filters</TextButton> : null}
+        </TagsRow>
+      </Frame>
+
+      <Status aria-live="polite">{builds.isSuccess ? status : ''}</Status>
+      {builds.isPending ? <PageMessage loading /> : null}
+      {builds.isError ? (
+        <PageMessage title="Couldn’t load builds">
+          <ErrorMessage onRetry={() => void builds.refetch()}>
             {errorMessage(builds.error)}
           </ErrorMessage>
-        ) : null}
-      </Results>
-    </Container>
+        </PageMessage>
+      ) : null}
+      {builds.isSuccess && shown.length === 0 && !builds.hasNextPage ? (
+        <PageMessage title={filtered ? 'No builds match these filters' : 'No builds yet'}>
+          {filtered ? (
+            <Button variant="secondary" onClick={clearFilters}>
+              Clear filters
+            </Button>
+          ) : (
+            <p>Be the first: sign up and create one.</p>
+          )}
+        </PageMessage>
+      ) : null}
+      {shown.length > 0 ? <BuildsList builds={shown} authors={authors} /> : null}
+      {builds.hasNextPage ? (
+        <LoadMore>
+          {builds.isFetchingNextPage ? (
+            <LoadingAnimation size={30} />
+          ) : (
+            <Button variant="secondary" onClick={() => void builds.fetchNextPage()}>
+              Load more builds
+            </Button>
+          )}
+        </LoadMore>
+      ) : null}
+      {builds.isFetchNextPageError ? (
+        <ErrorMessage onRetry={() => void builds.fetchNextPage()}>
+          {errorMessage(builds.error)}
+        </ErrorMessage>
+      ) : null}
+    </>
   );
 }
 
-const Container = styled(FlexGroup)`
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-`;
-
-const SubHeader = styled.h2`
-  font-size: 20px;
-  font-weight: normal;
-  margin: 0 0 ${SPACE_SM};
-`;
-
-const Filters = styled.div`
-  align-items: flex-start;
+const Toolbar = styled.div`
+  align-items: flex-end;
   display: flex;
   flex-wrap: wrap;
-  gap: ${SPACE_LG};
-  justify-content: space-between;
-  margin-bottom: ${SPACE_MD};
-  width: 95%;
-
-  @media ${BELOW_800} {
-    flex-direction: column;
-    align-items: center;
-  }
+  gap: 14px;
 `;
 
-const FilterGroup = styled.div`
+const Field = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  margin: 0;
+`;
 
-  @media ${BELOW_800} {
-    align-items: center;
-  }
+const FieldLabel = styled.label`
+  color: ${COLOR_ACCENT};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
 `;
 
 const SearchForm = styled.form`
-  align-items: center;
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 25px;
-  width: 95%;
-`;
+  flex: 1 1 280px;
+  flex-direction: column;
+  gap: 6px;
 
-const SearchInput = styled.div`
-  flex: 1 1 260px;
-  max-width: 480px;
-`;
-
-const TextButton = styled.button`
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  text-decoration: underline;
-`;
-
-const SearchNote = styled.p`
-  font-size: 16px;
-  margin: ${SPACE_SM} 0 0;
-`;
-
-const SortToggle = styled.div`
-  display: flex;
-`;
-
-const SortButton = styled.button<{ $active: boolean }>`
-  background-color: ${({ $active }) => ($active ? COLOR_LIGHT_GREEN : COLOR_GREEN)};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  color: ${COLOR_GOLD};
-  cursor: pointer;
-  font: inherit;
-  font-size: 16px;
-  height: 40px;
-  padding: 0 14px;
-
-  &:focus-visible {
-    outline: 2px solid ${COLOR_GOLD};
+  @media ${BELOW_MOBILE} {
+    flex-basis: 100%;
   }
 `;
 
-const Results = styled(FlexGroup)`
-  margin-top: ${SPACE_SM};
-  width: 95%;
+const SearchField = styled.div`
+  position: relative;
+
+  & > input {
+    padding-right: 44px;
+  }
 `;
 
-const LevelRangeRow = styled(FlexGroup)`
+const SearchSubmit = styled.button`
   align-items: center;
-  gap: ${SPACE_SM};
-`;
-
-const LevelRangeInput = styled(FlexGroup)`
-  width: 60px;
-`;
-
-const LoadMore = styled(FlexGroup)`
+  background: none;
+  border: none;
+  color: ${COLOR_TEXT_MUTED};
+  cursor: pointer;
+  display: flex;
+  height: 44px;
   justify-content: center;
-  margin: ${SPACE_SM} 0 ${SPACE_LG};
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44px;
+
+  &:hover {
+    color: ${COLOR_ACCENT_STRONG};
+  }
+`;
+
+const FiltersToggle = styled(Button)`
+  display: none;
+
+  @media ${BELOW_MOBILE} {
+    display: inline-flex;
+    flex: 1;
+  }
+`;
+
+// On phones the sort, level and tag filters fold away behind the Filters button.
+const Collapsible = styled.div<{ $open: boolean }>`
+  align-items: flex-end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+
+  @media ${BELOW_MOBILE} {
+    display: ${({ $open }) => ($open ? 'flex' : 'none')};
+    width: 100%;
+  }
+`;
+
+const LevelRange = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 6px;
+`;
+
+const LevelInput = styled.div`
+  width: 72px;
+`;
+
+const Dash = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+`;
+
+const Note = styled.p`
+  align-items: center;
+  color: ${COLOR_TEXT_MUTED};
+  display: flex;
+  font-size: ${TEXT_SM};
+  margin: 0;
+  min-height: 44px;
+`;
+
+const TagsRow = styled.div<{ $open: boolean }>`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM} 14px;
+  margin-top: ${SPACE_MD};
+
+  @media ${BELOW_MOBILE} {
+    display: ${({ $open }) => ($open ? 'flex' : 'none')};
+  }
+`;
+
+const Status = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: 28px 0 12px;
+`;
+
+const LoadMore = styled.div`
+  display: flex;
+  justify-content: center;
+  margin: ${SPACE_LG} 0;
 `;
 
 export default Landing;

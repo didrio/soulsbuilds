@@ -1,6 +1,6 @@
 import type { ChangeEvent, ComponentPropsWithoutRef } from 'react';
 import styled from 'styled-components';
-import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_GOLD, COLOR_DARK_GREEN, FONT_BODY } from '@/theme';
+import { fieldStyles } from './fieldStyles';
 
 type TextInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'onChange' | 'value'> & {
   centered?: boolean;
@@ -8,7 +8,10 @@ type TextInputProps = Omit<ComponentPropsWithoutRef<'input'>, 'onChange' | 'valu
   value: string | number;
 };
 
-/** A styled text input. Other `<input>` props (placeholder, aria-label, onBlur…) pass through. */
+/**
+ * A text input (44 px, sunken). Give it a visible `<label htmlFor>` or an `aria-label`. Other
+ * `<input>` props (placeholder, aria-invalid, onBlur…) pass through.
+ */
 function TextInput({ centered = false, onChange, type = 'text', ...rest }: TextInputProps) {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value, e);
@@ -18,32 +21,9 @@ function TextInput({ centered = false, onChange, type = 'text', ...rest }: TextI
 }
 
 const Container = styled.input<{ $centered: boolean }>`
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  border-radius: 2px;
-  box-sizing: border-box;
-  height: 40px;
-  width: 100%;
-  padding: 5px 10px;
-  outline: none;
-  background-color: ${COLOR_GREEN};
-  color: ${COLOR_GOLD};
-  font-size: 16px;
+  ${fieldStyles}
+  font-variant-numeric: tabular-nums;
   text-align: ${({ $centered }) => ($centered ? 'center' : 'left')};
-  font-family: ${FONT_BODY};
-  box-shadow: inset 0 0 3px ${COLOR_DARK_GREEN};
-
-  &::placeholder {
-    color: ${COLOR_GOLD};
-    opacity: 0.5;
-  }
-
-  &:focus-visible {
-    border-color: ${COLOR_GOLD};
-  }
-
-  &:disabled {
-    opacity: 0.6;
-  }
 `;
 
 export default TextInput;

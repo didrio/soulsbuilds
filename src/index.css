@@ -1,28 +1,12 @@
-/* Self-hosted OFL fonts (@fontsource); latin subset only. Replaced the Adobe Typekit kit and the 2022 TTFs. */
+/* Self-hosted OFL fonts (@fontsource). Inter (variable, UI) loads only the latin range a page uses;
+   Cinzel for display; EB Garamond for long-form prose. Page-wide styles live in src/theme/GlobalStyle.ts. */
+@import '@fontsource-variable/inter/wght.css';
+@import '@fontsource/cinzel/latin-600.css';
+@import '@fontsource/cinzel/latin-700.css';
 @import '@fontsource/eb-garamond/latin-400.css';
 @import '@fontsource/eb-garamond/latin-400-italic.css';
 @import '@fontsource/eb-garamond/latin-700.css';
-@import '@fontsource/cinzel/latin-600.css';
-@import '@fontsource/cinzel/latin-700.css';
-
-body {
-  margin: 0;
-  font-family: 'EB Garamond', serif;
-  font-weight: 400;
-  font-style: normal;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
-}
-
-a {
-  all: unset;
-  cursor: pointer;
-}
-
-* {
-  box-sizing: border-box;
+  font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }

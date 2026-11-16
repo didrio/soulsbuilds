@@ -15,9 +15,12 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 | `*`               | `NotFound`        | 404 page                                                                                                  |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
-Login and Register are not routes: a slide-down panel in `src/app/App.tsx`, opened from `Header`.
-`GameSelector` is a cosmetic bar ("Coming soon!" for other games). The item picker (`ItemSelector`) is a modal
-that opens whenever Redux `app.slotType` is set.
+Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. The item picker
+(`ItemSelector`) is a modal that opens whenever Redux `app.slotType` is set.
+
+**Games.** Souls Builds will cover more FromSoftware games; Elden Ring is the only one today. `src/app/game.ts`
+holds the registry (`GAMES`) and `useCurrentGame()`, the one seam that later reads the game from the route.
+Function and UX are the same for every game; only the skin (accent colors) changes, from `src/theme/skins.ts`.
 
 ## State and data flow
 
@@ -129,14 +132,27 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
 
 ## Styling
 
-styled-components with no `ThemeProvider`; tokens are plain constants in `src/theme/` (`COLOR_*` dark greens and
-golds, `FONT_*`, `BELOW_*` media queries; ESLint rejects hex literals elsewhere); one `createGlobalStyle` in
-`src/app/App.tsx`. Fonts: self-hosted OFL **Cinzel** (headings) and **EB Garamond**
-(body) from `@fontsource`, imported in `src/index.css`. Responsive layout is ad-hoc `max-width`
-media queries (400–1400 px). Spacing: `SPACE_*` tokens (5px steps, plus `SPACE_GUTTER` 16px) in
-`src/theme/spacing.ts`, used by the shell and the pages touched since T11; older margins are still literal.
-Contrast: gold and light-green text pass WCAG AA on the greens, except on `COLOR_LIGHT_GREEN`, so hover states
-that use it switch the text to `COLOR_LIGHTEST_GREEN` (notes in `colors.ts`). Weapon affinity/skill badges in
+styled-components with no `ThemeProvider`; tokens are plain constants in `src/theme/` (T16 design system, ~50%
+modern product UI and ~50% in-world; `docs/decisions.md` "Redesign"). ESLint rejects hex literals elsewhere.
+
+- **Colors, two layers** (`colors.ts`): a game-agnostic base (warm near-black surfaces, off-white text, lines)
+  and the game **skin** (`skins.ts`: accent, accent-strong/deep, on-accent, frame, glow). Skin tokens are CSS
+  custom properties (`COLOR_ACCENT = 'var(--sb-accent)'`) written to `:root` by `GameSkinStyle` for the current
+  game, so components import one constant. `colors.test.ts` checks WCAG AA for every text/background pair and
+  every game's skin; add a pair there when you put text on a new background.
+- **Type** (`fonts.ts`): **Inter** (variable) for everything read or operated, **Cinzel** for names and headings
+  only, **EB Garamond** for long-form prose (build write-ups, taglines); `TEXT_*` sizes. All self-hosted OFL from
+  `@fontsource`, imported in `src/index.css`.
+- **Spacing, radii, shadows, motion, breakpoints**: `SPACE_*`, `RADIUS_*`, `SHADOW_*`, `DURATION_*`/`EASE`,
+  `BELOW_MOBILE` (640) / `BELOW_TABLET` (900).
+- **Page-wide styles**: `GlobalStyle.ts` (background light, vignette, film grain, focus ring, reduced motion).
+- **In-world building blocks** (`components/ui/`): `Frame` (framed panel with corner marks), `SectionHeading`,
+  `Ornament` (divider), `PageHero` (title with the glow), `ItemTile` (inventory slot), and the `selectionBar`
+  CSS (the game-menu hover/focus glow) in `inWorld.ts`. Use these instead of one-off ornaments.
+- **Legacy**: `legacy.ts` keeps the 2022 token names, remapped onto the new palette, so the build page, editor
+  and picker (restyled in T17) still compile and blend in. Don't use them in new code; T17 deletes the file.
+
+Weapon affinity/skill badges in
 `Slot` show details on mouse hover, and in view mode are buttons (tap/Enter toggles, Escape/blur closes; pinned to
 the bottom of the screen on phones). Dialogs and panels use `components/ui/FocusScope` (focus in, Escape, focus
 back; `trap` for the item picker modal). Item icons are decorative (`alt=""`): the name is always shown next to

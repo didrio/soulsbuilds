@@ -1,14 +1,16 @@
 import { Link } from 'react-router';
 import styled from 'styled-components';
+import { fadingRule } from '@/components/ui/inWorld';
 import {
-  COLOR_GOLD,
-  COLOR_LIGHT_GREEN,
-  COLOR_LIGHTEST_GREEN,
+  COLOR_ACCENT,
+  COLOR_ACCENT_STRONG,
+  COLOR_TEXT_MUTED,
+  FONT_DISPLAY,
   SPACE_GUTTER,
-  SPACE_LG,
-  SPACE_MD,
-  SPACE_SM,
-  SPACE_XXL,
+  SPACE_XXXL,
+  TEXT_SM,
+  TEXT_XS,
+  TRACKING_CAPS,
 } from '@/theme';
 
 /** Site footer: legal links, and who we are not. The game data and icons come from FromSoftware's game files. */
@@ -31,32 +33,51 @@ function Footer() {
   );
 }
 
-const Links = styled.nav`
-  display: flex;
-  gap: ${SPACE_LG};
-  justify-content: center;
-  margin-bottom: ${SPACE_MD};
-
-  & > a {
-    color: ${COLOR_LIGHTEST_GREEN};
-    padding: ${SPACE_SM} 0;
-  }
-`;
-
 const Container = styled.footer`
-  border-top: 1px solid ${COLOR_LIGHT_GREEN};
-  box-sizing: border-box;
-  color: ${COLOR_GOLD};
-  font-size: 14px;
-  line-height: 1.5;
-  margin-top: ${SPACE_XXL};
-  padding: ${SPACE_LG} ${SPACE_GUTTER};
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  line-height: 1.6;
+  margin-top: ${SPACE_XXXL};
+  padding: 28px ${SPACE_GUTTER} 44px;
+  position: relative;
   text-align: center;
-  width: 100%;
+
+  &::before {
+    background: ${fadingRule};
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
 
   & > p {
     margin: 0 auto;
-    max-width: 720px;
+    max-width: 640px;
+  }
+`;
+
+const Links = styled.nav`
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-bottom: 8px;
+
+  & > a {
+    align-items: center;
+    color: ${COLOR_ACCENT};
+    display: inline-flex;
+    font-family: ${FONT_DISPLAY};
+    font-size: ${TEXT_SM};
+    font-weight: 600;
+    letter-spacing: ${TRACKING_CAPS};
+    min-height: 44px;
+    text-transform: uppercase;
+  }
+
+  & > a:hover {
+    color: ${COLOR_ACCENT_STRONG};
   }
 `;
 

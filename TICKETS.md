@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T19
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T16, the redesign · Opus · high · plan mode on.
+**Next:** T17, the redesign's build page, editor and picker · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -21,7 +21,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
-(T16 design system and shell, T17 the remaining pages), then the headline feature, "How to get this build" (T14
+(T16 design system and shell: done; T17 the remaining pages), then the headline feature, "How to get this build" (T14
 acquisition data, T15 route + UI), then T8 and T9. The redesign comes first so that T15's and T8's new UI is built
 once, in the new design. T14 is data only and could run before or alongside the redesign. T18 (account deletion)
 can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
@@ -32,38 +32,9 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 ## Up next
 
-### T16 — Redesign: direction, design system, shell and browse pages
-
-- **Status:** ready (T12 done: the site is live, so redesign work ships through CI previews)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Replace the clunky 2022 look with a modern, easy, accessible UI that still feels like Elden Ring:
-  roughly 90% clean modern product UI, 10% in-world character.
-- **Done when:**
-  - [ ] **Direction first, approved by the owner before building:** screenshot the current pages (desktop and
-        `--mobile`), list what's clunky (layout, hierarchy, density, controls), and propose one direction with a
-        static mockup of the landing page and a build page (an HTML mockup or a quick branch, the session's
-        choice). The owner gave a free hand (2026-11-15): whole sections may change, move or go.
-  - [ ] Design tokens rewritten in `src/theme/`: a neutral dark base instead of literal game greens, one
-        restrained gold accent, a type scale (Cinzel for display headings only, EB Garamond or a clean UI sans
-        for body/controls: decide and say why), spacing (`SPACE_*`), radii, elevation, motion with
-        `prefers-reduced-motion`. WCAG AA contrast for all text and focus rings; update the contrast notes in
-        `colors.ts`.
-  - [ ] `components/ui/` rebuilt on the tokens (Button, inputs, DropDown, Chips/Tag, PageMessage,
-        ErrorMessage, cards) with visible focus, 44 px touch targets and real labels.
-  - [ ] App shell redone: header/nav, login/register (the slide-down panel may become a dialog or a page),
-        footer; landing (filters, sort, search, build cards) and profile pages in the new design.
-  - [ ] The in-world 10%: a few deliberate touches (display type, thin ornamental dividers, the item icons as
-        the visual hero, maybe a subtle grace-glow accent), never at the cost of legibility or speed.
-  - [ ] e2e and component tests still pass (update selectors only where the markup really changed);
-        screenshots of every changed page, desktop and mobile; `docs/decisions.md` row for the new direction.
-- **Context:** `src/theme/`, `src/components/ui/`, `src/app/` (App, Header), `src/features/builds/`,
-  `src/features/profile/`, `src/features/legal/` (privacy/terms pages), `index.html` (fonts, meta theme-color). Keep styled-components (decision, owner's
-  call 2026-11-14); no new UI library without asking. T11's a11y pass and the Backlog's "polish leftovers" fold
-  into this. Self-hosted OFL fonts only (no new font source without the owner's OK).
-
 ### T17 — Redesign: build page, editor and item picker
 
-- **Status:** ready (after T16)
+- **Status:** ready (T16 done)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Bring the most-used and most complex screens onto T16's design system, and fix their UX.
 - **Done when:**
@@ -79,6 +50,11 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
         and mobile.
 - **Context:** `src/features/editor/` (`BuildEditorPage`, `sections/`, `Slot`, `ItemSelector`,
   `WeaponOptions`), `src/features/reports/`. T16's tokens and components; don't reintroduce one-off styles.
+  From T16: the approved direction is the v2 mockup's build page (title block with like/report/tags, framed
+  panels with `SectionHeading`s, items as `ItemTile` + name rows in two columns, stats as bars in a side panel
+  that moves above on mobile, write-up in `FONT_PROSE` with a drop cap); docs/architecture.md "Styling". Move the
+  picker onto `Dialog`; restyle `Slot` (its gold tiles are the last 2022 look) on `ItemTile`; then delete
+  `src/theme/legacy.ts` and every import of it (the build page, editor, picker, reports still use it).
 
 ### T14 — Acquisition data (where every item comes from)
 
@@ -198,10 +174,11 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 ## Backlog
 
-- ~~Polish leftovers from T11~~: folded into T16 (redesign).
 - Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup).
-- Other games (Dark Souls 1–3, Sekiro, Elden Ring Nightreign) on top of T3's `game` field: data per game, game
-  selector routes (`/ds3/...`), per-game tags.
+- Other games (owner, 2026-11-15: Dark Souls 1–3, maybe Demon's Souls and Bloodborne; Sekiro and Nightreign
+  need their own build models) on top of T3's `game` field: data per game, per-game routes (`/ds3/...`) read by
+  `useCurrentGame()` (`src/app/game.ts`), a game switcher in the header, a skin per game in
+  `src/theme/skins.ts`, per-game tags. Same function and UX for every game; only the look changes.
 - Per-build share previews (Open Graph image/title per build): needs SSR or a Cloud Function (Blaze plan).
 - Build comparison view; "copy this build" to start from someone else's.
 - Firebase MCP server for agents (local emulator use only) once its emulator support is clear.
@@ -215,6 +192,10 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 Older entries: `docs/tickets-archive.md`.
 
+- T16 — Redesign: design system, shell, browse pages — 2026-11-15 — ~50/50 modern and in-world (approved HTML
+  mockup v2): base tokens + per-game skin (CSS vars, `skins.ts`, AA contrast test), Inter/Cinzel/Garamond, in-world
+  components (Frame, Ornament, PageHero, ItemTile, selection bar), Dialog auth, game tabs removed, landing as dense
+  rows with authors, profile/legal/404 restyled; 2022 tokens kept in `legacy.ts` for T17.
 - T5 — 2022 UI bug batch — 2026-11-14 — filters combine, cards keyed by id with armor slot types, timers, CSS,
   placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.
 - T10 — Moderation — 2026-11-15 — reports on builds and comments (`reports/{targetId}_{uid}`, rules + tests,

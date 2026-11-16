@@ -14,12 +14,12 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T7, T10–T13 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T7, T10–T13, T16 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
-v2 with tested rules (2022 data migrated); one `AuthProvider`; page states; search, likes, comments, reports +
-`scripts/admin.mjs` moderation; privacy/terms pages; Playwright e2e. Game data v2 (base + DLC, from the game files)
-in `src/data/er/`; builds store game IDs. CI: checks, a preview channel per PR, production deploys on `main` after
-the owner approves (Workload Identity, no keys). Left from T12: the owner enforces App Check.
+v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
+Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
+approved production deploys on `main`. T16 redesign: token design system (base + per-game skin), shell, landing,
+profile; T17 restyles the build page, editor and picker. Left from T12: the owner enforces App Check.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -92,10 +92,11 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
 ## Project map
 
 ```
-index.html                 Vite entry (Adobe Typekit font kit + favicon placeholder) → src/main.tsx
+index.html                 Vite entry (meta, theme-color, icons) → src/main.tsx
 src/
   main.tsx                 createRoot + <AppProviders><App/>
-  app/                     App (shell: header, login/register slide-down panel, item-picker modal, footer),
+  app/                     App (shell: global styles + game skin, header, log in/sign up dialog, item-picker
+                           modal, footer), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId, /user/:userId, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
@@ -111,15 +112,17 @@ src/
                            Slot, ItemSelector (picker) + WeaponOptions (Ash of War, affinity), slots.ts; store/ =
                            Redux slices for the build being edited + selectors + build.ts (loadBuild /
                            selectBuildFields: build ⇄ editor state)
-  components/ui/           Shared UI: FlexGroup, Button, TextInput/TextAreaInput, DropDown, Chips, Tag,
-                           PageMessage (loading/empty/not-found), ErrorMessage (with retry), FocusScope
-                           (dialog/panel focus + Escape), LoadingAnimation…
+  components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
+                           DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, PageMessage, ErrorMessage,
+                           FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
+                           inWorld.ts (frame + selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check), auth, builds, likes,
                            comments, users, reports),
                            models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping),
                            array.ts
-  theme/                   Tokens: COLOR_* (colors.ts), FONT_* (fonts.ts), BELOW_* media queries (media.ts),
-                           SPACE_* spacing scale (spacing.ts)
+  theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
+                           TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
+                           GameSkinStyle; legacy.ts = 2022 names for T17's pages (don't use)
   data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
                            (zod; types only in the app), index.ts accessors by ID (getWeapon(id),
                            armorList(slot), iconUrl…), rules.ts (Ash of War/affinity/talisman rules, shared
@@ -145,7 +148,10 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Layout**: a feature's pages, sections, hooks and state live in `src/features/<feature>/`; generic UI in
   `src/components/ui/`; framework-free code in `src/lib/`. See the `add-feature` skill.
 - **Styling**: styled-components, defined at the bottom of the file. Colors, fonts, breakpoints and spacing
-  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`). Style-only props are transient (`$active`).
+  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`), never `legacy.ts` in new
+  code. Game-specific color = the skin tokens (`COLOR_ACCENT`…); everything else is shared by all games. In-world
+  touches come from the `components/ui/` building blocks (`Frame`, `Ornament`…), not one-offs.
+  Style-only props are transient (`$active`). docs/architecture.md "Styling".
 - **State**: the build being edited → Redux slices + selectors (`useAppSelector`/`useAppDispatch`). Server
   data (builds, users, likes, comments) → TanStack Query hooks in `src/features/<feature>/queries.ts`, keys in
   `src/lib/queryKeys.ts`. The signed-in user → `useAuth()`. Never copy server data into Redux.
@@ -157,8 +163,8 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Tests** are colocated `*.test.ts(x)`, Vitest + Testing Library. Components render with
   `renderWithProviders`; query by role/text. Game data integrity: `src/data/data.test.ts`.
 - **Accessibility**: new interactive elements are real `<button>`/`<a>` with visible text or a label. Dialogs
-  and pop-up panels go through `FocusScope` (focus in, Escape, focus back; `trap` when modal). Text on
-  `COLOR_LIGHT_GREEN` is `COLOR_LIGHTEST_GREEN` (contrast notes in `src/theme/colors.ts`). Item icons are
+  and pop-up panels go through `FocusScope` (modals: `Dialog`). Controls are ≥ 44 px tall. New text/background
+  pairs get a line in `src/theme/colors.test.ts` (WCAG AA). Item icons are
   `alt=""` because the item name is always shown next to them.
 
 ## Gotchas

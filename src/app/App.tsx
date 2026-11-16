@@ -1,7 +1,8 @@
 import { lazy, Suspense, useState } from 'react';
-import styled, { createGlobalStyle } from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
+import styled from 'styled-components';
+import Dialog from '@/components/ui/Dialog';
 import FocusScope from '@/components/ui/FocusScope';
+import { framed } from '@/components/ui/inWorld';
 import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
 import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
@@ -9,22 +10,19 @@ import useAuth from '@/features/auth/useAuth';
 import { closePicker } from '@/features/editor/store/app';
 import { selectSlotType } from '@/features/editor/store/selectors';
 import {
+  BELOW_MOBILE,
+  COLOR_ACCENT,
   COLOR_BACKDROP,
-  COLOR_DARK_GREEN,
-  COLOR_DARKER_GREEN,
-  COLOR_GOLD,
-  COLOR_GREEN,
-  COLOR_LIGHTEST_GREEN,
-  BELOW_500,
-  BELOW_800,
-  BELOW_1200,
+  COLOR_BG,
+  CONTENT_WIDTH,
+  GameSkinStyle,
+  GlobalStyle,
+  SHADOW_OVERLAY,
+  SPACE_GUTTER,
   SPACE_LG,
-  SPACE_SM,
-  SPACE_XL,
-  SPACE_XXL,
 } from '@/theme';
 import Footer from './Footer';
-import GameSelector from './GameSelector';
+import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppDispatch, useAppSelector } from './hooks';
 import AppRoutes from './routes';
@@ -32,26 +30,18 @@ import AppRoutes from './routes';
 // The picker holds the full game data (~1 MB), so it loads when a slot is first opened.
 const ItemSelector = lazy(() => import('@/features/editor/ItemSelector'));
 
-const GlobalStyle = createGlobalStyle`
-  body {
-    background-color: ${COLOR_DARKER_GREEN};
-    color: ${COLOR_GOLD};
-  }
-`;
-
-type PanelContent = 'login' | 'register';
+type AuthDialog = 'login' | 'signup';
 
 /**
- * The page shell: game selector, header, the login/register slide-down panel, the routes, the
- * footer, and the item picker modal (open while Redux `app.slotType` is set).
+ * The page shell: global styles and the current game's skin, header, the log in / sign up dialog,
+ * the routes, the footer, and the item picker modal (open while Redux `app.slotType` is set).
  */
 function App() {
   const dispatch = useAppDispatch();
   const slotType = useAppSelector(selectSlotType);
   const { uid } = useAuth();
-
-  const [showHiddenContainer, setShowHiddenContainer] = useState(false);
-  const [hiddenContainerContent, setHiddenContainerContent] = useState<PanelContent | null>(null);
+  const game = useCurrentGame();
+  const [authDialog, setAuthDialog] = useState<AuthDialog | null>(null);
 
   const top = (document.documentElement.scrollTop || document.body.scrollTop || 0) + 120;
 
@@ -59,23 +49,34 @@ function App() {
     dispatch(closePicker());
   };
 
-  const handleCloseHiddenContainer = () => {
-    setShowHiddenContainer(false);
-    setHiddenContainerContent(null);
-  };
-
-  const togglePanel = (content: PanelContent) => {
-    if (showHiddenContainer === true && hiddenContainerContent === content) {
-      handleCloseHiddenContainer();
-    } else {
-      setShowHiddenContainer(true);
-      setHiddenContainerContent(content);
-    }
-  };
+  const closeAuth = () => setAuthDialog(null);
 
   return (
-    <Background>
+    <Shell>
       <GlobalStyle />
+      <GameSkinStyle $game={game.id} />
+      <SkipLink href="#main">Skip to content</SkipLink>
+      <Header
+        openDialog={uid ? null : authDialog}
+        onLogIn={() => setAuthDialog('login')}
+        onSignUp={() => setAuthDialog('signup')}
+      />
+      <Main id="main" tabIndex={-1}>
+        <AppRoutes />
+      </Main>
+      <Footer />
+      {authDialog && !uid ? (
+        <Dialog
+          title={authDialog === 'login' ? 'Log in' : 'Create your account'}
+          onClose={closeAuth}>
+          {authDialog === 'login' ? (
+            <Login onDone={closeAuth} onSwitch={() => setAuthDialog('signup')} />
+          ) : (
+            <SignUp onDone={closeAuth} onSwitch={() => setAuthDialog('login')} />
+          )}
+        </Dialog>
+      ) : null}
+      {/* T17 moves the picker onto Dialog; until then only its colors changed. */}
       {slotType === null ? null : (
         <ModalContainer>
           <OutsideClickHandler onOutsideClick={handleHideModal}>
@@ -89,98 +90,48 @@ function App() {
           </OutsideClickHandler>
         </ModalContainer>
       )}
-      <Container>
-        <GameSelector />
-        <HeaderContainer>
-          <Header
-            openPanel={showHiddenContainer ? hiddenContainerContent : null}
-            onShowLogin={() => togglePanel('login')}
-            onShowRegister={() => togglePanel('register')}
-          />
-        </HeaderContainer>
-        <HiddenContainer $visible={showHiddenContainer}>
-          {hiddenContainerContent && !uid ? (
-            // Not modal: Tab may leave it. Escape closes it and focus returns to the header button.
-            <FocusScope key={hiddenContainerContent} onEscape={handleCloseHiddenContainer}>
-              {hiddenContainerContent === 'login' ? (
-                <Login onDone={handleCloseHiddenContainer} />
-              ) : (
-                <SignUp onDone={handleCloseHiddenContainer} />
-              )}
-            </FocusScope>
-          ) : null}
-        </HiddenContainer>
-        <Content>
-          <AppRoutes />
-        </Content>
-        <Footer />
-      </Container>
-    </Background>
+    </Shell>
   );
 }
 
-const HeaderContainer = styled(FlexGroup)`
-  margin-bottom: ${SPACE_XXL};
-  margin-top: ${SPACE_LG};
-  width: 95%;
-`;
-
-const HiddenContainer = styled(FlexGroup)<{ $visible: boolean }>`
-  max-height: ${({ $visible }) => ($visible ? '420px' : '0px')};
-  margin-bottom: ${({ $visible }) => ($visible ? '${SPACE_XXL}' : '0px')};
-  transition: all 0.4s ease-in-out;
-  background-color: ${COLOR_GREEN};
-  overflow: hidden;
-  align-items: center;
-  width: 100%;
-  justify-content: center;
-  box-shadow: inset 0 0 5px ${COLOR_DARK_GREEN};
-`;
-
-const Background = styled(FlexGroup)`
-  flex-direction: column;
-  align-items: center;
+// Positioned so the picker's backdrop covers the whole page height.
+const Shell = styled.div`
+  min-height: 100vh;
   position: relative;
 `;
 
-const Container = styled(FlexGroup)`
-  background-color: ${COLOR_DARK_GREEN};
-  flex-direction: column;
-  width: 72%;
-  min-height: 100vh;
-  padding-top: ${SPACE_SM};
-  padding-bottom: ${SPACE_XL};
-  box-shadow: 0px 0px 1px ${COLOR_LIGHTEST_GREEN};
-  align-items: center;
-
-  @media ${BELOW_1200} {
-    width: 80%;
-  }
-
-  @media ${BELOW_800} {
-    width: 90%;
-  }
-
-  @media ${BELOW_500} {
-    width: 95%;
-  }
-`;
-
-const Content = styled(FlexGroup)`
-  flex-direction: column;
-  width: 100%;
-`;
-
-const ModalContainer = styled(FlexGroup)`
+const SkipLink = styled.a`
+  background: ${COLOR_BG};
+  border: 1px solid ${COLOR_ACCENT};
+  left: ${SPACE_GUTTER};
+  padding: 10px 16px;
   position: absolute;
-  justify-content: center;
+  top: -100px;
+  z-index: 200;
+
+  &:focus {
+    top: ${SPACE_GUTTER};
+  }
+`;
+
+const Main = styled.main`
+  margin: 0 auto;
+  max-width: ${CONTENT_WIDTH};
+  min-height: 60vh;
+  outline: none;
+  padding: 0 24px;
+
+  @media ${BELOW_MOBILE} {
+    padding: 0 ${SPACE_GUTTER};
+  }
+`;
+
+const ModalContainer = styled.div`
   background-color: ${COLOR_BACKDROP};
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 100%;
-  height: 100%;
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: absolute;
   z-index: 100;
 `;
 
@@ -190,13 +141,12 @@ const ModalFocusScope = styled(FocusScope)`
 `;
 
 const Modal = styled.div<{ $top: number }>`
-  background-color: ${COLOR_DARK_GREEN};
-  width: 70vw;
+  ${framed}
+  box-shadow: ${SHADOW_OVERLAY};
   height: 70vh;
-  border-radius: 10px;
-  padding: ${SPACE_LG};
   margin-top: ${({ $top }) => $top}px;
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
+  padding: ${SPACE_LG};
+  width: 70vw;
 `;
 
 export default App;

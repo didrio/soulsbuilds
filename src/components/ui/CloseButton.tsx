@@ -1,37 +1,41 @@
 import styled from 'styled-components';
-import { COLOR_GOLD, COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '@/theme';
+import {
+  COLOR_ACCENT_STRONG,
+  COLOR_GLOW,
+  COLOR_TEXT_MUTED,
+  DURATION_FAST,
+  RADIUS_FRAME,
+} from '@/theme';
+import { CloseIcon } from './icons';
 
-/** A square "×" button; `label` is its accessible name (default "Close"). */
+/** A 44 px "×" button; `label` is its accessible name (default "Close"). */
 function CloseButton({ onClick, label = 'Close' }: { onClick: () => void; label?: string }) {
   return (
     <Container type="button" aria-label={label} onClick={onClick}>
-      ×
+      <CloseIcon size={20} />
     </Container>
   );
 }
 
 const Container = styled.button`
   align-items: center;
-  background-color: ${COLOR_GREEN};
+  background: none;
   border: none;
-  border-radius: 2px;
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
-  color: ${COLOR_GOLD};
+  border-radius: ${RADIUS_FRAME};
+  color: ${COLOR_TEXT_MUTED};
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   flex-shrink: 0;
-  font-size: 26px;
-  height: 35px;
+  height: 44px;
   justify-content: center;
-  width: 35px;
+  transition:
+    color ${DURATION_FAST},
+    background ${DURATION_FAST};
+  width: 44px;
 
   &:hover {
-    background-color: ${COLOR_LIGHT_GREEN};
-    color: ${COLOR_LIGHTEST_GREEN};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${COLOR_GOLD};
+    background: ${COLOR_GLOW};
+    color: ${COLOR_ACCENT_STRONG};
   }
 `;
 

@@ -1,191 +1,309 @@
 import { Link } from 'react-router';
 import styled from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
+import { HeartIcon } from '@/components/ui/icons';
+import { selectionBar } from '@/components/ui/inWorld';
+import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
-import Slot from '@/features/editor/Slot';
+import VisuallyHidden from '@/components/ui/VisuallyHidden';
+import { getCardArmor, getCardWeapon, iconUrl } from '@/data/core';
+import type { Build, UserProfile } from '@/lib/models';
 import {
-  SLOT_TYPE_CHEST,
-  SLOT_TYPE_GAUNTLET,
-  SLOT_TYPE_HELM,
-  SLOT_TYPE_LEG,
-  SLOT_TYPE_WEAPON,
-} from '@/features/editor/slots';
-import { getCardArmor, getCardWeapon } from '@/data/core';
-import type { Build } from '@/lib/models';
-import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_GOLD,
-  COLOR_LIGHTEST_GREEN,
+  BELOW_MOBILE,
+  BELOW_TABLET,
+  COLOR_ACCENT,
+  COLOR_ACCENT_STRONG,
+  COLOR_FRAME,
+  COLOR_LINE,
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
   FONT_DISPLAY,
-  BELOW_800,
+  TEXT_LG,
+  TEXT_SM,
+  TEXT_XL,
+  TEXT_XS,
+  TRACKING_CAPS,
 } from '@/theme';
 
-// The card previews the first two slots of each hand: weapon slots 1, 2 (main) and 4, 5 (off hand).
-const PREVIEW_WEAPONS = [
-  { index: 0, background: 'weapon' },
-  { index: 1, background: 'weapon' },
-  { index: 3, background: 'shield' },
-  { index: 4, background: 'shield' },
-] as const;
-
+// Rows preview the first two slots of each hand (weapon slots 1, 2 main hand and 4, 5 off hand) and
+// the four armor pieces, always in the same positions so the columns line up for scanning.
+const PREVIEW_WEAPONS = [0, 1, 3, 4] as const;
 const ARMOR = [
-  { slot: 'helm', armorSlot: 'head', type: SLOT_TYPE_HELM },
-  { slot: 'chest', armorSlot: 'chest', type: SLOT_TYPE_CHEST },
-  { slot: 'gauntlet', armorSlot: 'arms', type: SLOT_TYPE_GAUNTLET },
-  { slot: 'leg', armorSlot: 'legs', type: SLOT_TYPE_LEG },
+  ['helm', 'head'],
+  ['chest', 'chest'],
+  ['gauntlet', 'arms'],
+  ['leg', 'legs'],
 ] as const;
 
-const likesText = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
+const TILE = 56;
+const TILE_MOBILE = 38;
+const GAP = 6;
+const SLOTS_WIDTH = `${4 * TILE + 3 * GAP}px`;
 
-/** Build cards (links to the build): likes, name, level, two weapons per hand, armor and tags. */
-function BuildsList({ builds }: { builds: Build[] }) {
+interface BuildsListProps {
+  builds: Build[];
+  /** Author profiles by uid, to show "by …" (left out on a profile page, where it's one author). */
+  authors?: Record<string, UserProfile>;
+}
+
+/**
+ * Builds as full-width rows (one link each): name, author and tags; armaments and armor as item
+ * tiles; level and likes. Dense on purpose, so many builds fit on screen.
+ */
+function BuildsList({ builds, authors }: BuildsListProps) {
   return (
-    <List>
-      {builds.map((build) => {
-        const { equipment } = build;
-        return (
-          <li key={build.id}>
-            <Card to={`/build/${build.id}`}>
-              <UpperSection>
-                <Likes>{likesText(build.likeCount)}</Likes>
-                <Name>{build.name}</Name>
-                <Level>{`Level ${build.level}`}</Level>
-              </UpperSection>
-              <LowerSection>
-                <EquipmentContainer>
-                  {PREVIEW_WEAPONS.map(({ index, background }) => (
-                    <Slot
-                      key={index}
-                      affinity={equipment.weaponAffinities[index] ?? null}
-                      ash={equipment.weaponSkills[index] ?? null}
-                      background={background}
-                      disabled
-                      item={getCardWeapon(equipment.weapons[index]) ?? null}
-                      type={SLOT_TYPE_WEAPON}
-                    />
-                  ))}
-                </EquipmentContainer>
-                <GearContainer>
-                  {ARMOR.map(({ slot, armorSlot, type }) => (
-                    <Slot
-                      key={slot}
-                      background={slot}
-                      disabled
-                      item={getCardArmor(equipment[slot], armorSlot) ?? null}
-                      type={type}
-                    />
-                  ))}
-                </GearContainer>
-              </LowerSection>
-              {build.tags.length ? (
-                <TagsSection>
-                  {build.tags.map((tag) => (
-                    <Tag key={tag}>{tag}</Tag>
-                  ))}
-                </TagsSection>
-              ) : null}
-            </Card>
-          </li>
-        );
-      })}
-    </List>
+    <div>
+      <ListHead aria-hidden="true">
+        <span>Build</span>
+        <span>Armaments</span>
+        <span>Armor</span>
+        <End>Level</End>
+        <End>Likes</End>
+      </ListHead>
+      <Rows>
+        {builds.map((build) => {
+          const { equipment } = build;
+          const author = authors?.[build.ownerId];
+          return (
+            <li key={build.id}>
+              <Row to={`/build/${build.id}`}>
+                <Who>
+                  <Name>{build.name}</Name>
+                  {author ? (
+                    <Meta>
+                      by <b>{author.displayName}</b>
+                    </Meta>
+                  ) : null}
+                  {build.tags.length ? (
+                    <Tags>
+                      {build.tags.map((tag) => (
+                        <Tag key={tag}>{tag}</Tag>
+                      ))}
+                    </Tags>
+                  ) : null}
+                </Who>
+                <Slots>
+                  <SlotGroup>
+                    {PREVIEW_WEAPONS.map((index) => {
+                      const weapon = getCardWeapon(equipment.weapons[index]);
+                      return (
+                        <Tile
+                          key={index}
+                          src={weapon ? iconUrl(weapon.icon) : null}
+                          title={weapon?.name}
+                          size={TILE}
+                        />
+                      );
+                    })}
+                  </SlotGroup>
+                  <SlotGroup>
+                    {ARMOR.map(([slot, armorSlot]) => {
+                      const piece = getCardArmor(equipment[slot], armorSlot);
+                      return (
+                        <Tile
+                          key={slot}
+                          src={piece ? iconUrl(piece.icon) : null}
+                          title={piece?.name}
+                          size={TILE}
+                        />
+                      );
+                    })}
+                  </SlotGroup>
+                </Slots>
+                <Numbers>
+                  <Level>
+                    <VisuallyHidden>Level </VisuallyHidden>
+                    {build.level}
+                  </Level>
+                  <Likes>
+                    <HeartIcon size={15} />
+                    {build.likeCount}
+                    <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
+                  </Likes>
+                </Numbers>
+              </Row>
+            </li>
+          );
+        })}
+      </Rows>
+    </div>
   );
 }
 
-const List = styled.ul`
+const columns = `minmax(0, 1fr) ${SLOTS_WIDTH} ${SLOTS_WIDTH} 70px 64px`;
+
+const ListHead = styled.div`
+  color: ${COLOR_TEXT_MUTED};
+  column-gap: 24px;
+  display: grid;
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  grid-template-columns: ${columns};
+  letter-spacing: ${TRACKING_CAPS};
+  padding: 0 16px 8px;
+  text-transform: uppercase;
+
+  @media ${BELOW_TABLET} {
+    display: none;
+  }
+`;
+
+const End = styled.span`
+  text-align: right;
+`;
+
+const Rows = styled.ul`
+  border-top: 1px solid ${COLOR_LINE};
   list-style: none;
   margin: 0;
   padding: 0;
-  width: 100%;
-`;
 
-const Card = styled(Link)`
-  background-color: ${COLOR_GREEN};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  border-radius: 4px;
-  color: ${COLOR_GOLD};
-  display: flex;
-  flex-direction: column;
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 25px;
-  padding: 0 10px;
-  transition: background-color 0.1s ease-in-out;
-
-  &:hover {
-    background-color: ${COLOR_LIGHT_GREEN};
-    color: ${COLOR_LIGHTEST_GREEN};
-  }
-
-  &:focus-visible {
-    outline: 2px solid ${COLOR_GOLD};
+  & > li {
+    border-bottom: 1px solid ${COLOR_LINE};
   }
 `;
 
-const LowerSection = styled(FlexGroup)`
+const Row = styled(Link)`
+  ${selectionBar}
   align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 10px 0;
-  margin: 10px 0;
-`;
+  column-gap: 24px;
+  display: grid;
+  grid-template-columns: ${columns};
+  min-height: 82px;
+  padding: 12px 16px;
+  position: relative;
 
-const EquipmentContainer = styled(FlexGroup)`
-  border-right: 1px solid ${COLOR_LIGHT_GREEN};
-  gap: 20px;
-  padding-right: 20px;
+  &:hover img {
+    filter: drop-shadow(0 0 6px ${COLOR_FRAME});
+  }
 
-  @media ${BELOW_800} {
-    border-right: none;
-    gap: 8px;
-    padding-right: 0;
+  @media ${BELOW_TABLET} {
+    grid-template-areas:
+      'who numbers'
+      'slots slots';
+    grid-template-columns: minmax(0, 1fr) auto;
+    row-gap: 10px;
+    column-gap: 12px;
+  }
+
+  @media ${BELOW_MOBILE} {
+    padding: 12px 4px;
   }
 `;
 
-const GearContainer = styled(FlexGroup)`
-  gap: 20px;
-  padding-left: 20px;
+const Who = styled.div`
+  min-width: 0;
 
-  @media ${BELOW_800} {
-    gap: 8px;
-    padding-left: 0;
+  @media ${BELOW_TABLET} {
+    grid-area: who;
   }
-`;
-
-const UpperSection = styled(FlexGroup)`
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 0px;
-  width: 100%;
-  border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
-`;
-
-const Level = styled.span`
-  text-align: right;
-  width: 25%;
-`;
-
-const Likes = styled.span`
-  width: 25%;
 `;
 
 const Name = styled.span`
-  color: ${COLOR_LIGHTEST_GREEN};
+  color: ${COLOR_TEXT};
+  display: block;
   font-family: ${FONT_DISPLAY};
-  font-size: 20px;
-  overflow-wrap: anywhere;
-  text-align: center;
-  text-shadow: 0px 0px 3px ${COLOR_GOLD};
-  width: 50%;
+  font-size: ${TEXT_LG};
+  font-weight: 700;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  ${Row}:hover & {
+    color: ${COLOR_ACCENT_STRONG};
+  }
 `;
 
-const TagsSection = styled(FlexGroup)`
-  border-top: 1px solid ${COLOR_LIGHT_GREEN};
+const Meta = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+  display: block;
+  font-size: ${TEXT_SM};
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  & > b {
+    color: ${COLOR_TEXT};
+    font-weight: 500;
+  }
+`;
+
+const Tags = styled.span`
+  display: flex;
   flex-wrap: wrap;
-  gap: 8px 0;
-  justify-content: center;
-  padding: 10px 0;
+  gap: 6px;
+  margin-top: 6px;
+`;
+
+// Desktop: the two slot groups are grid columns of the row; tablet and phone: one line under the name.
+const Slots = styled.div`
+  display: contents;
+
+  @media ${BELOW_TABLET} {
+    display: flex;
+    gap: 10px;
+    grid-area: slots;
+  }
+
+  @media ${BELOW_MOBILE} {
+    gap: 8px;
+  }
+`;
+
+const SlotGroup = styled.div`
+  display: flex;
+  gap: ${GAP}px;
+
+  @media ${BELOW_MOBILE} {
+    gap: 4px;
+  }
+`;
+
+const Tile = styled(ItemTile)`
+  @media ${BELOW_MOBILE} {
+    height: ${TILE_MOBILE}px;
+    width: ${TILE_MOBILE}px;
+  }
+`;
+
+// Desktop: two grid columns; tablet and phone: stacked at the top right.
+const Numbers = styled.div`
+  display: contents;
+
+  @media ${BELOW_TABLET} {
+    align-items: flex-end;
+    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    grid-area: numbers;
+  }
+`;
+
+const Level = styled.span`
+  color: ${COLOR_TEXT};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_XL};
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+`;
+
+const Likes = styled.span`
+  align-items: center;
+  color: ${COLOR_TEXT};
+  display: inline-flex;
+  font-size: ${TEXT_SM};
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  gap: 5px;
+  justify-content: flex-end;
+
+  & > svg {
+    color: ${COLOR_ACCENT};
+  }
 `;
 
 export default BuildsList;

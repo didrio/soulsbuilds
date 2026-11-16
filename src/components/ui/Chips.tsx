@@ -1,10 +1,25 @@
-import { useState, useMemo } from 'react';
+import { useId, useState } from 'react';
 import styled from 'styled-components';
+import { tagGroups } from '@/data/core';
+import {
+  COLOR_ACCENT_STRONG,
+  COLOR_FRAME,
+  COLOR_FRAME_SOFT,
+  COLOR_GLOW,
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
+  FONT_DISPLAY,
+  SHADOW_OVERLAY,
+  TEXT_SM,
+  TEXT_XS,
+  TRACKING_CAPS,
+} from '@/theme';
+import Button from './Button';
+import FocusScope from './FocusScope';
+import { ChevronDownIcon, CloseIcon, PlusIcon } from './icons';
+import { framed } from './inWorld';
 import OutsideClickHandler from './OutsideClickHandler';
 import TextInput from './TextInput';
-import FlexGroup from './FlexGroup';
-import { COLOR_GREEN, COLOR_LIGHT_GREEN, COLOR_LIGHTEST_GREEN } from '@/theme';
-import { tagGroups } from '@/data/core';
 
 interface ChipsProps {
   onAdd: (tag: string) => void;
@@ -12,187 +27,215 @@ interface ChipsProps {
   values: string[];
 }
 
-/** Tag chips (click to remove) plus an "+ Add Tag" dropdown with search over src/data/tags.json. */
+/**
+ * Chosen tags as chips (each a "Remove <tag>" button), plus an "Add tag" button that opens a popover:
+ * search all tags, or browse them by group (src/data/er/tags.json). Escape or a click outside closes it.
+ */
 function Chips({ onAdd, onRemove, values }: ChipsProps) {
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const popoverId = useId();
+  const [open, setOpen] = useState(false);
+  const [openGroup, setOpenGroup] = useState<string | null>(null);
   const [searchText, setSearchText] = useState('');
 
-  const handleShowDropdown = () => {
-    setShowDropdown(true);
-  };
-
-  const handleHideDropdown = () => {
-    setShowDropdown(false);
-    setSelectedKey(null);
+  const close = () => {
+    setOpen(false);
+    setOpenGroup(null);
     setSearchText('');
   };
 
-  const removeTag = (value: string) => () => {
-    onRemove(value);
+  const add = (tag: string) => {
+    onAdd(tag);
+    close();
   };
 
-  const handleSelectKey = (key: string) => () => {
-    setSelectedKey((prevKey) => (prevKey === key ? null : key));
-  };
-
-  const handleAddValue = (value: string) => () => {
-    onAdd(value);
-    handleHideDropdown();
-  };
-
-  const handleSearchChange = (value: string) => {
-    setSearchText(value);
-    setSelectedKey(null);
-  };
-
-  const searchResults = useMemo(
-    () =>
-      Object.values(tagGroups)
-        .flat()
-        .filter((tag) => tag.toLowerCase().includes(searchText)),
-    [searchText],
+  const available = (tags: readonly string[]) => tags.filter((tag) => !values.includes(tag));
+  const query = searchText.trim().toLowerCase();
+  const searchResults = available(Object.values(tagGroups).flat()).filter((tag) =>
+    tag.toLowerCase().includes(query),
   );
 
   return (
     <Container>
-      <ChipContainer>
-        {values.map((value) => (
-          <Chip key={value} onClick={removeTag(value)}>
-            {value}
-          </Chip>
-        ))}
-        <AddContainer>
-          <Chip onClick={handleShowDropdown}>+ Add Tag</Chip>
-          {showDropdown ? (
-            <OutsideClickHandler onOutsideClick={handleHideDropdown}>
-              <Dropdown vertical>
-                <SearchContainer>
-                  <TextInput onChange={handleSearchChange} value={searchText} />
-                </SearchContainer>
-                {searchText ? (
-                  <ValuesContainer vertical>
-                    {searchResults.map((value) => (
-                      <ValueContainer key={value} onClick={handleAddValue(value)}>
-                        {value}
-                      </ValueContainer>
-                    ))}
-                  </ValuesContainer>
-                ) : (
-                  <FlexGroup vertical>
-                    {Object.entries(tagGroups).map(([key, groupTags]) => (
-                      <FlexGroup key={key} vertical>
-                        <KeyContainer key={key} onClick={handleSelectKey(key)}>
-                          <FlexGroup>{key}</FlexGroup>
-                          <Caret>{selectedKey === key ? 'v' : '>'}</Caret>
-                        </KeyContainer>
-                        {selectedKey === key ? (
-                          <ValuesContainer vertical>
-                            {groupTags.map((value) => (
-                              <ValueContainer key={value} onClick={handleAddValue(value)}>
-                                {value}
-                              </ValueContainer>
-                            ))}
-                          </ValuesContainer>
-                        ) : null}
-                      </FlexGroup>
-                    ))}
-                  </FlexGroup>
-                )}
-              </Dropdown>
-            </OutsideClickHandler>
+      {values.map((value) => (
+        <Chip
+          key={value}
+          type="button"
+          aria-label={`Remove ${value}`}
+          onClick={() => onRemove(value)}>
+          {value}
+          <CloseIcon size={14} />
+        </Chip>
+      ))}
+      <OutsideClickHandler onOutsideClick={close}>
+        <Anchor>
+          <Button
+            variant="secondary"
+            aria-expanded={open}
+            aria-controls={open ? popoverId : undefined}
+            onClick={() => (open ? close() : setOpen(true))}>
+            <PlusIcon />
+            Add tag
+          </Button>
+          {open ? (
+            <Popover id={popoverId} onEscape={close} role="group" aria-label="Add a tag">
+              <TextInput
+                aria-label="Search tags"
+                onChange={setSearchText}
+                placeholder="Search tags"
+                type="search"
+                value={searchText}
+              />
+              {query ? (
+                <Options>
+                  {searchResults.length ? (
+                    searchResults.map((tag) => (
+                      <li key={tag}>
+                        <Option type="button" onClick={() => add(tag)}>
+                          {tag}
+                        </Option>
+                      </li>
+                    ))
+                  ) : (
+                    <Empty>No tags match.</Empty>
+                  )}
+                </Options>
+              ) : (
+                <Options>
+                  {Object.entries(tagGroups).map(([group, tags]) => (
+                    <li key={group}>
+                      <GroupButton
+                        type="button"
+                        aria-expanded={openGroup === group}
+                        onClick={() => setOpenGroup(openGroup === group ? null : group)}>
+                        {group}
+                        <ChevronDownIcon />
+                      </GroupButton>
+                      {openGroup === group ? (
+                        <Options $nested>
+                          {available(tags).map((tag) => (
+                            <li key={tag}>
+                              <Option type="button" onClick={() => add(tag)}>
+                                {tag}
+                              </Option>
+                            </li>
+                          ))}
+                        </Options>
+                      ) : null}
+                    </li>
+                  ))}
+                </Options>
+              )}
+            </Popover>
           ) : null}
-        </AddContainer>
-      </ChipContainer>
+        </Anchor>
+      </OutsideClickHandler>
     </Container>
   );
 }
 
-const Container = styled(FlexGroup)`
-  max-width: 100%;
-  z-index: 10;
-`;
-
-const ChipContainer = styled(FlexGroup)`
-  flex-wrap: wrap;
-`;
-
-const Chip = styled(FlexGroup)`
-  background-color: ${COLOR_GREEN};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
+const Container = styled.div`
   align-items: center;
-  justify-content: center;
-  margin-right: 10px;
-  margin-top: 10px;
-  height: 30px;
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
-  cursor: pointer;
-  box-sizing: border-box;
-  padding: 0 10px;
-  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+`;
 
-  &:hover {
-    background-color: ${COLOR_LIGHT_GREEN};
-    color: ${COLOR_LIGHTEST_GREEN};
+const Chip = styled.button`
+  align-items: center;
+  background: ${COLOR_FRAME_SOFT};
+  border: 1px solid ${COLOR_FRAME};
+  color: ${COLOR_TEXT};
+  cursor: pointer;
+  display: inline-flex;
+  font-size: ${TEXT_SM};
+  font-weight: 500;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px 0 12px;
+
+  & > svg {
+    color: ${COLOR_TEXT_MUTED};
+  }
+
+  &:hover > svg {
+    color: ${COLOR_ACCENT_STRONG};
   }
 `;
 
-const AddContainer = styled(FlexGroup)`
+const Anchor = styled.div`
   position: relative;
 `;
 
-const Dropdown = styled(FlexGroup)`
-  background-color: ${COLOR_GREEN};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  box-shadow: 0px 0px 3px ${COLOR_GREEN};
+const Popover = styled(FocusScope)`
+  ${framed}
+  box-shadow: ${SHADOW_OVERLAY};
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  left: 0;
+  max-height: 380px;
+  max-width: calc(100vw - 48px);
+  outline: none;
+  padding: 10px;
   position: absolute;
-  left: 80px;
-  top: 10px;
-  width: 250px;
-  max-height: 400px;
-  overflow-y: scroll;
-  cursor: auto;
-  padding: 5px 10px;
+  top: calc(100% + 6px);
+  width: 280px;
+  z-index: 20;
 `;
 
-const KeyContainer = styled(FlexGroup)`
-  font-size: 20px;
-  font-weight: bold;
+const Options = styled.ul<{ $nested?: boolean }>`
+  list-style: none;
+  margin: 0;
+  overflow-y: auto;
+  padding: ${({ $nested }) => ($nested ? '0 0 6px 12px' : '0')};
+`;
+
+const optionStyle = `
+  align-items: center;
+  background: none;
+  border: none;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  min-height: 40px;
+  padding: 0 8px;
+  text-align: left;
+  width: 100%;
+`;
+
+const GroupButton = styled.button`
+  ${optionStyle}
+  color: ${COLOR_TEXT_MUTED};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
+
+  &[aria-expanded='true'] > svg {
+    transform: rotate(180deg);
+  }
 
   &:hover {
-    color: ${COLOR_LIGHTEST_GREEN};
+    color: ${COLOR_TEXT};
   }
 `;
 
-const Caret = styled(FlexGroup)`
-  font-weight: bold;
-  margin-left: 5px;
-`;
-
-const ValuesContainer = styled(FlexGroup)`
-  margin-left: 20px;
-  padding: 5px 0;
-`;
-
-const ValueContainer = styled(FlexGroup)`
-  cursor: pointer;
-  font-size: 16px;
-  padding: 2px 0;
+const Option = styled.button`
+  ${optionStyle}
+  color: ${COLOR_TEXT};
+  font-size: ${TEXT_SM};
 
   &:hover {
-    color: ${COLOR_LIGHTEST_GREEN};
+    background: linear-gradient(90deg, ${COLOR_GLOW}, transparent);
+    color: ${COLOR_ACCENT_STRONG};
   }
 `;
 
-const SearchContainer = styled(FlexGroup)`
-  margin-bottom: 10px;
-  margin-top: 5px;
-
-  & > input {
-    font-size: 16px;
-    height: 30px;
-  }
+const Empty = styled.li`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  padding: 8px;
 `;
 
 export default Chips;

@@ -1,24 +1,33 @@
 import { useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import styled from 'styled-components';
-import Button from '@/components/ui/Button';
+import Button, { ButtonLink } from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import FlexGroup from '@/components/ui/FlexGroup';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import Frame from '@/components/ui/Frame';
+import { PlusIcon } from '@/components/ui/icons';
+import Ornament from '@/components/ui/Ornament';
+import PageHero from '@/components/ui/PageHero';
 import PageMessage from '@/components/ui/PageMessage';
 import TextInput from '@/components/ui/TextInput';
+import { TextButton, TextLink } from '@/components/ui/TextButton';
 import useAuth from '@/features/auth/useAuth';
 import BuildsList from '@/features/builds/BuildsList';
 import { useUserBuilds } from '@/features/builds/queries';
 import { errorMessage, resendVerificationEmail } from '@/lib/firebase';
 import { LIMITS, type UserProfile } from '@/lib/models';
 import {
-  COLOR_GOLD,
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_LIGHTEST_GREEN,
+  COLOR_ACCENT,
+  COLOR_ACCENT_STRONG,
+  COLOR_GLOW,
+  COLOR_LINE,
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
+  FONT_DISPLAY,
   SPACE_LG,
+  SPACE_MD,
   SPACE_SM,
+  TEXT_SM,
+  TRACKING_CAPS,
 } from '@/theme';
 import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
 
@@ -45,35 +54,43 @@ function Profile() {
   if (!profile.data) {
     return (
       <PageMessage title="User not found">
-        <Link to="/">Browse builds</Link>
+        <TextLink to="/">Browse builds</TextLink>
       </PageMessage>
     );
   }
 
   return (
-    <Container vertical>
+    <>
       <ProfileHeader profile={profile.data} editable={isOwner} />
       {isOwner && user && !user.emailVerified ? <VerifyEmailNotice /> : null}
-      <Tabs role="tablist" aria-label="Profile">
-        {(['builds', 'liked'] as Tab[]).map((value) => (
-          <TabButton
-            key={value}
-            type="button"
-            role="tab"
-            id={`tab-${value}`}
-            aria-selected={tab === value}
-            aria-controls={`panel-${value}`}
-            $active={tab === value}
-            onClick={() => setTab(value)}>
-            {value === 'builds' ? 'Builds' : 'Liked'}
-          </TabButton>
-        ))}
-      </Tabs>
-      <Panel role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+      <Ornament />
+      <TabBar>
+        <Tabs role="tablist" aria-label="Profile">
+          {(['builds', 'liked'] as Tab[]).map((value) => (
+            <TabButton
+              key={value}
+              type="button"
+              role="tab"
+              id={`tab-${value}`}
+              aria-selected={tab === value}
+              aria-controls={`panel-${value}`}
+              onClick={() => setTab(value)}>
+              {value === 'builds' ? 'Builds' : 'Liked'}
+            </TabButton>
+          ))}
+        </Tabs>
+        {isOwner ? (
+          <ButtonLink to="/build/new" variant="secondary">
+            <PlusIcon />
+            Create a build
+          </ButtonLink>
+        ) : null}
+      </TabBar>
+      <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'builds' ? <OwnBuilds userId={userId} isOwner={isOwner} /> : null}
         {tab === 'liked' ? <LikedBuilds userId={userId} isOwner={isOwner} /> : null}
-      </Panel>
-    </Container>
+      </div>
+    </>
   );
 }
 
@@ -90,42 +107,38 @@ function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: 
 
   if (editing) {
     return (
-      <RenameForm onSubmit={handleSubmit} aria-label="Change display name">
-        <NameInput>
-          <TextInput
-            aria-label="Display name"
-            maxLength={LIMITS.displayName}
-            onChange={setName}
-            required
-            value={name}
-          />
-        </NameInput>
-        <FlexGroup>
+      <PageHero title={profile.displayName}>
+        <RenameForm onSubmit={handleSubmit} aria-label="Change display name">
+          <NameInput>
+            <TextInput
+              aria-label="Display name"
+              maxLength={LIMITS.displayName}
+              onChange={setName}
+              required
+              value={name}
+            />
+          </NameInput>
           <Button type="submit" disabled={!name.trim() || rename.isPending}>
             Save
           </Button>
-          <Spaced
+          <Button
+            variant="ghost"
             onClick={() => {
               setName(profile.displayName);
               setEditing(false);
             }}>
             Cancel
-          </Spaced>
-        </FlexGroup>
-        <ErrorMessage>{rename.error ? errorMessage(rename.error) : ''}</ErrorMessage>
-      </RenameForm>
+          </Button>
+          <ErrorMessage>{rename.error ? errorMessage(rename.error) : ''}</ErrorMessage>
+        </RenameForm>
+      </PageHero>
     );
   }
 
   return (
-    <HeaderContainer>
-      <Header>{profile.displayName}</Header>
-      {editable ? (
-        <TextButton type="button" onClick={() => setEditing(true)}>
-          Change name
-        </TextButton>
-      ) : null}
-    </HeaderContainer>
+    <PageHero title={profile.displayName} tagline={`Joined ${joined(profile.createdAt)}`}>
+      {editable ? <TextButton onClick={() => setEditing(true)}>Change name</TextButton> : null}
+    </PageHero>
   );
 }
 
@@ -153,7 +166,7 @@ function VerifyEmailNotice() {
           ? 'Verification email sent. Check your inbox.'
           : 'Verify your email: we sent you a link when you signed up.'}
       </span>
-      <TextButton type="button" disabled={status === 'sending'} onClick={() => void resend()}>
+      <TextButton disabled={status === 'sending'} onClick={() => void resend()}>
         Resend email
       </TextButton>
       <ErrorMessage>{error}</ErrorMessage>
@@ -165,11 +178,6 @@ function OwnBuilds({ userId, isOwner }: { userId: string; isOwner: boolean }) {
   const builds = useUserBuilds(userId);
   return (
     <>
-      {isOwner ? (
-        <NewBuildContainer>
-          <NewBuildLink to="/build/new">+ Create New Build</NewBuildLink>
-        </NewBuildContainer>
-      ) : null}
       <BuildListState
         query={builds}
         empty={isOwner ? 'You haven’t made any builds yet.' : 'This user has no builds yet.'}
@@ -195,113 +203,91 @@ function BuildListState({
   query: ReturnType<typeof useUserBuilds>;
   empty: string;
 }) {
-  if (query.isPending) return <LoadingAnimation size={40} />;
+  if (query.isPending) return <PageMessage loading />;
   if (query.isError) {
     return (
       <ErrorMessage onRetry={() => void query.refetch()}>{errorMessage(query.error)}</ErrorMessage>
     );
   }
-  if (query.data.length === 0) return <Empty>{empty}</Empty>;
+  if (query.data.length === 0) return <PageMessage>{<p>{empty}</p>}</PageMessage>;
   return <BuildsList builds={query.data} />;
 }
 
-const Container = styled(FlexGroup)`
+const joined = (date: Date) => date.toLocaleDateString('en', { month: 'long', year: 'numeric' });
+
+const Notice = styled(Frame)`
   align-items: center;
-  width: 100%;
-`;
-
-const HeaderContainer = styled.div`
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  margin-bottom: ${SPACE_LG};
-`;
-
-const Header = styled.h1`
-  color: ${COLOR_LIGHTEST_GREEN};
-  font-size: 26px;
-  margin: 0 0 6px;
-  overflow-wrap: anywhere;
-  text-align: center;
-`;
-
-const TextButton = styled.button`
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  text-decoration: underline;
-`;
-
-const Notice = styled.div`
-  align-items: center;
-  border: 1px solid ${COLOR_LIGHT_GREEN};
   display: flex;
   flex-wrap: wrap;
-  gap: ${SPACE_SM} ${SPACE_LG};
+  font-size: ${TEXT_SM};
+  gap: 0 ${SPACE_MD};
   justify-content: center;
-  margin-bottom: ${SPACE_LG};
-  padding: ${SPACE_SM} ${SPACE_LG};
+  margin: ${SPACE_LG} auto 0;
+  max-width: 640px;
+  padding-bottom: 6px;
+  padding-top: 6px;
 `;
 
 const RenameForm = styled.form`
   align-items: center;
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: ${SPACE_SM};
-  margin-bottom: ${SPACE_LG};
+  justify-content: center;
+  margin-top: ${SPACE_MD};
 `;
 
 const NameInput = styled.div`
   width: 260px;
 `;
 
-const Spaced = styled(Button)`
-  margin-left: ${SPACE_LG};
+const TabBar = styled.div`
+  align-items: center;
+  border-bottom: 1px solid ${COLOR_LINE};
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM};
+  justify-content: space-between;
+  margin-bottom: ${SPACE_LG};
+  padding-bottom: 6px;
 `;
 
 const Tabs = styled.div`
   display: flex;
-  margin-bottom: ${SPACE_LG};
 `;
 
-const TabButton = styled.button<{ $active: boolean }>`
-  background-color: ${({ $active }) => ($active ? COLOR_LIGHT_GREEN : COLOR_GREEN)};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  color: ${COLOR_GOLD};
+const TabButton = styled.button`
+  background: none;
+  border: none;
+  color: ${COLOR_TEXT_MUTED};
   cursor: pointer;
-  font: inherit;
-  font-size: 18px;
-  padding: 8px ${SPACE_LG};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_SM};
+  font-weight: 600;
+  letter-spacing: ${TRACKING_CAPS};
+  min-height: 44px;
+  padding: 0 ${SPACE_LG};
+  position: relative;
+  text-transform: uppercase;
 
-  &:focus-visible {
-    outline: 2px solid ${COLOR_GOLD};
+  &:hover {
+    color: ${COLOR_TEXT};
   }
-`;
 
-const Panel = styled.div`
-  align-items: center;
-  display: flex;
-  flex-direction: column;
-  width: 95%;
-`;
+  &[aria-selected='true'] {
+    background: linear-gradient(90deg, transparent, ${COLOR_GLOW}, transparent);
+    color: ${COLOR_ACCENT_STRONG};
+  }
 
-const Empty = styled.p`
-  font-size: 20px;
-`;
-
-const NewBuildContainer = styled(FlexGroup)`
-  justify-content: center;
-  margin-bottom: ${SPACE_LG};
-  width: 100%;
-`;
-
-const NewBuildLink = styled(Link)`
-  color: ${COLOR_LIGHTEST_GREEN};
-  font-size: 20px;
-  font-weight: bold;
+  &[aria-selected='true']::after {
+    background: ${COLOR_ACCENT};
+    bottom: -7px;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
 `;
 
 export default Profile;
