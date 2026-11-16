@@ -52,6 +52,15 @@ Function and UX are the same for every game; only the skin (accent colors) chang
   are a local draft while editing. Ownership is computed at render from `useAuth()` and the build, so there is
   no load race. Save (`selectBuildFields` + draft → `createBuild`/`updateBuild`) only writes the owner-editable
   fields; a failed save shows the error and keeps the editor open. Cancel reloads the saved build.
+- **Tracking (T34)** (`src/features/tracking/`): `useBuildTracking(build)` holds the player's progress on the
+  build page in the query cache (`queryKeys.tracking(uid or 'local', buildId)`, `staleTime: Infinity`: the page
+  is the only writer). Signed in it reads `users/{uid}/tracking/{buildId}`; each change updates the cache at
+  once and `saveQueue.ts` writes the whole doc after a 500 ms pause (flushed on `pagehide` and unmount), so
+  rapid +/− taps are one write. Signed out it reads and writes local storage (`localTracking.ts`,
+  `soulsbuilds.tracking.v1`, guarded: blocked storage just means no saved progress). `useSyncLocalTracking`
+  (mounted in `App`) moves local progress into the account when a uid appears, merged with what's there
+  (`mergeTracking`), and keeps a build local if its write fails. The math is pure, in `src/lib/tracking.ts`.
+  "Keep my progress" opens sign-up through `useOpenAuthDialog` (`src/app/authDialog.ts`).
 - **Game data** is static JSON in `src/data/er/` (from the game files, T7), bundled, read through typed
   accessors by ID in `src/data/index.ts`; the equipment rules are pure functions in `src/data/rules.ts`, shared
   with the seed and migration scripts (see `docs/data.md`). Builds store **game IDs**; an ID the data no longer
@@ -66,6 +75,15 @@ ESLint enforces it); rules in `firestore.rules`, tested in `tests/rules/`.
 users/{uid}                       public profile; email stays in Firebase Auth only
   displayName: string             trimmed, 1–40 chars
   createdAt: timestamp            server time
+
+users/{uid}/tracking/{buildId}    T34: the player's private progress on a build; only they read or write it
+  game: 'elden-ring'
+  collected: string[]             item keys (below) marked collected, ≤ 64 (a build has at most 30)
+  seen: string[]                  the build's item keys the player has seen; others show as "new items"
+  stats: { vigor … arc }          the player's levels, ints 1–99
+  startedAt: timestamp            client time (local progress keeps its start); may only move earlier
+  updatedAt: timestamp            server time
+  completedAt: timestamp|null     set on first reaching 100%; cleared only by the player's own change
 
 builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED001
   ownerId: uid                    immutable
@@ -122,10 +140,19 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   re-authenticate with the password, then **find everything first** (own builds; likes and comments on other
   builds by collection-group queries; reports by `reporterId`), so a failing query deletes nothing; then delete
   own builds (`deleteBuild`, which takes every like and comment on them), each like/comment elsewhere in its
-  own batch with the counter (plain delete if that build is gone), the reports, `users/{uid}`, and last the
+  own batch with the counter (plain delete if that build is gone), the reports, the tracking docs (T34),
+  `users/{uid}`, and last the
   Auth user (`deleteUser`). Every step is idempotent: re-running finishes a half-done deletion (the owner's own
   "User not found" page offers "Finish deleting your account"). Reports _about_ the user's content stay open
   for admins (shown as "already deleted"). `scripts/admin.mjs delete-user` does the same with the Admin SDK.
+- **Tracking item keys (T34)**, `src/lib/tracking.ts`: `weapon1:<id>` … `weapon6:<id>` (by slot: two copies of a
+  weapon are two items), `helm|chest|gauntlet|leg|greatRune|spiritAsh:<id>`, and `talisman:<id>`, `tear:<id>`,
+  `spell:<id>` for the compacted lists (a spell listed twice is one item). Arrows and consumables aren't
+  tracked (owner's call). Progress always counts against the build's **current** items, so an author's edit
+  adds unchecked items and drops removed ones. The percentage is half gear (collected / items) and half levels
+  (Σ min(yours, target) from the baseline: the starting class, or 10 lowered to the target), rounded down so 100%
+  means complete. The doc id is the build id, so T36's `playingCount`/`finishedCount` can check it with
+  `existsAfter` like likes. Account deletion and `admin.mjs delete-user` delete the user's tracking docs.
 - **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
   (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`; optionally
   with a tag), each optionally with a `level` range (`>=`/`<=` next to an `orderBy` on another field, which Firestore's
@@ -169,7 +196,10 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   game, so components import one constant. `colors.test.ts` checks WCAG AA for every text/background pair and
   every game's skin; add a pair there when you put text on a new background.
 - **Accent budget** (T26): the accent appears only on the primary button, links and hover, the active tab/sort
-  state, the level figure, stat bar fills, the liked state and the focus ring. Panel borders are `COLOR_LINE`,
+  state, the level figure, stat bar fills, the liked state and the focus ring; while tracking (T34), collected
+  items (`COLOR_ACCENT_LINE` border, check badge), reached stats, the progress figure and pips, and the
+  new-items notice's border (`COLOR_CELEBRATE` is the glow of collecting an item or finishing a build). Panel
+  borders are `COLOR_LINE`,
   headings are the text color, tags and chips are neutral (inset fill, `COLOR_LINE_STRONG` border), counts and
   icons are muted. Check a new use of `COLOR_ACCENT*` against this list.
 - **Type: three tiers** (`fonts.ts`, CSS in `components/ui/typography.ts`). **Names and headings**: `FONT_DISPLAY`

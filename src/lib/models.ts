@@ -95,6 +95,20 @@ export interface UserProfile {
   createdAt: Date;
 }
 
+/**
+ * users/{uid}/tracking/{buildId} as stored (T34): one player's private progress on one build, read and
+ * written only by them. The fields are `TrackingState` in src/lib/tracking.ts (item keys there).
+ */
+export interface TrackingDoc {
+  game: GameId;
+  collected: string[];
+  seen: string[];
+  stats: Stats;
+  startedAt: Timestamp;
+  updatedAt: Timestamp;
+  completedAt: Timestamp | null;
+}
+
 /** builds/{buildId}/comments/{id} as stored. */
 export interface CommentDoc {
   authorId: string;

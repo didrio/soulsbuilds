@@ -1,0 +1,201 @@
+// Tracking a build (T34): which of the build's items the player has collected and how far their stats
+// are, as pure functions. The state lives in users/{uid}/tracking/{buildId} (signed in) or local
+// storage (signed out); docs/architecture.md "Tracking".
+import { calculateLevel, MAX_STAT, STAT_KEYS, type StatKey, type Stats } from './buildMath';
+import type { Equipment } from './models';
+
+/** One player's progress on one build, as the app holds it (dates as Dates). */
+export interface TrackingState {
+  /** Item keys (`trackKey`) the player has marked collected. */
+  collected: string[];
+  /** Item keys the player has seen on the build, so items the author adds later show as new. */
+  seen: string[];
+  /** The player's attribute levels. */
+  stats: Stats;
+  startedAt: Date;
+  /** When it first reached 100%; null while in progress. */
+  completedAt: Date | null;
+}
+
+/** The most item keys a tracking doc holds (firestore.rules checks it). A build has at most 30. */
+export const MAX_TRACKED_KEYS = 64;
+
+/** Where a stat starts without a starting class: the Wretch's 10 (lowered to the target). */
+export const NO_CLASS_STAT = 10;
+
+const SINGLE_SLOTS = new Set(['helm', 'chest', 'gauntlet', 'leg', 'greatRune', 'spiritAsh']);
+// Lists saved compacted (no slot positions): keyed by group, so a spell listed twice is one item.
+const LIST_GROUPS: Record<string, string> = { tal: 'talisman', tear: 'tear', spell: 'spell' };
+
+/**
+ * An item's tracking key from its editor slot id ("weapon1", "tal2", "spell3", "helm") and game ID, or
+ * null for slots that aren't tracked (arrows and consumables: bought or crafted in bulk). Weapons are
+ * keyed by slot, so two copies of a weapon are two items; talismans, tears and spells by group.
+ */
+export function trackKey(slot: string, itemId: number): string | null {
+  if (/^weapon[1-6]$/.test(slot) || SINGLE_SLOTS.has(slot)) return `${slot}:${itemId}`;
+  const group = /^(tal|tear|spell)\d+$/.exec(slot)?.[1];
+  return group ? `${LIST_GROUPS[group]}:${itemId}` : null;
+}
+
+/** The build's tracked items as keys, in Loadout order, without duplicates. */
+export function trackedItems(equipment: Equipment): string[] {
+  const keys: (string | null)[] = [
+    ...equipment.weapons.map((id, index) => (id === null ? null : `weapon${index + 1}:${id}`)),
+    ...(['helm', 'chest', 'gauntlet', 'leg'] as const).map((slot) =>
+      equipment[slot] === null ? null : `${slot}:${equipment[slot]}`,
+    ),
+    ...equipment.talismans.map((id) => `talisman:${id}`),
+    ...equipment.tears.map((id) => `tear:${id}`),
+    ...(['greatRune', 'spiritAsh'] as const).map((slot) =>
+      equipment[slot] === null ? null : `${slot}:${equipment[slot]}`,
+    ),
+    ...equipment.spells.map((id) => `spell:${id}`),
+  ];
+  return [...new Set(keys.filter((key): key is string => key !== null))];
+}
+
+const mapStats = (fn: (key: StatKey) => number) =>
+  Object.fromEntries(STAT_KEYS.map((key) => [key, fn(key)])) as Stats;
+
+/**
+ * Where the player's stats start: the build's starting class, or 10 in every stat (lowered to the
+ * target where it's below 10) for builds without one. The − buttons stop here.
+ */
+export function trackingBaseline(target: Stats, classStats: Stats | null): Stats {
+  return classStats ? { ...classStats } : mapStats((key) => Math.min(NO_CLASS_STAT, target[key]));
+}
+
+export interface TrackingContext {
+  /** The build's tracked items (`trackedItems`). */
+  items: string[];
+  /** The build's stats. */
+  target: Stats;
+  baseline: Stats;
+}
+
+export interface TrackingProgress {
+  gear: { done: number; total: number };
+  level: { yours: number; target: number };
+  /** The levels half, 0–100 (100 when there's nothing to level). */
+  levelPercent: number;
+  /** Half gear, half levels, rounded down: 100 only when complete. */
+  percent: number;
+  complete: boolean;
+}
+
+/**
+ * How far the player is. Gear: tracked items collected out of the build's current items (items the
+ * author removed don't count). Levels: the sum of min(yours, target) over the 8 stats, measured from
+ * the baseline to the target. The percentage averages the two halves; a half with nothing to measure
+ * (no items, or every stat already at its target from the start) is left out.
+ */
+export function trackingProgress(
+  state: Pick<TrackingState, 'collected' | 'stats'>,
+  { items, target, baseline }: TrackingContext,
+): TrackingProgress {
+  const collected = new Set(state.collected);
+  const done = items.filter((key) => collected.has(key)).length;
+  const sum = (fn: (key: StatKey) => number) =>
+    STAT_KEYS.reduce((total, key) => total + fn(key), 0);
+  const levelsStart = sum((key) => Math.min(baseline[key], target[key]));
+  const levelsDone = sum((key) => Math.min(state.stats[key], target[key]));
+  const levelsTotal = sum((key) => target[key]);
+
+  const gearFraction = items.length > 0 ? done / items.length : null;
+  const levelFraction =
+    levelsTotal > levelsStart ? (levelsDone - levelsStart) / (levelsTotal - levelsStart) : null;
+  const halves = [gearFraction, levelFraction].filter((part): part is number => part !== null);
+  const average = halves.length ? halves.reduce((a, b) => a + b, 0) / halves.length : 1;
+  const complete =
+    done === items.length && STAT_KEYS.every((key) => state.stats[key] >= target[key]);
+
+  return {
+    gear: { done, total: items.length },
+    level: { yours: calculateLevel(state.stats), target: calculateLevel(target) },
+    levelPercent: levelFraction === null ? 100 : Math.floor(Math.max(0, levelFraction) * 100),
+    percent: complete ? 100 : Math.min(99, Math.floor(Math.max(0, average) * 100)),
+    complete,
+  };
+}
+
+/** Items on the build the player hasn't seen yet (added by the author since), not collected. */
+export function newItems(state: Pick<TrackingState, 'collected' | 'seen'>, items: string[]) {
+  const known = new Set([...state.seen, ...state.collected]);
+  return items.filter((key) => !known.has(key));
+}
+
+/** A fresh start: nothing collected, the stats at the baseline, every current item seen. */
+export function startTracking(context: TrackingContext, now: Date): TrackingState {
+  const state = {
+    collected: [],
+    seen: [...context.items],
+    stats: { ...context.baseline },
+    startedAt: now,
+  };
+  return { ...state, completedAt: trackingProgress(state, context).complete ? now : null };
+}
+
+export type TrackingChange =
+  | { type: 'toggle'; key: string }
+  | { type: 'stat'; key: StatKey; value: number }
+  /** "Got it" on the new-items notice. */
+  | { type: 'acknowledge' };
+
+/**
+ * The state after a player's change. Keys are kept to the build's current items (so the doc stays
+ * small). `completedAt` is set when the build first reaches 100% and cleared when the player's own
+ * change takes it below; acknowledging new items doesn't touch it, so an author's edit alone never
+ * un-completes a build.
+ */
+export function applyChange(
+  state: TrackingState,
+  change: TrackingChange,
+  context: TrackingContext,
+  now: Date,
+): TrackingState {
+  const current = new Set(context.items);
+  const keep = (keys: string[]) => keys.filter((key) => current.has(key));
+  let { collected, seen, stats } = state;
+
+  if (change.type === 'toggle') {
+    if (!current.has(change.key)) return state;
+    collected = collected.includes(change.key)
+      ? collected.filter((key) => key !== change.key)
+      : [...collected, change.key];
+    seen = seen.includes(change.key) ? seen : [...seen, change.key];
+  } else if (change.type === 'stat') {
+    const min = context.baseline[change.key];
+    const value = Math.min(MAX_STAT, Math.max(min, Math.round(change.value)));
+    stats = { ...stats, [change.key]: value };
+  } else {
+    seen = [...context.items];
+  }
+
+  const next = { ...state, collected: keep(collected), seen: keep(seen), stats };
+  if (change.type === 'acknowledge') return next;
+  const { complete } = trackingProgress(next, context);
+  return { ...next, completedAt: complete ? (state.completedAt ?? now) : null };
+}
+
+const earlier = (a: Date | null, b: Date | null) =>
+  a && b ? (a.getTime() <= b.getTime() ? a : b) : (a ?? b);
+
+/**
+ * Two records of the same build (this device's and the account's, on sign-in) as one: everything
+ * collected or seen in either, the higher of each stat, the earlier start and completion.
+ */
+export function mergeTracking(a: TrackingState, b: TrackingState): TrackingState {
+  const union = (x: string[], y: string[]) => [...new Set([...x, ...y])].slice(0, MAX_TRACKED_KEYS);
+  return {
+    collected: union(a.collected, b.collected),
+    seen: union(a.seen, b.seen),
+    stats: mapStats((key) => Math.max(a.stats[key], b.stats[key])),
+    startedAt: earlier(a.startedAt, b.startedAt)!,
+    completedAt: earlier(a.completedAt, b.completedAt),
+  };
+}
+
+/** Whole days from start to finish ("12 days"), at least 0. */
+export const daysBetween = (from: Date, to: Date) =>
+  Math.max(0, Math.round((to.getTime() - from.getTime()) / 86_400_000));

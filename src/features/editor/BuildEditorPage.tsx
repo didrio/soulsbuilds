@@ -33,6 +33,9 @@ import { STATS_COLUMN_WIDTH } from './sections/StatsCard';
 import TabLinkCard from './sections/TabLinkCard';
 import GuideSection, { hasItems, loadRoute } from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
+import { TrackButton, TrackingHero } from '@/features/tracking/TrackingHero';
+import { KeepProgressCard, NewItemsNotice } from '@/features/tracking/TrackingCards';
+import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
 import { parseTab, tabPath, visibleTabs } from './tabs';
 import { useBuildEditor } from './useBuildEditor';
@@ -52,12 +55,14 @@ function BuildEditorPage() {
  * get, Comments), then the tab. Desktop: the stats in a fixed left column on every tab: on Loadout
  * one panel with the gear, elsewhere a condensed summary. Tablets and phones: one column, the stats
  * on the Loadout tab only. Editing (and new builds): Loadout and Description only, and a sticky
- * Save/Cancel bar.
+ * Save/Cancel bar. Tracking (T34, view mode): "Track this build" in the hero, the progress there on
+ * every tab, and the Loadout tab as a checklist.
  */
 function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
   const editor = useBuildEditor(buildId);
   const level = useAppSelector(selectLevel);
   const { auth, build, buildQuery, editable, isNew } = editor;
+  const tracking = useBuildTracking(editable ? null : build);
   const routeId = buildId ?? 'new';
 
   if (isNew) {
@@ -112,6 +117,10 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
       ) : build ? (
         <BuildHeader
           build={build}
+          trackAction={<TrackButton tracking={tracking} />}
+          progress={
+            tracking.state ? <TrackingHero tracking={tracking} buildName={build.name} /> : null
+          }
           ownerActions={
             editor.isOwner ? (
               <OwnerActions
@@ -126,6 +135,12 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
           }
         />
       ) : null}
+      {!editable && tracking.state ? (
+        <>
+          <KeepProgressCard tracking={tracking} />
+          <NewItemsNotice tracking={tracking} />
+        </>
+      ) : null}
       <div>
         <BuildTabs
           buildId={routeId}
@@ -135,7 +150,22 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
         />
         {tab === 'loadout' ? (
           <Content>
-            <LoadoutPanel editable={editable} level={level} />
+            <LoadoutPanel
+              editable={editable}
+              level={level}
+              tracking={
+                !editable && tracking.state && tracking.baseline
+                  ? {
+                      stats: {
+                        stats: tracking.state.stats,
+                        baseline: tracking.baseline,
+                        onChange: tracking.setStat,
+                      },
+                      loadout: { collected: tracking.state.collected, onToggle: tracking.toggle },
+                    }
+                  : undefined
+              }
+            />
             {!editable && build ? (
               <>
                 {preview || hasItems(build.equipment) ? (

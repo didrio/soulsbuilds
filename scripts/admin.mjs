@@ -13,8 +13,9 @@
 //   node scripts/admin.mjs delete-user <uid|email>        delete an account and everything it published:
 //                                                         builds (with their likes and comments), likes
 //                                                         and comments elsewhere (with the counters),
-//                                                         reports filed, profile, Auth user; resolves
-//                                                         reports about that content as "removed" (T18)
+//                                                         reports filed, profile (with its tracking),
+//                                                         Auth user; resolves reports about that
+//                                                         content as "removed" (T18)
 //   node scripts/admin.mjs grant <uid|email>              set the `admin` custom claim
 //   node scripts/admin.mjs revoke <uid|email>             clear it
 //   node scripts/admin.mjs stats                          count builds, authors, accounts and tags per
@@ -233,7 +234,7 @@ async function commitInBatches(db, ops, size = 200) {
  * Deletes an account and everything it published, like the in-app "Delete account"
  * (src/lib/firebase/account.ts) but with the Admin SDK: their builds (with every like and comment
  * on them), their likes and comments on other builds (moving those counters), the reports they
- * filed, their profile and their Auth user. Open reports about their builds and comments are
+ * filed, their profile with its tracking progress (T34) and their Auth user. Open reports about their builds and comments are
  * resolved as "removed". `who` is a uid or an email. Writes only with `write`; then saves a JSON
  * backup in `backupDir` first. Safe to re-run. Resolves to the counts it found.
  */
@@ -248,12 +249,13 @@ export async function deleteUserData(
     : await auth.getUser(who).catch(ignoreUserNotFound);
   const uid = authUser?.uid ?? who;
   const profileRef = db.doc(`users/${uid}`);
-  const [profile, builds, likes, comments, filed] = await Promise.all([
+  const [profile, builds, likes, comments, filed, tracking] = await Promise.all([
     profileRef.get(),
     db.collection('builds').where('ownerId', '==', uid).get(),
     db.collectionGroup('likes').where('userId', '==', uid).get(),
     db.collectionGroup('comments').where('authorId', '==', uid).get(),
     db.collection('reports').where('reporterId', '==', uid).get(),
+    profileRef.collection('tracking').get(),
   ]);
   const ownIds = new Set(builds.docs.map((build) => build.id));
   const elsewhere = (snapshot) => snapshot.docs.filter((d) => !ownIds.has(d.ref.parent.parent.id));
@@ -283,6 +285,7 @@ export async function deleteUserData(
     comments: commentsElsewhere.length,
     reportsFiled: filed.size,
     reportsResolved: about.size,
+    tracking: tracking.size,
     backup: null,
   };
   if (!write) return result;
@@ -309,6 +312,7 @@ export async function deleteUserData(
     likes: likesElsewhere.map(docData),
     comments: commentsElsewhere.map(docData),
     reports: filed.docs.map(docData),
+    tracking: tracking.docs.map(docData),
   };
   mkdirSync(backupDir, { recursive: true });
   result.backup = join(backupDir, `${stampNow()}_user_${uid}.json`);
@@ -340,7 +344,8 @@ export async function deleteUserData(
     filed.docs.map((report) => (batch) => batch.delete(report.ref)),
   );
   await resolveReports(db, [...about.values()], 'removed');
-  await profileRef.delete();
+  // The profile with its subcollection (tracking).
+  await db.recursiveDelete(profileRef);
   if (authUser) await auth.deleteUser(uid).catch(ignoreUserNotFound);
   return result;
 }
@@ -503,6 +508,7 @@ async function main() {
     console.log(`  Likes on other builds: ${result.likes}`);
     console.log(`  Comments on other builds: ${result.comments}`);
     console.log(`  Reports they filed: ${result.reportsFiled}`);
+    console.log(`  Builds they track (private progress): ${result.tracking}`);
     console.log(
       `  Open reports about their content, to resolve as removed: ${result.reportsResolved}`,
     );

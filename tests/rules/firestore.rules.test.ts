@@ -185,6 +185,64 @@ describe('users/{uid}', () => {
   });
 });
 
+describe('users/{uid}/tracking/{buildId} (T34)', () => {
+  const STARTED = Timestamp.fromDate(new Date('2026-11-10T12:00:00Z'));
+  const tracking = (overrides: Record<string, unknown> = {}) => ({
+    game: 'elden-ring',
+    collected: ['weapon1:9040000', 'helm:680000'],
+    seen: ['weapon1:9040000', 'helm:680000', 'talisman:2160'],
+    stats: { vigor: 30, mind: 10, end: 20, str: 12, dex: 30, int: 9, fai: 8, arc: 30 },
+    startedAt: STARTED,
+    updatedAt: serverTimestamp(),
+    completedAt: null,
+    ...overrides,
+  });
+  const ref = (db: Firestore, path = 'users/alice/tracking/B1') => doc(db, path);
+  const seedTracking = () =>
+    seed((db) => setDoc(ref(db), { ...tracking(), updatedAt: Timestamp.now() }));
+
+  it('only the player reads, writes and deletes their progress', async () => {
+    await assertSucceeds(setDoc(ref(as('alice')), tracking()));
+    await assertSucceeds(getDoc(ref(as('alice'))));
+    await assertSucceeds(getDocs(collection(as('alice'), 'users/alice/tracking')));
+    await assertFails(getDoc(ref(as('bob'))));
+    await assertFails(getDoc(ref(as())));
+    await assertFails(getDocs(collection(as('bob'), 'users/alice/tracking')));
+    await assertFails(setDoc(ref(as('bob')), tracking()));
+    await assertFails(setDoc(ref(as()), tracking()));
+    await assertFails(deleteDoc(ref(as('bob'))));
+    await assertFails(deleteDoc(ref(as('root', { admin: true }))));
+    await assertSucceeds(deleteDoc(ref(as('alice'))));
+  });
+
+  it('holds exactly the tracking fields, with valid stats and a server updatedAt', async () => {
+    const db = as('alice');
+    await assertFails(setDoc(ref(db), { ...tracking(), public: true }));
+    await assertFails(setDoc(ref(db), tracking({ game: 'dark-souls-3' })));
+    await assertFails(setDoc(ref(db), tracking({ collected: 'weapon1:1' })));
+    await assertFails(
+      setDoc(ref(db), tracking({ collected: Array.from({ length: 65 }, (_, i) => `spell:${i}`) })),
+    );
+    await assertFails(setDoc(ref(db), tracking({ seen: null })));
+    await assertFails(setDoc(ref(db), tracking({ stats: { ...tracking().stats, vigor: 100 } })));
+    await assertFails(setDoc(ref(db), tracking({ updatedAt: Timestamp.now() })));
+    await assertFails(setDoc(ref(db), tracking({ startedAt: '2026-11-10' })));
+    await assertFails(setDoc(ref(db), tracking({ completedAt: true })));
+    await assertFails(setDoc(ref(db, 'users/alice/tracking/bad id!'), tracking()));
+    await assertSucceeds(setDoc(ref(db), tracking({ completedAt: Timestamp.now() })));
+  });
+
+  it('startedAt keeps its date, or moves earlier when progress is merged', async () => {
+    await seedTracking();
+    const db = as('alice');
+    await assertSucceeds(setDoc(ref(db), tracking({ collected: [] })));
+    await assertFails(setDoc(ref(db), tracking({ startedAt: Timestamp.now() })));
+    await assertSucceeds(
+      setDoc(ref(db), tracking({ startedAt: Timestamp.fromDate(new Date('2026-11-01')) })),
+    );
+  });
+});
+
 describe('builds/{id}: create', () => {
   it('anyone can read builds', async () => {
     await seedBuild();

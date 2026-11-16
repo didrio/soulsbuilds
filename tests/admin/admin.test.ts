@@ -173,6 +173,7 @@ describe('rename and delete-user (T18)', () => {
     await db.doc('builds/B3/comments/c3').set({ authorId: 'carol', text: 'cool' });
     await db.doc('builds/B3/likes/carol').set({ userId: 'carol', createdAt: at(2) });
     await report('bob', 'B2', null, 4);
+    await db.doc('users/bob/tracking/B1').set({ collected: ['helm:1'], startedAt: at(3) });
 
     const dry = await deleteUserData(db, auth, 'bob@example.test');
     expect(dry).toMatchObject({
@@ -184,12 +185,14 @@ describe('rename and delete-user (T18)', () => {
       comments: 1,
       reportsFiled: 1,
       reportsResolved: 1, // dave's report on c1
+      tracking: 1,
       backup: null,
     });
     expect((await db.doc('builds/B3').get()).exists).toBe(true);
 
     const result = await deleteUserData(db, auth, 'bob', { write: true, backupDir });
     expect((await db.doc('users/bob').get()).exists).toBe(false);
+    expect((await db.collection('users/bob/tracking').get()).size).toBe(0);
     expect((await db.doc('builds/B3').get()).exists).toBe(false);
     expect((await db.collection('builds/B3/comments').get()).size).toBe(0);
     const b1 = (await db.doc('builds/B1').get()).data();
@@ -202,6 +205,7 @@ describe('rename and delete-user (T18)', () => {
     const backup = JSON.parse(readFileSync(result.backup!, 'utf8'));
     expect(backup.profile.displayName).toBe('Anne Frankly');
     expect(backup.builds[0].comments).toHaveLength(1);
+    expect(backup.tracking[0]).toMatchObject({ path: 'users/bob/tracking/B1' });
     expect(backup.comments[0]).toMatchObject({ path: 'builds/B1/comments/c1', text: 'buy gold' });
 
     // Re-running finds nothing and changes nothing.

@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { auth, firestore } from './app';
 import { deleteBuild, listUserBuilds } from './builds';
+import { listTrackingRefs } from './tracking';
 
 /** What deleting an account removes, found before anything is deleted. */
 export interface AccountData {
@@ -26,6 +27,8 @@ export interface AccountData {
   likes: { ref: DocumentReference; buildExists: boolean }[];
   comments: { ref: DocumentReference; buildExists: boolean }[];
   reports: DocumentReference[];
+  /** Their private progress on builds (T34). */
+  tracking: DocumentReference[];
 }
 
 /** Steps done / total, for a progress line. */
@@ -45,13 +48,14 @@ async function withBuildExists(refs: DocumentReference[], ownBuilds: Set<string>
 
 /** Everything of the user's that account deletion removes. Only reads. */
 export async function findAccountData(uid: string): Promise<AccountData> {
-  const [builds, likes, comments, reports] = await Promise.all([
+  const [builds, likes, comments, reports, tracking] = await Promise.all([
     listUserBuilds(uid),
     // Equality only (no orderBy, which would skip docs without the field): served by the
     // collection-group field overrides in firestore.indexes.json.
     getDocs(query(collectionGroup(firestore, 'likes'), where('userId', '==', uid))),
     getDocs(query(collectionGroup(firestore, 'comments'), where('authorId', '==', uid))),
     getDocs(query(collection(firestore, 'reports'), where('reporterId', '==', uid))),
+    listTrackingRefs(uid),
   ]);
   const ownBuilds = new Set(builds.map((build) => build.id));
   return {
@@ -65,13 +69,14 @@ export async function findAccountData(uid: string): Promise<AccountData> {
       ownBuilds,
     ),
     reports: reports.docs.map((d) => d.ref),
+    tracking,
   };
 }
 
 /**
  * Deletes everything the user has in Firestore: their builds (with every like and comment on them),
- * their likes and comments on other builds (moving those builds' counters), their reports, and
- * finally their profile. Everything is found first, so a failing query deletes nothing. Every step
+ * their likes and comments on other builds (moving those builds' counters), their reports, their
+ * tracking progress (T34), and finally their profile. Everything is found first, so a failing query deletes nothing. Every step
  * is idempotent: if it stops halfway, running it again finishes the job.
  *
  * One like/comment per batch: the rules allow 20 document lookups per batched write, and two
@@ -80,7 +85,12 @@ export async function findAccountData(uid: string): Promise<AccountData> {
 export async function deleteAccountData(uid: string, onProgress?: AccountProgress): Promise<void> {
   const data = await findAccountData(uid);
   const total =
-    data.buildIds.length + data.likes.length + data.comments.length + data.reports.length + 1;
+    data.buildIds.length +
+    data.likes.length +
+    data.comments.length +
+    data.reports.length +
+    data.tracking.length +
+    1;
   let done = 0;
   const step = () => onProgress?.((done += 1), total);
   onProgress?.(0, total);
@@ -105,7 +115,7 @@ export async function deleteAccountData(uid: string, onProgress?: AccountProgres
     await batch.commit();
     step();
   }
-  for (const ref of data.reports) {
+  for (const ref of [...data.reports, ...data.tracking]) {
     await deleteDoc(ref);
     step();
   }

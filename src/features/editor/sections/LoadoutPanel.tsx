@@ -1,19 +1,29 @@
 import styled from 'styled-components';
 import { panel } from '@/components/ui/inWorld';
 import { BELOW_TABLET, COLOR_LINE, SPACE_LG } from '@/theme';
-import Loadout from './Loadout';
+import type { StatsTracking } from '@/features/tracking/TrackedAttributes';
+import Loadout, { type LoadoutTracking } from './Loadout';
 import StatsCard, { STATS_COLUMN_WIDTH } from './StatsCard';
 
 /**
  * The Loadout tab's main panel (T28, owner's idea): on desktop the Stats card and the Loadout as one
  * panel, the stats in a fixed column on the left (as in the game's status screen) and the gear beside
- * them. Tablets and phones: the two cards stacked, stats first (T27).
+ * them. Tablets and phones: the two cards stacked, stats first (T27). While the player tracks the
+ * build (T34), both are in tracking mode.
  */
-function LoadoutPanel({ editable, level }: { editable: boolean; level: number }) {
+function LoadoutPanel({
+  editable,
+  level,
+  tracking,
+}: {
+  editable: boolean;
+  level: number;
+  tracking?: { stats: StatsTracking; loadout: LoadoutTracking };
+}) {
   return (
     <Panel>
-      <StatsCard editable={editable} level={level} />
-      <Loadout editable={editable} />
+      <StatsCard editable={editable} level={level} tracking={tracking?.stats} />
+      <Loadout editable={editable} tracking={tracking?.loadout} />
     </Panel>
   );
 }

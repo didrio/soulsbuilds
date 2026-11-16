@@ -13,6 +13,10 @@ export interface GameSkin {
   glow: string;
   /** The hero's glow. */
   tint: string;
+  /** A collected item's border while tracking (T34). */
+  accentLine: string;
+  /** The bright glow of a moment: an item collected, a build complete (T34). */
+  celebrate: string;
 }
 
 export const SKINS: Record<GameId, GameSkin> = {
@@ -26,6 +30,8 @@ export const SKINS: Record<GameId, GameSkin> = {
     frameSoft: 'rgba(216, 184, 116, 0.16)',
     glow: 'rgba(232, 196, 120, 0.13)',
     tint: 'rgba(232, 196, 120, 0.15)',
+    accentLine: 'rgba(216, 184, 116, 0.6)',
+    celebrate: 'rgba(240, 212, 149, 0.55)',
   },
 };
 
@@ -39,4 +45,6 @@ export const skinVariables = (skin: GameSkin) => `
   --sb-frame-soft: ${skin.frameSoft};
   --sb-glow: ${skin.glow};
   --sb-tint: ${skin.tint};
+  --sb-accent-line: ${skin.accentLine};
+  --sb-celebrate: ${skin.celebrate};
 `;

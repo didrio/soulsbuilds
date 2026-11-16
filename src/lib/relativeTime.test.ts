@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { relativeTime } from './relativeTime';
+import { formatDayMonth, relativeTime } from './relativeTime';
 
 const now = new Date('2026-11-16T12:00:00Z');
 const ago = (seconds: number) => new Date(now.getTime() - seconds * 1000);
@@ -26,5 +26,11 @@ describe('relativeTime', () => {
     [800 * DAY, '2 years ago'],
   ])('%i seconds ago → %s', (seconds, expected) => {
     expect(relativeTime(ago(seconds), now)).toBe(expected);
+  });
+});
+
+describe('formatDayMonth', () => {
+  it('is the day and month, for running text', () => {
+    expect(formatDayMonth(new Date(2026, 10, 4, 12))).toBe('4 November');
   });
 });

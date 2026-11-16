@@ -45,7 +45,8 @@ export const COLOR_BG_TOP = '#1c1912';
 
 // ---- Game skin (values per game in skins.ts) ----
 // The accent budget (T26): the accent appears only on the primary button, links and hover, the active
-// tab/sort state, the level figure, stat bar fills, the liked state and the focus ring. Panels,
+// tab/sort state, the level figure, stat bar fills, the liked state and the focus ring; and while
+// tracking (T34), collected items, reached stats and the progress figure. Panels,
 // headings, tags and chips are neutral; corner marks only on the build hero.
 /** Links, active states, the accent as text. */
 export const COLOR_ACCENT = 'var(--sb-accent)';
@@ -62,3 +63,6 @@ export const COLOR_FRAME_SOFT = 'var(--sb-frame-soft)';
 export const COLOR_GLOW = 'var(--sb-glow)';
 /** The build hero's glow (behind the main weapon and from the hero's corner). */
 export const COLOR_TINT = 'var(--sb-tint)';
+/** Tracking (T34): a collected item's border, and the glow of collecting one or finishing a build. */
+export const COLOR_ACCENT_LINE = 'var(--sb-accent-line)';
+export const COLOR_CELEBRATE = 'var(--sb-celebrate)';

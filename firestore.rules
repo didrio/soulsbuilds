@@ -43,6 +43,11 @@ service cloud.firestore {
       return value is string && value.size() >= 1 && value.size() <= max && value == value.trim();
     }
 
+    // A document id the app generates (Firestore auto-ids) or the seed uses.
+    function isId(value) {
+      return value is string && value.matches('^[A-Za-z0-9_-]{1,40}$');
+    }
+
     function buildPath(buildId) {
       return /databases/$(database)/documents/builds/$(buildId);
     }
@@ -61,6 +66,30 @@ service cloud.firestore {
         && isText(incoming().displayName, 40);
       // Account deletion (T18): the last Firestore step before the Auth account goes.
       allow delete: if isUser(userId);
+
+      // users/{uid}/tracking/{buildId}: the player's private progress on a build (T34). Only they
+      // read or write it. Item keys and stats are the app's job beyond their shape. startedAt is set
+      // by the client (progress from local storage keeps its real start) and may only move earlier
+      // (merging this device's progress into the account's on sign-in).
+      match /tracking/{buildId} {
+        allow read, delete: if isUser(userId);
+        allow create: if isUser(userId) && validTracking(buildId, incoming());
+        allow update: if isUser(userId) && validTracking(buildId, incoming())
+          && incoming().startedAt <= resource.data.startedAt;
+      }
+    }
+
+    function validTracking(buildId, t) {
+      return isId(buildId)
+        && hasExactly(t, ['game', 'collected', 'seen', 'stats', 'startedAt', 'updatedAt',
+          'completedAt'])
+        && t.game == 'elden-ring'
+        && t.collected is list && t.collected.size() <= 64
+        && t.seen is list && t.seen.size() <= 64
+        && validStats(t.stats)
+        && t.startedAt is timestamp
+        && t.updatedAt == request.time
+        && (t.completedAt == null || t.completedAt is timestamp);
     }
 
     // ---- builds/{id} ---------------------------------------------------------------------------
@@ -274,10 +303,6 @@ service cloud.firestore {
     // a reporter may read (and list, by reporterId) their own, so the UI can say "already reported".
     // Nobody changes reports from a client: scripts/admin.mjs resolves them with the Admin SDK. A
     // reporter may delete their own, which account deletion (T18) does.
-
-    function isId(value) {
-      return value is string && value.matches('^[A-Za-z0-9_-]{1,40}$');
-    }
 
     function reportTargetOk(reportId, r) {
       return isId(r.buildId) && (

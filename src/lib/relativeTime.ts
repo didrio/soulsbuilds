@@ -27,3 +27,8 @@ const fullDate = new Intl.DateTimeFormat('en', { dateStyle: 'long', timeStyle: '
 
 /** The exact date and time, for a `<time>`'s title next to a relative date. */
 export const formatFullDate = (date: Date) => fullDate.format(date);
+
+const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' });
+
+/** "4 November": a date in running text (T34, "Tracked since 4 November"). */
+export const formatDayMonth = (date: Date) => dayMonth.format(date);

@@ -7,7 +7,7 @@ import LegalPage, { ISSUES_URL } from './LegalPage';
  */
 function Privacy() {
   return (
-    <LegalPage title="Privacy policy" updated="15 November 2026">
+    <LegalPage title="Privacy policy" updated="16 November 2026">
       <p>
         Souls Builds is a small fan site for sharing Elden Ring character builds. This page explains
         what we store about you, why, and how to get it removed.
@@ -25,6 +25,12 @@ function Privacy() {
           <strong>What you publish:</strong> your display name, your builds, your comments and which
           builds you like. These are public: anyone can see them, and your profile lists your builds
           and the builds you liked.
+        </li>
+        <li>
+          <strong>Builds you track:</strong> when you track a build, which of its items you’ve
+          marked collected, the stat levels you’ve entered, and when you started and finished. This
+          is private: only you can see it. Signed out, it stays in your browser’s local storage;
+          when you sign up or log in, it moves into your account.
         </li>
         <li>
           <strong>Reports:</strong> if you report a build or comment, we store the reason, your note
@@ -49,8 +55,8 @@ function Privacy() {
       </ul>
       <p>
         We don’t use analytics, ads or tracking cookies, and we don’t sell or share your data. Your
-        browser keeps your sign-in in local storage so you stay signed in; reCAPTCHA may set its own
-        Google cookies.
+        browser keeps your sign-in in local storage so you stay signed in, and, while you’re signed
+        out, the builds you track; reCAPTCHA may set its own Google cookies.
       </p>
 
       <h2>Keeping and deleting your data</h2>
@@ -61,8 +67,9 @@ function Privacy() {
       <p>
         To delete your account, open your profile, choose <strong>Delete account</strong> at the
         bottom and enter your password. This deletes your account, your builds (with their likes and
-        comments), your comments and likes on other builds, and your reports, straight away. Copies
-        may stay for a while in the backups the site’s maintainer keeps privately.
+        comments), your comments and likes on other builds, your reports and the builds you track,
+        straight away. Copies may stay for a while in the backups the site’s maintainer keeps
+        privately.
       </p>
       <p>
         If you can’t sign in any more, <a href={ISSUES_URL}>open an issue on GitHub</a> titled

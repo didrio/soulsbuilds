@@ -7,9 +7,9 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T41
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T34 — Track a build: the Loadout as a checklist · Opus · extra high · plan mode on. Up next is in the
+**Next:** T35 — The route during a run · Opus · high · plan mode on. Up next is in the
 order of `docs/product.md` "Priorities": usage counts (T38,
-blocked on the owner), tracking (T34 → T35 → T36), link previews (T37, blocked on the Blaze decision), sign-in and
+blocked on the owner), tracking (T35 → T36, after T34), link previews (T37, blocked on the Blaze decision), sign-in and
 account (T30, T31), copies and variations (T32 → T33). T30–T38 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -32,7 +32,8 @@ and spacing, and the canvas notes say why.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs) and T29 (landing).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
+T34 (tracking).
 
 ## In progress
 
@@ -56,45 +57,9 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 - **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
   (performance notes).
 
-### T34 — Track a build: the Loadout as a checklist
-
-- **Status:** ready (T38 first if the owner approves it)
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** Players following a build mark the gear they've collected and how far their stats are, and watch their
-  progress fill to 100%. The site's main value for people who never post a build (`docs/product.md`).
-- **Done when:** (artboards `TrackMobile.dc.html` and `TrackDesktop.dc.html`, clickable in Play; notes k1–k5)
-  - "Track this build" is the build page's primary button; it turns the Loadout tab into tracking mode. Items
-    not yet collected are greyscale with a dashed border; a tap marks one collected: full color, accent border, a
-    check badge and a short glow (none with reduced motion). Item buttons use `aria-pressed`; each group shows its
-    count ("3/4"); T27's empty placeholders aren't buttons and don't count. "Stop tracking" asks first.
-  - Attributes in tracking mode: your level against the target with − and + (from the build's starting class
-    stats, when it has one, up to 99), ticked when reached.
-  - Progress in the hero: one percentage, half gear (items collected out of the build's items, spells included)
-    and half levels (the sum of min(yours, target), from the starting stats to the target's). Under it: "Gear 11 of
-    20" as pips and "Level 119 of 201" as a bar. The math is a pure, tested function in `src/lib/`.
-  - At 100%: a "Build complete" moment in the hero (large serif with a glow, days since starting, Share and "Find
-    your next build"); `completedAt` is saved.
-  - Storage, signed in: `users/{uid}/tracking/{buildId}` (collected item IDs by slot, stats, `startedAt`,
-    `updatedAt`, `completedAt`), readable and writable only by its owner (rules and rules tests). Signed out:
-    local storage, with a "Your progress is saved on this device · Keep my progress" card after the first item,
-    copied to Firestore on sign-up or log-in. ★ Alternative to weigh in plan mode: Firebase anonymous sign-in,
-    upgraded in place (needs the provider enabled; on Spark, anonymous accounts never expire).
-  - Progress is keyed by slot and item ID: when the author edits the build, new items appear unchecked with
-    "2 new items since you started", and removed ones drop out.
-  - Account deletion (`lib/firebase/account.ts`) deletes the user's tracking docs too.
-  - Phone first: 44px targets, usable one-handed next to a console.
-  - Tests: unit tests (progress math, tracking state), rules tests, an e2e test (track signed out, collect two
-    items, sign up, progress kept). `npm run check`, `npm run test:rules` and `npm run e2e` pass; screenshots at
-    0%, mid-run and complete, desktop and `--mobile`.
-  - Docs: a decision row (tracking storage), the model in `docs/architecture.md`, the privacy page (what tracking
-    stores, that it's private), AGENTS.md's project map.
-- **Context:** T27's loadout panel and its tile states, `features/editor/` (`store/`, `slots.ts`),
-  `src/data/startingClasses`, a new `lib/firebase/tracking.ts`, `firestore.rules` (users) with `tests/rules/`,
-  `lib/firebase/account.ts`. Principles: `docs/product.md` (likes stay the favorites; rewards celebrate play).
-
 ### T35 — The route during a run: progress, next stop, reasons
 
-- **Status:** ready (after T34)
+- **Status:** ready (T34 done: tracking exists)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** The route becomes the guide you keep open during a run, and stops being confusing: it knows what
   you've collected, says what's next, and explains every stop. The owner found today's route hard to follow.
@@ -113,11 +78,16 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
     reason, `guide.spec.ts` with tracking; screenshots desktop and `--mobile`.
 - **Context:** artboards `TrackMobile.dc.html` and `TrackDesktop.dc.html` (How to get tab), T28's route tab,
   `features/editor/guide/{route,phrases,GuideRoute}`, `scripts/data/{acquisition,progression,places,events}.ts`,
-  `src/data/acquisition.ts`, `docs/data.md`.
+  `src/data/acquisition.ts`, `docs/data.md`. T34's tracking: `useBuildTracking(build)` (already called in
+  `BuildEditorPage`; `state.collected` holds item keys) and the keys in `src/lib/tracking.ts`
+  (`weapon1:<id>`, `helm:<id>`, `talisman:<id>`, `spell:<id>`…; a route item is collected when any key with its
+  game ID is), docs/architecture.md "Tracking". The Next stop card goes above `LoadoutPanel`, beside T34's
+  `KeepProgressCard`/`NewItemsNotice`. See tracking states without clicking: `npm run screenshot --
+/build/SEEDBLEED001 --storage <file.json>` (run-app skill).
 
 ### T36 — Playing and Completed: the profile, and counts on the build
 
-- **Status:** ready (after T34; T31 reworks the profile too, so do them in either order and keep the other in
+- **Status:** ready (T34 done; T31 reworks the profile too, so do them in either order and keep the other in
   mind)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Your tracked builds in one place, finished builds as a small trophy shelf, and the author sees how many
@@ -134,7 +104,11 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
   - Tests: rules tests for the counters, unit and e2e tests; `npm run check`, `npm run test:rules` and
     `npm run e2e` pass; screenshots.
 - **Context:** artboard `ProfileMobile.dc.html`, `features/profile/`, `firestore.rules` (counters at the top) with
-  `tests/rules/`, `lib/firebase/account.ts`, `scripts/admin.mjs`.
+  `tests/rules/`, `lib/firebase/account.ts`, `scripts/admin.mjs`. T34's writes to change: tracking is one
+  `setDoc` per change, debounced in `features/tracking/saveQueue.ts` (start = delay 0), `deleteTracking` on
+  stop, and `useSyncLocalTracking` creating docs on sign-in; each create, first completion (`completedAt` null →
+  set) and delete must become a batch with the counter. Listing a user's tracking: `listTrackingRefs` in
+  `lib/firebase/tracking.ts` (the profile needs the docs, not refs). The doc id is the build id.
 
 ### T37 — Link previews: server-rendered build pages
 
@@ -332,6 +306,13 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 
 Older entries: `docs/tickets-archive.md`.
 
+- T34 — Track a build — 2026-11-16 — owner: local storage signed out (merged into the account on sign-in, not
+  anonymous auth), gear + spells counted (not arrows/consumables), no class = 10 per stat, Share = the link;
+  `users/{uid}/tracking/{buildId}` (owner-only rules), pure `lib/tracking.ts` (item keys, progress, changes,
+  merge), `features/tracking/` (debounced saves, local storage, hero progress / Build complete, Keep my progress,
+  new-items notice, stats with − +); Loadout toggles with "3/4"; account deletion + `admin.mjs delete-user`;
+  `screenshot --storage`. Kept the full data out of the shell (`LOCAL_OWNER` in `localTracking.ts`).
+
 - T39 — Loadout without empty rows — 2026-11-16 — read-only: a weapon row with both hands empty is hidden (one-handed
   rows keep the other hand's placeholder), Spells hidden without spells and never shows free-slot placeholders; edit
   mode unchanged. Not seen on screen: mobile Loadout, the Spells section; with no weapons the Armor row's top rule sits
@@ -355,17 +336,3 @@ Older entries: `docs/tickets-archive.md`.
   Inter values (14px, tabular); accent budget (neutral panels, tags, icons); `Frame` plain + `$hero` (corner marks,
   skin `tint`) on the build title pane; 1240px, `SPACE_PANEL/GROUP/REGION`; header with phone "+" and menu;
   write-up headings. Not seen on screen: write-up h1–h4 (no seeded write-up has headings).
-- T25 — Firebase JS SDK 13 — 2026-11-16 — `firebase` 13.3.0 + `@firebase/rules-unit-testing` 6.0.0, no code changes
-  (13.0's breaks are AI-only); check, rules (103) and e2e pass; preload URL still matches, blocked notice at ~2.4 s.
-- T24 — No blank page when reCAPTCHA is blocked — 2026-11-16 — owner: error only, one notice in the shell;
-  `appCheckStatus.ts` (blocked = no token 2 s after a reCAPTCHA load error, or 10 s) + `AppCheckNotice`;
-  checked on a local build served at soulsbuilds.com: notice at ~2.4 s, normal first Firestore request ~1.2 s.
-- T23 — Content sooner: the App Check wait — 2026-11-16 — cause confirmed in the SDK (Firestore awaits the App
-  Check token; a cached IndexedDB token skips reCAPTCHA; T21's "warm" wait was perf's 403'd bot exchange);
-  `enterprise.js` preloaded (cold first Firestore request ~1.29 → ~1.21 s, via `--head` before deploy; warm real
-  visit ~0.33 s); perf App Check table + `--head`; owner sets a 1-day TTL. Blocked reCAPTCHA = blank page → T24.
-- T20 — Community feel — 2026-11-16 — HTML mockup, owner picked layout A with counts; public `stats/elden-ring`
-  (builds, distinct authors, accounts, builds per tag) from `admin.mjs stats`, daily in `stats.yml` as its own
-  `github-stats` SA; top tags as the Tags row's first chips (scrolling row on phones),
-  "N builds by M players", rows with comments + age, build page comment link, warmer empty state, "More by",
-  profile build/like counts; scroll to top on navigation. SA set up and first run done by the owner (same day).

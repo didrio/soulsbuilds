@@ -77,21 +77,33 @@ export const filledAndNext = (entries: SlotEntry[]) => {
 /** Tile sizes in the Loadout panel (T27): weapons, and every other slot. */
 export type TileSize = 64 | 44;
 
+/** A tracked item's state on a build the player tracks (T34). */
+export interface RowTracking {
+  collected: boolean;
+  /** Just collected: the tile glows once. */
+  celebrate: boolean;
+  onToggle: () => void;
+}
+
 /**
  * One slot as a row: the item's tile, its name, a muted detail line (a weapon's affinity and skill, a
  * spell's memory slots) and a warning line when it can't be used as built. Editable rows are buttons
  * that open the item picker for the slot, named "Choose talisman" when empty and "Change Uchigatana
  * (Blood affinity, Seppuku skill)" when filled; read-only rows are plain text, and an empty read-only
- * slot is a faint placeholder tile that keeps the layout the same on every build (T27).
+ * slot is a faint placeholder tile that keeps the layout the same on every build (T27). While the
+ * player tracks the build (T34), a filled `tracking` row is a toggle button (`aria-pressed`): greyed
+ * out until collected.
  */
 function ItemRow({
   entry,
   editable,
   size = 44,
+  tracking,
 }: {
   entry: SlotEntry;
   editable: boolean;
   size?: TileSize;
+  tracking?: RowTracking;
 }) {
   const dispatch = useAppDispatch();
   const { type, item, affinity = null, ash = null, warning = null } = entry;
@@ -109,16 +121,38 @@ function ItemRow({
   const weapon = item && isWeaponType(type) ? weaponDetails(item as Weapon, ash, affinity) : null;
   const subline = item ? itemSubline(item, weapon) : '';
 
+  const track = tracking && !editable ? (tracking.collected ? 'collected' : 'missing') : undefined;
   const content = (
     <>
-      <ItemTile src={item ? iconUrl(item.icon) : null} size={size} />
+      <ItemTile
+        src={item ? iconUrl(item.icon) : null}
+        size={size}
+        track={track}
+        celebrate={Boolean(track && tracking?.celebrate)}
+      />
       <Text>
-        {item ? <Name>{item.name}</Name> : <Empty>{`Choose ${SLOT_LABELS[type]}`}</Empty>}
+        {item ? (
+          <Name $missing={track === 'missing'}>{item.name}</Name>
+        ) : (
+          <Empty>{`Choose ${SLOT_LABELS[type]}`}</Empty>
+        )}
         {subline ? <Sub>{subline}</Sub> : null}
         {item && warning ? <Warning $severity={warning.severity}>{warning.text}</Warning> : null}
       </Text>
     </>
   );
+
+  if (tracking && !editable) {
+    return (
+      <RowButton
+        type="button"
+        $size={size}
+        aria-pressed={tracking.collected}
+        onClick={tracking.onToggle}>
+        {content}
+      </RowButton>
+    );
+  }
 
   if (!editable) return <Row $size={size}>{content}</Row>;
 
@@ -198,10 +232,11 @@ const Text = styled.span`
   min-width: 0;
 `;
 
-const Name = styled.span`
-  color: ${COLOR_TEXT};
+// Not collected yet (tracking): muted, like the greyed-out tile.
+const Name = styled.span<{ $missing?: boolean }>`
+  color: ${({ $missing }) => ($missing ? COLOR_TEXT_MUTED : COLOR_TEXT)};
   font-size: ${TEXT_MD};
-  font-weight: 600;
+  font-weight: ${({ $missing }) => ($missing ? 500 : 600)};
   line-height: 1.3;
   overflow-wrap: break-word;
 `;

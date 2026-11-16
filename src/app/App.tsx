@@ -5,6 +5,7 @@ import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
 import useAuth from '@/features/auth/useAuth';
 import { selectSlotType } from '@/features/editor/store/selectors';
+import { useSyncLocalTracking } from '@/features/tracking/useSyncLocalTracking';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
@@ -19,59 +20,62 @@ import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppSelector } from './hooks';
 import AppCheckNotice from './AppCheckNotice';
+import { AuthDialogContext, type AuthDialogKind } from './authDialog';
 import AppRoutes from './routes';
 import { useScrollToTop } from './useScrollToTop';
 
 // The picker (its own Dialog) holds the full game data (~1 MB), so it loads when a slot is first opened.
 const ItemSelector = lazy(() => import('@/features/editor/ItemSelector'));
 
-type AuthDialog = 'login' | 'signup';
-
 /**
- * The page shell: global styles and the current game's skin, header, the log in / sign up dialog,
- * the routes, the footer, and the item picker modal (open while Redux `app.slotType` is set).
+ * The page shell: global styles and the current game's skin, header, the log in / sign up dialog
+ * (pages open it with `useOpenAuthDialog`), the routes, the footer, and the item picker modal (open
+ * while Redux `app.slotType` is set). Signing in moves this device's tracking into the account.
  */
 function App() {
   const slotType = useAppSelector(selectSlotType);
   const { uid } = useAuth();
   const game = useCurrentGame();
-  const [authDialog, setAuthDialog] = useState<AuthDialog | null>(null);
+  const [authDialog, setAuthDialog] = useState<AuthDialogKind | null>(null);
 
   const closeAuth = () => setAuthDialog(null);
   useScrollToTop();
+  useSyncLocalTracking();
 
   return (
-    <Shell>
-      <GlobalStyle />
-      <GameSkinStyle $game={game.id} />
-      <SkipLink href="#main">Skip to content</SkipLink>
-      <Header
-        openDialog={uid ? null : authDialog}
-        onLogIn={() => setAuthDialog('login')}
-        onSignUp={() => setAuthDialog('signup')}
-      />
-      <Main id="main" tabIndex={-1}>
-        <AppCheckNotice />
-        <AppRoutes />
-      </Main>
-      <Footer />
-      {authDialog && !uid ? (
-        <Dialog
-          title={authDialog === 'login' ? 'Log in' : 'Create your account'}
-          onClose={closeAuth}>
-          {authDialog === 'login' ? (
-            <Login onDone={closeAuth} onSwitch={() => setAuthDialog('signup')} />
-          ) : (
-            <SignUp onDone={closeAuth} onSwitch={() => setAuthDialog('login')} />
-          )}
-        </Dialog>
-      ) : null}
-      {slotType === null ? null : (
-        <Suspense fallback={null}>
-          <ItemSelector />
-        </Suspense>
-      )}
-    </Shell>
+    <AuthDialogContext value={setAuthDialog}>
+      <Shell>
+        <GlobalStyle />
+        <GameSkinStyle $game={game.id} />
+        <SkipLink href="#main">Skip to content</SkipLink>
+        <Header
+          openDialog={uid ? null : authDialog}
+          onLogIn={() => setAuthDialog('login')}
+          onSignUp={() => setAuthDialog('signup')}
+        />
+        <Main id="main" tabIndex={-1}>
+          <AppCheckNotice />
+          <AppRoutes />
+        </Main>
+        <Footer />
+        {authDialog && !uid ? (
+          <Dialog
+            title={authDialog === 'login' ? 'Log in' : 'Create your account'}
+            onClose={closeAuth}>
+            {authDialog === 'login' ? (
+              <Login onDone={closeAuth} onSwitch={() => setAuthDialog('signup')} />
+            ) : (
+              <SignUp onDone={closeAuth} onSwitch={() => setAuthDialog('login')} />
+            )}
+          </Dialog>
+        ) : null}
+        {slotType === null ? null : (
+          <Suspense fallback={null}>
+            <ItemSelector />
+          </Suspense>
+        )}
+      </Shell>
+    </AuthDialogContext>
   );
 }
 

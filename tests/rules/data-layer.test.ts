@@ -32,6 +32,8 @@ const { deleteAccountData, findAccountData } = await import('@/lib/firebase/acco
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
   await import('@/lib/firebase/users');
 const { getGameStats } = await import('@/lib/firebase/stats');
+const { deleteTracking, getTracking, listTrackingRefs, saveTracking } =
+  await import('@/lib/firebase/tracking');
 
 let env: RulesTestEnvironment;
 
@@ -258,6 +260,36 @@ describe('stats (T20)', () => {
   });
 });
 
+describe('tracking (T34)', () => {
+  const state = {
+    collected: ['helm:680000'],
+    seen: ['helm:680000', 'talisman:2160'],
+    stats: { vigor: 30, mind: 10, end: 20, str: 12, dex: 30, int: 9, fai: 8, arc: 30 },
+    startedAt: new Date('2026-11-10T12:00:00Z'),
+    completedAt: null,
+  };
+
+  it('saves, reads back, updates and deletes the player’s own progress only', async () => {
+    actAs('gus');
+    expect(await getTracking('gus', 'B9')).toBeNull();
+    await saveTracking('gus', 'B9', state);
+    expect(await getTracking('gus', 'B9')).toEqual(state);
+    const done = { ...state, collected: [...state.seen], completedAt: new Date('2026-11-16') };
+    await saveTracking('gus', 'B9', done);
+    expect(await getTracking('gus', 'B9')).toEqual(done);
+    expect(await listTrackingRefs('gus')).toHaveLength(1);
+
+    actAs('hal');
+    await expect(getTracking('gus', 'B9')).rejects.toThrow();
+    await expect(saveTracking('gus', 'B9', state)).rejects.toThrow();
+    await expect(deleteTracking('gus', 'B9')).rejects.toThrow();
+
+    actAs('gus');
+    await deleteTracking('gus', 'B9');
+    expect(await getTracking('gus', 'B9')).toBeNull();
+  });
+});
+
 describe('account deletion (T18)', () => {
   it('removes everything of the user, keeps counters right, and can run again', async () => {
     actAs('dana');
@@ -279,6 +311,13 @@ describe('account deletion (T18)', () => {
     await likeBuild(orphaned, 'dana');
     await addComment(orphaned, 'dana', 'Old');
     await reportContent('dana', { buildId: erins, commentId: erinsComment.id }, 'spam');
+    await saveTracking('dana', erins, {
+      collected: [],
+      seen: [],
+      stats: input.stats,
+      startedAt: new Date(),
+      completedAt: null,
+    });
     // A build whose like/comment cleanup was cut short: the doc is gone, its subcollections not.
     await env.withSecurityRulesDisabled(async (context) => {
       await deleteDoc(doc(context.firestore() as unknown as Firestore, 'builds', orphaned));
@@ -295,10 +334,12 @@ describe('account deletion (T18)', () => {
     expect(found.likes.map((l) => l.buildExists).sort()).toEqual([false, true]);
     expect(found.comments).toHaveLength(3);
     expect(found.reports).toHaveLength(1);
+    expect(found.tracking).toHaveLength(1);
 
     const progress = vi.fn();
     await deleteAccountData('dana', progress);
-    expect(progress).toHaveBeenLastCalledWith(8, 8); // 1 build, 2 likes, 3 comments, 1 report, profile
+    // 1 build, 2 likes, 3 comments, 1 report, 1 tracked build, profile
+    expect(progress).toHaveBeenLastCalledWith(9, 9);
 
     actAs(null);
     expect(await getUserProfile('dana')).toBeNull();
@@ -318,6 +359,7 @@ describe('account deletion (T18)', () => {
       likes: [],
       comments: [],
       reports: [],
+      tracking: [],
     });
     // Running it again (e.g. after a failure halfway) is a no-op.
     await deleteAccountData('dana');

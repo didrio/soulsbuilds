@@ -83,3 +83,15 @@ export const LozengeIcon = ({ size = 8, ...rest }: IconProps) => (
     <path d="M4 0l4 4-4 4-4-4z" fill="currentColor" />
   </svg>
 );
+
+export const CheckIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M5 12l4 4L19 6" />
+  </svg>
+);
+
+export const MinusIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M5 12h14" />
+  </svg>
+);

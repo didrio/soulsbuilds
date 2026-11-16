@@ -19,4 +19,6 @@ export const queryKeys = {
   comments: (buildId: string) => ['comments', buildId] as const,
   user: (id: string) => ['users', id] as const,
   stats: (game: GameId) => ['stats', game] as const,
+  /** The signed-in player's progress on a build (T34). */
+  tracking: (userId: string, buildId: string) => ['tracking', userId, buildId] as const,
 };

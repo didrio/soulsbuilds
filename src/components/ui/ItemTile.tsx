@@ -1,6 +1,13 @@
-import styled from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
+import { CheckIcon } from './icons';
 import {
+  COLOR_ACCENT,
+  COLOR_ACCENT_LINE,
   COLOR_BLACK,
+  COLOR_CELEBRATE,
+  COLOR_INSET,
+  COLOR_ON_ACCENT,
+  COLOR_SURFACE,
   COLOR_TILE_BORDER,
   COLOR_TILE_BOTTOM,
   COLOR_TILE_EMPTY_BORDER,
@@ -24,6 +31,13 @@ interface ItemTileProps {
    * tile, with no diamond.
    */
   placeholder?: boolean;
+  /**
+   * Tracking a build (T34): `missing` is greyed out with a dashed border, `collected` has the accent
+   * border and a check badge.
+   */
+  track?: 'missing' | 'collected';
+  /** A short glow, as an item is collected (off with reduced motion, GlobalStyle). */
+  celebrate?: boolean;
   className?: string;
 }
 
@@ -37,6 +51,8 @@ function ItemTile({
   size = 56,
   emptyMark,
   placeholder = false,
+  track,
+  celebrate = false,
   className,
 }: ItemTileProps) {
   return (
@@ -46,14 +62,50 @@ function ItemTile({
       $empty={!src}
       $mark={Boolean(emptyMark) || placeholder}
       $placeholder={!src && placeholder}
-      $size={size}>
+      $size={size}
+      $track={src ? track : undefined}
+      $celebrate={celebrate}>
       {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : null}
       {!src && emptyMark ? <Mark aria-hidden="true">{emptyMark}</Mark> : null}
+      {src && track === 'collected' ? (
+        <Badge aria-hidden="true">
+          <CheckIcon size={10} strokeWidth={3.5} />
+        </Badge>
+      ) : null}
     </Tile>
   );
 }
 
-const Tile = styled.span<{ $empty: boolean; $mark: boolean; $placeholder: boolean; $size: number }>`
+const pickup = keyframes`
+  0% { transform: scale(0.9); box-shadow: 0 0 0 0 ${COLOR_CELEBRATE}; }
+  35% { transform: scale(1.07); box-shadow: 0 0 30px 8px ${COLOR_CELEBRATE}; }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 transparent; }
+`;
+
+const tracked = {
+  missing: css`
+    background: ${COLOR_INSET};
+    border-style: dashed;
+    box-shadow: none;
+
+    & > img {
+      filter: grayscale(1) brightness(0.7);
+      opacity: 0.6;
+    }
+  `,
+  collected: css`
+    border-color: ${COLOR_ACCENT_LINE};
+  `,
+};
+
+const Tile = styled.span<{
+  $empty: boolean;
+  $mark: boolean;
+  $placeholder: boolean;
+  $size: number;
+  $track?: 'missing' | 'collected';
+  $celebrate: boolean;
+}>`
   align-items: center;
   background: ${({ $empty, $placeholder }) =>
     $placeholder
@@ -69,6 +121,7 @@ const Tile = styled.span<{ $empty: boolean; $mark: boolean; $placeholder: boolea
   height: ${({ $size }) => $size}px;
   justify-content: center;
   opacity: ${({ $placeholder }) => ($placeholder ? 0.55 : 1)};
+  position: relative;
   transition: border-color 120ms;
   width: ${({ $size }) => $size}px;
 
@@ -77,7 +130,18 @@ const Tile = styled.span<{ $empty: boolean; $mark: boolean; $placeholder: boolea
     height: 92%;
     object-fit: contain;
     width: 92%;
+    transition:
+      filter 300ms,
+      opacity 300ms;
   }
+
+  ${({ $track }) => ($track ? tracked[$track] : '')}
+  ${({ $celebrate }) =>
+    $celebrate
+      ? css`
+          animation: ${pickup} 1s ease-out;
+        `
+      : ''}
 
   &::after {
     border: 1px solid ${COLOR_TILE_EMPTY_BORDER};
@@ -87,6 +151,22 @@ const Tile = styled.span<{ $empty: boolean; $mark: boolean; $placeholder: boolea
     transform: rotate(45deg);
     width: 6px;
   }
+`;
+
+// The check on a collected item, over the tile's corner.
+const Badge = styled.span`
+  align-items: center;
+  background: ${COLOR_ACCENT};
+  border: 2px solid ${COLOR_SURFACE};
+  border-radius: 50%;
+  bottom: -6px;
+  color: ${COLOR_ON_ACCENT};
+  display: flex;
+  height: 18px;
+  justify-content: center;
+  position: absolute;
+  right: -6px;
+  width: 18px;
 `;
 
 const Mark = styled.span`

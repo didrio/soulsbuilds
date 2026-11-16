@@ -41,15 +41,21 @@ interface BuildHeaderProps {
   build: Build;
   /** The owner's controls (Edit, Delete), shown in the actions row. */
   ownerActions?: ReactNode;
+  /** "Track this build" (T34): the first action. */
+  trackAction?: ReactNode;
+  /** The player's progress or "Build complete" (T34), beside the title on desktop. */
+  progress?: ReactNode;
 }
 
 /**
  * View mode's hero (T22, T28): the main weapon as a large tile with the skin's glow, the build's name
  * (the page's `<h1>`), "by <author> · Level N · 3 days ago", the tags (each links to the builds with
- * it), and the actions: Like (a count when signed out), Report and the owner's controls. Desktop:
- * actions on the right; tablets and phones: a smaller tile, the actions in a row under the tags.
+ * it), and the actions: Track this build (T34), Like (a count when signed out), Report and the
+ * owner's controls. Desktop: actions on the right; tablets and phones: a smaller tile, the actions in
+ * a row under the tags. While tracking, the progress takes the right column on desktop (the actions
+ * move under the tags) and comes last on phones.
  */
-function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
+function BuildHeader({ build, ownerActions, trackAction, progress }: BuildHeaderProps) {
   const { uid } = useAuth();
   const owner = useUserProfile(build.ownerId);
   const liked = useHasLiked(build.id, uid);
@@ -58,7 +64,7 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
   const weapon = getCardWeapon(mainWeaponId(build.equipment));
 
   return (
-    <Pane $hero $tile={Boolean(weapon)} aria-labelledby="build-title">
+    <Pane $hero $tile={Boolean(weapon)} $progress={Boolean(progress)} aria-labelledby="build-title">
       {weapon ? <Portrait src={iconUrl(weapon.icon)} title={weapon.name} size={112} /> : null}
       <Title id="build-title">{build.name}</Title>
       <Meta>
@@ -85,7 +91,8 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
           ))}
         </Tags>
       ) : null}
-      <Actions>
+      <Actions $progress={Boolean(progress)}>
+        {trackAction}
         {uid ? (
           <Button
             variant="secondary"
@@ -110,6 +117,7 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
         />
         {ownerActions}
       </Actions>
+      {progress}
       <Errors>
         <ErrorMessage>{toggleLike.error ? errorMessage(toggleLike.error) : ''}</ErrorMessage>
       </Errors>
@@ -117,27 +125,33 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
   );
 }
 
+/** The hero's grid areas (desktop): the right column holds the actions, or the progress (T34). */
+function desktopAreas(tile: boolean, progress: boolean) {
+  const left = tile ? ['tile title', 'tile meta', 'tile tags'] : ['title', 'meta', 'tags'];
+  const error = tile ? 'error error error' : 'error error';
+  if (!progress) return [...left.map((row) => `'${row} actions'`), `'${error}'`].join(' ');
+  const actions = tile ? 'tile actions' : 'actions';
+  return [...left, actions].map((row) => `'${row} progress'`).join(' ') + ` '${error}'`;
+}
+
 // Desktop: the tile, then name / meta / tags, then the actions, top-aligned. Tablets and phones: the
 // tile beside the name and meta, then the tags and the actions across the pane.
-const Pane = styled(Frame)<{ $tile: boolean }>`
+const Pane = styled(Frame)<{ $tile: boolean; $progress: boolean }>`
   align-items: center;
   column-gap: ${SPACE_LG};
   display: grid;
-  grid-template-areas: ${({ $tile }) =>
-    $tile
-      ? `'tile title actions' 'tile meta actions' 'tile tags actions' 'error error error'`
-      : `'title actions' 'meta actions' 'tags actions' 'error error'`};
+  grid-template-areas: ${({ $tile, $progress }) => desktopAreas($tile, $progress)};
   grid-template-columns: ${({ $tile }) =>
     $tile ? '112px minmax(0, 1fr) auto' : 'minmax(0, 1fr) auto'};
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: ${({ $progress }) => ($progress ? 'auto auto auto 1fr' : 'auto auto 1fr')};
   padding: 24px;
 
   @media ${BELOW_TABLET} {
     column-gap: ${SPACE_MD};
     grid-template-areas: ${({ $tile }) =>
       $tile
-        ? `'tile title' 'tile meta' 'tags tags' 'actions actions' 'error error'`
-        : `'title' 'meta' 'tags' 'actions' 'error'`};
+        ? `'tile title' 'tile meta' 'tags tags' 'actions actions' 'progress progress' 'error error'`
+        : `'title' 'meta' 'tags' 'actions' 'progress' 'error'`};
     grid-template-columns: ${({ $tile }) => ($tile ? '76px minmax(0, 1fr)' : 'minmax(0, 1fr)')};
     grid-template-rows: none;
     padding: ${SPACE_MD};
@@ -198,15 +212,17 @@ const Strong = styled.b`
   font-variant-numeric: tabular-nums;
 `;
 
-const Actions = styled.div`
+// Desktop: right-aligned in the right column, or (while tracking) left-aligned under the tags.
+const Actions = styled.div<{ $progress: boolean }>`
   align-items: center;
   align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: ${SPACE_SM};
   grid-area: actions;
-  justify-content: flex-end;
-  max-width: 420px;
+  justify-content: ${({ $progress }) => ($progress ? 'flex-start' : 'flex-end')};
+  margin-top: ${({ $progress }) => ($progress ? SPACE_SM : '0')};
+  max-width: ${({ $progress }) => ($progress ? 'none' : '420px')};
 
   @media ${BELOW_TABLET} {
     justify-content: flex-start;

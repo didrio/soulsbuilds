@@ -38,6 +38,7 @@ import {
   selectVitals,
 } from '../store/derived';
 import { selectStartingClass, selectStats } from '../store/selectors';
+import TrackedAttributes, { type StatsTracking } from '@/features/tracking/TrackedAttributes';
 import { setStartingClass } from '../store/startingClass';
 import { updateStat } from '../store/stats';
 
@@ -108,9 +109,18 @@ function StatInput({
  * each attribute as a row with a bar and its value (an input when editable) and what talismans add
  * ("+5"), then what it all adds up to: HP, FP and stamina, the equip load on a bar marked where the
  * rolls change, and poise. Talisman effects count (store/derived.ts). Phones and tablets: the
- * attributes in a 4×2 grid with short names, HP, FP, stamina and poise in one row.
+ * attributes in a 4×2 grid with short names, HP, FP, stamina and poise in one row. While the player
+ * tracks the build (T34), the attributes are their own levels against the build's, with − and +.
  */
-function StatsCard({ editable, level }: { editable: boolean; level: number }) {
+function StatsCard({
+  editable,
+  level,
+  tracking,
+}: {
+  editable: boolean;
+  level: number;
+  tracking?: StatsTracking;
+}) {
   const dispatch = useAppDispatch();
   const stats = useAppSelector(selectStats);
   const startingClass = useAppSelector(selectStartingClass);
@@ -155,40 +165,47 @@ function StatsCard({ editable, level }: { editable: boolean; level: number }) {
       ) : null}
 
       <Block aria-labelledby="attributes-title">
-        <BlockLabel as="h3" id="attributes-title">
-          Attributes
-        </BlockLabel>
-        <Attributes $editable={editable}>
-          {STATS.map(([key, name, short]) => (
-            <Attribute key={key} $editable={editable}>
-              <AttributeName>
-                <Full>{name}</Full>
-                <Short aria-hidden="true">{short}</Short>
-                {bonuses[key] ? (
-                  <Bonus>
-                    {` +${bonuses[key]}`}
-                    <VisuallyHidden> from talismans</VisuallyHidden>
-                  </Bonus>
-                ) : null}
-              </AttributeName>
-              <Bar aria-hidden="true">
-                <BarFill style={{ width: `${(stats[key] / MAX_STAT) * 100}%` }} />
-              </Bar>
-              <AttributeValue>
-                {editable ? (
-                  <StatInput
-                    statKey={key}
-                    name={name}
-                    value={stats[key]}
-                    min={startingClass?.stats[key] ?? MIN_STAT}
-                  />
-                ) : (
-                  stats[key]
-                )}
-              </AttributeValue>
-            </Attribute>
-          ))}
-        </Attributes>
+        <BlockHead>
+          <BlockLabel as="h3" id="attributes-title">
+            Attributes
+          </BlockLabel>
+          {tracking && !editable ? <BlockNote>yours / target</BlockNote> : null}
+        </BlockHead>
+        {tracking && !editable ? (
+          <TrackedAttributes attributes={STATS} target={stats} tracking={tracking} />
+        ) : (
+          <Attributes $editable={editable}>
+            {STATS.map(([key, name, short]) => (
+              <Attribute key={key} $editable={editable}>
+                <AttributeName>
+                  <Full>{name}</Full>
+                  <Short aria-hidden="true">{short}</Short>
+                  {bonuses[key] ? (
+                    <Bonus>
+                      {` +${bonuses[key]}`}
+                      <VisuallyHidden> from talismans</VisuallyHidden>
+                    </Bonus>
+                  ) : null}
+                </AttributeName>
+                <Bar aria-hidden="true">
+                  <BarFill style={{ width: `${(stats[key] / MAX_STAT) * 100}%` }} />
+                </Bar>
+                <AttributeValue>
+                  {editable ? (
+                    <StatInput
+                      statKey={key}
+                      name={name}
+                      value={stats[key]}
+                      min={startingClass?.stats[key] ?? MIN_STAT}
+                    />
+                  ) : (
+                    stats[key]
+                  )}
+                </AttributeValue>
+              </Attribute>
+            ))}
+          </Attributes>
+        )}
       </Block>
 
       <Block aria-labelledby="character-title">
@@ -315,9 +332,20 @@ const Block = styled.section`
   padding-top: ${SPACE_MD};
 `;
 
+const BlockHead = styled.div`
+  align-items: baseline;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: ${SPACE_SM};
+`;
+
 const BlockLabel = styled(Label)`
   display: block;
-  margin-bottom: ${SPACE_SM};
+`;
+
+const BlockNote = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
 `;
 
 const Attributes = styled.ul<{ $editable: boolean }>`
