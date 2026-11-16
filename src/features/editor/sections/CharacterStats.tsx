@@ -3,16 +3,7 @@ import Frame from '@/components/ui/Frame';
 import SectionHeading from '@/components/ui/SectionHeading';
 import { useAppSelector } from '@/app/hooks';
 import type { RollType } from '@/lib/buildMath';
-import {
-  COLOR_DANGER,
-  COLOR_LINE,
-  COLOR_TEXT,
-  COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
-  TEXT_LG,
-  TEXT_SM,
-  TEXT_XS,
-} from '@/theme';
+import { COLOR_DANGER, COLOR_LINE, COLOR_TEXT, COLOR_TEXT_MUTED, TEXT_SM, TEXT_XS } from '@/theme';
 import { selectEquipWeight, selectPoise, selectRollType, selectVitals } from '../store/derived';
 
 const ROLL_LABELS: Record<RollType, string> = {
@@ -89,8 +80,8 @@ const Row = styled.div`
 
   dd {
     color: ${COLOR_TEXT};
-    font-family: ${FONT_DISPLAY};
-    font-size: ${TEXT_LG};
+    font-size: 15px;
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
     margin: 0;
     text-align: right;

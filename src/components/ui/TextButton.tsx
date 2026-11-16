@@ -1,6 +1,6 @@
 import { Link } from 'react-router';
 import styled, { css } from 'styled-components';
-import { COLOR_ACCENT, COLOR_ACCENT_STRONG, COLOR_FRAME, TEXT_SM } from '@/theme';
+import { COLOR_ACCENT, COLOR_ACCENT_STRONG, TEXT_SM } from '@/theme';
 
 const textAction = css`
   align-items: center;
@@ -14,7 +14,7 @@ const textAction = css`
   min-height: 44px;
   padding: 0 4px;
   text-decoration: underline;
-  text-decoration-color: ${COLOR_FRAME};
+  text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
   text-underline-offset: 3px;
 
   &:hover {

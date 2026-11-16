@@ -1,17 +1,18 @@
 import styled from 'styled-components';
-import { BELOW_MOBILE, SPACE_LG, SPACE_MD } from '@/theme';
-import { framed } from './inWorld';
+import { BELOW_MOBILE, SPACE_GUTTER, SPACE_PANEL } from '@/theme';
+import { heroFrame, panel } from './inWorld';
 
 /**
- * A framed panel (thin accent border, corner marks, sunken shade): the site's card. A `<section>` by
- * default; use `as` for another element. Padding included.
+ * The site's card: a plain panel (surface, neutral hairline). `$hero` is the build hero's frame
+ * instead: accent corner marks and the skin's tint glowing from the left; nothing else gets it. A
+ * `<section>` by default; use `as` for another element. Padding included.
  */
-const Frame = styled.section`
-  ${framed}
-  padding: ${SPACE_LG};
+const Frame = styled.section<{ $hero?: boolean }>`
+  ${({ $hero }) => ($hero ? heroFrame : panel)}
+  padding: ${SPACE_PANEL};
 
   @media ${BELOW_MOBILE} {
-    padding: ${SPACE_MD};
+    padding: ${SPACE_GUTTER};
   }
 `;
 

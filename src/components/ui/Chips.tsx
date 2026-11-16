@@ -2,24 +2,22 @@ import { useId, useState } from 'react';
 import styled from 'styled-components';
 import { tagGroups } from '@/data/core';
 import {
-  COLOR_ACCENT_STRONG,
-  COLOR_FRAME,
-  COLOR_FRAME_SOFT,
-  COLOR_GLOW,
+  COLOR_INSET,
+  COLOR_LINE_STRONG,
+  COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
+  RADIUS_FRAME,
   SHADOW_OVERLAY,
   TEXT_SM,
-  TEXT_XS,
-  TRACKING_CAPS,
 } from '@/theme';
 import Button from './Button';
 import FocusScope from './FocusScope';
 import { ChevronDownIcon, CloseIcon, PlusIcon } from './icons';
-import { framed } from './inWorld';
+import { panel } from './inWorld';
 import OutsideClickHandler from './OutsideClickHandler';
 import TextInput from './TextInput';
+import { labelText } from './typography';
 
 interface ChipsProps {
   onAdd: (tag: string) => void;
@@ -144,8 +142,9 @@ const Container = styled.div`
 
 const Chip = styled.button`
   align-items: center;
-  background: ${COLOR_FRAME_SOFT};
-  border: 1px solid ${COLOR_FRAME};
+  background: ${COLOR_INSET};
+  border: 1px solid ${COLOR_LINE_STRONG};
+  border-radius: ${RADIUS_FRAME};
   color: ${COLOR_TEXT};
   cursor: pointer;
   display: inline-flex;
@@ -159,8 +158,12 @@ const Chip = styled.button`
     color: ${COLOR_TEXT_MUTED};
   }
 
+  &:hover {
+    border-color: ${COLOR_TEXT_MUTED};
+  }
+
   &:hover > svg {
-    color: ${COLOR_ACCENT_STRONG};
+    color: ${COLOR_TEXT};
   }
 `;
 
@@ -169,7 +172,8 @@ const Anchor = styled.div`
 `;
 
 const Popover = styled(FocusScope)`
-  ${framed}
+  ${panel}
+  border-color: ${COLOR_LINE_STRONG};
   box-shadow: ${SHADOW_OVERLAY};
   display: flex;
   flex-direction: column;
@@ -207,12 +211,7 @@ const optionStyle = `
 
 const GroupButton = styled.button`
   ${optionStyle}
-  color: ${COLOR_TEXT_MUTED};
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 
   &[aria-expanded='true'] > svg {
     transform: rotate(180deg);
@@ -229,8 +228,7 @@ const Option = styled.button`
   font-size: ${TEXT_SM};
 
   &:hover {
-    background: linear-gradient(90deg, ${COLOR_GLOW}, transparent);
-    color: ${COLOR_ACCENT_STRONG};
+    background: ${COLOR_SURFACE_RAISED};
   }
 `;
 

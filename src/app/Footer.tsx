@@ -1,16 +1,13 @@
 import { Link } from 'react-router';
 import styled from 'styled-components';
-import { fadingRule } from '@/components/ui/inWorld';
 import {
-  COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
+  COLOR_LINE,
   COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
   SPACE_GUTTER,
   SPACE_XXXL,
   TEXT_SM,
   TEXT_XS,
-  TRACKING_CAPS,
 } from '@/theme';
 
 /** Site footer: legal links, and who we are not. The game data and icons come from FromSoftware's game files. */
@@ -43,7 +40,7 @@ const Container = styled.footer`
   text-align: center;
 
   &::before {
-    background: ${fadingRule};
+    background: ${COLOR_LINE};
     content: '';
     height: 1px;
     left: 0;
@@ -66,14 +63,11 @@ const Links = styled.nav`
 
   & > a {
     align-items: center;
-    color: ${COLOR_ACCENT};
+    color: ${COLOR_TEXT_MUTED};
     display: inline-flex;
-    font-family: ${FONT_DISPLAY};
     font-size: ${TEXT_SM};
-    font-weight: 600;
-    letter-spacing: ${TRACKING_CAPS};
+    font-weight: 500;
     min-height: 44px;
-    text-transform: uppercase;
   }
 
   & > a:hover {

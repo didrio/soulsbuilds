@@ -1,28 +1,36 @@
-// CSS fragments for the in-world look (the "50%" of the design that feels like the game), shared by the
-// components below and by pages. Original CSS, not game art. Colors follow the game skin.
+// CSS fragments for the in-world look, shared by the components below and by pages. Original CSS, not
+// game art. Colors follow the game skin, within the accent budget (src/theme/colors.ts).
 import { css } from 'styled-components';
 import {
   COLOR_ACCENT,
-  COLOR_FRAME,
-  COLOR_FRAME_SOFT,
   COLOR_GLOW,
+  COLOR_LINE,
   COLOR_SURFACE,
+  COLOR_TINT,
   DURATION_FAST,
-  RADIUS_FRAME,
-  SHADOW_FRAME,
+  RADIUS_PANEL,
 } from '@/theme';
 
 const line = `linear-gradient(${COLOR_ACCENT}, ${COLOR_ACCENT})`;
-const CORNER = '12px';
+const CORNER = '14px';
 
-/** A framed panel: thin accent border, sunken shade, and accent corner marks (like the game's menus). */
-export const framed = css`
+/** A plain panel: the surface with a neutral hairline (redesign v2: panels stay quiet). */
+export const panel = css`
   position: relative;
-  border: 1px solid ${COLOR_FRAME_SOFT};
-  border-radius: ${RADIUS_FRAME};
-  box-shadow: ${SHADOW_FRAME};
+  border: 1px solid ${COLOR_LINE};
+  border-radius: ${RADIUS_PANEL};
   background-color: ${COLOR_SURFACE};
-  background-image: ${Array(8).fill(line).join(', ')};
+`;
+
+/**
+ * The build hero's frame: a plain panel plus accent corner marks (like the game's menus) and the
+ * skin's tint glowing in from the left. The only place corner marks appear.
+ */
+export const heroFrame = css`
+  ${panel}
+  background-image:
+    ${Array(8).fill(line).join(', ')},
+    radial-gradient(ellipse 45% 150% at 0% 50%, ${COLOR_TINT}, transparent 70%);
   background-repeat: no-repeat;
   background-size:
     ${CORNER} 1px,
@@ -32,20 +40,19 @@ export const framed = css`
     ${CORNER} 1px,
     1px ${CORNER},
     ${CORNER} 1px,
-    1px ${CORNER};
+    1px ${CORNER},
+    100% 100%;
   background-position:
-    -1px -1px,
-    -1px -1px,
-    calc(100% + 1px) -1px,
-    calc(100% + 1px) -1px,
-    -1px calc(100% + 1px),
-    -1px calc(100% + 1px),
-    calc(100% + 1px) calc(100% + 1px),
-    calc(100% + 1px) calc(100% + 1px);
+    0 0,
+    0 0,
+    100% 0,
+    100% 0,
+    0 100%,
+    0 100%,
+    100% 100%,
+    100% 100%,
+    0 0;
 `;
-
-/** A 1px rule that fades out at both ends. Use as a `background` on a 1px-high element. */
-export const fadingRule = `linear-gradient(90deg, transparent, ${COLOR_FRAME} 15%, ${COLOR_FRAME} 85%, transparent)`;
 
 /**
  * The game-menu selection bar on hover and keyboard focus: a horizontal glow with accent hairlines

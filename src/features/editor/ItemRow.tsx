@@ -15,12 +15,10 @@ import {
   COLOR_GLOW,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_UI,
   SPACE_SM,
   SPACE_XS,
   TEXT_SM,
   TEXT_XS,
-  TRACKING_CAPS,
 } from '@/theme';
 import {
   itemSubline,
@@ -31,6 +29,7 @@ import {
 } from './itemDetails';
 import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
 import { openPicker } from './store/app';
+import { labelText } from '@/components/ui/typography';
 
 /** What each slot type holds, for the empty rows and screen-reader labels ("Choose talisman"). */
 export const SLOT_LABELS: Record<SlotType, string> = {
@@ -162,13 +161,8 @@ export function ItemRows({
 
 /** A heading over a group of rows ("Talismans"): small muted capitals. */
 export const GroupHeading = styled.h3`
-  color: ${COLOR_TEXT_MUTED};
-  font-family: ${FONT_UI};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
+  ${labelText}
   margin: 0 0 ${SPACE_XS};
-  text-transform: uppercase;
 `;
 
 /** The rows of a group: two columns, one on phones (`$columns={1}` for narrow panels and hands). */

@@ -10,11 +10,12 @@ import {
   BELOW_MOBILE,
   BELOW_TABLET,
   COLOR_BG,
-  COLOR_FRAME,
+  COLOR_LINE_STRONG,
   SHADOW_OVERLAY,
   SPACE_GUTTER,
   SPACE_LG,
   SPACE_MD,
+  SPACE_REGION,
   SPACE_SM,
   SPACE_XXL,
 } from '@/theme';
@@ -160,7 +161,7 @@ const Back = styled(TextLink)`
 const Layout = styled.div`
   align-items: start;
   display: grid;
-  gap: ${SPACE_LG};
+  gap: ${SPACE_REGION};
   grid-template-areas: 'main aside';
   grid-template-columns: minmax(0, 1fr) 330px;
 
@@ -172,7 +173,7 @@ const Layout = styled.div`
 
 const column = css`
   display: grid;
-  gap: ${SPACE_LG};
+  gap: ${SPACE_REGION};
   min-width: 0;
 `;
 
@@ -190,7 +191,7 @@ const Aside = styled.aside`
 const EditBar = styled.section`
   align-items: center;
   background: ${COLOR_BG};
-  border-top: 1px solid ${COLOR_FRAME};
+  border-top: 1px solid ${COLOR_LINE_STRONG};
   bottom: 0;
   box-shadow: ${SHADOW_OVERLAY};
   display: flex;

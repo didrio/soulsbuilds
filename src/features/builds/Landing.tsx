@@ -20,9 +20,8 @@ import {
   BELOW_MOBILE,
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
-  COLOR_FRAME,
-  COLOR_FRAME_SOFT,
   COLOR_LINE,
+  COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
@@ -32,7 +31,7 @@ import {
   TEXT_SM,
   TEXT_XL,
   TEXT_XS,
-  TRACKING_CAPS,
+  WEIGHT_DISPLAY,
 } from '@/theme';
 import BuildsList from './BuildsList';
 import {
@@ -45,6 +44,7 @@ import {
   type BuildFilters,
 } from './filters';
 import { useBuilds, useGameStats } from './queries';
+import { labelText } from '@/components/ui/typography';
 
 const SORTS = [
   { value: 'top', label: 'Most liked' },
@@ -287,8 +287,7 @@ const Title = styled.h1`
   color: ${COLOR_TEXT};
   font-family: ${FONT_DISPLAY};
   font-size: ${TEXT_XL};
-  font-weight: 700;
-  letter-spacing: 0.04em;
+  font-weight: ${WEIGHT_DISPLAY};
   line-height: 1.2;
   margin: 0 0 ${SPACE_MD};
 `;
@@ -308,12 +307,7 @@ const Field = styled.div`
 `;
 
 const FieldLabel = styled.label`
-  color: ${COLOR_ACCENT};
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 `;
 
 const SearchForm = styled.form`
@@ -459,13 +453,13 @@ const TopTag = styled.button`
   }
 
   &:hover {
-    border-color: ${COLOR_FRAME};
+    border-color: ${COLOR_TEXT_MUTED};
     color: ${COLOR_TEXT};
   }
 
   &[aria-pressed='true'] {
-    background: ${COLOR_FRAME_SOFT};
-    border-color: ${COLOR_ACCENT};
+    background: ${COLOR_SURFACE_RAISED};
+    border-color: ${COLOR_TEXT_MUTED};
     color: ${COLOR_TEXT};
   }
 `;

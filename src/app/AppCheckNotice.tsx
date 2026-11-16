@@ -3,7 +3,15 @@ import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import Frame from '@/components/ui/Frame';
 import { getAppCheckStatus, onAppCheckStatus } from '@/lib/firebase';
-import { COLOR_DANGER, COLOR_TEXT, FONT_DISPLAY, SPACE_LG, SPACE_MD, TEXT_LG } from '@/theme';
+import {
+  COLOR_DANGER,
+  COLOR_TEXT,
+  FONT_DISPLAY,
+  SPACE_LG,
+  SPACE_MD,
+  TEXT_XL,
+  WEIGHT_DISPLAY,
+} from '@/theme';
 
 /**
  * Shown at the top of every page when App Check can't get a token (T24): Google reCAPTCHA is blocked, so
@@ -43,7 +51,8 @@ const Notice = styled(Frame)`
 const Title = styled.h2`
   color: ${COLOR_DANGER};
   font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_LG};
+  font-size: ${TEXT_XL};
+  font-weight: ${WEIGHT_DISPLAY};
   margin: 0;
 `;
 

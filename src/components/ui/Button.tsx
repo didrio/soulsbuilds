@@ -3,26 +3,24 @@ import { Link, type LinkProps } from 'react-router';
 import styled, { css } from 'styled-components';
 import {
   COLOR_ACCENT,
-  COLOR_ACCENT_DEEP,
   COLOR_ACCENT_STRONG,
   COLOR_DANGER,
   COLOR_DANGER_SOFT,
-  COLOR_FRAME,
-  COLOR_GLOW,
-  COLOR_GLOW_STRONG,
+  COLOR_LINE_STRONG,
   COLOR_ON_ACCENT,
-  COLOR_SURFACE,
+  COLOR_SURFACE_RAISED,
   COLOR_TEXT,
+  COLOR_TEXT_MUTED,
   DURATION_FAST,
   FONT_UI,
   RADIUS_FRAME,
-  TEXT_SM,
+  TEXT_MD,
 } from '@/theme';
 
 /**
- * - `primary`: the one main action on a screen (metallic accent).
- * - `secondary`: other actions (framed, glows on hover). The default for most buttons.
- * - `ghost`: low-emphasis actions in a row of buttons (nav, "Report").
+ * - `primary`: the one main action on a screen (the accent; one per screen, part of the accent budget).
+ * - `secondary`: other actions (neutral, raised). The default for most buttons.
+ * - `ghost`: low-emphasis actions in a row of buttons (nav, "Report"): muted text, no border.
  * - `danger`: destructive actions (delete).
  */
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -50,42 +48,30 @@ export function ButtonLink({
 const variants = {
   primary: css`
     color: ${COLOR_ON_ACCENT};
-    border-color: ${COLOR_ACCENT_STRONG};
-    background: linear-gradient(
-      ${COLOR_ACCENT_STRONG},
-      ${COLOR_ACCENT} 40%,
-      ${COLOR_ACCENT} 70%,
-      ${COLOR_ACCENT_DEEP}
-    );
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    border-color: ${COLOR_ACCENT};
+    background: ${COLOR_ACCENT};
 
     &:not(:disabled):hover {
       border-color: ${COLOR_ACCENT_STRONG};
-      box-shadow:
-        0 0 22px ${COLOR_GLOW_STRONG},
-        inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      background: ${COLOR_ACCENT_STRONG};
     }
   `,
   secondary: css`
     color: ${COLOR_TEXT};
-    border-color: ${COLOR_FRAME};
-    background: linear-gradient(rgba(255, 255, 255, 0.03), rgba(0, 0, 0, 0.2)), ${COLOR_SURFACE};
+    border-color: ${COLOR_LINE_STRONG};
+    background: ${COLOR_SURFACE_RAISED};
 
     &:not(:disabled):hover {
-      border-color: ${COLOR_ACCENT};
-      box-shadow:
-        0 0 18px ${COLOR_GLOW},
-        inset 0 0 14px ${COLOR_GLOW};
+      border-color: ${COLOR_TEXT_MUTED};
     }
   `,
   ghost: css`
-    color: ${COLOR_TEXT};
+    color: ${COLOR_TEXT_MUTED};
     border-color: transparent;
     background: none;
 
     &:not(:disabled):hover {
-      color: ${COLOR_ACCENT_STRONG};
-      background: linear-gradient(90deg, transparent, ${COLOR_GLOW}, transparent);
+      color: ${COLOR_TEXT};
     }
   `,
   danger: css`
@@ -107,13 +93,12 @@ const base = css<{ $variant: ButtonVariant }>`
   display: inline-flex;
   flex-shrink: 0;
   font-family: ${FONT_UI};
-  font-size: ${TEXT_SM};
-  font-weight: 600;
+  font-size: ${TEXT_MD};
+  font-weight: 500;
   gap: 8px;
   justify-content: center;
-  letter-spacing: 0.01em;
   min-height: 44px;
-  padding: 0 18px;
+  padding: 0 16px;
   text-align: center;
   transition:
     box-shadow ${DURATION_FAST},
@@ -123,6 +108,7 @@ const base = css<{ $variant: ButtonVariant }>`
   white-space: nowrap;
 
   ${({ $variant }) => variants[$variant]}
+  ${({ $variant }) => ($variant === 'primary' ? 'font-weight: 600;' : '')}
 
   &:disabled {
     cursor: not-allowed;

@@ -1,17 +1,19 @@
 import styled from 'styled-components';
-import { COLOR_LINE_STRONG, COLOR_TEXT_MUTED, TEXT_XS } from '@/theme';
+import { COLOR_INSET, COLOR_LINE_STRONG, COLOR_TEXT, RADIUS_FRAME, TEXT_XS } from '@/theme';
 
-/** A small framed label (build tags). Not interactive; wrap it in a button or link for that. */
+/** A small neutral chip (build tags). Not interactive; wrap it in a button or link for that. */
 const Tag = styled.span`
   align-items: center;
+  background: ${COLOR_INSET};
   border: 1px solid ${COLOR_LINE_STRONG};
-  color: ${COLOR_TEXT_MUTED};
+  border-radius: ${RADIUS_FRAME};
+  color: ${COLOR_TEXT};
   display: inline-flex;
   font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  line-height: 1.4;
-  padding: 1px 8px;
+  font-weight: 500;
+  height: 26px;
+  line-height: 1;
+  padding: 0 10px;
   white-space: nowrap;
 `;
 

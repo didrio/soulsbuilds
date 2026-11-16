@@ -12,15 +12,7 @@ import {
   type Weapon,
 } from '@/data';
 import { sortBy } from '@/lib/array';
-import {
-  BELOW_MOBILE,
-  COLOR_TEXT_MUTED,
-  SPACE_MD,
-  SPACE_XS,
-  TEXT_MD,
-  TEXT_XS,
-  TRACKING_CAPS,
-} from '@/theme';
+import { BELOW_MOBILE, SPACE_MD, SPACE_XS, TEXT_MD } from '@/theme';
 import { updateWeaponAffinity, updateWeaponSkill } from './store/equipment';
 import {
   selectEditAffinitySlot,
@@ -29,6 +21,7 @@ import {
   selectEditWeaponAffinity,
   selectEditWeaponSkill,
 } from './store/selectors';
+import { labelText } from '@/components/ui/typography';
 
 /**
  * The picker's Ash of War and affinity controls for the weapon slot being edited. Only what the game
@@ -119,11 +112,7 @@ const Field = styled.div`
 
 // The selects are named by their aria-label; this is the visible caption.
 const Label = styled.span`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 `;
 
 const Fixed = styled.span`

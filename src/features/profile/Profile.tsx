@@ -5,7 +5,6 @@ import Button, { ButtonLink } from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import Frame from '@/components/ui/Frame';
 import { PlusIcon } from '@/components/ui/icons';
-import Ornament from '@/components/ui/Ornament';
 import PageHero from '@/components/ui/PageHero';
 import PageMessage from '@/components/ui/PageMessage';
 import TextInput from '@/components/ui/TextInput';
@@ -17,17 +16,15 @@ import { errorMessage, resendVerificationEmail } from '@/lib/firebase';
 import { LIMITS, type UserProfile } from '@/lib/models';
 import {
   COLOR_ACCENT,
-  COLOR_ACCENT_STRONG,
-  COLOR_GLOW,
   COLOR_LINE,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
   SPACE_LG,
   SPACE_MD,
+  SPACE_REGION,
   SPACE_SM,
+  TEXT_MD,
   TEXT_SM,
-  TRACKING_CAPS,
 } from '@/theme';
 import DeleteAccount from './DeleteAccount';
 import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
@@ -68,7 +65,6 @@ function Profile() {
     <>
       <ProfileHeader profile={profile.data} editable={isOwner} />
       {isOwner && user && !user.emailVerified ? <VerifyEmailNotice /> : null}
-      <Ornament />
       <TabBar>
         <Tabs role="tablist" aria-label="Profile">
           {(['builds', 'liked'] as Tab[]).map((value) => (
@@ -273,7 +269,7 @@ const RenameForm = styled.form`
   display: flex;
   flex-wrap: wrap;
   gap: ${SPACE_SM};
-  justify-content: center;
+  justify-content: flex-start;
   margin-top: ${SPACE_MD};
 `;
 
@@ -288,7 +284,7 @@ const TabBar = styled.div`
   flex-wrap: wrap;
   gap: ${SPACE_SM};
   justify-content: space-between;
-  margin-bottom: ${SPACE_LG};
+  margin: ${SPACE_REGION} 0 ${SPACE_LG};
   padding-bottom: 6px;
 `;
 
@@ -301,29 +297,25 @@ const TabButton = styled.button`
   border: none;
   color: ${COLOR_TEXT_MUTED};
   cursor: pointer;
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_SM};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
-  min-height: 44px;
-  padding: 0 ${SPACE_LG};
+  font-size: ${TEXT_MD};
+  font-weight: 500;
+  min-height: 48px;
+  padding: 0 ${SPACE_MD};
   position: relative;
-  text-transform: uppercase;
 
   &:hover {
     color: ${COLOR_TEXT};
   }
 
   &[aria-selected='true'] {
-    background: linear-gradient(90deg, transparent, ${COLOR_GLOW}, transparent);
-    color: ${COLOR_ACCENT_STRONG};
+    color: ${COLOR_TEXT};
   }
 
   &[aria-selected='true']::after {
     background: ${COLOR_ACCENT};
     bottom: -7px;
     content: '';
-    height: 1px;
+    height: 2px;
     left: 0;
     position: absolute;
     right: 0;

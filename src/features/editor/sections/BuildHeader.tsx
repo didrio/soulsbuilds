@@ -24,10 +24,10 @@ import {
   SPACE_LG,
   SPACE_SM,
   SPACE_XS,
+  TEXT_DISPLAY,
   TEXT_MD,
   TEXT_SM,
-  TEXT_XL,
-  TEXT_XXL,
+  WEIGHT_DISPLAY,
 } from '@/theme';
 import { useHasLiked, useToggleLike } from '../queries';
 
@@ -54,7 +54,7 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
   const isLiked = liked.data === true;
 
   return (
-    <Pane aria-labelledby="build-title">
+    <Pane $hero aria-labelledby="build-title">
       <Title id="build-title">{build.name}</Title>
       <Meta>
         {owner.data ? (
@@ -76,12 +76,12 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
             aria-pressed={isLiked}
             disabled={toggleLike.isPending || liked.isPending}
             onClick={() => toggleLike.mutate(!isLiked)}>
-            <Heart filled={isLiked} />
+            <Heart filled={isLiked} $liked={isLiked} />
             {likesLabel(build.likeCount)}
           </Button>
         ) : (
           <LikeCount>
-            <Heart />
+            <Heart $liked={false} />
             {likesLabel(build.likeCount)}
           </LikeCount>
         )}
@@ -134,9 +134,8 @@ const Pane = styled(Frame)`
 const Title = styled.h1`
   color: ${COLOR_TEXT};
   font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_XXL};
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-size: ${TEXT_DISPLAY};
+  font-weight: ${WEIGHT_DISPLAY};
   line-height: 1.15;
   margin: 0;
   overflow-wrap: anywhere;
@@ -147,7 +146,7 @@ const Title = styled.h1`
   }
 
   @media ${BELOW_MOBILE} {
-    font-size: ${TEXT_XL};
+    font-size: 27px;
   }
 `;
 
@@ -201,8 +200,9 @@ const Actions = styled.div`
   }
 `;
 
-const Heart = styled(HeartIcon)`
-  color: ${COLOR_ACCENT};
+// The accent only when you've liked it (the liked state is in the accent budget).
+const Heart = styled(HeartIcon)<{ $liked: boolean }>`
+  color: ${({ $liked }) => ($liked ? COLOR_ACCENT : COLOR_TEXT_MUTED)};
 `;
 
 const LikeCount = styled.span`
@@ -228,7 +228,7 @@ const CommentsLink = styled.a`
   padding: 0 ${SPACE_SM};
 
   & > svg {
-    color: ${COLOR_ACCENT};
+    color: ${COLOR_TEXT_MUTED};
   }
 
   &:hover {
@@ -253,8 +253,7 @@ const TagLink = styled(Link)`
   min-height: 44px;
 
   &:hover > span {
-    border-color: ${COLOR_ACCENT};
-    color: ${COLOR_TEXT};
+    border-color: ${COLOR_TEXT_MUTED};
   }
 `;
 

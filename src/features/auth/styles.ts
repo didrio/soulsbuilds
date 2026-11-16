@@ -1,13 +1,7 @@
 // Layout pieces shared by the Login and SignUp forms (shown in the auth dialog).
 import styled from 'styled-components';
-import {
-  COLOR_SUCCESS,
-  COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
-  TEXT_SM,
-  TEXT_XS,
-  TRACKING_CAPS,
-} from '@/theme';
+import { COLOR_SUCCESS, COLOR_TEXT_MUTED, TEXT_SM } from '@/theme';
+import { labelText } from '@/components/ui/typography';
 
 export const AuthForm = styled.form`
   display: flex;
@@ -26,12 +20,7 @@ export const AuthField = styled.div`
   gap: 6px;
 
   & > label {
-    color: ${COLOR_TEXT_MUTED};
-    font-family: ${FONT_DISPLAY};
-    font-size: ${TEXT_XS};
-    font-weight: 600;
-    letter-spacing: ${TRACKING_CAPS};
-    text-transform: uppercase;
+    ${labelText}
   }
 `;
 

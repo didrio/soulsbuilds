@@ -13,13 +13,13 @@
 // ---- Base ----
 export const COLOR_BG = '#0d0c0a';
 /** Panels, the header, cards. */
-export const COLOR_SURFACE = '#1a1814';
+export const COLOR_SURFACE = '#171511';
 /** Hover/selected rows, raised controls. */
-export const COLOR_SURFACE_RAISED = '#24211b';
+export const COLOR_SURFACE_RAISED = '#221f1a';
 /** Sunken fields (inputs, selects, segmented controls). */
 export const COLOR_INSET = '#100f0c';
-/** Dividers and list rules. */
-export const COLOR_LINE = '#3a352c';
+/** Panel borders, dividers and list rules: neutral, never the accent (T26). */
+export const COLOR_LINE = '#2c2821';
 /** Borders of inputs and other controls (≥ 3:1 against COLOR_INSET and COLOR_SURFACE). */
 export const COLOR_LINE_STRONG = '#7a7365';
 export const COLOR_TEXT = '#ede6d6';
@@ -28,8 +28,6 @@ export const COLOR_PLACEHOLDER = '#8d8678';
 export const COLOR_DANGER = '#f29484';
 export const COLOR_DANGER_SOFT = 'rgba(242, 148, 132, 0.12)';
 export const COLOR_SUCCESS = '#a3d18f';
-/** Top of the gradient on the logo and page titles (the bottom is the accent). */
-export const COLOR_HIGHLIGHT = '#fff7e4';
 
 // Item slots (inventory-style tiles).
 export const COLOR_TILE_TOP = '#1d1a15';
@@ -46,17 +44,21 @@ export const COLOR_VIGNETTE = 'rgba(0, 0, 0, 0.55)';
 export const COLOR_BG_TOP = '#1c1912';
 
 // ---- Game skin (values per game in skins.ts) ----
-/** Links, active states, section headings, the accent as text. */
+// The accent budget (T26): the accent appears only on the primary button, links and hover, the active
+// tab/sort state, the level figure, stat bar fills, the liked state and the focus ring. Panels,
+// headings, tags and chips are neutral; corner marks only on the build hero.
+/** Links, active states, the accent as text. */
 export const COLOR_ACCENT = 'var(--sb-accent)';
-/** Hover/active accent, the focus ring, big numbers. */
+/** Hover/active accent, the focus ring. */
 export const COLOR_ACCENT_STRONG = 'var(--sb-accent-strong)';
 /** The dark end of accent gradients (primary button, stat bars). */
 export const COLOR_ACCENT_DEEP = 'var(--sb-accent-deep)';
 /** Text on the accent (the primary button). */
 export const COLOR_ON_ACCENT = 'var(--sb-on-accent)';
-/** Panel frames, ornament lines. */
+/** Accent hairlines on hovered/selected items, text selection. */
 export const COLOR_FRAME = 'var(--sb-frame)';
 export const COLOR_FRAME_SOFT = 'var(--sb-frame-soft)';
-/** The "grace" glow: hovered rows, page-title light. */
+/** The "grace" glow: hovered rows and tiles (hover is in the accent budget). */
 export const COLOR_GLOW = 'var(--sb-glow)';
-export const COLOR_GLOW_STRONG = 'var(--sb-glow-strong)';
+/** The build hero's glow (behind the main weapon and from the hero's corner). */
+export const COLOR_TINT = 'var(--sb-tint)';

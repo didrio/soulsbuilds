@@ -5,15 +5,14 @@ import TextInput from '@/components/ui/TextInput';
 import { LIMITS } from '@/lib/models';
 import {
   COLOR_TEXT,
-  COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   SPACE_LG,
   SPACE_MD,
   SPACE_XS,
   TEXT_XL,
-  TEXT_XS,
-  TRACKING_CAPS,
+  WEIGHT_DISPLAY,
 } from '@/theme';
+import { labelText } from '@/components/ui/typography';
 
 interface BuildDetailsFormProps {
   isNew: boolean;
@@ -61,8 +60,7 @@ const Title = styled.h1`
   color: ${COLOR_TEXT};
   font-family: ${FONT_DISPLAY};
   font-size: ${TEXT_XL};
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  font-weight: ${WEIGHT_DISPLAY};
   margin: 0 0 ${SPACE_MD};
 `;
 
@@ -78,11 +76,7 @@ const Field = styled.div`
 `;
 
 const Label = styled.label`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 `;
 
 export default BuildDetailsForm;

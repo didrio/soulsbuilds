@@ -5,30 +5,28 @@ import Frame from '@/components/ui/Frame';
 import SectionHeading from '@/components/ui/SectionHeading';
 import TextInput from '@/components/ui/TextInput';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
-import { fadingRule } from '@/components/ui/inWorld';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { getStartingClass, startingClasses } from '@/data';
 import { MAX_STAT, MIN_STAT, type StatKey } from '@/lib/buildMath';
 import {
   COLOR_ACCENT,
   COLOR_ACCENT_DEEP,
-  COLOR_ACCENT_STRONG,
-  COLOR_GLOW_STRONG,
   COLOR_LINE,
+  COLOR_SUCCESS,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   SPACE_MD,
   SPACE_SM,
-  TEXT_LG,
   TEXT_SM,
   TEXT_XS,
-  TRACKING_CAPS,
+  WEIGHT_DISPLAY,
 } from '@/theme';
 import { selectStatBonuses } from '../store/derived';
 import { selectStartingClass, selectStats } from '../store/selectors';
 import { setStartingClass } from '../store/startingClass';
 import { updateStat } from '../store/stats';
+import { labelText } from '@/components/ui/typography';
 
 /** The eight attributes, in the game's order. */
 const STATS: [key: StatKey, name: string][] = [
@@ -156,7 +154,7 @@ const Level = styled.div`
   text-align: center;
 
   &::after {
-    background: ${fadingRule};
+    background: ${COLOR_LINE};
     bottom: 0;
     content: '';
     height: 1px;
@@ -167,20 +165,17 @@ const Level = styled.div`
 `;
 
 const LevelValue = styled.span`
-  color: ${COLOR_ACCENT_STRONG};
+  color: ${COLOR_ACCENT};
   display: block;
   font-family: ${FONT_DISPLAY};
-  font-size: 44px;
+  font-size: 40px;
   font-variant-numeric: tabular-nums;
+  font-weight: ${WEIGHT_DISPLAY};
   line-height: 1;
-  text-shadow: 0 0 24px ${COLOR_GLOW_STRONG};
 `;
 
 const LevelLabel = styled.span`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_XS};
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 `;
 
 const ClassPicker = styled.div`
@@ -201,7 +196,7 @@ const ClassName = styled.p`
 `;
 
 const Bonus = styled.span`
-  color: ${COLOR_ACCENT};
+  color: ${COLOR_SUCCESS};
   font-size: ${TEXT_XS};
   font-weight: 600;
 `;
@@ -223,22 +218,22 @@ const Stat = styled.li<{ $editable: boolean }>`
 `;
 
 const Bar = styled.span`
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid ${COLOR_LINE};
-  height: 5px;
+  background: ${COLOR_LINE};
+  border-radius: 2px;
+  height: 4px;
+  overflow: hidden;
 `;
 
 const BarFill = styled.span`
   background: linear-gradient(90deg, ${COLOR_ACCENT_DEEP}, ${COLOR_ACCENT});
-  box-shadow: 0 0 8px ${COLOR_GLOW_STRONG};
   display: block;
   height: 100%;
   max-width: 100%;
 `;
 
 const StatValue = styled.span`
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_LG};
+  font-size: 15px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: right;
 `;

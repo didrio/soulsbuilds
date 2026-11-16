@@ -1,28 +1,18 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import {
-  BELOW_MOBILE,
-  COLOR_ACCENT,
-  COLOR_GLOW,
-  COLOR_GLOW_STRONG,
-  COLOR_HIGHLIGHT,
-  COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
-  FONT_PROSE,
-  TEXT_DISPLAY,
-  TEXT_XXL,
-} from '@/theme';
+import { BELOW_MOBILE, COLOR_TEXT_MUTED, TEXT_LG, TEXT_XXL } from '@/theme';
+import { displayText } from './typography';
 
 interface PageHeroProps {
   /** The page's `<h1>`. */
   title: ReactNode;
-  /** A line under the title, in the prose face. */
+  /** A line under the title, muted. */
   tagline?: ReactNode;
   /** Anything under the tagline (meta line, actions). */
   children?: ReactNode;
 }
 
-/** A page's title block: centered display title with the "grace" glow behind it, and a tagline. */
+/** A page's title block: the serif `<h1>` in the text color, and an optional tagline. */
 function PageHero({ title, tagline, children }: PageHeroProps) {
   return (
     <Hero>
@@ -34,60 +24,31 @@ function PageHero({ title, tagline, children }: PageHeroProps) {
 }
 
 const Hero = styled.section`
-  padding-top: 56px;
-  position: relative;
-  text-align: center;
-
-  &::before {
-    background:
-      radial-gradient(ellipse 40% 45% at 50% 40%, ${COLOR_GLOW_STRONG}, transparent 70%),
-      radial-gradient(ellipse at 50% 30%, ${COLOR_GLOW}, transparent 70%);
-    content: '';
-    height: 300px;
-    left: 50%;
-    pointer-events: none;
-    position: absolute;
-    top: -40px;
-    transform: translateX(-50%);
-    /* Never wider than the screen: a wider glow scrolls the page sideways on phones. */
-    width: min(900px, 140%, 100vw);
-  }
-
-  & > * {
-    position: relative;
-  }
+  padding-top: 32px;
 
   @media ${BELOW_MOBILE} {
-    padding-top: 32px;
+    padding-top: 16px;
   }
 `;
 
 const Title = styled.h1`
-  background: linear-gradient(${COLOR_HIGHLIGHT} 30%, ${COLOR_ACCENT});
-  background-clip: text;
-  color: transparent;
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_DISPLAY};
-  font-weight: 700;
-  letter-spacing: 0.03em;
-  line-height: 1.1;
+  ${displayText}
+  font-size: ${TEXT_XXL};
   margin: 0;
   overflow-wrap: anywhere;
 
   @media ${BELOW_MOBILE} {
-    font-size: ${TEXT_XXL};
+    font-size: 28px;
   }
 `;
 
 const Tagline = styled.p`
   color: ${COLOR_TEXT_MUTED};
-  font-family: ${FONT_PROSE};
-  font-size: 20px;
-  font-style: italic;
-  margin: 8px 0 0;
+  font-size: ${TEXT_LG};
+  margin: 6px 0 0;
 
   @media ${BELOW_MOBILE} {
-    font-size: 17px;
+    font-size: 15px;
   }
 `;
 

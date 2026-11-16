@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import styled from 'styled-components';
 import {
-  COLOR_FRAME,
+  COLOR_LINE_STRONG,
   COLOR_INSET,
   COLOR_TEXT,
   SHADOW_OVERLAY,
@@ -56,7 +56,7 @@ function Tooltip({ open, children }: TooltipProps) {
 
 const Bubble = styled.span<{ $below: boolean }>`
   background: ${COLOR_INSET};
-  border: 1px solid ${COLOR_FRAME};
+  border: 1px solid ${COLOR_LINE_STRONG};
   box-shadow: ${SHADOW_OVERLAY};
   color: ${COLOR_TEXT};
   font-size: ${TEXT_SM};
@@ -82,8 +82,8 @@ const Bubble = styled.span<{ $below: boolean }>`
     position: absolute;
     ${({ $below }) =>
       $below
-        ? `bottom: 100%; border-bottom-color: ${COLOR_FRAME};`
-        : `top: 100%; border-top-color: ${COLOR_FRAME};`}
+        ? `bottom: 100%; border-bottom-color: ${COLOR_LINE_STRONG};`
+        : `top: 100%; border-top-color: ${COLOR_LINE_STRONG};`}
   }
 `;
 

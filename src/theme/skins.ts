@@ -11,7 +11,8 @@ export interface GameSkin {
   frame: string;
   frameSoft: string;
   glow: string;
-  glowStrong: string;
+  /** The hero's glow. */
+  tint: string;
 }
 
 export const SKINS: Record<GameId, GameSkin> = {
@@ -24,7 +25,7 @@ export const SKINS: Record<GameId, GameSkin> = {
     frame: 'rgba(216, 184, 116, 0.34)',
     frameSoft: 'rgba(216, 184, 116, 0.16)',
     glow: 'rgba(232, 196, 120, 0.13)',
-    glowStrong: 'rgba(232, 196, 120, 0.24)',
+    tint: 'rgba(232, 196, 120, 0.15)',
   },
 };
 
@@ -37,5 +38,5 @@ export const skinVariables = (skin: GameSkin) => `
   --sb-frame: ${skin.frame};
   --sb-frame-soft: ${skin.frameSoft};
   --sb-glow: ${skin.glow};
-  --sb-glow-strong: ${skin.glowStrong};
+  --sb-tint: ${skin.tint};
 `;

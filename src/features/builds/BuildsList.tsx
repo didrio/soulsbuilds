@@ -12,8 +12,6 @@ import { formatFullDate, relativeTime } from '@/lib/relativeTime';
 import {
   BELOW_MOBILE,
   BELOW_TABLET,
-  COLOR_ACCENT,
-  COLOR_ACCENT_DEEP,
   COLOR_ACCENT_STRONG,
   COLOR_FRAME,
   COLOR_LINE,
@@ -22,11 +20,10 @@ import {
   FONT_DISPLAY,
   TEXT_LG,
   TEXT_SM,
-  TEXT_XL,
-  TEXT_XS,
-  TRACKING_CAPS,
+  WEIGHT_DISPLAY,
 } from '@/theme';
 import { fitCount } from './tags';
+import { labelText } from '@/components/ui/typography';
 
 // Rows preview the first two slots of each hand (weapon slots 1, 2 main hand and 4, 5 off hand) and
 // the four armor pieces, always in the same positions so the columns line up for scanning.
@@ -194,16 +191,11 @@ function RowTags({ tags }: { tags: string[] }) {
 const columns = `minmax(0, 1fr) ${SLOTS_WIDTH} ${SLOTS_WIDTH} 70px 72px`;
 
 const ListHead = styled.div`
-  color: ${COLOR_TEXT_MUTED};
+  ${labelText}
   column-gap: 24px;
   display: grid;
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
   grid-template-columns: ${columns};
-  letter-spacing: ${TRACKING_CAPS};
   padding: 0 16px 8px;
-  text-transform: uppercase;
 
   @media ${BELOW_TABLET} {
     display: none;
@@ -268,8 +260,8 @@ const Name = styled.span`
   color: ${COLOR_TEXT};
   display: block;
   font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_LG};
-  font-weight: 700;
+  font-size: 19px;
+  font-weight: ${WEIGHT_DISPLAY};
   line-height: 1.25;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -311,6 +303,7 @@ const Tags = styled.span`
 
 // Tags that don't fit are taken out of the line but kept measurable and readable to screen readers.
 const TagChip = styled(Tag)<{ $hidden: boolean }>`
+  height: 22px;
   ${({ $hidden }) =>
     $hidden &&
     `
@@ -321,8 +314,8 @@ const TagChip = styled(Tag)<{ $hidden: boolean }>`
 `;
 
 const More = styled(Tag)`
-  border-color: ${COLOR_ACCENT_DEEP};
-  color: ${COLOR_ACCENT};
+  color: ${COLOR_TEXT_MUTED};
+  height: 22px;
 `;
 
 // Desktop: the two slot groups are grid columns of the row; tablet and phone: one line under the name.
@@ -372,10 +365,9 @@ const Numbers = styled.div`
 
 const Level = styled.span`
   color: ${COLOR_TEXT};
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_XL};
+  font-size: ${TEXT_LG};
   font-variant-numeric: tabular-nums;
-  font-weight: 700;
+  font-weight: 600;
   text-align: right;
 `;
 
@@ -403,7 +395,7 @@ const Likes = styled.span`
   justify-content: flex-end;
 
   & > svg {
-    color: ${COLOR_ACCENT};
+    color: ${COLOR_TEXT_MUTED};
   }
 `;
 

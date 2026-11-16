@@ -3,9 +3,7 @@ import styled, { css } from 'styled-components';
 import {
   BELOW_MOBILE,
   COLOR_BACKDROP,
-  COLOR_HIGHLIGHT,
-  COLOR_ACCENT,
-  FONT_DISPLAY,
+  COLOR_LINE_STRONG,
   SHADOW_OVERLAY,
   SPACE_GUTTER,
   SPACE_LG,
@@ -14,7 +12,8 @@ import {
 } from '@/theme';
 import CloseButton from './CloseButton';
 import FocusScope from './FocusScope';
-import { framed } from './inWorld';
+import { panel } from './inWorld';
+import { displayText } from './typography';
 
 interface DialogProps {
   /** The visible title, also the dialog's accessible name. */
@@ -31,7 +30,7 @@ interface DialogProps {
 }
 
 /**
- * A modal dialog: backdrop (click to close), a framed panel with a title and a close button, focus
+ * A modal dialog: backdrop (click to close), a panel with a title and a close button, focus
  * trapped inside (starting on the first control in `children`), Escape closes, and focus goes back to the opener on close (FocusScope). Render it
  * only while open.
  */
@@ -78,7 +77,8 @@ const Backdrop = styled.div`
 `;
 
 const Panel = styled(FocusScope)<{ $tall: boolean; $width: number }>`
-  ${framed}
+  ${panel}
+  border-color: ${COLOR_LINE_STRONG};
   box-shadow: ${SHADOW_OVERLAY};
   max-width: ${({ $width }) => $width}px;
   outline: none;
@@ -108,14 +108,9 @@ const Close = styled.div`
 `;
 
 const Title = styled.h2`
+  ${displayText}
   flex: none;
-  background: linear-gradient(${COLOR_HIGHLIGHT} 30%, ${COLOR_ACCENT});
-  background-clip: text;
-  color: transparent;
-  font-family: ${FONT_DISPLAY};
   font-size: ${TEXT_XL};
-  font-weight: 700;
-  letter-spacing: 0.03em;
   margin: 0 40px 16px 0;
 `;
 

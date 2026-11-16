@@ -5,17 +5,20 @@ import Markdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
+import { displayText, labelText } from '@/components/ui/typography';
 import {
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
   COLOR_INSET,
   COLOR_LINE,
+  COLOR_LINE_STRONG,
   COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
   FONT_PROSE,
   FONT_UI,
+  TEXT_XL,
+  TEXT_XS,
 } from '@/theme';
 
 const REMARK_PLUGINS = [remarkGfm];
@@ -41,30 +44,15 @@ function MarkdownView({ source }: { source: string }) {
   );
 }
 
-// The write-up in the prose face, with a drop cap on the first paragraph.
+// The write-up: EB Garamond 18px/1.6. Headings follow the type tiers (T26): h1 and h2 in the serif
+// (h2 with a hairline under it), h3 as the caps label, h4 Inter 15px/600; h5 and h6 as h4.
 const Body = styled.div`
   color: ${COLOR_TEXT};
   font-family: ${FONT_PROSE};
-  font-size: 19px;
+  font-size: 18px;
   line-height: 1.6;
   max-width: 68ch;
   overflow-wrap: anywhere;
-
-  & > p:first-child::first-letter {
-    color: ${COLOR_ACCENT};
-    float: left;
-    font-family: ${FONT_DISPLAY};
-    font-size: 3.1em;
-    line-height: 0.9;
-    padding: 4px 8px 0 0;
-  }
-
-  /* A short first paragraph still holds the whole drop cap, so a list after it doesn't wrap round it. */
-  & > p:first-child::after {
-    clear: both;
-    content: '';
-    display: block;
-  }
 
   & > :first-child {
     margin-top: 0;
@@ -75,37 +63,37 @@ const Body = styled.div`
   }
 
   & h1,
-  & h2,
-  & h3,
-  & h4,
-  & h5,
-  & h6 {
-    color: ${COLOR_TEXT};
-    font-family: ${FONT_DISPLAY};
-    line-height: 1.25;
-    margin: 1.2em 0 0.5em;
+  & h2 {
+    ${displayText}
+    line-height: 1.2;
+    margin: 1.4em 0 0.4em;
   }
 
   & h1 {
-    border-bottom: 1px solid ${COLOR_LINE};
-    font-size: 1.6em;
-    padding-bottom: 0.2em;
+    font-size: 28px;
   }
 
   & h2 {
     border-bottom: 1px solid ${COLOR_LINE};
-    font-size: 1.35em;
-    padding-bottom: 0.2em;
+    font-size: ${TEXT_XL};
+    padding-bottom: 6px;
   }
 
   & h3 {
-    font-size: 1.15em;
+    ${labelText}
+    font-size: ${TEXT_XS};
+    margin: 1.4em 0 0.3em;
   }
 
   & h4,
   & h5,
   & h6 {
-    font-size: 1em;
+    color: ${COLOR_TEXT};
+    font-family: ${FONT_UI};
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 1em 0 0.3em;
   }
 
   & p,
@@ -133,7 +121,7 @@ const Body = styled.div`
   }
 
   & blockquote {
-    border-left: 2px solid ${COLOR_ACCENT};
+    border-left: 2px solid ${COLOR_LINE_STRONG};
     color: ${COLOR_TEXT_MUTED};
     margin-left: 0;
     padding: 0 1em;

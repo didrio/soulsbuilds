@@ -158,29 +158,46 @@ stats/{game}                      community numbers per game (T20; doc id = Game
 
 ## Styling
 
-styled-components with no `ThemeProvider`; tokens are plain constants in `src/theme/` (T16 design system, ~50%
-modern product UI and ~50% in-world; `docs/decisions.md` "Redesign"). ESLint rejects hex literals elsewhere.
+styled-components with no `ThemeProvider`; tokens are plain constants in `src/theme/` (T16 design system, revised
+by redesign v2 in T26; `docs/decisions.md` "Redesign", "Redesign v2"). ESLint rejects hex literals elsewhere.
+The in-world feel comes from layout, the item art and the build hero, not from decorating every panel.
 
 - **Colors, two layers** (`colors.ts`): a game-agnostic base (warm near-black surfaces, off-white text, lines)
-  and the game **skin** (`skins.ts`: accent, accent-strong/deep, on-accent, frame, glow). Skin tokens are CSS
+  and the game **skin** (`skins.ts`: accent, accent-strong/deep, on-accent, frame, glow, and `tint`, the build
+  hero's glow). Skin tokens are CSS
   custom properties (`COLOR_ACCENT = 'var(--sb-accent)'`) written to `:root` by `GameSkinStyle` for the current
   game, so components import one constant. `colors.test.ts` checks WCAG AA for every text/background pair and
   every game's skin; add a pair there when you put text on a new background.
-- **Type** (`fonts.ts`): **Inter** (variable) for everything read or operated, **Cinzel** for names and headings
-  only, **EB Garamond** for long-form prose (build write-ups, taglines); `TEXT_*` sizes. All self-hosted OFL from
-  `@fontsource`, imported in `src/index.css`.
+- **Accent budget** (T26): the accent appears only on the primary button, links and hover, the active tab/sort
+  state, the level figure, stat bar fills, the liked state and the focus ring. Panel borders are `COLOR_LINE`,
+  headings are the text color, tags and chips are neutral (inset fill, `COLOR_LINE_STRONG` border), counts and
+  icons are muted. Check a new use of `COLOR_ACCENT*` against this list.
+- **Type: three tiers** (`fonts.ts`, CSS in `components/ui/typography.ts`). **Names and headings**: `FONT_DISPLAY`
+  (EB Garamond 600, `WEIGHT_DISPLAY`), title case, the text color (`displayText`; `SectionHeading` 24px, page
+  titles 32px, the build name 40px). **Labels**: Inter 11px/600, uppercase, 0.08em tracking, muted (`labelText`,
+  `Label`): the only caps style. **Values and body**: Inter (`FONT_UI`, UI text 14px), numbers with
+  `font-variant-numeric: tabular-nums`. Write-ups (`MarkdownView`): EB Garamond 18px/1.6 (`FONT_PROSE`); h1 serif
+  28px, h2 serif 22px over a hairline, h3 the label, h4–h6 Inter 15px/600. `FONT_BRAND` (Cinzel 700) is the
+  wordmark only. All self-hosted OFL from `@fontsource`, imported in `src/index.css`.
+- **Density**: content 1240px wide (`CONTENT_WIDTH`), panel padding 20px (16px on phones; `SPACE_PANEL`), 12px
+  inside groups (`SPACE_GROUP`), 24px between regions (`SPACE_REGION`).
 - **Spacing, radii, shadows, motion, breakpoints**: `SPACE_*`, `RADIUS_*`, `SHADOW_*`, `DURATION_*`/`EASE`,
   `BELOW_MOBILE` (640) / `BELOW_TABLET` (900).
 - **Page-wide styles**: `GlobalStyle.ts` (background light, vignette, film grain, focus ring, reduced motion).
-- **In-world building blocks** (`components/ui/`): `Frame` (framed panel with corner marks), `SectionHeading`,
-  `Ornament` (divider), `PageHero` (title with the glow; profile and legal pages), `ItemTile` (inventory slot), and the `selectionBar`
-  CSS (the game-menu hover/focus glow) in `inWorld.ts`. Use these instead of one-off ornaments.
+- **Building blocks** (`components/ui/`): `Frame` (a plain panel: surface + neutral hairline; `$hero` adds the
+  accent corner marks and the tint glow, for the build hero only), `SectionHeading`, `Label`, `PageHero` (a page's
+  serif `<h1>` and tagline; profile and legal pages), `Ornament` (neutral divider, page states), `ItemTile`
+  (inventory slot), and in `inWorld.ts` the `panel` / `heroFrame` CSS and `selectionBar` (the game-menu hover/focus
+  glow). Use these instead of one-offs.
+- **Header** (`app/Header.tsx`): the wordmark, the game name, Builds and Profile (or Log in), Log out, and New
+  build (or Sign up) as the primary button; on phones a labelled "+" (New build) or Sign up, and a Menu button
+  that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
 **Build page** (T17, reshaped in T22, `features/editor/`): view and edit share one layout, top to bottom: the
-**title pane** (`BuildHeader`: name as `<h1>`, author and level, Like/Report/owner actions on the right, tags; in
+**title pane** (`BuildHeader`, in the hero frame since T26: name as `<h1>`, author and level, Like/Report/owner actions on the right, tags; in
 edit mode `BuildDetailsForm` takes its place), **Equipment** across the page, the write-up beside Attributes,
 Character and Spells (a 330 px side panel; under the write-up on tablets and phones), then **"How to get this
-build"** collapsed and **Comments** across the page (thread at a readable 72ch). No hero. Weapons and spells are
+build"** collapsed and **Comments** across the page (thread at a readable 72ch). Weapons and spells are
 `ItemRow`s: `ItemTile` + name + a muted detail line (affinity and skill, memory slots) + any warning (T8). Every
 other slot (armor, talismans, great rune, spirit ash, tears, arrows, consumables) is an `ItemSlot`: an icon tile
 that is a `<button>` named after the item, with the name in a `components/ui/Tooltip` bubble on hover, keyboard

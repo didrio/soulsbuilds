@@ -6,11 +6,9 @@ import { iconUrl } from '@/data/core';
 import type { Equipment } from '@/lib/models';
 import {
   BELOW_MOBILE,
-  COLOR_ACCENT,
   COLOR_LINE,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
   FONT_UI,
   SPACE_MD,
   SPACE_SM,
@@ -18,10 +16,10 @@ import {
   TEXT_MD,
   TEXT_SM,
   TEXT_XS,
-  TRACKING_CAPS,
 } from '@/theme';
 import { actionLead, actionNote, itemInfo, itemNotes, legTitle, stepPlace } from './phrases';
 import { planRoute, type RouteAction } from './route';
+import { labelText } from '@/components/ui/typography';
 
 const isPhone = () =>
   typeof window !== 'undefined' && (window.matchMedia?.(BELOW_MOBILE).matches ?? false);
@@ -127,7 +125,7 @@ const Summary = styled.summary`
   }
 
   &::before {
-    color: ${COLOR_ACCENT};
+    color: ${COLOR_TEXT_MUTED};
     content: '▸';
     font-size: ${TEXT_SM};
     transition: transform 0.15s ease;
@@ -139,13 +137,8 @@ const Summary = styled.summary`
 `;
 
 const LegHeading = styled.h3`
-  color: ${COLOR_ACCENT};
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_SM};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
+  ${labelText}
   margin: 0;
-  text-transform: uppercase;
 `;
 
 const Count = styled.span`
@@ -159,8 +152,8 @@ const Steps = styled.ol`
   padding-left: 2.2em;
 
   li::marker {
-    color: ${COLOR_ACCENT};
-    font-family: ${FONT_DISPLAY};
+    color: ${COLOR_TEXT_MUTED};
+    font-variant-numeric: tabular-nums;
     font-weight: 600;
   }
 

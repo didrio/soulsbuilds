@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import {
-  COLOR_ACCENT_STRONG,
-  COLOR_GLOW,
+  COLOR_SURFACE_RAISED,
+  COLOR_TEXT,
   COLOR_TEXT_MUTED,
   DURATION_FAST,
   RADIUS_FRAME,
@@ -34,8 +34,8 @@ const Container = styled.button`
   width: 44px;
 
   &:hover {
-    background: ${COLOR_GLOW};
-    color: ${COLOR_ACCENT_STRONG};
+    background: ${COLOR_SURFACE_RAISED};
+    color: ${COLOR_TEXT};
   }
 `;
 

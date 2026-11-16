@@ -13,18 +13,18 @@ import { useUserProfile } from '@/features/profile/queries';
 import { relativeTime } from '@/lib/relativeTime';
 import {
   BELOW_TABLET,
-  COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
-  COLOR_FRAME,
-  COLOR_GLOW,
   COLOR_LINE,
+  COLOR_LINE_STRONG,
+  COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
+  RADIUS_FRAME,
   SPACE_MD,
   SPACE_SM,
-  TEXT_MD,
   TEXT_SM,
+  WEIGHT_DISPLAY,
 } from '@/theme';
 
 const SHOWN = 3;
@@ -110,17 +110,19 @@ const Card = styled(Link)`
   height: 100%;
   padding: ${SPACE_SM} ${SPACE_MD};
 
+  border-radius: ${RADIUS_FRAME};
+
   &:hover {
-    background: ${COLOR_GLOW};
-    border-color: ${COLOR_FRAME};
+    background: ${COLOR_SURFACE_RAISED};
+    border-color: ${COLOR_LINE_STRONG};
   }
 `;
 
 const Name = styled.span`
   color: ${COLOR_TEXT};
   font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_MD};
-  font-weight: 700;
+  font-size: 17px;
+  font-weight: ${WEIGHT_DISPLAY};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -155,7 +157,7 @@ const Likes = styled.span`
   gap: 4px;
 
   & > svg {
-    color: ${COLOR_ACCENT};
+    color: ${COLOR_TEXT_MUTED};
   }
 `;
 

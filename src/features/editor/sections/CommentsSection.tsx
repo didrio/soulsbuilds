@@ -8,7 +8,6 @@ import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import SectionHeading from '@/components/ui/SectionHeading';
 import TextAreaInput from '@/components/ui/TextAreaInput';
 import { TextButton } from '@/components/ui/TextButton';
-import { fadingRule } from '@/components/ui/inWorld';
 import useAuth from '@/features/auth/useAuth';
 import { useUserProfile, useUserProfiles } from '@/features/profile/queries';
 import ReportButton from '@/features/reports/ReportButton';
@@ -16,6 +15,7 @@ import { errorMessage } from '@/lib/firebase';
 import { LIMITS } from '@/lib/models';
 import {
   COLOR_ACCENT_STRONG,
+  COLOR_LINE,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   SPACE_LG,
@@ -25,9 +25,9 @@ import {
   TEXT_MD,
   TEXT_SM,
   TEXT_XS,
-  TRACKING_CAPS,
 } from '@/theme';
 import { useAddComment, useComments, useDeleteComment } from '../queries';
+import { labelText } from '@/components/ui/typography';
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
@@ -152,13 +152,13 @@ const CommentList = styled.ol`
   padding: 0;
 `;
 
-// Separated by a fading rule, like the game's menu lists.
+// Separated by a hairline.
 const CommentItem = styled.li`
   padding: ${SPACE_MD} 0;
   position: relative;
 
   & + &::before {
-    background: ${fadingRule};
+    background: ${COLOR_LINE};
     content: '';
     height: 1px;
     left: 0;
@@ -210,11 +210,7 @@ const PostForm = styled.form`
 `;
 
 const Label = styled.label`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_XS};
-  font-weight: 600;
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 `;
 
 export default CommentsSection;

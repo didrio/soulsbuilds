@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { COLOR_TEXT, COLOR_TEXT_MUTED, FONT_DISPLAY, TEXT_XL } from '@/theme';
+import { COLOR_TEXT_MUTED, TEXT_XL } from '@/theme';
 import LoadingAnimation from './LoadingAnimation';
 import Ornament from './Ornament';
+import { displayText } from './typography';
 
 /** A centered page state: loading spinner, or a title with optional text/actions (empty, not found…). */
 function PageMessage({
@@ -45,11 +46,8 @@ const Container = styled.section`
 `;
 
 const Title = styled.h2`
-  color: ${COLOR_TEXT};
-  font-family: ${FONT_DISPLAY};
+  ${displayText}
   font-size: ${TEXT_XL};
-  font-weight: 700;
-  letter-spacing: 0.03em;
   margin: 0;
 `;
 

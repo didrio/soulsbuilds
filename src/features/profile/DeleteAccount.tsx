@@ -12,15 +12,14 @@ import {
   COLOR_DANGER,
   COLOR_LINE,
   COLOR_TEXT_MUTED,
-  FONT_DISPLAY,
   SPACE_LG,
   SPACE_MD,
   SPACE_SM,
   SPACE_XL,
   TEXT_SM,
-  TRACKING_CAPS,
 } from '@/theme';
 import { useDeleteAccount } from './queries';
+import { labelText } from '@/components/ui/typography';
 
 /**
  * The owner's "Delete account" (T18), at the bottom of their profile. With `finishing`, it's the
@@ -114,9 +113,7 @@ const Strip = styled.div<{ $finishing: boolean }>`
 `;
 
 const StripText = styled.span`
-  font-family: ${FONT_DISPLAY};
-  letter-spacing: ${TRACKING_CAPS};
-  text-transform: uppercase;
+  ${labelText}
 `;
 
 const DangerTextButton = styled(TextButton)`

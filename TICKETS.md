@@ -7,8 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T39
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T26 — Redesign v2 foundations · Opus · high · plan mode off. Up next is in the order of
-`docs/product.md` "Priorities": the redesign (T26 → T27 → T28; T29 any time after T26), usage counts (T38,
+**Next:** T27 — Loadout panel and stats card · Opus · high · plan mode off. Up next is in the order of
+`docs/product.md` "Priorities": the redesign (T27 → T28; T29 any time now), usage counts (T38,
 blocked on the owner), tracking (T34 → T35 → T36), link previews (T37, blocked on the Blaze decision), sign-in and
 account (T30, T31), copies and variations (T32 → T33). T30–T38 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -32,7 +32,7 @@ and spacing, and the canvas notes say why.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait) T24 (blocked reCAPTCHA) and T25 (Firebase SDK 13).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13) and T26 (redesign v2 foundations).
 
 ## In progress
 
@@ -40,45 +40,9 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 
 ## Up next
 
-### T26 — Redesign v2 foundations: type tiers, accent budget, quieter panels
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode off
-- **Goal:** The app-wide half of the redesign: a hierarchy you can read at a glance, and the accent only where it
-  means something, before the page layouts change (T27–T29). The owner found the site hard to scan: every panel
-  looks the same, every heading is small gold Cinzel caps, and Cinzel has no lowercase.
-- **Done when:**
-  - Three type tiers. **Names and headings**: EB Garamond 600, title case, text color (`FONT_DISPLAY` becomes EB
-    Garamond; add `@fontsource/eb-garamond/latin-600.css`). **Labels**: Inter 11px/600, 0.08em tracking,
-    uppercase, muted: the only caps style left (a `Label` in `components/ui/`). **Values and body**: Inter, with
-    `tabular-nums` on numbers. Cinzel stays for the wordmark only (`FONT_BRAND`); drop the Cinzel weight it
-    doesn't use.
-  - `SectionHeading`: left-aligned serif (22–24px) in the text color, no gold, no fading rules.
-  - Accent budget: the accent is only on the primary button, links and hover, active tab/sort state, the level
-    figure, stat bar fills, the liked state and the focus ring. Panel borders are neutral (`COLOR_LINE`); corner
-    marks only on the build hero (split `framed` in `inWorld.ts` into a plain panel and a hero frame, e.g. a
-    `Frame` variant). Tags and chips are neutral.
-  - Each skin gains a `tint` (the hero's glow; Elden Ring `rgba(232, 196, 120, 0.15)`), in `skins.ts` and
-    `GameSkinStyle`.
-  - Density: UI text 14px, panel padding 16–20px, 12px inside groups, 24px between regions, content 1240px wide.
-  - Header: wordmark in the text color, Builds and Profile links, New build as the primary button; phones: a
-    labelled "+" button and a menu.
-  - Write-ups (`MarkdownView`): h1 serif 28px, h2 serif 22px with a hairline under it, h3 = the caps label,
-    h4 Inter 15px/600; body EB Garamond 18px/1.6. Today all four levels are Cinzel caps.
-  - New text/background pairs in `colors.test.ts`; `npm run check` passes; screenshots of the landing, a build
-    and a profile, desktop and `--mobile`.
-  - Docs: `docs/architecture.md` "Styling" (the tiers and the accent budget); AGENTS.md conventions if the
-    in-world building blocks change.
-- **Context:** Canvas artboards (see **Next**) hold the values: `.sb`, `.skin-*`, `.f-garamond`, `.label`,
-  `.panel`, `.hero`, `.chip`, `.btn` in any artboard's `<helmet>` style. Files: `src/theme/{fonts,colors,skins,
-spacing}.ts`, `GlobalStyle.ts`, `GameSkinStyle.ts`, `src/index.css`, `components/ui/{Frame,SectionHeading,
-inWorld,Button,Tag,Chips}`, `app/Header.tsx`, `features/editor/sections/MarkdownView.tsx`. This ticket changes how
-  existing pieces look, not where they sit: page structure is T27–T29. Grain and vignette stay. Decision row
-  "Redesign v2" in `docs/decisions.md`.
-
 ### T27 — Loadout panel and stats card
 
-- **Status:** ready (after T26)
+- **Status:** ready
 - **Session:** Opus · high effort · plan mode off
 - **Goal:** Every item visible by name, spells inside the loadout, and attributes plus character stats in one
   card, in both view and edit mode. Today armor, talismans and tears are icon-only with names on hover or tap.
@@ -161,7 +125,7 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 ### T29 — Landing: slim toolbar, rows with a portrait
 
-- **Status:** ready (after T26; independent of T27 and T28)
+- **Status:** ready (independent of T27 and T28)
 - **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** The first build higher up the page, and rows you can read at a glance. Today a ~200px framed filter
   card comes first, and each row shows 8 small dark tiles (empty ones included) with the level as its loudest
@@ -297,7 +261,7 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 ### T30 — Sign up and log in: low friction, done properly
 
-- **Status:** ready (after T26 for the look); owner decisions first
+- **Status:** ready; owner decisions first
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Sign-up and log-in that feel like a professional site, with as little friction as possible and no
   added risk (owner, 2026-11-16: the 2022 flows were thrown together and never checked properly).
@@ -342,7 +306,7 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 ### T31 — Profile and account settings
 
-- **Status:** ready (after T26; after T30 if T30 adds Google sign-in)
+- **Status:** ready (after T30 if T30 adds Google sign-in)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** A public profile in the redesign v2 look, and the account settings people expect from a real site,
   kept apart from it. Today the profile page mixes both (rename at the top, the verify notice, Delete account at
@@ -448,6 +412,10 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 Older entries: `docs/tickets-archive.md`.
 
+- T26 — Redesign v2 foundations — 2026-11-16 — EB Garamond 600 names/headings, `Label`/`labelText` the only caps,
+  Inter values (14px, tabular); accent budget (neutral panels, tags, icons); `Frame` plain + `$hero` (corner marks,
+  skin `tint`) on the build title pane; 1240px, `SPACE_PANEL/GROUP/REGION`; header with phone "+" and menu;
+  write-up headings. Not seen on screen: write-up h1–h4 (no seeded write-up has headings).
 - T25 — Firebase JS SDK 13 — 2026-11-16 — `firebase` 13.3.0 + `@firebase/rules-unit-testing` 6.0.0, no code changes
   (13.0's breaks are AI-only); check, rules (103) and e2e pass; preload URL still matches, blocked notice at ~2.4 s.
 

@@ -15,14 +15,15 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T25 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T26 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules (2022 data
 migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`. Redesign
 (T16/17/22): tokens + per-game skin; build page = view and edit in one layout. T14/19/15: "How to get this
 build". T8: build math. T21: smooth scrolling, `npm run perf`. T18: account deletion. T20: daily `stats/{game}`
 → top tags, activity. T23: App Check wait measured, `enterprise.js` preloaded, 1-day token TTL. Left: enforcing.
-T24: blocked reCAPTCHA → a notice, not a blank page. T25: Firebase SDK 13. **Next:** see `TICKETS.md`.
+T24: blocked reCAPTCHA → a notice, not a blank page. T25: Firebase SDK 13. T26: redesign v2 foundations (type
+tiers, accent budget, plain panels + hero frame, phone header menu); T27–T29 reshape the pages. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -100,7 +101,7 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
 index.html                 Vite entry (meta, theme-color, icons) → src/main.tsx
 src/
   main.tsx                 createRoot + <AppProviders><App/>
-  app/                     App (shell: global styles + game skin, header, log in/sign up dialog, item-picker
+  app/                     App (shell: global styles + game skin, header (phone menu, T26), log in/sign up dialog, item-picker
                            modal, footer; useScrollToTop; AppCheckNotice = "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId, /user/:userId, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
@@ -126,8 +127,9 @@ src/
                            selectBuildFields: build ⇄ editor state); sections/CharacterStats (HP, load, poise)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
-                           ErrorMessage, FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
-                           inWorld.ts (frame + selection-bar CSS)…
+                           ErrorMessage, FocusScope, icons, Label + typography.ts (type tiers); Frame (panel,
+                           `$hero`), SectionHeading, Ornament, PageHero, ItemTile, inWorld.ts (panel, hero frame,
+                           selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check; appCheckStatus watches
                            for a token that never comes, T24), auth, builds, likes,
                            comments, users, reports, account (deletion, T18), stats (T20)),
@@ -165,8 +167,10 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Layout**: a feature's pages, sections, hooks and state live in `src/features/<feature>/`; generic UI in
   `src/components/ui/`; framework-free code in `src/lib/`. See the `add-feature` skill.
 - **Styling**: styled-components, defined at the bottom of the file. Colors, fonts, breakpoints and spacing
-  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`). Game-specific color = the skin tokens (`COLOR_ACCENT`…); everything else is shared by all games. In-world
-  touches come from the `components/ui/` building blocks (`Frame`, `Ornament`…), not one-offs.
+  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`). Game-specific color = the skin tokens (`COLOR_ACCENT`…); everything else is shared by all games. The
+  accent is on a **budget** and type comes in **three tiers** (serif names/headings, the caps `Label`, Inter
+  values): docs/architecture.md "Styling". Panels are `Frame` (corner marks only with `$hero`, the build hero);
+  headings `SectionHeading`/`displayText`; caps only via `Label`/`labelText`. No one-offs.
   Style-only props are transient (`$active`). docs/architecture.md "Styling".
 - **State**: the build being edited → Redux slices + selectors (`useAppSelector`/`useAppDispatch`). Server
   data (builds, users, likes, comments) → TanStack Query hooks in `src/features/<feature>/queries.ts`, keys in

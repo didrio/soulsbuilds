@@ -30,6 +30,12 @@ export const PlusIcon = ({ size = 16, ...rest }: IconProps) => (
   </svg>
 );
 
+export const MenuIcon = ({ size = 20, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+
 export const CloseIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg {...stroke(size, rest)}>
     <path d="M6 6l12 12M18 6 6 18" />

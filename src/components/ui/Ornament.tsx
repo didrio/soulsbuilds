@@ -1,8 +1,8 @@
 import styled from 'styled-components';
-import { BELOW_MOBILE, COLOR_ACCENT, COLOR_FRAME, SPACE_LG, SPACE_XL } from '@/theme';
+import { BELOW_MOBILE, COLOR_LINE, COLOR_LINE_STRONG, SPACE_LG, SPACE_XL } from '@/theme';
 
 /**
- * The ornamental divider: fading accent rules either side of a small original flourish (diamonds and
+ * The ornamental divider (neutral: outside the accent budget): fading rules either side of a small original flourish (diamonds and
  * dots). Decorative, so hidden from assistive tech. `compact` is a short one for page states.
  */
 function Ornament({ compact = false, className }: { compact?: boolean; className?: string }) {
@@ -24,7 +24,7 @@ function Ornament({ compact = false, className }: { compact?: boolean; className
 
 const Container = styled.div<{ $compact: boolean }>`
   align-items: center;
-  color: ${COLOR_ACCENT};
+  color: ${COLOR_LINE_STRONG};
   display: flex;
   gap: 10px;
   margin: ${({ $compact }) => ($compact ? '0' : `${SPACE_XL} 0`)};
@@ -36,11 +36,11 @@ const Container = styled.div<{ $compact: boolean }>`
     display: ${({ $compact }) => ($compact ? 'none' : 'block')};
     flex: 1;
     height: 1px;
-    background: linear-gradient(90deg, transparent, ${COLOR_FRAME});
+    background: linear-gradient(90deg, transparent, ${COLOR_LINE});
   }
 
   &::after {
-    background: linear-gradient(90deg, ${COLOR_FRAME}, transparent);
+    background: linear-gradient(90deg, ${COLOR_LINE}, transparent);
   }
 
   @media ${BELOW_MOBILE} {

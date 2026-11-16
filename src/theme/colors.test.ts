@@ -82,12 +82,17 @@ describe('contrast (WCAG AA)', () => {
         expect(contrast(skin.onAccent, skin.accent)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(skin.onAccent, skin.accentStrong)).toBeGreaterThanOrEqual(4.5);
       });
-      // A picked tag chip (Chips, the landing's top tags, T20): frame-soft over a framed panel.
-      it('text, muted text and the accent on frame-soft over the surface ≥ 4.5', () => {
-        const chip = blend(skin.frameSoft, COLOR_SURFACE);
-        expect(contrast(COLOR_TEXT, chip)).toBeGreaterThanOrEqual(4.5);
-        expect(contrast(COLOR_TEXT_MUTED, chip)).toBeGreaterThanOrEqual(4.5);
-        expect(contrast(skin.accent, chip)).toBeGreaterThanOrEqual(4.5);
+      // The build hero (T26): text, muted text and the accent over the tint at its strongest, on the surface.
+      it('text, muted text and the accent on the hero tint over the surface ≥ 4.5', () => {
+        const hero = blend(skin.tint, COLOR_SURFACE);
+        expect(contrast(COLOR_TEXT, hero)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(COLOR_TEXT_MUTED, hero)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(skin.accent, hero)).toBeGreaterThanOrEqual(4.5);
+      });
+      // Tags and chips (T26): text on the inset fill.
+      it('text on a tag (inset) and the talisman bonus on the surface ≥ 4.5', () => {
+        expect(contrast(COLOR_TEXT, COLOR_INSET)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(COLOR_SUCCESS, COLOR_SURFACE)).toBeGreaterThanOrEqual(4.5);
       });
       it('focus ring (accent-strong) on the page ≥ 3', () => {
         expect(contrast(skin.accentStrong, COLOR_BG)).toBeGreaterThanOrEqual(3);

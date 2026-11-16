@@ -2,10 +2,10 @@ import styled from 'styled-components';
 import {
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
-  COLOR_GLOW_STRONG,
   COLOR_INSET,
   COLOR_LINE,
   COLOR_LINE_STRONG,
+  COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   RADIUS_FRAME,
@@ -69,7 +69,7 @@ const Segment = styled.button`
   }
 
   &[aria-pressed='true'] {
-    background: linear-gradient(90deg, transparent, ${COLOR_GLOW_STRONG}, transparent);
+    background: ${COLOR_SURFACE_RAISED};
     color: ${COLOR_ACCENT_STRONG};
   }
 
@@ -77,10 +77,10 @@ const Segment = styled.button`
     background: ${COLOR_ACCENT};
     bottom: 0;
     content: '';
-    height: 1px;
-    left: 12%;
+    height: 2px;
+    left: 0;
     position: absolute;
-    right: 12%;
+    right: 0;
   }
 `;
 
