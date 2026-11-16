@@ -1,5 +1,4 @@
 import styled from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
 import DropDown from '@/components/ui/DropDown';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import {
@@ -13,7 +12,15 @@ import {
   type Weapon,
 } from '@/data';
 import { sortBy } from '@/lib/array';
-import { BELOW_750 } from '@/theme';
+import {
+  BELOW_MOBILE,
+  COLOR_TEXT_MUTED,
+  SPACE_MD,
+  SPACE_XS,
+  TEXT_MD,
+  TEXT_XS,
+  TRACKING_CAPS,
+} from '@/theme';
 import { updateWeaponAffinity, updateWeaponSkill } from './store/equipment';
 import {
   selectEditAffinitySlot,
@@ -24,9 +31,9 @@ import {
 } from './store/selectors';
 
 /**
- * The item picker's Ash of War and affinity controls for the weapon slot being edited. Only what the
- * game allows: the Ashes that fit the weapon, and the affinities the weapon and that Ash share.
- * Weapons that can't take an Ash show their fixed skill; an empty slot says to choose a weapon first.
+ * The picker's Ash of War and affinity controls for the weapon slot being edited. Only what the game
+ * allows: the Ashes that fit the weapon, and the affinities the weapon and that Ash share. Weapons
+ * that can't take an Ash show their fixed skill.
  */
 function WeaponOptions() {
   const dispatch = useAppDispatch();
@@ -37,9 +44,7 @@ function WeaponOptions() {
   // The picker is open for a weapon slot, so the item in it is a weapon (or nothing).
   const weapon = useAppSelector(selectEditedItem) as Weapon | null;
 
-  if (!weapon) {
-    return <Hint>Choose a weapon, then open it again for its Ash of War and affinity.</Hint>;
-  }
+  if (!weapon) return null;
 
   const builtIn = weaponSkill(weapon, null)?.name ?? 'None';
   const choices = sortBy(
@@ -62,17 +67,17 @@ function WeaponOptions() {
 
   if (!choices.length) {
     return (
-      <Container>
+      <Field>
         <Label>Skill</Label>
         <Fixed>{builtIn} (can't be changed)</Fixed>
-      </Container>
+      </Field>
     );
   }
 
   return (
-    <Container>
-      <Label>Ash of War</Label>
+    <Fields>
       <Field>
+        <Label>Ash of War</Label>
         <DropDown
           label="Ash of War"
           onChange={handleAshChange}
@@ -82,65 +87,47 @@ function WeaponOptions() {
         />
       </Field>
       {affinityOptions.length ? (
-        <>
+        <Field>
           <Label>Affinity</Label>
-          <Field>
-            <DropDown
-              label="Affinity"
-              onChange={handleAffinityChange}
-              options={affinityOptions}
-              placeholder="Standard"
-              value={affinity ?? ''}
-            />
-          </Field>
-        </>
+          <DropDown
+            label="Affinity"
+            onChange={handleAffinityChange}
+            options={affinityOptions}
+            placeholder="Standard"
+            value={affinity ?? ''}
+          />
+        </Field>
       ) : null}
-    </Container>
+    </Fields>
   );
 }
 
-const Container = styled(FlexGroup)`
-  margin-bottom: 10px;
-  margin-top: 10px;
-  width: 100%;
-  justify-content: center;
-  align-items: center;
+const Fields = styled.div`
+  display: grid;
+  gap: ${SPACE_MD};
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  @media ${BELOW_750} {
-    flex-wrap: wrap;
-    gap: 6px 0;
+  @media ${BELOW_MOBILE} {
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
-const Label = styled(FlexGroup)`
-  font-size: 16px;
-  font-weight: bold;
-  margin-right: 20px;
-
-  @media ${BELOW_750} {
-    flex: 0 0 30%;
-    margin-right: 0;
-  }
+const Field = styled.div`
+  display: grid;
+  gap: ${SPACE_XS};
 `;
 
-const Field = styled(FlexGroup)`
-  margin-right: 20px;
-  width: 220px;
-
-  @media ${BELOW_750} {
-    flex: 1 1 60%;
-    margin-right: 0;
-    width: auto;
-  }
+// The selects are named by their aria-label; this is the visible caption.
+const Label = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
 `;
 
 const Fixed = styled.span`
-  font-size: 16px;
-`;
-
-const Hint = styled.p`
-  margin: 10px 0;
-  text-align: center;
+  font-size: ${TEXT_MD};
 `;
 
 export default WeaponOptions;

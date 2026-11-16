@@ -6,13 +6,16 @@ import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import {
-  COLOR_DARK_GREEN,
-  COLOR_GOLD,
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_LIGHTEST_GREEN,
-  FONT_BODY,
+  COLOR_ACCENT,
+  COLOR_ACCENT_STRONG,
+  COLOR_INSET,
+  COLOR_LINE,
+  COLOR_SURFACE_RAISED,
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
   FONT_DISPLAY,
+  FONT_PROSE,
+  FONT_UI,
 } from '@/theme';
 
 const REMARK_PLUGINS = [remarkGfm];
@@ -38,15 +41,30 @@ function MarkdownView({ source }: { source: string }) {
   );
 }
 
+// The write-up in the prose face, with a drop cap on the first paragraph.
 const Body = styled.div`
-  background-color: ${COLOR_DARK_GREEN};
-  color: ${COLOR_GOLD};
-  font-family: ${FONT_BODY};
-  font-size: 18px;
-  line-height: 1.5;
+  color: ${COLOR_TEXT};
+  font-family: ${FONT_PROSE};
+  font-size: 19px;
+  line-height: 1.6;
+  max-width: 68ch;
   overflow-wrap: anywhere;
-  padding: 16px;
-  width: 100%;
+
+  & > p:first-child::first-letter {
+    color: ${COLOR_ACCENT};
+    float: left;
+    font-family: ${FONT_DISPLAY};
+    font-size: 3.1em;
+    line-height: 0.9;
+    padding: 4px 8px 0 0;
+  }
+
+  /* A short first paragraph still holds the whole drop cap, so a list after it doesn't wrap round it. */
+  & > p:first-child::after {
+    clear: both;
+    content: '';
+    display: block;
+  }
 
   & > :first-child {
     margin-top: 0;
@@ -62,20 +80,20 @@ const Body = styled.div`
   & h4,
   & h5,
   & h6 {
-    color: ${COLOR_LIGHTEST_GREEN};
+    color: ${COLOR_TEXT};
     font-family: ${FONT_DISPLAY};
     line-height: 1.25;
     margin: 1.2em 0 0.5em;
   }
 
   & h1 {
-    border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
+    border-bottom: 1px solid ${COLOR_LINE};
     font-size: 1.6em;
     padding-bottom: 0.2em;
   }
 
   & h2 {
-    border-bottom: 1px solid ${COLOR_LIGHT_GREEN};
+    border-bottom: 1px solid ${COLOR_LINE};
     font-size: 1.35em;
     padding-bottom: 0.2em;
   }
@@ -105,26 +123,32 @@ const Body = styled.div`
   }
 
   & a {
-    color: ${COLOR_LIGHTEST_GREEN};
+    color: ${COLOR_ACCENT};
     cursor: pointer;
     text-decoration: underline;
   }
 
+  & a:hover {
+    color: ${COLOR_ACCENT_STRONG};
+  }
+
   & blockquote {
-    border-left: 4px solid ${COLOR_LIGHT_GREEN};
+    border-left: 2px solid ${COLOR_ACCENT};
+    color: ${COLOR_TEXT_MUTED};
     margin-left: 0;
     padding: 0 1em;
   }
 
   & code {
-    background-color: ${COLOR_GREEN};
+    background-color: ${COLOR_INSET};
+    font-family: ui-monospace, monospace;
     border-radius: 3px;
     font-size: 0.9em;
     padding: 0.15em 0.35em;
   }
 
   & pre {
-    background-color: ${COLOR_GREEN};
+    background-color: ${COLOR_INSET};
     border-radius: 4px;
     overflow: auto;
     padding: 12px;
@@ -137,7 +161,7 @@ const Body = styled.div`
 
   & hr {
     border: none;
-    border-top: 1px solid ${COLOR_LIGHT_GREEN};
+    border-top: 1px solid ${COLOR_LINE};
     margin: 1.5em 0;
   }
 
@@ -155,12 +179,17 @@ const Body = styled.div`
 
   & th,
   & td {
-    border: 1px solid ${COLOR_LIGHT_GREEN};
+    border: 1px solid ${COLOR_LINE};
     padding: 6px 12px;
   }
 
   & th {
-    background-color: ${COLOR_GREEN};
+    background-color: ${COLOR_SURFACE_RAISED};
+  }
+
+  & table {
+    font-family: ${FONT_UI};
+    font-size: 15px;
   }
 `;
 

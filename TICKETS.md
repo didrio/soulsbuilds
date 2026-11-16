@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T19
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T17, the redesign's build page, editor and picker · Opus · high · plan mode on.
+**Next:** T14, acquisition data (first half of "How to get this build") · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -21,7 +21,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
-(T16 design system and shell: done; T17 the remaining pages), then the headline feature, "How to get this build" (T14
+(T16 design system and shell, T17 the remaining pages: done), then the headline feature, "How to get this build" (T14
 acquisition data, T15 route + UI), then T8 and T9. The redesign comes first so that T15's and T8's new UI is built
 once, in the new design. T14 is data only and could run before or alongside the redesign. T18 (account deletion)
 can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
@@ -31,30 +31,6 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 (none)
 
 ## Up next
-
-### T17 — Redesign: build page, editor and item picker
-
-- **Status:** ready (T16 done)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Bring the most-used and most complex screens onto T16's design system, and fix their UX.
-- **Done when:**
-  - [ ] Build view: a clear hierarchy (title, author, likes, tags, then equipment, stats, description,
-        comments); equipment as a scannable grid with icons and names; the space reserved for T15's "How to
-        get this build" section.
-  - [ ] Editor: create/edit flow reworked for ease (slot grid, weapon options for Ash of War and affinity, stats,
-        tears, spells, tags, markdown write-up), mobile-first, keyboard-usable.
-  - [ ] Item picker modal: search, categories, paging, selected state; `FocusScope` trap kept.
-  - [ ] Comments, report and like controls restyled; no leftover 2022 styles (grep for old tokens, delete
-        unused ones).
-  - [ ] All tests green (`npm run check`, `npm run e2e`); screenshots of view, edit, picker and comments, desktop
-        and mobile.
-- **Context:** `src/features/editor/` (`BuildEditorPage`, `sections/`, `Slot`, `ItemSelector`,
-  `WeaponOptions`), `src/features/reports/`. T16's tokens and components; don't reintroduce one-off styles.
-  From T16: the approved direction is the v2 mockup's build page (title block with like/report/tags, framed
-  panels with `SectionHeading`s, items as `ItemTile` + name rows in two columns, stats as bars in a side panel
-  that moves above on mobile, write-up in `FONT_PROSE` with a drop cap); docs/architecture.md "Styling". Move the
-  picker onto `Dialog`; restyle `Slot` (its gold tiles are the last 2022 look) on `ItemTile`; then delete
-  `src/theme/legacy.ts` and every import of it (the build page, editor, picker, reports still use it).
 
 ### T14 — Acquisition data (where every item comes from)
 
@@ -95,7 +71,7 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 ### T15 — "How to get this build" on the build page
 
-- **Status:** ready (after T14 and T17)
+- **Status:** ready (after T14)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** A short, numbered route from a fresh save to the whole build, in an efficient order. Plain,
   scannable steps: where to go, in what order, not a walkthrough.
@@ -114,8 +90,9 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
   - [ ] Component test + an e2e check on a seeded build; desktop and `--mobile` screenshots.
   - [ ] Backlog entries for what's out of scope: upgrade materials (builds don't store upgrade levels), rune
         farming to the build's level, a suggested starting class (needs T8's class data).
-- **Context:** T14's `acquisition.json` + accessors in `src/data/index.ts`; `BuildEditorPage` (view mode)
-  and `sections/` in T17's design; `add-feature` skill.
+- **Context:** T14's `acquisition.json` + accessors in `src/data/index.ts`; `BuildEditorPage` (a comment marks
+  where the section goes, between Equipment and About this build) and `sections/` in T17's design (`Frame` +
+  `SectionHeading` panels, `ItemTile` for icons); `add-feature` skill.
 
 ### T8 — Build math
 
@@ -192,18 +169,17 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 Older entries: `docs/tickets-archive.md`.
 
+- T17 — Redesign: build page, editor and item picker — 2026-11-15 — view and edit in one mockup layout (title
+  block, framed panels, `ItemRow` tiles, stat bars, prose write-up), picker on a tall `Dialog` with filters and a
+  weapon step for Ash of War/affinity, comments/report/like restyled; `legacy.ts`, `Slot` and 2022 icons deleted.
 - T16 — Redesign: design system, shell, browse pages — 2026-11-15 — ~50/50 modern and in-world (approved HTML
   mockup v2): base tokens + per-game skin (CSS vars, `skins.ts`, AA contrast test), Inter/Cinzel/Garamond, in-world
   components (Frame, Ornament, PageHero, ItemTile, selection bar), Dialog auth, game tabs removed, landing as dense
   rows with authors, profile/legal/404 restyled; 2022 tokens kept in `legacy.ts` for T17.
-- T5 — 2022 UI bug batch — 2026-11-14 — filters combine, cards keyed by id with armor slot types, timers, CSS,
-  placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.
 - T10 — Moderation — 2026-11-15 — reports on builds and comments (`reports/{targetId}_{uid}`, rules + tests,
   "Report" buttons), `scripts/admin.mjs` (reports, remove with JSON backup, dismiss, grant/revoke admin; tested
   on the emulators), App Check code (off until the owner's key: moved to T12). Delete, not hide
   (`docs/decisions.md`); no admin UI (backlog).
-- T6 — Missing core features — 2026-11-15 — delete/cancel/change item in place, password reset, profile rename
-  and tabs, 404s, send-only email verification (notice + resend), consumables restored; e2e covers them.
 - T7 — Game data v2 + Shadow of the Erdtree — 2026-11-15 — owner's Smithbox export of the game files →
   `npm run data` (TypeScript pipeline, zod schemas, fixture + data tests, deterministic) → `src/data/er/` (base +
   DLC, game param IDs, real affinities and Ash of War rules) and 2,151 WebP icons; 2022 name → ID table; the

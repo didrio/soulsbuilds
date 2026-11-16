@@ -4,7 +4,17 @@
 import MDEditor from '@uiw/react-md-editor';
 import rehypeSanitize from 'rehype-sanitize';
 import styled from 'styled-components';
-import { COLOR_DARK_GREEN, COLOR_DARKER_GREEN, COLOR_GOLD, COLOR_GREEN, FONT_BODY } from '@/theme';
+import {
+  COLOR_ACCENT,
+  COLOR_INSET,
+  COLOR_LINE,
+  COLOR_LINE_STRONG,
+  COLOR_SURFACE_RAISED,
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
+  FONT_UI,
+  TEXT_MD,
+} from '@/theme';
 
 export function MarkdownEditor({
   value,
@@ -25,30 +35,46 @@ export function MarkdownEditor({
   );
 }
 
+// The editor in the field style: sunken, framed, the UI face (markdown is easier to edit in it).
 const StyledMarkdownEditor = styled(MDEditor)`
-  background-color: ${COLOR_GREEN};
-  color: ${COLOR_GOLD};
+  background-color: ${COLOR_INSET};
+  border: 1px solid ${COLOR_LINE_STRONG};
+  border-radius: 2px;
+  box-shadow: none;
+  color: ${COLOR_TEXT};
+  font-family: ${FONT_UI};
   max-width: 100%;
   width: 100%;
-  font-family: ${FONT_BODY};
 
-  & .w-md-editor-text-input {
-    font-size: 20px;
+  &:focus-within {
+    border-color: ${COLOR_ACCENT};
+  }
+
+  & .w-md-editor-text-input,
+  & .w-md-editor-text-pre > code,
+  & .w-md-editor-text {
+    color: ${COLOR_TEXT};
+    font-family: ${FONT_UI} !important;
+    font-size: ${TEXT_MD} !important;
+    line-height: 1.6 !important;
   }
 
   & .w-md-editor-toolbar {
-    background-color: ${COLOR_DARKER_GREEN};
-    color: ${COLOR_GOLD};
-    font-family: ${FONT_BODY};
+    background-color: ${COLOR_SURFACE_RAISED};
+    border-bottom: 1px solid ${COLOR_LINE};
 
-    & svg {
-      color: ${COLOR_GOLD};
+    & button {
+      color: ${COLOR_TEXT_MUTED};
+    }
+
+    & button:hover,
+    & button.active {
+      background-color: ${COLOR_INSET};
+      color: ${COLOR_ACCENT};
     }
   }
 
-  & .w-md-editor-preview {
-    background-color: ${COLOR_DARK_GREEN};
-    color: ${COLOR_GOLD};
-    font-family: ${FONT_BODY};
+  & .w-md-editor-bar {
+    color: ${COLOR_TEXT_MUTED};
   }
 `;

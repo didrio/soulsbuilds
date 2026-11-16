@@ -1,5 +1,5 @@
 // Max-width breakpoints as media-query prefixes: @media ${BELOW_MOBILE} { ... }. Design mobile-first
-// where you can; these two are the layout's break points. (The 2022 BELOW_* sizes are in legacy.ts.)
+// where you can; these two are the layout's break points.
 const below = (px: number) => `only screen and (max-width: ${px}px)`;
 
 /** Phones. */

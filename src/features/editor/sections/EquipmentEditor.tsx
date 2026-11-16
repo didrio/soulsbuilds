@@ -1,9 +1,12 @@
 import styled from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
+import Frame from '@/components/ui/Frame';
+import SectionHeading from '@/components/ui/SectionHeading';
 import { useAppSelector } from '@/app/hooks';
-import { COLOR_LIGHTEST_GREEN } from '@/theme';
-import Slot from '../Slot';
+import { COLOR_TEXT_MUTED, TEXT_SM } from '@/theme';
+import { filledAndNext, GroupHeading, ItemGroup, ItemRows, type SlotEntry } from '../ItemRow';
 import {
+  ARMOR_SLOTS,
+  ARROW_SLOTS,
   CONSUMABLE_SLOTS,
   SLOT_TYPE_ARROW,
   SLOT_TYPE_CHEST,
@@ -14,206 +17,113 @@ import {
   SLOT_TYPE_LEG,
   SLOT_TYPE_SPIRIT_ASH,
   SLOT_TYPE_TAL,
+  SLOT_TYPE_TEAR,
   SLOT_TYPE_WEAPON,
+  TALISMAN_SLOTS,
+  TEAR_SLOTS,
   WEAPON_AFFINITY_SLOTS,
   WEAPON_SKILL_SLOTS,
   WEAPON_SLOTS,
-  type ArrowSlot,
-  type TalismanSlot,
-  type WeaponSlot,
+  type SlotType,
 } from '../slots';
-import { selectEquipment } from '../store/selectors';
+import { selectEquipment, selectTearSlots } from '../store/selectors';
 
-// Empty great rune and spirit ash slots show a faded game icon (there's no menu icon for them):
-// Godrick's Great Rune and the Lone Wolf Ashes.
-const GREAT_RUNE_PLACEHOLDER = 3201;
-const SPIRIT_ASH_PLACEHOLDER = 104;
+const ARMOR_TYPES: Record<(typeof ARMOR_SLOTS)[number], SlotType> = {
+  helm: SLOT_TYPE_HELM,
+  chest: SLOT_TYPE_CHEST,
+  gauntlet: SLOT_TYPE_GAUNTLET,
+  leg: SLOT_TYPE_LEG,
+};
 
-/** Weapon slot n (1–6) and the affinity/skill slots that belong to it. */
-const weaponSlotIds = (index: number) => ({
-  id: WEAPON_SLOTS[index] as WeaponSlot,
-  affinityId: WEAPON_AFFINITY_SLOTS[index]!,
-  subId: WEAPON_SKILL_SLOTS[index]!,
-});
+interface Group {
+  title: string;
+  entries: SlotEntry[];
+  /** Saved without slot positions: edit mode shows the filled slots and one empty one. */
+  compact?: boolean;
+}
 
 /**
- * Equipment section: main hand, off hand, gear (armor), talismans, great rune and spirit ash, and
- * consumables.
+ * Equipment panel: weapons (right hand, left hand), arrows and bolts, armor, talismans, great rune,
+ * spirit ash and the flask's crystal tears, and consumables, as rows of tiles with names. Editable:
+ * every slot (consumables: the filled ones and the next empty one), each a button that opens the
+ * picker. Read-only: only the filled slots, and only the groups that have one.
  */
 function EquipmentEditor({ editable }: { editable: boolean }) {
   const equipment = useAppSelector(selectEquipment);
+  const tears = useAppSelector(selectTearSlots);
 
-  const weaponSlot = (index: number, background: string) => {
-    const ids = weaponSlotIds(index);
-    return (
-      <Slot
-        affinityId={ids.affinityId}
-        background={background}
-        disabled={!editable}
-        id={ids.id}
-        item={equipment[ids.id]}
-        key={ids.id}
-        subId={ids.subId}
-        type={SLOT_TYPE_WEAPON}
-      />
-    );
+  const weaponEntry = (index: number): SlotEntry => {
+    const id = WEAPON_SLOTS[index]!;
+    const affinityId = WEAPON_AFFINITY_SLOTS[index]!;
+    const subId = WEAPON_SKILL_SLOTS[index]!;
+    return {
+      id,
+      type: SLOT_TYPE_WEAPON,
+      item: equipment[id],
+      affinityId,
+      subId,
+      affinity: equipment[affinityId],
+      ash: equipment[subId],
+    };
   };
 
-  const arrowSlot = (id: ArrowSlot, background: string) => (
-    <Slot
-      background={background}
-      disabled={!editable}
-      id={id}
-      item={equipment[id]}
-      key={id}
-      type={SLOT_TYPE_ARROW}
-    />
-  );
+  const groups: Group[] = [
+    { title: 'Right hand', entries: [0, 1, 2].map(weaponEntry) },
+    { title: 'Left hand', entries: [3, 4, 5].map(weaponEntry) },
+    {
+      title: 'Arrows and bolts',
+      entries: ARROW_SLOTS.map((id) => ({ id, type: SLOT_TYPE_ARROW, item: equipment[id] })),
+    },
+    {
+      title: 'Armor',
+      entries: ARMOR_SLOTS.map((id) => ({ id, type: ARMOR_TYPES[id], item: equipment[id] })),
+    },
+    {
+      title: 'Talismans',
+      entries: TALISMAN_SLOTS.map((id) => ({ id, type: SLOT_TYPE_TAL, item: equipment[id] })),
+    },
+    {
+      title: 'Great rune, spirit ash and flask',
+      entries: [
+        { id: 'greatRune', type: SLOT_TYPE_GREAT_RUNE, item: equipment.greatRune },
+        { id: 'spiritAsh', type: SLOT_TYPE_SPIRIT_ASH, item: equipment.spiritAsh },
+        ...TEAR_SLOTS.map((id): SlotEntry => ({ id, type: SLOT_TYPE_TEAR, item: tears[id] })),
+      ],
+    },
+    {
+      title: 'Consumables',
+      entries: CONSUMABLE_SLOTS.map((id) => ({ id, type: SLOT_TYPE_CON, item: equipment[id] })),
+      compact: true,
+    },
+  ];
 
-  const talismanSlot = (id: TalismanSlot) => (
-    <Slot
-      background="talisman"
-      disabled={!editable}
-      id={id}
-      item={equipment[id]}
-      key={id}
-      type={SLOT_TYPE_TAL}
-    />
-  );
+  const shown = editable
+    ? groups.map((group) =>
+        group.compact ? { ...group, entries: filledAndNext(group.entries) } : group,
+      )
+    : groups
+        .map((group) => ({ ...group, entries: group.entries.filter((entry) => entry.item) }))
+        .filter((group) => group.entries.length > 0);
 
   return (
-    <Container vertical>
-      <HeaderContainer>
-        <Header>Equipment</Header>
-      </HeaderContainer>
-      <HeaderContainer>
-        <SubHeader>Main Hand</SubHeader>
-      </HeaderContainer>
-      <SlotContainer>
-        {weaponSlot(0, 'weapon')}
-        {weaponSlot(1, 'weapon')}
-        {weaponSlot(2, 'weapon')}
-        {arrowSlot('arrow1', 'arrow')}
-        {arrowSlot('arrow2', 'arrow')}
-      </SlotContainer>
-      <HeaderContainer>
-        <SubHeader>Off Hand</SubHeader>
-      </HeaderContainer>
-      <SlotContainer>
-        {weaponSlot(3, 'shield')}
-        {weaponSlot(4, 'shield')}
-        {weaponSlot(5, 'shield')}
-        {arrowSlot('arrow3', 'bolt')}
-        {arrowSlot('arrow4', 'bolt')}
-      </SlotContainer>
-      <HeaderContainer>
-        <SubHeader>Gear</SubHeader>
-      </HeaderContainer>
-      <SlotContainer>
-        <Slot
-          background="helm"
-          disabled={!editable}
-          id="helm"
-          item={equipment.helm}
-          type={SLOT_TYPE_HELM}
-        />
-        <Slot
-          background="chest"
-          disabled={!editable}
-          id="chest"
-          item={equipment.chest}
-          type={SLOT_TYPE_CHEST}
-        />
-        <Slot
-          background="gauntlet"
-          disabled={!editable}
-          id="gauntlet"
-          item={equipment.gauntlet}
-          type={SLOT_TYPE_GAUNTLET}
-        />
-        <Slot
-          background="leg"
-          disabled={!editable}
-          id="leg"
-          item={equipment.leg}
-          type={SLOT_TYPE_LEG}
-        />
-      </SlotContainer>
-      <HeaderContainer>
-        <SubHeader>Talismans</SubHeader>
-      </HeaderContainer>
-      <SlotContainer>
-        {talismanSlot('tal1')}
-        {talismanSlot('tal2')}
-        {talismanSlot('tal3')}
-        {talismanSlot('tal4')}
-      </SlotContainer>
-      <HeaderContainer>
-        <SubHeader>Great Rune &amp; Spirit Ash</SubHeader>
-      </HeaderContainer>
-      <SlotContainer>
-        <Slot
-          backgroundIcon={GREAT_RUNE_PLACEHOLDER}
-          disabled={!editable}
-          id="greatRune"
-          item={equipment.greatRune}
-          type={SLOT_TYPE_GREAT_RUNE}
-        />
-        <Slot
-          backgroundIcon={SPIRIT_ASH_PLACEHOLDER}
-          disabled={!editable}
-          id="spiritAsh"
-          item={equipment.spiritAsh}
-          type={SLOT_TYPE_SPIRIT_ASH}
-        />
-      </SlotContainer>
-      <HeaderContainer>
-        <SubHeader>Consumables</SubHeader>
-      </HeaderContainer>
-      <SlotContainer>
-        {CONSUMABLE_SLOTS.map((id) => (
-          <Slot
-            background="consumable"
-            disabled={!editable}
-            id={id}
-            item={equipment[id]}
-            key={id}
-            type={SLOT_TYPE_CON}
-          />
-        ))}
-      </SlotContainer>
-    </Container>
+    <Frame aria-labelledby="equipment-title">
+      <SectionHeading id="equipment-title">Equipment</SectionHeading>
+      {shown.length === 0 ? <Muted>No equipment yet.</Muted> : null}
+      {shown.map((group) => (
+        <ItemGroup key={group.title}>
+          <GroupHeading>{group.title}</GroupHeading>
+          <ItemRows entries={group.entries} editable={editable} />
+        </ItemGroup>
+      ))}
+    </Frame>
   );
 }
 
-const Container = styled(FlexGroup)`
-  justify-content: center;
-`;
-
-const HeaderContainer = styled(FlexGroup)`
-  justify-content: center;
-`;
-
-const Header = styled.h2`
-  color: ${COLOR_LIGHTEST_GREEN};
-  margin-bottom: 20px;
-  font-size: 28px;
-  font-weight: normal;
-`;
-
-const SubHeader = styled.h3`
-  margin-bottom: 20px;
-  font-weight: normal;
-`;
-
-const SlotContainer = styled(FlexGroup)`
-  justify-content: center;
-  flex-wrap: wrap;
-
-  & > div {
-    margin-bottom: 10px;
-    margin-right: 10px;
-  }
+const Muted = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: 0;
+  text-align: center;
 `;
 
 export default EquipmentEditor;

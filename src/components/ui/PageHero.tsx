@@ -49,7 +49,8 @@ const Hero = styled.section`
     position: absolute;
     top: -40px;
     transform: translateX(-50%);
-    width: min(900px, 140%);
+    /* Never wider than the screen: a wider glow scrolls the page sideways on phones. */
+    width: min(900px, 140%, 100vw);
   }
 
   & > * {

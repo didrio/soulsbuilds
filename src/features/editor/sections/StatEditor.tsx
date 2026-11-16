@@ -1,29 +1,45 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import FlexGroup from '@/components/ui/FlexGroup';
+import Frame from '@/components/ui/Frame';
+import SectionHeading from '@/components/ui/SectionHeading';
 import TextInput from '@/components/ui/TextInput';
+import { fadingRule } from '@/components/ui/inWorld';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import type { StatKey } from '@/lib/buildMath';
-import { COLOR_LIGHTEST_GREEN, BELOW_1100, BELOW_1400 } from '@/theme';
+import { MAX_STAT, type StatKey } from '@/lib/buildMath';
+import {
+  COLOR_ACCENT,
+  COLOR_ACCENT_DEEP,
+  COLOR_ACCENT_STRONG,
+  COLOR_GLOW_STRONG,
+  COLOR_LINE,
+  COLOR_TEXT_MUTED,
+  FONT_DISPLAY,
+  SPACE_MD,
+  TEXT_LG,
+  TEXT_SM,
+  TEXT_XS,
+  TRACKING_CAPS,
+} from '@/theme';
 import { selectStats } from '../store/selectors';
 import { updateStat } from '../store/stats';
 
-const STAT_NAMES: Record<StatKey, string> = {
-  arc: 'Arcane',
-  dex: 'Dexterity',
-  end: 'Endurance',
-  fai: 'Faith',
-  int: 'Intelligence',
-  mind: 'Mind',
-  str: 'Strength',
-  vigor: 'Vigor',
-};
+/** The eight attributes, in the game's order. */
+const STATS: [key: StatKey, name: string][] = [
+  ['vigor', 'Vigor'],
+  ['mind', 'Mind'],
+  ['end', 'Endurance'],
+  ['str', 'Strength'],
+  ['dex', 'Dexterity'],
+  ['int', 'Intelligence'],
+  ['fai', 'Faith'],
+  ['arc', 'Arcane'],
+];
 
 /**
  * One stat input. Accepts digits only (at most 2); each keystroke stores the value clamped to 1–99,
  * and the field shows the stored value again once it loses focus (so an emptied field reverts).
  */
-function StatInput({ statKey, value }: { statKey: StatKey; value: number }) {
+function StatInput({ statKey, name, value }: { statKey: StatKey; name: string; value: number }) {
   const dispatch = useAppDispatch();
   const [draft, setDraft] = useState<string | null>(null);
 
@@ -35,7 +51,7 @@ function StatInput({ statKey, value }: { statKey: StatKey; value: number }) {
 
   return (
     <TextInput
-      aria-label={STAT_NAMES[statKey]}
+      aria-label={name}
       centered
       inputMode="numeric"
       onBlur={() => setDraft(null)}
@@ -45,115 +61,105 @@ function StatInput({ statKey, value }: { statKey: StatKey; value: number }) {
   );
 }
 
-/** Two rows of four, in the 2022 (alphabetical by label) order. */
-const STAT_ROWS: [label: string, key: StatKey][][] = [
-  [
-    ['ARC', 'arc'],
-    ['DEX', 'dex'],
-    ['END', 'end'],
-    ['FAI', 'fai'],
-  ],
-  [
-    ['INT', 'int'],
-    ['MIN', 'mind'],
-    ['STR', 'str'],
-    ['VIG', 'vigor'],
-  ],
-];
-
-/** Stats section: the level and the 8 stats (inputs when editable, text otherwise). */
+/** Attributes panel: the rune level, then each stat as a bar and its value (an input when editable). */
 function StatEditor({ editable, level }: { editable: boolean; level: number }) {
   const stats = useAppSelector(selectStats);
 
   return (
-    <FlexGroup vertical>
-      <HeaderContainer>
-        <Header>Stats</Header>
-        <Level>Level {level}</Level>
-      </HeaderContainer>
-      {STAT_ROWS.map((row) => (
-        <StatsContainer key={row[0]![1]}>
-          {row.map(([label, key], index) => {
-            const StatBox = index === row.length - 1 ? StatNoMargin : Stat;
-            return (
-              <StatBox key={key}>
-                <StatName title={STAT_NAMES[key]}>{label}</StatName>
-                <StatBoxInput>
-                  <StatContainer>
-                    {editable ? <StatInput statKey={key} value={stats[key]} /> : stats[key]}
-                  </StatContainer>
-                </StatBoxInput>
-              </StatBox>
-            );
-          })}
-        </StatsContainer>
-      ))}
-    </FlexGroup>
+    <Frame aria-labelledby="stats-title">
+      <SectionHeading id="stats-title">Attributes</SectionHeading>
+      <Level>
+        <LevelValue>{level}</LevelValue>
+        <LevelLabel>Rune level</LevelLabel>
+      </Level>
+      <Stats>
+        {STATS.map(([key, name]) => (
+          <Stat key={key} $editable={editable}>
+            <span>{name}</span>
+            <Bar aria-hidden="true">
+              <BarFill style={{ width: `${(stats[key] / MAX_STAT) * 100}%` }} />
+            </Bar>
+            {editable ? (
+              <StatInput statKey={key} name={name} value={stats[key]} />
+            ) : (
+              <StatValue>{stats[key]}</StatValue>
+            )}
+          </Stat>
+        ))}
+      </Stats>
+    </Frame>
   );
 }
 
-const HeaderContainer = styled(FlexGroup)`
+const Level = styled.div`
+  margin-bottom: ${SPACE_MD};
+  padding-bottom: ${SPACE_MD};
+  position: relative;
+  text-align: center;
+
+  &::after {
+    background: ${fadingRule};
+    bottom: 0;
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+  }
+`;
+
+const LevelValue = styled.span`
+  color: ${COLOR_ACCENT_STRONG};
+  display: block;
+  font-family: ${FONT_DISPLAY};
+  font-size: 44px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-shadow: 0 0 24px ${COLOR_GLOW_STRONG};
+`;
+
+const LevelLabel = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
+`;
+
+const Stats = styled.ul`
+  display: grid;
+  gap: 9px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const Stat = styled.li<{ $editable: boolean }>`
   align-items: center;
-  justify-content: center;
-  flex-direction: column;
+  display: grid;
+  font-size: ${TEXT_SM};
+  gap: 10px;
+  grid-template-columns: 92px 1fr ${({ $editable }) => ($editable ? '56px' : '30px')};
 `;
 
-const Header = styled.h2`
-  color: ${COLOR_LIGHTEST_GREEN};
-  margin-bottom: 20px;
-  font-size: 28px;
-  font-weight: normal;
+const Bar = styled.span`
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid ${COLOR_LINE};
+  height: 5px;
 `;
 
-const Level = styled(FlexGroup)`
-  margin-bottom: 20px;
-  font-size: 20px;
+const BarFill = styled.span`
+  background: linear-gradient(90deg, ${COLOR_ACCENT_DEEP}, ${COLOR_ACCENT});
+  box-shadow: 0 0 8px ${COLOR_GLOW_STRONG};
+  display: block;
+  height: 100%;
+  max-width: 100%;
 `;
 
-const StatsContainer = styled(FlexGroup)`
-  flex-wrap: wrap;
-`;
-
-const Stat = styled(FlexGroup)`
-  align-items: center;
-  margin-bottom: 15px;
-  margin-right: 30px;
-
-  @media ${BELOW_1400} {
-    margin-right: 20px;
-  }
-
-  @media ${BELOW_1100} {
-    margin-right: 10px;
-  }
-`;
-
-const StatNoMargin = styled(Stat)`
-  margin-right: 0px;
-`;
-
-const StatName = styled.span`
-  font-size: 12px;
-  margin-right: 10px;
-  width: 30px;
-
-  @media ${BELOW_1400} {
-    width: 20px;
-  }
-
-  @media ${BELOW_1100} {
-    width: 20px;
-    font-size: 10px;
-  }
-`;
-
-const StatBoxInput = styled(FlexGroup)`
-  max-width: 40px;
-  width: 40px;
-`;
-
-const StatContainer = styled.span`
-  font-weight: bold;
+const StatValue = styled.span`
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_LG};
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 `;
 
 export default StatEditor;

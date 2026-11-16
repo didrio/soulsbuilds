@@ -5,16 +5,18 @@ import DropDown from '@/components/ui/DropDown';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import FocusScope from '@/components/ui/FocusScope';
 import TextAreaInput from '@/components/ui/TextAreaInput';
+import { TextButton } from '@/components/ui/TextButton';
 import useAuth from '@/features/auth/useAuth';
 import { errorMessage, type ReportTarget } from '@/lib/firebase';
 import { LIMITS, REPORT_REASONS, type ReportReason } from '@/lib/models';
 import {
-  COLOR_GREEN,
-  COLOR_LIGHT_GREEN,
-  COLOR_LIGHTEST_GREEN,
-  FONT_BODY,
+  COLOR_LINE,
+  COLOR_SURFACE_RAISED,
+  COLOR_TEXT_MUTED,
+  SHADOW_OVERLAY,
   SPACE_MD,
   SPACE_SM,
+  TEXT_SM,
 } from '@/theme';
 import { useReport } from './queries';
 
@@ -30,13 +32,21 @@ interface ReportButtonProps {
   kind: 'build' | 'comment';
   /** Where the form sits when open: under a centered title, or left-aligned in a list. */
   align?: 'center' | 'start';
+  /** A ghost button (title blocks) or a text link (comment rows). */
+  appearance?: 'button' | 'text';
 }
 
 /**
  * A "Report" link-style button that opens a small inline form (reason + optional note). Hidden when
  * signed out and on your own content. Escape or Cancel closes it.
  */
-function ReportButton({ target, authorId, kind, align = 'start' }: ReportButtonProps) {
+function ReportButton({
+  target,
+  authorId,
+  kind,
+  align = 'start',
+  appearance = 'text',
+}: ReportButtonProps) {
   const { uid } = useAuth();
   const report = useReport(target, uid);
   const [open, setOpen] = useState(false);
@@ -65,15 +75,21 @@ function ReportButton({ target, authorId, kind, align = 'start' }: ReportButtonP
     if (reason) report.mutate({ reason, note });
   };
 
+  const toggleProps = {
+    'aria-expanded': open,
+    'aria-label': `Report this ${kind}`,
+    onClick: () => (open ? close() : setOpen(true)),
+  };
+
   return (
     <>
-      <LinkButton
-        type="button"
-        aria-expanded={open}
-        aria-label={`Report this ${kind}`}
-        onClick={() => (open ? close() : setOpen(true))}>
-        Report
-      </LinkButton>
+      {appearance === 'button' ? (
+        <Button variant="ghost" {...toggleProps}>
+          Report
+        </Button>
+      ) : (
+        <TextButton {...toggleProps}>Report</TextButton>
+      )}
       {open ? (
         // Focuses the reason; Escape closes and focus returns to "Report".
         <FormScope onEscape={close} $align={align}>
@@ -100,9 +116,7 @@ function ReportButton({ target, authorId, kind, align = 'start' }: ReportButtonP
               <Button type="submit" disabled={!reason || report.isPending}>
                 Send report
               </Button>
-              <LinkButton type="button" onClick={close}>
-                Cancel
-              </LinkButton>
+              <TextButton onClick={close}>Cancel</TextButton>
             </Actions>
           </Form>
         </FormScope>
@@ -110,17 +124,6 @@ function ReportButton({ target, authorId, kind, align = 'start' }: ReportButtonP
     </>
   );
 }
-
-const LinkButton = styled.button`
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  padding: 0;
-  text-decoration: underline;
-`;
 
 const FormScope = styled(FocusScope)<{ $align: 'center' | 'start' }>`
   display: flex;
@@ -130,17 +133,17 @@ const FormScope = styled(FocusScope)<{ $align: 'center' | 'start' }>`
 `;
 
 const Form = styled.form`
-  background-color: ${COLOR_GREEN};
-  border: 1px solid ${COLOR_LIGHT_GREEN};
-  box-sizing: border-box;
+  background-color: ${COLOR_SURFACE_RAISED};
+  border: 1px solid ${COLOR_LINE};
+  box-shadow: ${SHADOW_OVERLAY};
   display: flex;
   flex-basis: 100%;
   flex-direction: column;
   gap: ${SPACE_SM};
   max-width: 400px;
-  padding: 12px;
+  padding: ${SPACE_MD};
+  text-align: left;
   width: 100%;
-  font-family: ${FONT_BODY};
 `;
 
 const NoteContainer = styled.div`
@@ -154,8 +157,8 @@ const Actions = styled.div`
 `;
 
 const Done = styled.span`
-  color: ${COLOR_LIGHTEST_GREEN};
-  font-size: 14px;
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
 `;
 
 export default ReportButton;

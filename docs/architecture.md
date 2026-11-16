@@ -121,8 +121,6 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
 - Landing filters: only the first tag is a Firestore query; further tags and the level range filter the loaded
   pages, so a narrow filter can show few results per page ("Load more" fetches more). Search is a name prefix
   match only, and ignores sort and the server-side tag [T9].
-- Game data (~1.2 MB of JSON, 294 KB gzipped, in the `Slot` chunk) loads with the landing page because the
-  cards use it [T11: per route, or a slim index for the cards].
 - The rules check the types of positional equipment lists and single slots, but only the sizes of the
   talisman/spell/tear/consumable lists (Firestore's per-request expression budget; `firestore.rules`). The app
   ignores IDs it doesn't know.
@@ -149,13 +147,17 @@ modern product UI and ~50% in-world; `docs/decisions.md` "Redesign"). ESLint rej
 - **In-world building blocks** (`components/ui/`): `Frame` (framed panel with corner marks), `SectionHeading`,
   `Ornament` (divider), `PageHero` (title with the glow), `ItemTile` (inventory slot), and the `selectionBar`
   CSS (the game-menu hover/focus glow) in `inWorld.ts`. Use these instead of one-off ornaments.
-- **Legacy**: `legacy.ts` keeps the 2022 token names, remapped onto the new palette, so the build page, editor
-  and picker (restyled in T17) still compile and blend in. Don't use them in new code; T17 deletes the file.
 
-Weapon affinity/skill badges in
-`Slot` show details on mouse hover, and in view mode are buttons (tap/Enter toggles, Escape/blur closes; pinned to
-the bottom of the screen on phones). Dialogs and panels use `components/ui/FocusScope` (focus in, Escape, focus
-back; `trap` for the item picker modal). Item icons are decorative (`alt=""`): the name is always shown next to
+**Build page** (T17, `features/editor/`): view and edit share one layout (title block, then Equipment, About this
+build and Comments in the main column, Attributes and Spells in a 330 px side panel that moves above on tablets
+and phones). A slot is an `ItemRow`: `ItemTile` + name + a muted detail line (a weapon's affinity and skill, a
+spell's memory slots). In view mode rows are text and only filled slots and groups show; in edit mode each row is
+a button that opens the picker ("Choose talisman", "Change Uchigatana (Blood affinity, Seppuku skill)"), and
+spells and consumables (saved without positions) show the filled slots plus one empty row. The **picker** is a tall
+`Dialog` (`ItemSelector`): search, weapon type / spell kind / base game–DLC filters (`picker.ts`), the current item
+marked (`aria-current`), "Show more" paging; picking a weapon with Ashes of War moves to its Ash of War and
+affinity step, where a filled weapon slot also opens. Dialogs and panels use `components/ui/FocusScope` (focus
+in, Escape, focus back to the opener). Item icons are decorative (`alt=""`): the name is always shown next to
 them.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited.

@@ -16,3 +16,7 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
 - T4 — TanStack Query, one AuthProvider, page states, e2e — 2026-11-14 — query hooks per feature with
   optimistic likes/comment deletes, `AuthProvider`/`useAuth`, loading/error/empty/not-found everywhere, no load
   race or page reloads, SDK imports lint-restricted to `src/lib/firebase/`, Playwright e2e (`npm run e2e`, CI).
+- T5 — 2022 UI bug batch — 2026-11-14 — filters combine, cards keyed by id with armor slot types, timers, CSS,
+  placeholders, clearable affinity, picker cleanup, like unlock, signup validation, real forms, stats 1–99.
+- T6 — Missing core features — 2026-11-15 — delete/cancel/change item in place, password reset, profile rename
+  and tabs, 404s, send-only email verification (notice + resend), consumables restored; e2e covers them.

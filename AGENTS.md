@@ -14,12 +14,12 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T7, T10–T13, T16 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T7, T10–T13, T16, T17 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
-approved production deploys on `main`. T16 redesign: token design system (base + per-game skin), shell, landing,
-profile; T17 restyles the build page, editor and picker. Left from T12: the owner enforces App Check.
+approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
+page; the build page is view and edit in one layout, the picker a Dialog. Left from T12: the owner enforces App Check.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -106,12 +106,13 @@ src/
   features/profile/        Profile (rename, Builds/Liked tabs), queries.ts (useUserProfile(s), useLikedBuilds…)
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
-  features/editor/         BuildEditorPage (view/create/edit/delete) + useBuildEditor; queries.ts (useBuild,
-                           useSaveBuild, likes, comments); sections/ (BuildTitle with like button, BuildDetailsForm,
-                           Equipment/Stat/Tear/SpellEditor, DescriptionSection, BuildTags, CommentsSection);
-                           Slot, ItemSelector (picker) + WeaponOptions (Ash of War, affinity), slots.ts; store/ =
-                           Redux slices for the build being edited + selectors + build.ts (loadBuild /
-                           selectBuildFields: build ⇄ editor state)
+  features/editor/         BuildEditorPage (view/create/edit/delete, one layout) + useBuildEditor; queries.ts
+                           (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader with like/report/tags,
+                           OwnerActions, BuildDetailsForm (edit title block), Equipment/Stat/SpellEditor panels,
+                           DescriptionSection, CommentsSection); ItemRow (a slot as tile + name; button in edit
+                           mode) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
+                           with WeaponOptions), slots.ts; store/ = Redux slices for the build being edited +
+                           selectors + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, PageMessage, ErrorMessage,
                            FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
@@ -122,7 +123,7 @@ src/
                            array.ts
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
-                           GameSkinStyle; legacy.ts = 2022 names for T17's pages (don't use)
+                           GameSkinStyle
   data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
                            (zod; types only in the app), index.ts accessors by ID (getWeapon(id),
                            armorList(slot), iconUrl…), rules.ts (Ash of War/affinity/talisman rules, shared
@@ -131,7 +132,7 @@ src/
                            (+ game IDs), editor.tsx (EditorWithPicker, searchItems)
 tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/
                            (scripts/admin.mjs), e2e/ (Playwright)
-public/assets/             icons/<icon>.webp (T7 data); menu/ empty-slot icons (2022)
+public/assets/             icons/<icon>.webp (T7 data)
 scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, doctor, firebase (Java
                            wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript) +
                            name-aliases.json (2022 names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
@@ -148,8 +149,7 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **Layout**: a feature's pages, sections, hooks and state live in `src/features/<feature>/`; generic UI in
   `src/components/ui/`; framework-free code in `src/lib/`. See the `add-feature` skill.
 - **Styling**: styled-components, defined at the bottom of the file. Colors, fonts, breakpoints and spacing
-  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`), never `legacy.ts` in new
-  code. Game-specific color = the skin tokens (`COLOR_ACCENT`…); everything else is shared by all games. In-world
+  (`SPACE_*`) only from `@/theme` (ESLint rejects hex literals outside `src/theme/`). Game-specific color = the skin tokens (`COLOR_ACCENT`…); everything else is shared by all games. In-world
   touches come from the `components/ui/` building blocks (`Frame`, `Ornament`…), not one-offs.
   Style-only props are transient (`$active`). docs/architecture.md "Styling".
 - **State**: the build being edited → Redux slices + selectors (`useAppSelector`/`useAppDispatch`). Server

@@ -16,9 +16,10 @@ import spellsJson from './er/spells.json';
 import spiritAshesJson from './er/spiritAshes.json';
 import talismansJson from './er/talismans.json';
 import tearsJson from './er/tears.json';
+import weaponTypesJson from './er/weaponTypes.json';
 import weaponsJson from './er/weapons.json';
 import { lookup } from './core';
-import type { Armor, Arrow, Goods, Spell, Talisman, Weapon } from './schema';
+import type { Armor, Arrow, Goods, Spell, Talisman, Weapon, WeaponType } from './schema';
 
 export * from './core';
 
@@ -26,6 +27,8 @@ export * from './core';
 export type SlotItem = Weapon | Armor | Arrow | Talisman | Spell | Goods;
 
 export const weapons = weaponsJson as Weapon[];
+/** Weapon types (Dagger, Straight Sword…) in the game's order. */
+export const weaponTypes = weaponTypesJson as WeaponType[];
 export const armor = armorJson as Armor[];
 export const arrows = arrowsJson as Arrow[];
 export const talismans = talismansJson as Talisman[];

@@ -46,4 +46,15 @@ describe('Dialog', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
+
+  it('tall: the content is a flex column that fills a fixed height', () => {
+    render(
+      <Dialog title="Items" onClose={() => {}} tall>
+        <p>List</p>
+      </Dialog>,
+    );
+    const dialog = screen.getByRole('dialog', { name: 'Items' });
+    expect(getComputedStyle(dialog).display).toBe('flex');
+    expect(getComputedStyle(dialog).flexDirection).toBe('column');
+  });
 });

@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import {
   BELOW_MOBILE,
   COLOR_BACKDROP,
@@ -9,6 +9,7 @@ import {
   SHADOW_OVERLAY,
   SPACE_GUTTER,
   SPACE_LG,
+  SPACE_MD,
   TEXT_XL,
 } from '@/theme';
 import CloseButton from './CloseButton';
@@ -22,6 +23,11 @@ interface DialogProps {
   children: ReactNode;
   /** Max width in px (default 440). */
   width?: number;
+  /**
+   * `tall`: a fixed height (most of the screen) with the content as a flex column, so a long list
+   * inside can scroll under a fixed toolbar (the item picker). Default: as tall as the content.
+   */
+  tall?: boolean;
 }
 
 /**
@@ -29,7 +35,7 @@ interface DialogProps {
  * trapped inside (starting on the first control in `children`), Escape closes, and focus goes back to the opener on close (FocusScope). Render it
  * only while open.
  */
-function Dialog({ title, onClose, children, width = 440 }: DialogProps) {
+function Dialog({ title, onClose, children, width = 440, tall = false }: DialogProps) {
   const titleId = useId();
   return (
     <Backdrop
@@ -42,6 +48,7 @@ function Dialog({ title, onClose, children, width = 440 }: DialogProps) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        $tall={tall}
         $width={width}>
         <Title id={titleId}>{title}</Title>
         {children}
@@ -70,13 +77,28 @@ const Backdrop = styled.div`
   }
 `;
 
-const Panel = styled(FocusScope)<{ $width: number }>`
+const Panel = styled(FocusScope)<{ $tall: boolean; $width: number }>`
   ${framed}
   box-shadow: ${SHADOW_OVERLAY};
   max-width: ${({ $width }) => $width}px;
   outline: none;
   padding: ${SPACE_LG};
   width: 100%;
+
+  ${({ $tall }) =>
+    $tall &&
+    css`
+      display: flex;
+      flex-direction: column;
+      height: min(84vh, 800px);
+      margin-top: -4vh;
+
+      @media ${BELOW_MOBILE} {
+        height: calc(100dvh - 2 * ${SPACE_GUTTER});
+        margin-top: 0;
+        padding: ${SPACE_MD};
+      }
+    `}
 `;
 
 const Close = styled.div`
@@ -86,6 +108,7 @@ const Close = styled.div`
 `;
 
 const Title = styled.h2`
+  flex: none;
   background: linear-gradient(${COLOR_HIGHLIGHT} 30%, ${COLOR_ACCENT});
   background-clip: text;
   color: transparent;

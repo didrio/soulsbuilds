@@ -2,7 +2,6 @@
 export * from './colors';
 export * from './elevation';
 export * from './fonts';
-export * from './legacy';
 export * from './media';
 export * from './motion';
 export * from './radius';

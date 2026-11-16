@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeBuild, makeProfile } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
@@ -17,6 +17,11 @@ vi.mock('@/lib/firebase', () => ({
   ...firebase,
   errorMessage: (error: unknown) => (error instanceof Error ? error.message : 'error'),
 }));
+
+/** The rune level the Attributes panel shows. */
+const shownLevel = () =>
+  within(screen.getByRole('region', { name: 'Attributes' })).getByText('Rune level').previousSibling
+    ?.textContent;
 
 const renderPage = (route: string, uid: string | null = null) =>
   renderWithProviders(<BuildEditorPage />, { route, path: '/build/:buildId', uid });
@@ -61,14 +66,14 @@ describe('BuildEditorPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Edit' }));
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('You are not allowed to do that.');
-    expect(screen.getByLabelText('Build Name')).toHaveValue('Carian Moon Knight');
+    expect(screen.getByLabelText('Build name')).toHaveValue('Carian Moon Knight');
   });
 
   it('does not save a build without a name', async () => {
     firebase.getBuild.mockResolvedValue(makeBuild());
     const { user } = renderPage('/build/SEEDMOON0001', 'seed-ranni');
     await user.click(await screen.findByRole('button', { name: 'Edit' }));
-    await user.clear(screen.getByLabelText('Build Name'));
+    await user.clear(screen.getByLabelText('Build name'));
     await user.click(screen.getByRole('button', { name: 'Save' }));
     expect(screen.getByRole('alert')).toHaveTextContent('Give your build a name.');
     expect(firebase.updateBuild).not.toHaveBeenCalled();
@@ -80,9 +85,10 @@ describe('BuildEditorPage', () => {
     await user.click(await screen.findByRole('button', { name: 'Edit' }));
     await user.clear(screen.getByLabelText('Vigor'));
     await user.type(screen.getByLabelText('Vigor'), '99');
-    expect(screen.getByText('Level 191')).toBeInTheDocument();
+    expect(shownLevel()).toBe('191');
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
-    expect(screen.getByText('Level 132')).toBeInTheDocument();
+    expect(shownLevel()).toBe('132');
+    expect(screen.getByRole('heading', { name: 'Carian Moon Knight' })).toBeInTheDocument();
   });
 
   it('asks signed-out visitors to log in before creating a build', async () => {
@@ -94,7 +100,8 @@ describe('BuildEditorPage', () => {
 
   it('starts /build/new from an empty editor', async () => {
     renderPage('/build/new', 'alice');
-    expect(await screen.findByLabelText('Build Name')).toHaveValue('');
-    expect(screen.getByText('Level 1')).toBeInTheDocument();
+    expect(await screen.findByLabelText('Build name')).toHaveValue('');
+    expect(screen.getByRole('heading', { name: 'New build' })).toBeInTheDocument();
+    expect(shownLevel()).toBe('1');
   });
 });

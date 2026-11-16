@@ -10,20 +10,20 @@ TanStack Query hooks and one `AuthProvider` (T4).
 
 ## Where things go
 
-| You need…                         | Put it in                                                                                                                                                                            |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| A new page / URL                  | A `<Route>` in `src/app/routes.tsx` + a page component in `src/features/<feature>/`                                                                                                  |
-| A section of the build page       | `src/features/editor/sections/` (rendered by `BuildEditorPage`); page logic in a `use*` hook next to the page                                                                        |
-| Shared UI (button, input, tag…)   | `src/components/ui/` — reuse what's there first (`Button`, `TextInput`, `FlexGroup`, `Tag`, `Chips`, `DropDown`)                                                                     |
-| State for the build being edited  | A slice/action in `src/features/editor/store/` + a selector in `selectors.ts`; slot ids in `slots.ts`                                                                                |
-| Saving/loading a new build field  | `src/lib/models.ts`, `firestore.rules` (+ rules test), then `loadBuild`/`selectBuildFields` in `store/build.ts`                                                                      |
-| A Firestore/Auth call             | A function in `src/lib/firebase/<area>.ts` (only that folder imports the SDK; lint enforces it)                                                                                      |
-| Server data in a component        | A TanStack Query hook in `src/features/<feature>/queries.ts`, keyed by `src/lib/queryKeys.ts`. Never Redux                                                                           |
-| The signed-in user                | `useAuth()` from `@/features/auth/useAuth` (`{ loading, user, uid }`); profile via `useUserProfile(uid)`                                                                             |
-| Game data (items, spells, tags…)  | Read through `@/data` accessors (`getWeapon(name)`, `armorList(kind)`…). JSON is machine-written: `npm run data`                                                                     |
-| Pure calculations (stats, weight) | `src/lib/buildMath.ts` (or a new `src/lib/*.ts`), with a colocated test                                                                                                              |
-| Colors, fonts, breakpoints        | `@/theme` (`COLOR_*` incl. the game skin's `COLOR_ACCENT…`, `FONT_*`, `TEXT_*`, `SPACE_*`, `BELOW_MOBILE/TABLET`); not `legacy.ts`. ESLint rejects hex literals outside `src/theme/` |
-| Panels, headings, dividers, items | `components/ui/` `Frame`, `SectionHeading`, `Ornament`, `PageHero`, `ItemTile`, `Dialog`, `Button` variants (docs/architecture.md "Styling")                                         |
+| You need…                         | Put it in                                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A new page / URL                  | A `<Route>` in `src/app/routes.tsx` + a page component in `src/features/<feature>/`                                                                                 |
+| A section of the build page       | `src/features/editor/sections/` (rendered by `BuildEditorPage`); page logic in a `use*` hook next to the page                                                       |
+| Shared UI (button, input, tag…)   | `src/components/ui/` — reuse what's there first (`Button`, `TextInput`, `Dialog`, `Tag`, `Chips`, `DropDown`, `Frame`, `ItemTile`)                                  |
+| State for the build being edited  | A slice/action in `src/features/editor/store/` + a selector in `selectors.ts`; slot ids in `slots.ts`                                                               |
+| Saving/loading a new build field  | `src/lib/models.ts`, `firestore.rules` (+ rules test), then `loadBuild`/`selectBuildFields` in `store/build.ts`                                                     |
+| A Firestore/Auth call             | A function in `src/lib/firebase/<area>.ts` (only that folder imports the SDK; lint enforces it)                                                                     |
+| Server data in a component        | A TanStack Query hook in `src/features/<feature>/queries.ts`, keyed by `src/lib/queryKeys.ts`. Never Redux                                                          |
+| The signed-in user                | `useAuth()` from `@/features/auth/useAuth` (`{ loading, user, uid }`); profile via `useUserProfile(uid)`                                                            |
+| Game data (items, spells, tags…)  | Read through `@/data` accessors (`getWeapon(name)`, `armorList(kind)`…). JSON is machine-written: `npm run data`                                                    |
+| Pure calculations (stats, weight) | `src/lib/buildMath.ts` (or a new `src/lib/*.ts`), with a colocated test                                                                                             |
+| Colors, fonts, breakpoints        | `@/theme` (`COLOR_*` incl. the game skin's `COLOR_ACCENT…`, `FONT_*`, `TEXT_*`, `SPACE_*`, `BELOW_MOBILE/TABLET`). ESLint rejects hex literals outside `src/theme/` |
+| Panels, headings, dividers, items | `components/ui/` `Frame`, `SectionHeading`, `Ornament`, `PageHero`, `ItemTile`, `Dialog`, `Button` variants (docs/architecture.md "Styling")                        |
 
 ## Steps
 

@@ -3,23 +3,29 @@ import { Link } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import FlexGroup from '@/components/ui/FlexGroup';
+import Frame from '@/components/ui/Frame';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import SectionHeading from '@/components/ui/SectionHeading';
 import TextAreaInput from '@/components/ui/TextAreaInput';
+import { TextButton } from '@/components/ui/TextButton';
+import { fadingRule } from '@/components/ui/inWorld';
 import useAuth from '@/features/auth/useAuth';
 import { useUserProfiles } from '@/features/profile/queries';
 import ReportButton from '@/features/reports/ReportButton';
 import { errorMessage } from '@/lib/firebase';
 import { LIMITS } from '@/lib/models';
 import {
-  COLOR_LIGHT_GREEN,
-  COLOR_LIGHTEST_GREEN,
-  COLOR_LIGHTEST_GREEN_LOW_OPACITY,
-  BELOW_800,
+  COLOR_ACCENT_STRONG,
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
   SPACE_LG,
   SPACE_MD,
   SPACE_SM,
-  SPACE_XL,
+  SPACE_XS,
+  TEXT_MD,
+  TEXT_SM,
+  TEXT_XS,
+  TRACKING_CAPS,
 } from '@/theme';
 import { useAddComment, useComments, useDeleteComment } from '../queries';
 
@@ -40,178 +46,151 @@ function CommentsSection({ buildId }: { buildId: string }) {
     addComment.mutate(text, { onSuccess: () => setText('') });
   };
 
+  const list = comments.data ?? [];
+  const count = comments.data?.length;
+
   return (
-    <CommentsContainer>
-      <CommentsView aria-labelledby="comments-title">
-        <Title id="comments-title">Comments</Title>
-        {comments.isPending ? <LoadingAnimation size={30} /> : null}
-        {comments.isError ? (
-          <ErrorMessage onRetry={() => void comments.refetch()}>
-            {errorMessage(comments.error)}
-          </ErrorMessage>
-        ) : null}
-        {comments.data?.length === 0 ? <Empty>No comments yet.</Empty> : null}
-        {comments.data?.length ? (
-          <CommentList>
-            {comments.data.map((comment) => (
-              <CommentItem key={comment.id}>
-                <CommentMeta>
-                  <Link to={`/user/${comment.authorId}`}>
-                    {authors[comment.authorId]?.displayName ?? 'Someone'}
-                  </Link>
-                  <time dateTime={comment.createdAt.toISOString()}>
-                    {dateFormat.format(comment.createdAt)}
-                  </time>
+    <Frame aria-labelledby="comments-title">
+      <SectionHeading id="comments-title">
+        {count ? `Comments · ${count}` : 'Comments'}
+      </SectionHeading>
+      {comments.isPending ? <LoadingAnimation size={30} /> : null}
+      {comments.isError ? (
+        <ErrorMessage onRetry={() => void comments.refetch()}>
+          {errorMessage(comments.error)}
+        </ErrorMessage>
+      ) : null}
+      {count === 0 ? <Empty>No comments yet.</Empty> : null}
+      {count ? (
+        <CommentList>
+          {list.map((comment) => (
+            <CommentItem key={comment.id}>
+              <CommentMeta>
+                <Author to={`/user/${comment.authorId}`}>
+                  {authors[comment.authorId]?.displayName ?? 'Someone'}
+                </Author>
+                <time dateTime={comment.createdAt.toISOString()}>
+                  {dateFormat.format(comment.createdAt)}
+                </time>
+                <Controls>
                   {comment.authorId === uid ? (
-                    <DeleteButton
-                      type="button"
+                    <TextButton
                       aria-label="Delete your comment"
                       onClick={() => deleteComment.mutate(comment.id)}
                       disabled={deleteComment.isPending}>
                       Delete
-                    </DeleteButton>
+                    </TextButton>
                   ) : null}
                   <ReportButton
                     target={{ buildId, commentId: comment.id }}
                     authorId={comment.authorId}
                     kind="comment"
                   />
-                </CommentMeta>
-                <CommentText>{comment.text}</CommentText>
-              </CommentItem>
-            ))}
-          </CommentList>
-        ) : null}
-        <ErrorMessage>{deleteComment.error ? errorMessage(deleteComment.error) : ''}</ErrorMessage>
-      </CommentsView>
-      <CommentsPost onSubmit={handleSubmit}>
-        <Title as="label" htmlFor="new-comment">
-          Post a comment
-        </Title>
-        <CommentTextAreaContainer>
-          <TextAreaInput
-            id="new-comment"
-            disabled={!uid || addComment.isPending}
-            maxLength={LIMITS.comment}
-            onChange={setText}
-            placeholder={uid ? '' : 'Log in to comment'}
-            value={text}
-          />
-        </CommentTextAreaContainer>
+                </Controls>
+              </CommentMeta>
+              <CommentText>{comment.text}</CommentText>
+            </CommentItem>
+          ))}
+        </CommentList>
+      ) : null}
+      <ErrorMessage>{deleteComment.error ? errorMessage(deleteComment.error) : ''}</ErrorMessage>
+      <PostForm onSubmit={handleSubmit}>
+        <Label htmlFor="new-comment">Post a comment</Label>
+        <TextAreaInput
+          id="new-comment"
+          disabled={!uid || addComment.isPending}
+          maxLength={LIMITS.comment}
+          onChange={setText}
+          placeholder={uid ? 'What worked for you?' : 'Log in to comment'}
+          rows={3}
+          value={text}
+        />
         <ErrorMessage>{addComment.error ? errorMessage(addComment.error) : ''}</ErrorMessage>
-        <SaveCommentContainer>
+        <div>
           <Button type="submit" disabled={!text.trim() || addComment.isPending || !uid}>
             Post
           </Button>
-        </SaveCommentContainer>
-      </CommentsPost>
-    </CommentsContainer>
+        </div>
+      </PostForm>
+    </Frame>
   );
 }
 
-const SaveCommentContainer = styled(FlexGroup)`
-  justify-content: center;
-  margin-top: ${SPACE_LG};
-`;
-
-const Title = styled.h2`
-  display: block;
-  font-size: 24px;
-  font-weight: normal;
-  margin: 0 0 ${SPACE_SM};
-  color: ${COLOR_LIGHTEST_GREEN};
+const Empty = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: 0;
+  text-align: center;
 `;
 
 const CommentList = styled.ol`
   list-style: none;
-  margin: ${SPACE_MD} 0 ${SPACE_LG};
+  margin: 0;
   padding: 0;
 `;
 
+// Separated by a fading rule, like the game's menu lists.
 const CommentItem = styled.li`
-  border-bottom: 1px dashed ${COLOR_LIGHT_GREEN};
-  padding-bottom: ${SPACE_SM};
-  margin-bottom: ${SPACE_LG};
-  font-size: 18px;
+  padding: ${SPACE_MD} 0;
+  position: relative;
 
-  &:last-child {
-    border: none;
+  & + &::before {
+    background: ${fadingRule};
+    content: '';
+    height: 1px;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 `;
 
 const CommentMeta = styled.div`
-  align-items: baseline;
+  align-items: center;
+  color: ${COLOR_TEXT_MUTED};
   display: flex;
   flex-wrap: wrap;
-  gap: ${SPACE_SM};
-  margin-bottom: ${SPACE_SM};
-  font-size: 14px;
+  font-size: ${TEXT_XS};
+  gap: 0 ${SPACE_SM};
+`;
 
-  & > a {
-    color: ${COLOR_LIGHTEST_GREEN};
-    font-size: 18px;
-    font-weight: bold;
+const Author = styled(Link)`
+  color: ${COLOR_TEXT};
+  font-size: ${TEXT_SM};
+  font-weight: 600;
+
+  &:hover {
+    color: ${COLOR_ACCENT_STRONG};
   }
 `;
 
+const Controls = styled.span`
+  align-items: center;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0 ${SPACE_XS};
+  margin-left: auto;
+`;
+
 const CommentText = styled.p`
-  margin: 0;
+  font-size: ${TEXT_MD};
+  margin: ${SPACE_XS} 0 0;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 `;
 
-const DeleteButton = styled.button`
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
-  text-decoration: underline;
+const PostForm = styled.form`
+  display: grid;
+  gap: ${SPACE_SM};
+  margin-top: ${SPACE_LG};
 `;
 
-const CommentTextAreaContainer = styled(FlexGroup)`
-  height: 100px;
-  width: 100%;
-  margin-top: ${SPACE_MD};
-`;
-
-const Empty = styled.p`
-  font-size: 18px;
-  margin: 0;
-`;
-
-const CommentsContainer = styled(FlexGroup)`
-  width: 100%;
-  border-top: 1px solid ${COLOR_LIGHTEST_GREEN_LOW_OPACITY};
-  padding-top: ${SPACE_LG};
-
-  @media ${BELOW_800} {
-    flex-direction: column;
-  }
-`;
-
-const CommentsPost = styled.form`
-  align-items: flex-start;
-  display: flex;
-  flex-direction: column;
-  width: 40%;
-  padding-left: ${SPACE_XL};
-
-  @media ${BELOW_800} {
-    width: 100%;
-    padding-left: 0px;
-    margin-top: ${SPACE_LG};
-  }
-`;
-
-const CommentsView = styled.section`
-  display: flex;
-  flex-direction: column;
-  width: 60%;
-
-  @media ${BELOW_800} {
-    width: 100%;
-  }
+const Label = styled.label`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
 `;
 
 export default CommentsSection;

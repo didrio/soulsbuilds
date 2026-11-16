@@ -27,23 +27,23 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   // Create a build: name, weapons from the picker (with an Ash of War and affinity), a great rune,
   // a stat.
   await page.getByRole('link', { name: 'New build' }).click();
-  await page.getByLabel('Build Name').fill(buildName);
+  await page.getByLabel('Build name').fill(buildName);
   await page.getByRole('button', { name: 'Choose weapon' }).first().click();
   await page.getByLabel('Search items').fill('Moonveil');
   await page.getByRole('button', { name: /^Moonveil/ }).click();
-  // A unique weapon: its skill is fixed, no Ash of War or affinity to choose.
+  // A unique weapon: nothing to choose, so the picker closes; reopened, it shows the fixed skill.
   await page.getByRole('button', { name: 'Change Moonveil (Transient Moonlight skill)' }).click();
   await expect(page.getByText("Transient Moonlight (can't be changed)")).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Ash of War' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('button', { name: 'Change weapon' }).click();
 
-  await page.getByRole('button', { name: 'Choose weapon' }).first().click();
+  // Change weapon: back to the list (filtered to katanas), then its Ash of War and affinity step.
+  await page.getByRole('combobox', { name: 'Weapon type' }).selectOption({ label: 'Katana' });
   await page.getByLabel('Search items').fill('Uchigatana');
   await page.getByRole('button', { name: /^Uchigatana/ }).click();
-  await page.getByRole('button', { name: 'Change Uchigatana (Unsheathe skill)' }).click();
   await page.getByRole('combobox', { name: 'Ash of War' }).selectOption({ label: 'Seppuku' });
   await page.getByRole('combobox', { name: 'Affinity' }).selectOption({ label: 'Blood' });
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page.getByRole('button', { name: 'Done' }).click();
   await expect(
     page.getByRole('button', { name: 'Change Uchigatana (Blood affinity, Seppuku skill)' }),
   ).toBeVisible();
@@ -53,16 +53,15 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   const vigor = page.getByLabel('Vigor');
   await vigor.fill('40');
   await vigor.blur();
-  await expect(page.getByText('Level 31')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Attributes' })).toContainText('31Rune level');
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
   // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune.
-  await expect(page.getByRole('button', { name: 'Affinity: Blood' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Skill: Seppuku' })).toBeVisible();
+  await expect(page.getByText('Blood · Seppuku')).toBeVisible();
   await expect(page.getByText("Radahn's Great Rune")).toBeVisible();
-  await expect(page.getByText(`Created by${displayName}`)).toBeVisible();
+  await expect(page.getByRole('link', { name: displayName })).toBeVisible();
 
   // Like (optimistic, then confirmed).
   await page.getByRole('button', { name: /0 Likes/ }).click();
@@ -80,7 +79,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
 
   // Edit keeps likes and comments (2022 bug: saving reset them).
   await page.getByRole('button', { name: 'Edit' }).click();
-  await page.getByLabel('Build Name').fill(`${buildName} v2`);
+  await page.getByLabel('Build name').fill(`${buildName} v2`);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name: `${buildName} v2` })).toBeVisible();
   await page.reload();
@@ -186,7 +185,7 @@ test('rename, password reset, verification notice and consumables', async ({ pag
 
   // Consumables: pick one, save, and see it in view mode.
   await page.getByRole('link', { name: 'Create a build' }).click();
-  await page.getByLabel('Build Name').fill(`T6 Build ${unique}`);
+  await page.getByLabel('Build name').fill(`T6 Build ${unique}`);
   await page.getByRole('button', { name: 'Choose item' }).first().click();
   await page.getByLabel('Search items').fill('Acid Spraymist');
   await page.getByRole('button', { name: /^Acid Spraymist/ }).click();

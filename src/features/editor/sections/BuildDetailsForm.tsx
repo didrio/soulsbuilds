@@ -1,12 +1,12 @@
 import styled from 'styled-components';
 import Chips from '@/components/ui/Chips';
-import FlexGroup from '@/components/ui/FlexGroup';
+import PageHero from '@/components/ui/PageHero';
 import TextInput from '@/components/ui/TextInput';
 import { LIMITS } from '@/lib/models';
-import { BELOW_1100, BELOW_1400 } from '@/theme';
-import { EditorContainer, SectionHeader } from '../styles';
+import { COLOR_TEXT_MUTED, SPACE_LG, SPACE_XS, TEXT_XS, TRACKING_CAPS } from '@/theme';
 
 interface BuildDetailsFormProps {
+  isNew: boolean;
   name: string;
   onAddTag: (tag: string) => void;
   onNameChange: (name: string) => void;
@@ -14,8 +14,9 @@ interface BuildDetailsFormProps {
   tags: string[];
 }
 
-/** Edit mode: build name and tags (above the equipment). */
+/** Edit mode's title block: "New build" / "Edit build", then the build's name and tags. */
 function BuildDetailsForm({
+  isNew,
   name,
   onAddTag,
   onNameChange,
@@ -23,53 +24,47 @@ function BuildDetailsForm({
   tags,
 }: BuildDetailsFormProps) {
   return (
-    <>
-      <HeaderContainer vertical>
-        <SectionHeader as="label" htmlFor="build-name">
-          Build Name
-        </SectionHeader>
-        <NameInputContainer>
+    <PageHero title={isNew ? 'New build' : 'Edit build'}>
+      <Fields>
+        <Field>
+          <Label htmlFor="build-name">Build name</Label>
           <TextInput
             id="build-name"
             maxLength={LIMITS.buildName}
             onChange={onNameChange}
+            placeholder="e.g. Bloodhound Samurai"
             required
             value={name}
           />
-        </NameInputContainer>
-      </HeaderContainer>
-      <TagContainer vertical>
-        <SectionHeader>Tags</SectionHeader>
-        <Chips onAdd={onAddTag} onRemove={onRemoveTag} values={tags} />
-      </TagContainer>
-    </>
+        </Field>
+        <Field>
+          <Label as="span">Tags</Label>
+          <Chips onAdd={onAddTag} onRemove={onRemoveTag} values={tags} />
+        </Field>
+      </Fields>
+    </PageHero>
   );
 }
 
-const HeaderContainer = styled(EditorContainer)`
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 30px;
-  margin-top: 20px;
+const Fields = styled.div`
+  display: grid;
+  gap: ${SPACE_LG};
+  margin: ${SPACE_LG} auto 0;
+  max-width: 560px;
+  text-align: left;
 `;
 
-const NameInputContainer = styled(FlexGroup)`
-  width: 400px;
-  margin-top: 5px;
-
-  @media ${BELOW_1400} {
-    width: 300px;
-  }
-
-  @media ${BELOW_1100} {
-    width: 250px;
-  }
+const Field = styled.div`
+  display: grid;
+  gap: ${SPACE_XS};
 `;
 
-const TagContainer = styled(EditorContainer)`
-  max-width: 76%;
-  width: 76%;
-  z-index: 10;
+const Label = styled.label`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
+  letter-spacing: ${TRACKING_CAPS};
+  text-transform: uppercase;
 `;
 
 export default BuildDetailsForm;

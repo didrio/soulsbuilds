@@ -1,33 +1,26 @@
 import { lazy, Suspense, useState } from 'react';
 import styled from 'styled-components';
 import Dialog from '@/components/ui/Dialog';
-import FocusScope from '@/components/ui/FocusScope';
-import { framed } from '@/components/ui/inWorld';
-import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
 import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
 import useAuth from '@/features/auth/useAuth';
-import { closePicker } from '@/features/editor/store/app';
 import { selectSlotType } from '@/features/editor/store/selectors';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
-  COLOR_BACKDROP,
   COLOR_BG,
   CONTENT_WIDTH,
   GameSkinStyle,
   GlobalStyle,
-  SHADOW_OVERLAY,
   SPACE_GUTTER,
-  SPACE_LG,
 } from '@/theme';
 import Footer from './Footer';
 import { useCurrentGame } from './game';
 import Header from './Header';
-import { useAppDispatch, useAppSelector } from './hooks';
+import { useAppSelector } from './hooks';
 import AppRoutes from './routes';
 
-// The picker holds the full game data (~1 MB), so it loads when a slot is first opened.
+// The picker (its own Dialog) holds the full game data (~1 MB), so it loads when a slot is first opened.
 const ItemSelector = lazy(() => import('@/features/editor/ItemSelector'));
 
 type AuthDialog = 'login' | 'signup';
@@ -37,17 +30,10 @@ type AuthDialog = 'login' | 'signup';
  * the routes, the footer, and the item picker modal (open while Redux `app.slotType` is set).
  */
 function App() {
-  const dispatch = useAppDispatch();
   const slotType = useAppSelector(selectSlotType);
   const { uid } = useAuth();
   const game = useCurrentGame();
   const [authDialog, setAuthDialog] = useState<AuthDialog | null>(null);
-
-  const top = (document.documentElement.scrollTop || document.body.scrollTop || 0) + 120;
-
-  const handleHideModal = () => {
-    dispatch(closePicker());
-  };
 
   const closeAuth = () => setAuthDialog(null);
 
@@ -76,25 +62,15 @@ function App() {
           )}
         </Dialog>
       ) : null}
-      {/* T17 moves the picker onto Dialog; until then only its colors changed. */}
       {slotType === null ? null : (
-        <ModalContainer>
-          <OutsideClickHandler onOutsideClick={handleHideModal}>
-            <Modal $top={top} role="dialog" aria-modal="true" aria-label="Choose an item">
-              <ModalFocusScope trap onEscape={handleHideModal}>
-                <Suspense fallback={null}>
-                  <ItemSelector />
-                </Suspense>
-              </ModalFocusScope>
-            </Modal>
-          </OutsideClickHandler>
-        </ModalContainer>
+        <Suspense fallback={null}>
+          <ItemSelector />
+        </Suspense>
       )}
     </Shell>
   );
 }
 
-// Positioned so the picker's backdrop covers the whole page height.
 const Shell = styled.div`
   min-height: 100vh;
   position: relative;
@@ -124,29 +100,6 @@ const Main = styled.main`
   @media ${BELOW_MOBILE} {
     padding: 0 ${SPACE_GUTTER};
   }
-`;
-
-const ModalContainer = styled.div`
-  background-color: ${COLOR_BACKDROP};
-  display: flex;
-  inset: 0;
-  justify-content: center;
-  position: absolute;
-  z-index: 100;
-`;
-
-// The picker sizes itself to the modal (height: 100%), so the focus wrapper must pass it through.
-const ModalFocusScope = styled(FocusScope)`
-  height: 100%;
-`;
-
-const Modal = styled.div<{ $top: number }>`
-  ${framed}
-  box-shadow: ${SHADOW_OVERLAY};
-  height: 70vh;
-  margin-top: ${({ $top }) => $top}px;
-  padding: ${SPACE_LG};
-  width: 70vw;
 `;
 
 export default App;

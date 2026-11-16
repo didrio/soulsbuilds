@@ -1,24 +1,33 @@
 import { Link, useParams } from 'react-router';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import FlexGroup from '@/components/ui/FlexGroup';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import Ornament from '@/components/ui/Ornament';
 import PageMessage from '@/components/ui/PageMessage';
+import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
 import { errorMessage } from '@/lib/firebase';
-import { BELOW_1100 } from '@/theme';
+import {
+  BELOW_MOBILE,
+  BELOW_TABLET,
+  COLOR_BG,
+  COLOR_FRAME,
+  SHADOW_OVERLAY,
+  SPACE_GUTTER,
+  SPACE_LG,
+  SPACE_MD,
+  SPACE_SM,
+  SPACE_XXL,
+} from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
-import BuildTags from './sections/BuildTags';
-import BuildTitle from './sections/BuildTitle';
+import BuildHeader from './sections/BuildHeader';
 import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
 import EquipmentEditor from './sections/EquipmentEditor';
+import OwnerActions from './sections/OwnerActions';
 import SpellEditor from './sections/SpellEditor';
 import StatEditor from './sections/StatEditor';
-import TearEditor from './sections/TearEditor';
 import { selectLevel } from './store/build';
-import { EditorContainer } from './styles';
 import { useBuildEditor } from './useBuildEditor';
 
 /** `/build/:buildId` (or `/build/new`): one editor per build, so state never leaks between builds. */
@@ -28,7 +37,11 @@ function BuildEditorPage() {
   return <BuildEditor key={buildId} buildId={id} />;
 }
 
-/** View, create and edit a build in one page, plus likes, comments and delete. */
+/**
+ * View, create and edit a build in one layout: the title block, then equipment, the write-up and
+ * comments, with attributes and spells in a side panel (above everything on phones). Edit mode turns
+ * the same panels into controls and adds a sticky Save/Cancel bar.
+ */
 function BuildEditor({ buildId }: { buildId: string | null }) {
   const editor = useBuildEditor(buildId);
   const level = useAppSelector(selectLevel);
@@ -39,7 +52,7 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
     if (!auth.uid) {
       return (
         <PageMessage title="Log in to create a build">
-          <p>Use Login or Register at the top of the page, then come back here.</p>
+          <p>Use Log in or Sign up at the top of the page, then come back here.</p>
         </PageMessage>
       );
     }
@@ -65,141 +78,129 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
   }
 
   return (
-    <Container>
-      {!editable && build ? <BuildTitle build={build} /> : null}
-      <UpperSection>
-        <LeftColumn vertical>
-          {editable ? (
-            <BuildDetailsForm
-              name={editor.name}
-              onAddTag={editor.handleAddTag}
-              onNameChange={editor.setName}
-              onRemoveTag={editor.handleRemoveTag}
-              tags={editor.tags}
-            />
-          ) : null}
-          <EditorContainer>
-            <EquipmentEditor editable={editable} />
-          </EditorContainer>
-        </LeftColumn>
-        <RightColumn vertical>
-          <EditorContainer>
-            <StatEditor editable={editable} level={level} />
-          </EditorContainer>
-          <EditorContainer>
-            <TearEditor editable={editable} />
-          </EditorContainer>
-          <EditorContainer>
-            <SpellEditor editable={editable} />
-          </EditorContainer>
-        </RightColumn>
-      </UpperSection>
-      <LowerSection vertical>
-        <DescriptionSection
-          description={editor.description}
-          editable={editable}
-          onChange={editor.setDescription}
+    <>
+      <Back to="/">← All builds</Back>
+      {editable ? (
+        <BuildDetailsForm
+          isNew={isNew}
+          name={editor.name}
+          onAddTag={editor.handleAddTag}
+          onNameChange={editor.setName}
+          onRemoveTag={editor.handleRemoveTag}
+          tags={editor.tags}
         />
-        {editable || editor.tags.length === 0 ? null : <BuildTags tags={editor.tags} />}
-        {editable ? (
-          <Actions vertical>
-            <ErrorMessage>{editor.saveError}</ErrorMessage>
-            {editor.saving ? (
-              <LoadingAnimation size={30} />
-            ) : (
-              <FlexGroup>
-                <Button onClick={editor.handleSave}>Save</Button>
-                <SecondaryButton onClick={editor.handleCancel}>Cancel</SecondaryButton>
-              </FlexGroup>
-            )}
-          </Actions>
-        ) : null}
-        {!editable && editor.isOwner ? (
-          <Actions vertical>
-            <ErrorMessage>{editor.deleteError}</ErrorMessage>
-            {editor.confirmingDelete ? (
-              <>
-                <p>Delete this build, with its likes and comments? This can’t be undone.</p>
-                {editor.deleting ? (
-                  <LoadingAnimation size={30} />
-                ) : (
-                  <FlexGroup>
-                    <Button onClick={editor.handleDelete}>Yes, delete</Button>
-                    <SecondaryButton onClick={() => editor.setConfirmingDelete(false)}>
-                      Keep it
-                    </SecondaryButton>
-                  </FlexGroup>
-                )}
-              </>
-            ) : (
-              <FlexGroup>
-                <Button onClick={editor.handleEdit}>Edit</Button>
-                <SecondaryButton onClick={() => editor.setConfirmingDelete(true)}>
-                  Delete build
-                </SecondaryButton>
-              </FlexGroup>
-            )}
-          </Actions>
-        ) : null}
-        {!editable && build ? <CommentsSection buildId={build.id} /> : null}
-      </LowerSection>
-    </Container>
+      ) : build ? (
+        <BuildHeader
+          build={build}
+          ownerActions={
+            editor.isOwner ? (
+              <OwnerActions
+                confirmingDelete={editor.confirmingDelete}
+                deleting={editor.deleting}
+                deleteError={editor.deleteError}
+                onEdit={editor.handleEdit}
+                onAskDelete={editor.setConfirmingDelete}
+                onDelete={editor.handleDelete}
+              />
+            ) : null
+          }
+        />
+      ) : null}
+      <Ornament />
+      <Layout>
+        <Main>
+          <EquipmentEditor editable={editable} />
+          {/* T15: "How to get this build" goes here, between the equipment and the write-up. */}
+          <DescriptionSection
+            description={editor.description}
+            editable={editable}
+            onChange={editor.setDescription}
+          />
+          {!editable && build ? <CommentsSection buildId={build.id} /> : null}
+        </Main>
+        <Aside>
+          <StatEditor editable={editable} level={level} />
+          <SpellEditor editable={editable} />
+        </Aside>
+      </Layout>
+      {editable ? (
+        <EditBar aria-label="Save changes">
+          <ErrorMessage>{editor.saveError}</ErrorMessage>
+          <EditButtons>
+            <Button variant="secondary" onClick={editor.handleCancel} disabled={editor.saving}>
+              Cancel
+            </Button>
+            <Button onClick={editor.handleSave} disabled={editor.saving}>
+              {editor.saving ? 'Saving…' : 'Save'}
+            </Button>
+          </EditButtons>
+        </EditBar>
+      ) : null}
+    </>
   );
 }
 
-const Container = styled(FlexGroup)`
-  flex-direction: column;
-  align-items: center;
+const Back = styled(TextLink)`
+  margin-top: ${SPACE_MD};
 `;
 
-const UpperSection = styled(FlexGroup)`
-  min-height: 400px;
-  width: 100%;
+// Main column + a 330 px side panel; on tablets and phones one column with the side panel first.
+const Layout = styled.div`
+  align-items: start;
+  display: grid;
+  gap: ${SPACE_LG};
+  grid-template-areas: 'main aside';
+  grid-template-columns: minmax(0, 1fr) 330px;
+  margin-bottom: ${SPACE_XXL};
 
-  @media ${BELOW_1100} {
-    flex-direction: column;
+  @media ${BELOW_TABLET} {
+    grid-template-areas: 'aside' 'main';
+    grid-template-columns: minmax(0, 1fr);
   }
 `;
 
-const LowerSection = styled(FlexGroup)`
-  align-items: flex-start;
-  justify-content: center;
-  margin-bottom: 30px;
-  margin-top: 20px;
-  width: 95%;
+const column = css`
+  display: grid;
+  gap: ${SPACE_LG};
+  min-width: 0;
 `;
 
-const LeftColumn = styled(FlexGroup)`
-  max-width: 50%;
-  width: 50%;
-  align-items: center;
+const Main = styled.div`
+  ${column}
+  grid-area: main;
+`;
 
-  @media ${BELOW_1100} {
-    max-width: 100%;
-    width: 100%;
+const Aside = styled.aside`
+  ${column}
+  grid-area: aside;
+`;
+
+// Stays on screen at the bottom while editing, so Save is always one Tab or tap away.
+const EditBar = styled.section`
+  align-items: center;
+  background: ${COLOR_BG};
+  border-top: 1px solid ${COLOR_FRAME};
+  bottom: 0;
+  box-shadow: ${SHADOW_OVERLAY};
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM} ${SPACE_LG};
+  justify-content: flex-end;
+  margin: 0 -24px;
+  padding: ${SPACE_MD} 24px;
+  position: sticky;
+  z-index: 10;
+
+  @media ${BELOW_MOBILE} {
+    margin: 0 -${SPACE_GUTTER};
+    padding: ${SPACE_SM} ${SPACE_GUTTER};
   }
 `;
 
-const RightColumn = styled(FlexGroup)`
-  max-width: 50%;
-  width: 50%;
-  align-items: center;
-
-  @media ${BELOW_1100} {
-    max-width: 100%;
-    width: 100%;
-  }
-`;
-
-const Actions = styled(EditorContainer)`
-  align-items: center;
-  margin-top: 30px;
-  text-align: center;
-  width: 100%;
-`;
-
-const SecondaryButton = styled(Button)`
-  margin-left: 20px;
+const EditButtons = styled.div`
+  display: flex;
+  gap: ${SPACE_SM};
+  margin-left: auto;
 `;
 
 export default BuildEditorPage;

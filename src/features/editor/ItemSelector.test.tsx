@@ -4,25 +4,90 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { EditorWithPicker, searchItems } from '@/test/editor';
 import { renderWithProviders } from '@/test/render';
+import SpellEditor from './sections/SpellEditor';
 
 const optionLabels = (name: string) =>
   within(screen.getByRole('combobox', { name }))
     .getAllByRole('option')
     .map((option) => option.textContent);
 
-async function chooseWeapon(user: ReturnType<typeof renderWithProviders>['user'], name: string) {
+type User = ReturnType<typeof renderWithProviders>['user'];
+
+/** Puts a weapon in the first slot and opens its Ash of War and affinity step. */
+async function chooseWeapon(user: User, name: string) {
   await user.click(screen.getAllByRole('button', { name: 'Choose weapon' })[0]!);
   await searchItems(user, name);
   await user.click(screen.getByRole('button', { name: new RegExp(`^${name}`) }));
-  await user.click(screen.getByRole('button', { name: new RegExp(`^Change ${name}`) }));
+  // Weapons with nothing to choose close the picker: open the slot again.
+  if (!screen.queryByRole('dialog', { name: 'Ash of War and affinity' })) {
+    await user.click(screen.getByRole('button', { name: new RegExp(`^Change ${name}`) }));
+  }
 }
 
+/** The item rows in the picker's list. */
+const listed = () =>
+  within(screen.getByRole('dialog'))
+    .getAllByRole('listitem')
+    .map((row) => row.textContent);
+
 describe('ItemSelector', () => {
-  it('says to choose a weapon before its Ash of War and affinity', async () => {
+  it('an empty weapon slot opens the list; a weapon with Ashes to choose moves to its step', async () => {
     const { user } = renderWithProviders(<EditorWithPicker />);
     await user.click(screen.getAllByRole('button', { name: 'Choose weapon' })[0]!);
-    expect(screen.getByText(/Choose a weapon, then open it again/)).toBeInTheDocument();
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Weapons' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Search items')).toHaveFocus();
+    expect(screen.queryByRole('combobox', { name: 'Ash of War' })).not.toBeInTheDocument();
+
+    await searchItems(user, 'Uchigatana');
+    await user.click(screen.getByRole('button', { name: /^Uchigatana/ }));
+    expect(screen.getByRole('dialog', { name: 'Ash of War and affinity' })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Ash of War' })).toHaveFocus();
+
+    // Change weapon goes back to the list, with the current weapon marked.
+    // The search is kept.
+    await user.click(screen.getByRole('button', { name: 'Change weapon' }));
+    expect(screen.getByLabelText('Search items')).toHaveValue('Uchigatana');
+    expect(screen.getByRole('button', { name: /^Uchigatana/ })).toHaveAttribute(
+      'aria-current',
+      'true',
+    );
+  });
+
+  it('a unique weapon closes the picker straight away', async () => {
+    const { user } = renderWithProviders(<EditorWithPicker />);
+    await user.click(screen.getAllByRole('button', { name: 'Choose weapon' })[0]!);
+    await searchItems(user, 'Moonveil');
+    await user.click(screen.getByRole('button', { name: /^Moonveil/ }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('filters by weapon type and by base game or DLC, and clears the filters', async () => {
+    const { user } = renderWithProviders(<EditorWithPicker />);
+    await user.click(screen.getAllByRole('button', { name: 'Choose weapon' })[0]!);
+    await user.selectOptions(screen.getByRole('combobox', { name: 'Weapon type' }), 'Katana');
+    expect(listed()).toContain('Uchigatana');
+    expect(listed()).not.toContain('Claymore');
+    await user.click(screen.getByRole('button', { name: 'DLC' }));
+    expect(listed()).toContain('Star-Lined Sword');
+    expect(listed()).not.toContain('Uchigatana');
+    await user.click(screen.getByRole('button', { name: 'Clear filters' }));
+    expect(screen.getByRole('combobox', { name: 'Weapon type' })).toHaveValue('');
+    expect(screen.getByText(/^\d+ items$/)).toHaveTextContent(/^4\d\d items$/);
+  });
+
+  it('filters spells by kind', async () => {
+    const { user } = renderWithProviders(
+      <>
+        <SpellEditor editable />
+        <EditorWithPicker />
+      </>,
+    );
+    await user.click(screen.getAllByRole('button', { name: 'Choose spell' })[0]!);
+    await searchItems(user, 'Comet Azur');
+    await user.click(screen.getByRole('button', { name: 'Incantations' }));
+    expect(screen.getByText('Nothing matches. Try another search.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Sorceries' }));
+    expect(listed()).toEqual([expect.stringMatching(/^Comet Azur\d+ slots?$/)]);
   });
 
   it('offers only the Ashes that fit the weapon, and the affinities it shares with the Ash', async () => {
@@ -83,11 +148,9 @@ describe('ItemSelector', () => {
   it('renders the long weapon list a page at a time', async () => {
     const { user } = renderWithProviders(<EditorWithPicker />);
     await user.click(screen.getAllByRole('button', { name: 'Choose weapon' })[0]!);
-    const rows = () =>
-      screen.getAllByRole('button', { name: /^(?!Choose|Close|Show more)/ }).length;
-    const before = rows();
+    const before = listed().length;
     await user.click(screen.getByRole('button', { name: /^Show more \(\d+ left\)$/ }));
-    expect(rows()).toBeGreaterThan(before);
+    expect(listed().length).toBeGreaterThan(before);
     // A search narrows the whole list first: a short result has no "Show more".
     await searchItems(user, 'Uchigatana');
     expect(screen.queryByRole('button', { name: /^Show more/ })).not.toBeInTheDocument();
