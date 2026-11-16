@@ -1,6 +1,7 @@
 // Landing page filters: parsed from / written to the URL
 // (?q=moon&sort=new&tag=Malenia&tag=Mohg&min=50&max=150) so filtered views are shareable, and
 // applied to the loaded builds (the Landing also sends the level range and the first tag to Firestore).
+import { tagGroups } from '@/data/core';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import type { BuildSort } from '@/lib/firebase';
 import type { Build } from '@/lib/models';
@@ -60,4 +61,27 @@ export function filterBuilds(builds: Build[], { tags, minLevel, maxLevel }: Buil
       build.level <= maxLevel &&
       tags.every((tag) => build.tags.includes(tag)),
   );
+}
+
+/** `tags` with `tag` added at the end, or taken out if it's there (a top-tag chip, T20). */
+export function toggleTag(tags: string[], tag: string): string[] {
+  return tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
+}
+
+const KNOWN_TAGS = new Set(Object.values(tagGroups).flat());
+
+/**
+ * The most used tags from the daily stats (T20): by build count, ties by name, at most `count`.
+ * Tags no longer in the tag list (renamed or removed) and unused ones are left out.
+ */
+export function topTags(
+  tagCounts: Record<string, number>,
+  count = 10,
+  known: ReadonlySet<string> = KNOWN_TAGS,
+): { tag: string; count: number }[] {
+  return Object.entries(tagCounts)
+    .filter(([tag, n]) => n > 0 && known.has(tag))
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+    .slice(0, count)
+    .map(([tag, n]) => ({ tag, count: n }));
 }

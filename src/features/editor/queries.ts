@@ -155,6 +155,11 @@ export function useDeleteComment(buildId: string) {
       return previous;
     },
     onError: (_error, _commentId, previous) => queryClient.setQueryData(key, previous),
+    // The build's count (the header's "N Comments" link) follows at once, like on add.
+    onSuccess: () =>
+      queryClient.setQueryData<Build | null>(queryKeys.build(buildId), (build) =>
+        build ? { ...build, commentCount: Math.max(0, build.commentCount - 1) } : build,
+      ),
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: queryKeys.builds });

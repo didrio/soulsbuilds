@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T24
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T20, Community feel: top tags, activity, community stats · Opus · high · plan mode on.
+**Next:** T23, Content sooner: the App Check wait before Firestore · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -20,57 +20,20 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). If it goes:
   `node scripts/admin.mjs rename <uid> "<new name>" --project soulsbuilds` (dry run), then `--write`.
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
+- T20 stats job: create the `github-stats` service account (three gcloud commands in `docs/firebase.md` "Daily
+  stats job"), then Actions → Community stats → Run workflow once and check its log; the landing's top tags and
+  "N builds by M players" appear after it.
+- After the next deploy (T20): check the landing and a build page on soulsbuilds.com (rows, "More by").
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion) and T22 (layout). Then: T20 (community feel), T23 (App Check wait; owner
-can move it up).
+done, and so are T18 (account deletion), T22 (layout) and T20 (community feel). Then: T23 (App Check wait).
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T20 — Community feel: top tags, activity, community stats
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Make the site feel like a living community (people building, liking and talking) with small
-  touches, while browsing and posting stay exactly as quick as now. No new sections that push the list down.
-- **Done when:**
-  - [ ] **Mockup first**: a quick HTML mockup (landing toolbar + rows, build page header/comments, profile) for
-        the owner to approve or trim before any code, like T16.
-  - [ ] **Top tags** on the landing: "Top tags:" with the ~10 most-used tags (live data) as toggle chips, next
-        to the Tags picker; toggling one adds/removes it from the `tag` filters in the URL. Stays reachable on
-        phones (today `TagsRow` hides behind "Filters"; maybe a horizontal-scroll row that's always visible).
-  - [ ] **Stats doc**: one public `stats/er` doc (`tagCounts`, `buildCount`, `userCount`, `updatedAt`) written
-        once a day by a scheduled GitHub Action (cron job in `.github/workflows/`, same Workload Identity auth
-        as the deploy job) running a new `scripts/admin.mjs stats [--write]` (Admin SDK tally; dry-run
-        prints). Rules: public read, no client writes, with tests. Owner approves the first scheduled run /
-        any production write (AGENTS.md rule 2). The app reads it with one TanStack Query (long staleTime) and
-        hides the row if the doc is missing (emulator: `npm run seed` writes one).
-  - [ ] **Activity on rows**: comment count next to likes, and "by X · 3 days ago" (relative `createdAt`) on
-        build rows and in the build page meta. Keep row density; check the columns on tablet/phone.
-  - [ ] **Build page**: comment count as a jump link next to Like (to `#comments-title`), a warmer empty state
-        ("No comments yet. Tried it? Tell <author> how it went."), and a small "More by <author>" strip at the
-        bottom (`useUserBuilds`, excluding this build, hidden if none).
-  - [ ] **Community stats**: "N builds by M players" on the landing (from `stats/er`; no hero since T22,
-        so e.g. in the status line above the list), and
-        "N builds · M likes received" on profiles (summed from the builds the profile already loads; free).
-  - [ ] Tests: unit for the relative-time helper, top-tags pick and toggle; component tests for the new
-        bits; rules test for `stats/`; admin script test like `tests/admin/`. Screenshots desktop + mobile.
-- **Context:** T22 layout: build rows are a fixed height (`BuildsList.tsx` `ROW_HEIGHT*`, tags one line via
-  `RowTags`/`fitCount`): new row content must fit them; the build page's title pane is `BuildHeader.tsx` (meta
-  line, actions on the right). Owner's calls (2026-11-15): no podium/hall-of-fame (sort depends on filters; no categories);
-  no avatars for now; counts from a daily CI job, not live per-tag `count()` (105 tags in
-  `src/data/er/tags.json` ≈ 105 reads per visitor vs Spark's 50k/day) or a client-written counter (rules can't
-  cheaply verify increments). Files: `src/features/builds/Landing.tsx` (`TagsRow`, `Chips`, `setFilters`),
-  `filters.ts`, `BuildsList.tsx` (grid columns, `Numbers`), `src/features/editor/sections/BuildHeader.tsx`,
-  `CommentsSection.tsx`, `src/features/profile/Profile.tsx` + `queries.ts`, `src/lib/firebase/` (new
-  `stats.ts`), `firestore.rules`, `scripts/admin.mjs`, `scripts/seed.mjs`, `.github/workflows/ci.yml` (auth
-  steps to copy), `docs/firebase.md` (document the job). Build/Comment already carry `likeCount`,
-  `commentCount`, `createdAt` (`src/lib/models.ts`).
 
 ### T23 — Content sooner: the App Check wait before Firestore
 
@@ -119,6 +82,11 @@ can move it up).
 
 Older entries: `docs/tickets-archive.md`.
 
+- T20 — Community feel — 2026-11-16 — HTML mockup, owner picked layout A with counts; public `stats/elden-ring`
+  (builds, distinct authors, accounts, builds per tag) from `admin.mjs stats`, daily in `stats.yml` as its own
+  `github-stats` SA (setup pending, owner to-do); top tags as the Tags row's first chips (scrolling row on phones),
+  "N builds by M players", rows with comments + age, build page comment link, warmer empty state, "More by",
+  profile build/like counts; scroll to top on navigation.
 - T22 — Layout: lean landing, compact build page — 2026-11-16 — HTML mockup, owner picked "title first";
   landing: no hero, small `<h1>` in the Find builds frame, fixed-height rows with tags on one line + "+N"
   (`tags.ts` `fitCount`); build page: title pane, equipment across the page (weapons as rows, other slots as
@@ -140,7 +108,3 @@ Older entries: `docs/tickets-archive.md`.
   from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory
   slots) tested against Fextralife; `startingClass` saved (rules + tests), spells ≤ 12; Character panel,
   class picker with minimums, requirement and memory-slot warnings.
-- T15 — "How to get this build" — 2026-11-15 — pure route solver (`features/editor/guide/route.ts`: earliest
-  reachable source, item prerequisites, implied and any-of gates, topological order, steps by grace, legs by
-  region) + lazy `GuideSection` on the build view (numbered, collapsible regions, item icons); unit, component
-  and e2e tests. Upgrade materials, rune farming and a starting-class suggestion are in the Backlog.

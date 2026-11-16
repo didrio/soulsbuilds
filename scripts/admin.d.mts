@@ -75,3 +75,24 @@ export function deleteUserData(
   reportsResolved: number;
   backup: string | null;
 }>;
+
+export interface GameStatsCounts {
+  buildCount: number;
+  /** Distinct owners of the game's builds. */
+  authorCount: number;
+  /** Every account (users/ docs), whether or not it has builds. */
+  userCount: number;
+  /** Builds per tag. */
+  tagCounts: Record<string, number>;
+}
+
+export const STATS_GAMES: string[];
+
+/** One game's community numbers (T20). */
+export function computeStats(db: Firestore, game: string): Promise<GameStatsCounts>;
+
+/** Every game's stats; with `write`, saved to stats/<game> with a server `updatedAt` (T20). */
+export function updateStats(
+  db: Firestore,
+  options?: { write?: boolean; games?: string[] },
+): Promise<Record<string, GameStatsCounts>>;

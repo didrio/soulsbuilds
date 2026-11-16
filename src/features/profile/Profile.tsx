@@ -142,9 +142,37 @@ function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: 
   }
 
   return (
-    <PageHero title={profile.displayName} tagline={`Joined ${joined(profile.createdAt)}`}>
+    <PageHero
+      title={profile.displayName}
+      tagline={<Tagline userId={profile.id} joinedAt={profile.createdAt} />}>
       {editable ? <TextButton onClick={() => setEditing(true)}>Change name</TextButton> : null}
     </PageHero>
+  );
+}
+
+/**
+ * "Joined May 2022 · 4 builds · 17 likes received" (T20): summed from the builds the Builds tab
+ * loads anyway (same query), so it costs no extra reads. Zero likes are left out.
+ */
+function Tagline({ userId, joinedAt }: { userId: string; joinedAt: Date }) {
+  const builds = useUserBuilds(userId).data;
+  const likes = builds?.reduce((sum, build) => sum + build.likeCount, 0) ?? 0;
+  return (
+    <>
+      Joined {joined(joinedAt)}
+      {builds ? (
+        <>
+          {' · '}
+          <Count>{builds.length}</Count> {builds.length === 1 ? 'build' : 'builds'}
+        </>
+      ) : null}
+      {likes ? (
+        <>
+          {' · '}
+          <Count>{likes}</Count> {likes === 1 ? 'like' : 'likes'} received
+        </>
+      ) : null}
+    </>
   );
 }
 
@@ -220,6 +248,12 @@ function BuildListState({
 }
 
 const joined = (date: Date) => date.toLocaleDateString('en', { month: 'long', year: 'numeric' });
+
+const Count = styled.b`
+  color: ${COLOR_TEXT};
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+`;
 
 const Notice = styled(Frame)`
   align-items: center;

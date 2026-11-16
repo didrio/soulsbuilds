@@ -27,6 +27,16 @@ const contrast = (a: string, b: string) => {
   return (hi! + 0.05) / (lo! + 0.05);
 };
 
+/** An `rgba(r, g, b, a)` color laid over an opaque #rrggbb background, as #rrggbb. */
+const blend = (rgba: string, under: string) => {
+  const [r, g, b, a] = rgba.match(/[\d.]+/g)!.map(Number) as [number, number, number, number];
+  const base = [1, 3, 5].map((i) => parseInt(under.slice(i, i + 2), 16));
+  return `#${[r, g, b]
+    .map((c, i) => Math.round(c * a + base[i]! * (1 - a)))
+    .map((c) => c.toString(16).padStart(2, '0'))
+    .join('')}`;
+};
+
 const BACKGROUNDS = {
   COLOR_BG,
   COLOR_SURFACE,
@@ -71,6 +81,13 @@ describe('contrast (WCAG AA)', () => {
       it('text on the primary button (accent-strong → accent) ≥ 4.5', () => {
         expect(contrast(skin.onAccent, skin.accent)).toBeGreaterThanOrEqual(4.5);
         expect(contrast(skin.onAccent, skin.accentStrong)).toBeGreaterThanOrEqual(4.5);
+      });
+      // A picked tag chip (Chips, the landing's top tags, T20): frame-soft over a framed panel.
+      it('text, muted text and the accent on frame-soft over the surface ≥ 4.5', () => {
+        const chip = blend(skin.frameSoft, COLOR_SURFACE);
+        expect(contrast(COLOR_TEXT, chip)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(COLOR_TEXT_MUTED, chip)).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(skin.accent, chip)).toBeGreaterThanOrEqual(4.5);
       });
       it('focus ring (accent-strong) on the page ≥ 3', () => {
         expect(contrast(skin.accentStrong, COLOR_BG)).toBeGreaterThanOrEqual(3);

@@ -10,7 +10,7 @@ import TextAreaInput from '@/components/ui/TextAreaInput';
 import { TextButton } from '@/components/ui/TextButton';
 import { fadingRule } from '@/components/ui/inWorld';
 import useAuth from '@/features/auth/useAuth';
-import { useUserProfiles } from '@/features/profile/queries';
+import { useUserProfile, useUserProfiles } from '@/features/profile/queries';
 import ReportButton from '@/features/reports/ReportButton';
 import { errorMessage } from '@/lib/firebase';
 import { LIMITS } from '@/lib/models';
@@ -31,9 +31,13 @@ import { useAddComment, useComments, useDeleteComment } from '../queries';
 
 const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
-/** View mode: the comments, newest first (authors link to their profile), and the post form. */
-function CommentsSection({ buildId }: { buildId: string }) {
+/**
+ * View mode: the comments, newest first (authors link to their profile), and the post form. With no
+ * comments yet, it asks visitors to tell the build's author how it went.
+ */
+function CommentsSection({ buildId, ownerId }: { buildId: string; ownerId: string }) {
   const { uid } = useAuth();
+  const owner = useUserProfile(ownerId);
   const comments = useComments(buildId);
   const authors = useUserProfiles((comments.data ?? []).map((comment) => comment.authorId));
   const addComment = useAddComment(buildId, uid);
@@ -60,7 +64,17 @@ function CommentsSection({ buildId }: { buildId: string }) {
           {errorMessage(comments.error)}
         </ErrorMessage>
       ) : null}
-      {count === 0 ? <Empty>No comments yet.</Empty> : null}
+      {count === 0 ? (
+        <Empty>
+          No comments yet.
+          {uid !== ownerId ? (
+            <>
+              {' '}
+              Tried it? Tell <b>{owner.data?.displayName ?? 'the author'}</b> how it went.
+            </>
+          ) : null}
+        </Empty>
+      ) : null}
       {count ? (
         <CommentList>
           {list.map((comment) => (
@@ -121,6 +135,11 @@ const Empty = styled.p`
   font-size: ${TEXT_SM};
   margin: 0;
   text-align: center;
+
+  & > b {
+    color: ${COLOR_TEXT};
+    font-weight: 600;
+  }
 `;
 
 // Comments span the page (T22): the thread and form keep a readable line length.

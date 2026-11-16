@@ -100,6 +100,12 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   reporterId: uid, buildId, commentId: string|null (null = the build itself)
   reason: 'spam'|'offensive'|'harassment'|'other', note: string (trimmed, ≤ 500, may be '')
   status: 'open' (client) → 'removed'|'dismissed' + resolvedAt (scripts/admin.mjs), createdAt: timestamp
+
+stats/{game}                      community numbers per game (T20; doc id = GameId, e.g. stats/elden-ring);
+                                  public read, no client writes; written daily by `admin.mjs stats` in CI
+  buildCount, authorCount (distinct build owners), userCount (all accounts): int
+  tagCounts: { [tag]: int }       builds per tag (top tags on the landing)
+  updatedAt: timestamp
 ```
 
 - **Counters without Cloud Functions** (they need the paid Blaze plan): a like is one batched write that creates
@@ -127,6 +133,10 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab).
   Account deletion's equality-only collection-group queries (likes by `userId`, comments by `authorId`) use
   single-field `fieldOverrides` with a `COLLECTION_GROUP` scope. The emulator doesn't need indexes; production does (deployed in T12).
+- **Community stats (T20)** are counted once a day, not live: a `count()` per tag would cost ~100 reads per
+  visitor (Spark: 50k/day) and client-written counters can't be cheaply verified by rules. The landing reads
+  `stats/{game}` once per visit (`useGameStats`, 1 h `staleTime`) and hides the top tags and "N builds by M
+  players" when the doc is missing. `npm run seed` writes it with the same code (`updateStats`).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
   The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
   `comments[]`, item **names**) existed only in production, migrated at T12 (2026-11-15); the script stays for

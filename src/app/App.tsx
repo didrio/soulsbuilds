@@ -19,6 +19,7 @@ import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppSelector } from './hooks';
 import AppRoutes from './routes';
+import { useScrollToTop } from './useScrollToTop';
 
 // The picker (its own Dialog) holds the full game data (~1 MB), so it loads when a slot is first opened.
 const ItemSelector = lazy(() => import('@/features/editor/ItemSelector'));
@@ -36,6 +37,7 @@ function App() {
   const [authDialog, setAuthDialog] = useState<AuthDialog | null>(null);
 
   const closeAuth = () => setAuthDialog(null);
+  useScrollToTop();
 
   return (
     <Shell>

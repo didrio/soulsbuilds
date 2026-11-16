@@ -22,6 +22,24 @@ beforeEach(() => {
 });
 
 describe('BuildHeader', () => {
+  it('links the comment count down to the comments and says how old the build is', async () => {
+    const createdAt = new Date(Date.now() - 3 * 24 * 3600 * 1000);
+    renderWithProviders(<BuildHeader build={makeBuild({ commentCount: 2, createdAt })} />);
+    expect(await screen.findByRole('link', { name: '2 Comments' })).toHaveAttribute(
+      'href',
+      '#comments-title',
+    );
+    expect(screen.getByText('3 days ago')).toHaveAttribute('dateTime', createdAt.toISOString());
+  });
+
+  it('says "1 Comment" and "0 Comments"', async () => {
+    const { unmount } = renderWithProviders(<BuildHeader build={makeBuild({ commentCount: 1 })} />);
+    expect(await screen.findByRole('link', { name: '1 Comment' })).toBeInTheDocument();
+    unmount();
+    renderWithProviders(<BuildHeader build={makeBuild({ commentCount: 0 })} />);
+    expect(await screen.findByRole('link', { name: '0 Comments' })).toBeInTheDocument();
+  });
+
   it('signed out: shows the count, not a button', async () => {
     renderWithProviders(<BuildHeader build={makeBuild({ likeCount: 3 })} />);
     expect(await screen.findByText('3 Likes')).toBeInTheDocument();

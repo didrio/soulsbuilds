@@ -11,6 +11,7 @@ import LoadingAnimation from '@/components/ui/LoadingAnimation';
 import PageMessage from '@/components/ui/PageMessage';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import TextInput from '@/components/ui/TextInput';
+import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { TextButton } from '@/components/ui/TextButton';
 import { useUserProfiles } from '@/features/profile/queries';
 import { MAX_LEVEL } from '@/lib/buildMath';
@@ -19,6 +20,9 @@ import {
   BELOW_MOBILE,
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
+  COLOR_FRAME,
+  COLOR_FRAME_SOFT,
+  COLOR_LINE,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
@@ -35,10 +39,12 @@ import {
   clampLevel,
   filterBuilds,
   parseFilters,
+  toggleTag,
+  topTags,
   toSearchParams,
   type BuildFilters,
 } from './filters';
-import { useBuilds } from './queries';
+import { useBuilds, useGameStats } from './queries';
 
 const SORTS = [
   { value: 'top', label: 'Most liked' },
@@ -66,6 +72,9 @@ function Landing() {
   const [minText, setMinText] = useState(String(filters.minLevel));
   const [maxText, setMaxText] = useState(String(filters.maxLevel));
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const stats = useGameStats().data;
+  const top = stats ? topTags(stats.tagCounts) : [];
+  const topNames = new Set(top.map(({ tag }) => tag));
 
   const setFilters = (next: Partial<BuildFilters>) => {
     setSearchParams(toSearchParams({ ...filters, ...next }), { replace: true });
@@ -183,19 +192,48 @@ function Landing() {
             </Field>
           </Collapsible>
         </Toolbar>
-        <TagsRow $open={filtersOpen}>
-          <FieldLabel as="span">Tags</FieldLabel>
-          <Chips
-            onAdd={(tag) => setFilters({ tags: [...new Set([...filters.tags, tag])] })}
-            onRemove={(tag) => setFilters({ tags: filters.tags.filter((t) => t !== tag) })}
-            values={filters.tags}
-          />
-          {filters.search ? <TextButton onClick={clearSearch}>Clear search</TextButton> : null}
-          {filtered ? <TextButton onClick={clearFilters}>Clear filters</TextButton> : null}
+        <TagsRow $open={filtersOpen} $top={top.length > 0}>
+          <TagsLabel as="span">Tags</TagsLabel>
+          {top.length ? (
+            <TopTags role="group" aria-label="Top tags">
+              {top.map(({ tag, count }) => (
+                <TopTag
+                  key={tag}
+                  type="button"
+                  aria-pressed={filters.tags.includes(tag)}
+                  onClick={() => setFilters({ tags: toggleTag(filters.tags, tag) })}>
+                  {filters.tags.includes(tag) ? <Check aria-hidden="true">✓</Check> : null}
+                  {tag}
+                  <TagCount>
+                    {count}
+                    <VisuallyHidden>{count === 1 ? ' build' : ' builds'}</VisuallyHidden>
+                  </TagCount>
+                </TopTag>
+              ))}
+            </TopTags>
+          ) : null}
+          <MoreTags $open={filtersOpen}>
+            <Chips
+              addLabel={top.length ? 'More tags' : 'Add tag'}
+              onAdd={(tag) => setFilters({ tags: [...new Set([...filters.tags, tag])] })}
+              onRemove={(tag) => setFilters({ tags: filters.tags.filter((t) => t !== tag) })}
+              values={filters.tags.filter((tag) => !topNames.has(tag))}
+            />
+            {filters.search ? <TextButton onClick={clearSearch}>Clear search</TextButton> : null}
+            {filtered ? <TextButton onClick={clearFilters}>Clear filters</TextButton> : null}
+          </MoreTags>
         </TagsRow>
       </FindFrame>
 
-      <Status aria-live="polite">{builds.isSuccess ? status : ''}</Status>
+      <StatusLine>
+        <Status aria-live="polite">{builds.isSuccess ? status : ''}</Status>
+        {stats && stats.buildCount > 0 ? (
+          <Community>
+            <b>{stats.buildCount}</b> {stats.buildCount === 1 ? 'build' : 'builds'} by{' '}
+            <b>{stats.authorCount}</b> {stats.authorCount === 1 ? 'player' : 'players'}
+          </Community>
+        ) : null}
+      </StatusLine>
       {builds.isPending ? <PageMessage loading /> : null}
       {builds.isError ? (
         <PageMessage title="Couldn’t load builds">
@@ -361,22 +399,123 @@ const Note = styled.p`
   min-height: 44px;
 `;
 
-const TagsRow = styled.div<{ $open: boolean }>`
+// Desktop: the label, the top tags (T20), the other picked tags and "More tags" wrap as one row.
+// Phones: the top tags stay visible as one row that scrolls sideways; the rest folds behind Filters.
+const TagsRow = styled.div<{ $open: boolean; $top: boolean }>`
   align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: ${SPACE_SM} 14px;
+  gap: ${SPACE_SM} 8px;
   margin-top: ${SPACE_MD};
 
   @media ${BELOW_MOBILE} {
-    display: ${({ $open }) => ($open ? 'flex' : 'none')};
+    display: ${({ $open, $top }) => ($open || $top ? 'flex' : 'none')};
   }
 `;
 
-const Status = styled.p`
+const TagsLabel = styled(FieldLabel)`
+  margin-right: 6px;
+
+  @media ${BELOW_MOBILE} {
+    display: none;
+  }
+`;
+
+const TopTags = styled.div`
+  display: contents;
+
+  @media ${BELOW_MOBILE} {
+    display: flex;
+    gap: 8px;
+    margin: 0 -${SPACE_MD};
+    overflow-x: auto;
+    padding: 4px ${SPACE_MD};
+    scrollbar-width: none;
+    width: calc(100% + 2 * ${SPACE_MD});
+  }
+`;
+
+// A toggle chip: 36 px to look like a tag, with a ::after that makes the tap target 44 px.
+const TopTag = styled.button`
+  align-items: center;
+  background: none;
+  border: 1px solid ${COLOR_LINE};
   color: ${COLOR_TEXT_MUTED};
+  cursor: pointer;
+  display: inline-flex;
+  flex: none;
   font-size: ${TEXT_SM};
+  font-weight: 500;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  position: relative;
+  white-space: nowrap;
+
+  &::after {
+    content: '';
+    inset: -4px 0;
+    position: absolute;
+  }
+
+  &:hover {
+    border-color: ${COLOR_FRAME};
+    color: ${COLOR_TEXT};
+  }
+
+  &[aria-pressed='true'] {
+    background: ${COLOR_FRAME_SOFT};
+    border-color: ${COLOR_ACCENT};
+    color: ${COLOR_TEXT};
+  }
+`;
+
+const Check = styled.span`
+  color: ${COLOR_ACCENT};
+  font-size: ${TEXT_XS};
+`;
+
+const TagCount = styled.span`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  font-variant-numeric: tabular-nums;
+`;
+
+const MoreTags = styled.div<{ $open: boolean }>`
+  display: contents;
+
+  @media ${BELOW_MOBILE} {
+    align-items: center;
+    display: ${({ $open }) => ($open ? 'flex' : 'none')};
+    flex-wrap: wrap;
+    gap: ${SPACE_SM} 14px;
+    width: 100%;
+  }
+`;
+
+const StatusLine = styled.div`
+  align-items: baseline;
+  color: ${COLOR_TEXT_MUTED};
+  display: flex;
+  flex-wrap: wrap;
+  font-size: ${TEXT_SM};
+  gap: 0 ${SPACE_MD};
+  justify-content: space-between;
   margin: ${SPACE_LG} 0 ${SPACE_SM};
+`;
+
+const Status = styled.p`
+  margin: 0;
+`;
+
+const Community = styled.p`
+  margin: 0;
+
+  & > b {
+    color: ${COLOR_TEXT};
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
 `;
 
 const LoadMore = styled.div`

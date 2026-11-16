@@ -5,17 +5,19 @@ import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import Frame from '@/components/ui/Frame';
 import Tag from '@/components/ui/Tag';
-import { HeartIcon } from '@/components/ui/icons';
+import { CommentIcon, HeartIcon } from '@/components/ui/icons';
 import useAuth from '@/features/auth/useAuth';
 import ReportButton from '@/features/reports/ReportButton';
 import { useUserProfile } from '@/features/profile/queries';
 import { errorMessage } from '@/lib/firebase';
 import type { Build } from '@/lib/models';
+import { formatFullDate, relativeTime } from '@/lib/relativeTime';
 import {
   BELOW_MOBILE,
   BELOW_TABLET,
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
+  COLOR_LINE_STRONG,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
@@ -30,6 +32,7 @@ import {
 import { useHasLiked, useToggleLike } from '../queries';
 
 export const likesLabel = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
+export const commentsLabel = (count: number) => `${count} ${count === 1 ? 'Comment' : 'Comments'}`;
 
 interface BuildHeaderProps {
   build: Build;
@@ -38,9 +41,10 @@ interface BuildHeaderProps {
 }
 
 /**
- * View mode's title pane (T22): the build's name (the page's `<h1>`), "by <author> · Level N", the
- * like button (a count when signed out), Report and the owner's controls on the right (under the name
- * on narrow screens), and the tags (each links to the builds with it).
+ * View mode's title pane (T22): the build's name (the page's `<h1>`), "by <author> · Level N · 3 days
+ * ago", the like button (a count when signed out), the comment count (a link down to the comments,
+ * T20), Report and the owner's controls on the right (under the name on narrow screens), and the
+ * tags (each links to the builds with it).
  */
 function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
   const { uid } = useAuth();
@@ -61,6 +65,9 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
         <span>
           Level <Strong>{build.level}</Strong>
         </span>
+        <time dateTime={build.createdAt.toISOString()} title={formatFullDate(build.createdAt)}>
+          {relativeTime(build.createdAt)}
+        </time>
       </Meta>
       <Actions>
         {uid ? (
@@ -78,6 +85,10 @@ function BuildHeader({ build, ownerActions }: BuildHeaderProps) {
             {likesLabel(build.likeCount)}
           </LikeCount>
         )}
+        <CommentsLink href="#comments-title">
+          <CommentIcon />
+          {commentsLabel(build.commentCount)}
+        </CommentsLink>
         <ReportButton
           target={{ buildId: build.id }}
           authorId={build.ownerId}
@@ -202,6 +213,28 @@ const LikeCount = styled.span`
   gap: 8px;
   min-height: 44px;
   padding: 0 ${SPACE_SM};
+`;
+
+// A plain in-page link, sized like the signed-out like count.
+const CommentsLink = styled.a`
+  align-items: center;
+  border: 1px solid transparent;
+  color: ${COLOR_TEXT};
+  display: inline-flex;
+  font-size: ${TEXT_SM};
+  font-weight: 600;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 ${SPACE_SM};
+
+  & > svg {
+    color: ${COLOR_ACCENT};
+  }
+
+  &:hover {
+    border-color: ${COLOR_LINE_STRONG};
+    color: ${COLOR_ACCENT_STRONG};
+  }
 `;
 
 const Tags = styled.ul`

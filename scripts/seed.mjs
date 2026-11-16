@@ -14,6 +14,7 @@ import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { fitAffinity, fitAsh, talismanConflict } from '../src/data/rules.ts';
+import { updateStats } from './admin.mjs';
 import { buildContent, GAME } from './lib/model-v2.mjs';
 
 export const SEED_PASSWORD = 'seed-password-123';
@@ -308,6 +309,9 @@ async function main() {
     }
     await batch.commit();
   }
+
+  // The community stats doc (T20), written by the same code as the daily CI job in production.
+  await updateStats(db, { write: true });
 
   console.log(`✓ Seeded ${USERS.length} users and ${BUILDS.length} builds into ${PROJECT_ID}.`);
   console.log(

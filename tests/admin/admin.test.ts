@@ -8,6 +8,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  computeStats,
   deleteUserData,
   dismissReports,
   exportAll,
@@ -15,6 +16,7 @@ import {
   removeContent,
   renameUser,
   setAdmin,
+  updateStats,
 } from '../../scripts/admin.mjs';
 
 const PROJECT_ID = 'demo-soulsbuilds-test';
@@ -237,5 +239,43 @@ describe('exportAll', () => {
     expect(result.counts['builds/*/comments']).toBe(3);
     expect(result.counts['reports']).toBe(3);
     expect(result.total).toBe(Object.keys(docs).length);
+  });
+});
+
+describe('stats (T20)', () => {
+  beforeEach(async () => {
+    await db.recursiveDelete(db.collection('builds'));
+    await db.recursiveDelete(db.collection('users'));
+    await db.recursiveDelete(db.collection('stats'));
+    const build = (id: string, ownerId: string, tags: string[], game = 'elden-ring') =>
+      db.doc(`builds/${id}`).set({ ownerId, game, tags, name: id });
+    await build('S1', 'alice', ['Malenia', 'Mohg']);
+    await build('S2', 'alice', ['Malenia']);
+    await build('S3', 'bob', ['Malenia', 'Malenia', 'PvP']);
+    await build('S4', 'carol', ['Malenia'], 'dark-souls-3');
+    await Promise.all(
+      ['alice', 'bob', 'dave'].map((uid) =>
+        db.doc(`users/${uid}`).set({ displayName: uid, createdAt: at(1) }),
+      ),
+    );
+  });
+
+  it('counts one game’s builds, distinct authors, builds per tag and all accounts', async () => {
+    expect(await computeStats(db, 'elden-ring')).toEqual({
+      buildCount: 3,
+      authorCount: 2,
+      userCount: 3,
+      tagCounts: { Malenia: 3, Mohg: 1, PvP: 1 },
+    });
+  });
+
+  it('writes stats/<game> only with write, with a server updatedAt', async () => {
+    await updateStats(db);
+    expect((await db.doc('stats/elden-ring').get()).exists).toBe(false);
+
+    const result = await updateStats(db, { write: true });
+    const saved = (await db.doc('stats/elden-ring').get()).data()!;
+    expect(saved).toMatchObject(result['elden-ring']!);
+    expect(saved.updatedAt).toBeInstanceOf(Timestamp);
   });
 });

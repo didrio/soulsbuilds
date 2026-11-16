@@ -1,13 +1,14 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import styled from 'styled-components';
-import { HeartIcon } from '@/components/ui/icons';
+import { CommentIcon, HeartIcon } from '@/components/ui/icons';
 import { selectionBar } from '@/components/ui/inWorld';
 import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { getCardArmor, getCardWeapon, iconUrl } from '@/data/core';
 import type { Build, UserProfile } from '@/lib/models';
+import { formatFullDate, relativeTime } from '@/lib/relativeTime';
 import {
   BELOW_MOBILE,
   BELOW_TABLET,
@@ -29,7 +30,7 @@ import { fitCount } from './tags';
 
 // Rows preview the first two slots of each hand (weapon slots 1, 2 main hand and 4, 5 off hand) and
 // the four armor pieces, always in the same positions so the columns line up for scanning.
-const PREVIEW_WEAPONS = [0, 1, 3, 4] as const;
+export const PREVIEW_WEAPONS = [0, 1, 3, 4] as const;
 const ARMOR = [
   ['helm', 'head'],
   ['chest', 'chest'],
@@ -53,8 +54,8 @@ interface BuildsListProps {
 }
 
 /**
- * Builds as full-width rows (one link each): name, author and tags; armaments and armor as item
- * tiles; level and likes. Dense on purpose, so many builds fit on screen, and all the same height
+ * Builds as full-width rows (one link each): name, author, age and tags; armaments and armor as item
+ * tiles; level, likes and comments. Dense on purpose, so many builds fit on screen, and all the same height
  * (tags on one line, the rest as "+N").
  */
 function BuildsList({ builds, authors }: BuildsListProps) {
@@ -65,7 +66,7 @@ function BuildsList({ builds, authors }: BuildsListProps) {
         <span>Armaments</span>
         <span>Armor</span>
         <End>Level</End>
-        <End>Likes</End>
+        <End>Activity</End>
       </ListHead>
       <Rows>
         {builds.map((build) => {
@@ -76,11 +77,19 @@ function BuildsList({ builds, authors }: BuildsListProps) {
               <Row to={`/build/${build.id}`}>
                 <Who>
                   <Name>{build.name}</Name>
-                  {author ? (
-                    <Meta>
-                      by <b>{author.displayName}</b>
-                    </Meta>
-                  ) : null}
+                  <Meta>
+                    {author ? (
+                      <>
+                        by <b>{author.displayName}</b>
+                        <Dot aria-hidden="true">·</Dot>
+                      </>
+                    ) : null}
+                    <time
+                      dateTime={build.createdAt.toISOString()}
+                      title={formatFullDate(build.createdAt)}>
+                      {relativeTime(build.createdAt)}
+                    </time>
+                  </Meta>
                   <RowTags tags={build.tags} />
                 </Who>
                 <Slots>
@@ -116,11 +125,21 @@ function BuildsList({ builds, authors }: BuildsListProps) {
                     <VisuallyHidden>Level </VisuallyHidden>
                     {build.level}
                   </Level>
-                  <Likes>
-                    <HeartIcon size={15} />
-                    {build.likeCount}
-                    <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
-                  </Likes>
+                  <Activity>
+                    <Likes>
+                      <HeartIcon size={15} />
+                      {build.likeCount}
+                      <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
+                    </Likes>
+                    <Comments>
+                      <CommentIcon size={14} />
+                      {build.commentCount}
+                      <VisuallyHidden>
+                        {' '}
+                        {build.commentCount === 1 ? 'comment' : 'comments'}
+                      </VisuallyHidden>
+                    </Comments>
+                  </Activity>
                 </Numbers>
               </Row>
             </li>
@@ -172,7 +191,7 @@ function RowTags({ tags }: { tags: string[] }) {
   );
 }
 
-const columns = `minmax(0, 1fr) ${SLOTS_WIDTH} ${SLOTS_WIDTH} 70px 64px`;
+const columns = `minmax(0, 1fr) ${SLOTS_WIDTH} ${SLOTS_WIDTH} 70px 72px`;
 
 const ListHead = styled.div`
   color: ${COLOR_TEXT_MUTED};
@@ -276,6 +295,10 @@ const Meta = styled.span`
   }
 `;
 
+const Dot = styled.span`
+  margin: 0 6px;
+`;
+
 // Always there (empty too) and one line tall, so every row has the same height.
 const Tags = styled.span`
   display: flex;
@@ -356,6 +379,19 @@ const Level = styled.span`
   text-align: right;
 `;
 
+// Likes over comments (T20); on tablets and phones side by side, under the level.
+const Activity = styled.span`
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  @media ${BELOW_TABLET} {
+    flex-direction: row;
+    gap: 10px;
+  }
+`;
+
 const Likes = styled.span`
   align-items: center;
   color: ${COLOR_TEXT};
@@ -368,6 +404,15 @@ const Likes = styled.span`
 
   & > svg {
     color: ${COLOR_ACCENT};
+  }
+`;
+
+const Comments = styled(Likes)`
+  color: ${COLOR_TEXT_MUTED};
+  font-weight: 500;
+
+  & > svg {
+    color: ${COLOR_TEXT_MUTED};
   }
 `;
 

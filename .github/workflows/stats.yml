@@ -1,0 +1,45 @@
+name: Community stats
+
+# Once a day (T20): count builds, authors, accounts and builds per tag into the public Firestore docs
+# stats/<game>, which the landing page reads (top tags, "N builds by M players"). One read per build,
+# well inside Spark's free quota. Runs as its own service account with only Cloud Datastore User; setup
+# and the first manual run: docs/firebase.md "Daily stats job".
+on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: stats
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  stats:
+    name: Update stats/<game>
+    # Only in this repository (forks have no credentials and no reason to run it).
+    if: github.repository == 'didrio/soulsbuilds'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - uses: google-github-actions/auth@v3
+        with:
+          project_id: soulsbuilds
+          workload_identity_provider: projects/981152509260/locations/global/workloadIdentityPools/github/providers/github
+          service_account: github-stats@soulsbuilds.iam.gserviceaccount.com
+
+      - run: node scripts/admin.mjs stats --project soulsbuilds --write

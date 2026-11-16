@@ -1,6 +1,8 @@
 // Server data for build lists (TanStack Query over src/lib/firebase).
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useCurrentGame } from '@/app/game';
 import {
+  getGameStats,
   listBuilds,
   listUserBuilds,
   searchBuilds,
@@ -46,5 +48,18 @@ export function useUserBuilds(userId: string | undefined) {
     queryKey: queryKeys.userBuilds(userId ?? ''),
     queryFn: () => listUserBuilds(userId!),
     enabled: Boolean(userId),
+  });
+}
+
+/**
+ * The current game's community stats (top tags, "N builds by M players"; T20). Written once a day,
+ * so it's read once per visit; `data` is null until the daily job (or the seed) has written it.
+ */
+export function useGameStats() {
+  const game = useCurrentGame();
+  return useQuery({
+    queryKey: queryKeys.stats(game.id),
+    queryFn: () => getGameStats(game.id),
+    staleTime: 60 * 60 * 1000,
   });
 }

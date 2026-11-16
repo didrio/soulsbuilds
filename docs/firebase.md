@@ -172,6 +172,29 @@ single-maintainer repo, since anyone who can push a branch could edit the workfl
 The GitHub side: environment `production` with the owner as required reviewer, deployable from `main` only
 (repo Settings → Environments, or `gh api repos/didrio/soulsbuilds/environments/production`).
 
+## Daily stats job (T20)
+
+`.github/workflows/stats.yml` runs `node scripts/admin.mjs stats --project soulsbuilds --write` every day at
+04:17 UTC (and from Actions → Community stats → **Run workflow**). It writes `stats/elden-ring` (builds, distinct
+authors, accounts, builds per tag) for the landing page: one read per build, plus a `count()` of users.
+It runs as its own service account with only **Cloud Datastore User** (no deploy rights; deploys keep theirs),
+through the same Workload Identity pool. No GitHub environment or approval: until the role is granted, the job
+fails harmlessly. One-time setup (owner, `gcloud auth login` first):
+
+```bash
+gcloud iam service-accounts create github-stats --project soulsbuilds --display-name "GitHub Actions stats"
+gcloud iam service-accounts add-iam-policy-binding github-stats@soulsbuilds.iam.gserviceaccount.com \
+  --project soulsbuilds --role roles/iam.workloadIdentityUser \
+  --member "principalSet://iam.googleapis.com/projects/981152509260/locations/global/workloadIdentityPools/github/attribute.repository_id/762413644"
+gcloud projects add-iam-policy-binding soulsbuilds --condition None \
+  --member serviceAccount:github-stats@soulsbuilds.iam.gserviceaccount.com --role roles/datastore.user
+```
+
+Then check it: `node scripts/admin.mjs stats --project soulsbuilds` (dry run with your own credentials) prints what
+it would write. Start the first run by hand (Actions → Community stats → Run workflow), read its log, and open
+soulsbuilds.com: the top tags and "N builds by M players" appear. Until the doc exists the landing just doesn't
+show them.
+
 ## Backups (Spark plan)
 
 Spark has no managed backups, point-in-time recovery or scheduled exports (all need Blaze). Instead:

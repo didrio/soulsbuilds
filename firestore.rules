@@ -259,7 +259,16 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    // ---- reports/{id}: abuse reports (T10) -----------------------------------------------------
+    // ---- stats/{game}: community numbers (T20) -------------------------------------------------
+    // Builds, authors and builds per tag, written once a day by `scripts/admin.mjs stats` (Admin SDK,
+    // .github/workflows/stats.yml). Public; no client writes.
+
+    match /stats/{game} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // ---- reports/{id}: abuse reports (T10)-----------------------------------------------------
     // A signed-in user reports a build or a comment once: the doc id is `${targetId}_${uid}`, so a
     // second report is an update, which is refused. The target must exist. Admins read every report;
     // a reporter may read (and list, by reporterId) their own, so the UI can say "already reported".

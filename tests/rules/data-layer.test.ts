@@ -3,7 +3,7 @@
 // the ones it shouldn't make are refused. `npm run test:rules`.
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import { deleteDoc, doc, type Firestore } from 'firebase/firestore';
+import { deleteDoc, doc, setDoc, Timestamp, type Firestore } from 'firebase/firestore';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { BuildInput } from '@/lib/firebase/builds';
 
@@ -31,6 +31,7 @@ const { reportContent } = await import('@/lib/firebase/reports');
 const { deleteAccountData, findAccountData } = await import('@/lib/firebase/account');
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
   await import('@/lib/firebase/users');
+const { getGameStats } = await import('@/lib/firebase/stats');
 
 let env: RulesTestEnvironment;
 
@@ -231,6 +232,29 @@ describe('data layer against the rules', () => {
     expect(await getBuild(buildId)).toBeNull();
     expect(await listComments(buildId)).toEqual([]);
     expect(await listLikedBuildIds('bob')).toEqual([]);
+  });
+});
+
+describe('stats (T20)', () => {
+  it('reads a game’s stats, or null before the daily job has written them', async () => {
+    actAs(null);
+    expect(await getGameStats('elden-ring')).toBeNull();
+    await env.withSecurityRulesDisabled((context) =>
+      setDoc(doc(context.firestore() as unknown as Firestore, 'stats/elden-ring'), {
+        buildCount: 3,
+        authorCount: 2,
+        userCount: 5,
+        tagCounts: { Malenia: 2 },
+        updatedAt: Timestamp.fromMillis(Date.UTC(2026, 10, 16)),
+      }),
+    );
+    expect(await getGameStats('elden-ring')).toEqual({
+      buildCount: 3,
+      authorCount: 2,
+      userCount: 5,
+      tagCounts: { Malenia: 2 },
+      updatedAt: new Date(Date.UTC(2026, 10, 16)),
+    });
   });
 });
 

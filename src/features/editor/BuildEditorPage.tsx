@@ -24,6 +24,7 @@ import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
 import CharacterStats from './sections/CharacterStats';
 import EquipmentEditor from './sections/EquipmentEditor';
+import MoreByAuthor from './sections/MoreByAuthor';
 import GuideSection from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
 import SpellEditor from './sections/SpellEditor';
@@ -124,7 +125,8 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
         </Aside>
       </Layout>
       {!editable && build ? <GuideSection equipment={build.equipment} /> : null}
-      {!editable && build ? <CommentsSection buildId={build.id} /> : null}
+      {!editable && build ? <CommentsSection buildId={build.id} ownerId={build.ownerId} /> : null}
+      {!editable && build ? <MoreByAuthor buildId={build.id} ownerId={build.ownerId} /> : null}
       {editable ? (
         <EditBar aria-label="Save changes">
           <ErrorMessage>{editor.saveError}</ErrorMessage>

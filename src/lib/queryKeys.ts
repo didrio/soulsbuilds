@@ -1,6 +1,7 @@
 // TanStack Query keys, in one place so features invalidate each other's data consistently.
 // Prefixes matter: invalidating ['builds'] refreshes every build list and detail.
 import type { BuildSort } from './firebase';
+import type { GameId } from './models';
 
 export const queryKeys = {
   builds: ['builds'] as const,
@@ -17,4 +18,5 @@ export const queryKeys = {
   hasLiked: (buildId: string, userId: string) => ['likes', buildId, userId] as const,
   comments: (buildId: string) => ['comments', buildId] as const,
   user: (id: string) => ['users', id] as const,
+  stats: (game: GameId) => ['stats', game] as const,
 };

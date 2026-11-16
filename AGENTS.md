@@ -14,7 +14,7 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T19, T21, T22 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-16 (T1–T22 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
@@ -22,7 +22,7 @@ approved production deploys on `main`. Redesign (T16, T17, T22): tokens + per-ga
 view and edit in one layout (title pane, equipment as icon tiles, write-up beside the numbers, guide collapsed).
 T14/T19/T15: "How to get this build" from `acquisition.json`. T8: build math (class, vitals, load, poise,
 warnings). T21: smooth scrolling, `npm run perf`. T18: in-app account deletion, admin `rename`/`delete-user`.
-Left: App Check enforcing.
+T20: daily `stats/{game}` (CI) → top tags, community line; activity on rows. Left: App Check, stats SA (owner).
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -68,6 +68,7 @@ Left: App Check enforcing.
 | v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`               |
 | Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`  |
 | Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`    |
+| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)          |
 | Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`  |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--full]` → PNG path   |
 | Measure load + scroll smoothness (T21)      | `npm run perf -- <url or /route> [--cpu 4]` (docs/architecture.md)           |
@@ -101,13 +102,15 @@ index.html                 Vite entry (meta, theme-color, icons) → src/main.ts
 src/
   main.tsx                 createRoot + <AppProviders><App/>
   app/                     App (shell: global styles + game skin, header, log in/sign up dialog, item-picker
-                           modal, footer), game.ts (game registry + useCurrentGame),
+                           modal, footer; useScrollToTop), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId, /user/:userId, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
-  features/builds/         Landing (sort, tag/level filters in the URL, load more), BuildsList (fixed-height rows;
-                           tags.ts fits tags on one line + "+N"), filters.ts, queries.ts (useBuilds, useUserBuilds)
+  features/builds/         Landing (sort, tag/level filters in the URL, top tags + community line from stats,
+                           load more), BuildsList (fixed-height rows: age, likes + comments; tags.ts fits tags
+                           on one line + "+N"), filters.ts (+ topTags, toggleTag), queries.ts (useBuilds,
+                           useUserBuilds, useGameStats)
   features/profile/        Profile (rename, Builds/Liked tabs), DeleteAccount (T18), queries.ts
                            (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
@@ -115,7 +118,7 @@ src/
   features/editor/         BuildEditorPage (view/create/edit/delete, one layout) + useBuildEditor; queries.ts
                            (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader = title pane with like/report/tags,
                            OwnerActions, BuildDetailsForm (edit title block), Equipment/Stat/SpellEditor panels,
-                           DescriptionSection, CommentsSection); ItemRow (weapon/spell slot as tile + name; button in
+                           DescriptionSection, CommentsSection, MoreByAuthor); ItemRow (weapon/spell slot as tile + name; button in
                            edit mode; warnings for unmet requirements), ItemSlot (other slots: icon tile button,
                            name in a Tooltip) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
                            with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
@@ -127,10 +130,10 @@ src/
                            ErrorMessage, FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
                            inWorld.ts (frame + selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check), auth, builds, likes,
-                           comments, users, reports, account (deletion, T18)),
+                           comments, users, reports, account (deletion, T18), stats (T20)),
                            models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
-                           array.ts
+                           relativeTime.ts ("3 days ago"), array.ts
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
                            GameSkinStyle

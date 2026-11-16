@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Build } from '@/lib/models';
-import { clampLevel, DEFAULT_FILTERS, filterBuilds, parseFilters, toSearchParams } from './filters';
+import {
+  clampLevel,
+  DEFAULT_FILTERS,
+  filterBuilds,
+  parseFilters,
+  toggleTag,
+  topTags,
+  toSearchParams,
+} from './filters';
 
 const build = (id: string, level: number, tags: string[]) => ({ id, level, tags }) as Build;
 const builds = [
@@ -65,5 +73,36 @@ describe('URL filters', () => {
     expect(clampLevel('1000', 1)).toBe(713);
     expect(clampLevel('', 713)).toBe(713);
     expect(clampLevel(' 42', 1)).toBe(42);
+  });
+});
+
+describe('toggleTag', () => {
+  it('adds a tag at the end, or removes it', () => {
+    expect(toggleTag(['Mohg'], 'Malenia')).toEqual(['Mohg', 'Malenia']);
+    expect(toggleTag(['Mohg', 'Malenia'], 'Mohg')).toEqual(['Malenia']);
+    expect(toggleTag([], 'Mohg')).toEqual(['Mohg']);
+  });
+});
+
+describe('topTags', () => {
+  const known = new Set(['Malenia', 'Mohg', 'PvP', 'Bleed', 'Rennala']);
+
+  it('picks the most used known tags, ties by name, at most `count`', () => {
+    const counts = { Mohg: 4, Malenia: 9, PvP: 4, Bleed: 1, Rennala: 2 };
+    expect(topTags(counts, 3, known)).toEqual([
+      { tag: 'Malenia', count: 9 },
+      { tag: 'Mohg', count: 4 },
+      { tag: 'PvP', count: 4 },
+    ]);
+  });
+
+  it('leaves out unknown (renamed or removed) and unused tags', () => {
+    expect(topTags({ Malenia: 2, 'Old Tag': 50, Mohg: 0 }, 10, known)).toEqual([
+      { tag: 'Malenia', count: 2 },
+    ]);
+  });
+
+  it('uses the real tag list by default', () => {
+    expect(topTags({ Malenia: 1, 'Not A Tag': 5 })).toEqual([{ tag: 'Malenia', count: 1 }]);
   });
 });

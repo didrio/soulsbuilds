@@ -5,6 +5,7 @@ import { renderWithProviders } from '@/test/render';
 import BuildsList from './BuildsList';
 
 const author = { id: 'seed-ranni', displayName: 'Ranni Fan', createdAt: new Date(0) };
+const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 3600 * 1000);
 
 describe('BuildsList', () => {
   it('shows each build as one link with its name, level, likes and tags', () => {
@@ -18,6 +19,25 @@ describe('BuildsList', () => {
   it('shows the author when profiles are given', () => {
     renderWithProviders(<BuildsList builds={[makeBuild()]} authors={{ [author.id]: author }} />);
     expect(screen.getByRole('link', { name: /by Ranni Fan/ })).toBeInTheDocument();
+  });
+
+  it('shows the comment count and how long ago the build was posted', () => {
+    renderWithProviders(
+      <BuildsList
+        builds={[makeBuild({ commentCount: 1, createdAt: daysAgo(3) })]}
+        authors={{ [author.id]: author }}
+      />,
+    );
+    const row = screen.getByRole('link', { name: /Carian Moon Knight/ });
+    expect(row).toHaveTextContent('1 comment');
+    expect(row).toHaveTextContent(/by Ranni Fan·3 days ago/);
+    expect(screen.getByText('3 days ago').tagName).toBe('TIME');
+  });
+
+  it('shows only the age when no authors are given (a profile)', () => {
+    renderWithProviders(<BuildsList builds={[makeBuild({ createdAt: daysAgo(1) })]} />);
+    expect(screen.getByText('yesterday')).toBeInTheDocument();
+    expect(screen.queryByText(/^by/)).not.toBeInTheDocument();
   });
 
   it('shows the item icons, named in a tooltip, and empty slots', () => {

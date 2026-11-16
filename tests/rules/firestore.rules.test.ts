@@ -646,6 +646,27 @@ describe('reports/{id}', () => {
   });
 });
 
+describe('stats/{game}', () => {
+  const stats = { buildCount: 1, authorCount: 1, userCount: 2, tagCounts: { Malenia: 1 } };
+
+  it('anyone reads the community stats', async () => {
+    await seed((db) => setDoc(doc(db, 'stats/elden-ring'), stats));
+    await assertSucceeds(getDoc(doc(as(), 'stats/elden-ring')));
+    await assertSucceeds(getDoc(doc(as('alice'), 'stats/elden-ring')));
+  });
+
+  it('no client writes them, admins included (the daily job uses the Admin SDK)', async () => {
+    await seed((db) => setDoc(doc(db, 'stats/elden-ring'), stats));
+    const inflated = { ...stats, buildCount: 9000 };
+    await assertFails(setDoc(doc(as(), 'stats/elden-ring'), inflated));
+    await assertFails(setDoc(doc(as('alice'), 'stats/elden-ring'), inflated));
+    await assertFails(updateDoc(doc(as('alice'), 'stats/elden-ring'), { buildCount: 9000 }));
+    await assertFails(setDoc(doc(as('alice'), 'stats/other-game'), stats));
+    await assertFails(deleteDoc(doc(as('alice'), 'stats/elden-ring')));
+    await assertFails(setDoc(doc(as('root', { admin: true }), 'stats/elden-ring'), inflated));
+  });
+});
+
 describe('everything else', () => {
   it('is denied', async () => {
     await assertFails(setDoc(doc(as('alice'), 'secrets/x'), { reason: 'spam' }));

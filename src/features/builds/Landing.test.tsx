@@ -4,13 +4,26 @@ import { makeBuild } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import Landing from './Landing';
 
-const firebase = vi.hoisted(() => ({ listBuilds: vi.fn(), searchBuilds: vi.fn() }));
+const firebase = vi.hoisted(() => ({
+  getGameStats: vi.fn(),
+  listBuilds: vi.fn(),
+  searchBuilds: vi.fn(),
+}));
 vi.mock('@/lib/firebase', () => ({ ...firebase, errorMessage: () => 'error' }));
 
 const page = (builds: ReturnType<typeof makeBuild>[]) => ({ builds, nextCursor: null });
 
+const stats = {
+  buildCount: 128,
+  authorCount: 41,
+  userCount: 60,
+  tagCounts: { Malenia: 31, Mohg: 22, Godrick: 9, 'Not A Tag': 99 },
+  updatedAt: new Date(),
+};
+
 beforeEach(() => {
   vi.resetAllMocks();
+  firebase.getGameStats.mockResolvedValue(null);
   firebase.listBuilds.mockResolvedValue(
     page([
       makeBuild({ id: 'A', name: 'Bleed', level: 150, tags: ['Malenia', 'Mohg'] }),
@@ -57,5 +70,59 @@ describe('Landing', () => {
     firebase.listBuilds.mockResolvedValue(page([]));
     renderWithProviders(<Landing />);
     expect(await screen.findByRole('heading', { name: 'No builds yet' })).toBeInTheDocument();
+  });
+
+  describe('community stats (T20)', () => {
+    it('shows the top tags with counts and "N builds by M players"', async () => {
+      firebase.getGameStats.mockResolvedValue(stats);
+      renderWithProviders(<Landing />);
+      const top = await screen.findByRole('group', { name: 'Top tags' });
+      expect([...top.querySelectorAll('button')].map((button) => button.textContent)).toEqual([
+        'Malenia31 builds',
+        'Mohg22 builds',
+        'Godrick9 builds',
+      ]);
+      expect(screen.getByText(/builds by/)).toHaveTextContent('128 builds by 41 players');
+      expect(screen.getByRole('button', { name: /More tags/ })).toBeInTheDocument();
+    });
+
+    it('a top tag toggles the tag filter', async () => {
+      firebase.getGameStats.mockResolvedValue(stats);
+      const { user } = renderWithProviders(<Landing />);
+      const mohg = await screen.findByRole('button', { name: 'Mohg 22 builds' });
+      expect(mohg).toHaveAttribute('aria-pressed', 'false');
+      await user.click(mohg);
+      expect(mohg).toHaveAttribute('aria-pressed', 'true');
+      await vi.waitFor(() =>
+        expect(firebase.listBuilds).toHaveBeenLastCalledWith(
+          expect.objectContaining({ tag: 'Mohg' }),
+        ),
+      );
+      expect(await screen.findByText('Bleed')).toBeInTheDocument();
+      await vi.waitFor(() => expect(screen.queryByText('Moon')).not.toBeInTheDocument());
+      // Picked from the top tags, so not listed again as a removable chip.
+      expect(screen.queryByRole('button', { name: 'Remove Mohg' })).not.toBeInTheDocument();
+      await user.click(mohg);
+      expect(mohg).toHaveAttribute('aria-pressed', 'false');
+      expect(await screen.findByText('Moon')).toBeInTheDocument();
+    });
+
+    it('a picked tag outside the top tags stays a removable chip', async () => {
+      firebase.getGameStats.mockResolvedValue(stats);
+      renderWithProviders(<Landing />, { route: '/?tag=Malenia&tag=Rennala' });
+      expect(await screen.findByRole('button', { name: /^Malenia/ })).toHaveAttribute(
+        'aria-pressed',
+        'true',
+      );
+      expect(screen.getByRole('button', { name: 'Remove Rennala' })).toBeInTheDocument();
+    });
+
+    it('without the stats doc: no top tags, no community line, "Add tag" as before', async () => {
+      renderWithProviders(<Landing />);
+      expect(await screen.findByText('Bleed')).toBeInTheDocument();
+      expect(screen.queryByRole('group', { name: 'Top tags' })).not.toBeInTheDocument();
+      expect(screen.queryByText(/builds by/)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /Add tag/ })).toBeInTheDocument();
+    });
   });
 });

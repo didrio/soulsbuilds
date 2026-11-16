@@ -137,3 +137,19 @@ export interface ReportDoc {
   createdAt: Timestamp;
   resolvedAt?: Timestamp;
 }
+
+/** stats/{game} as stored: community numbers written once a day by `scripts/admin.mjs stats` (T20). */
+export interface StatsDoc {
+  buildCount: number;
+  /** Distinct owners of the game's builds ("by M players"). */
+  authorCount: number;
+  /** Every account, with or without builds. */
+  userCount: number;
+  /** Builds per tag. */
+  tagCounts: Record<string, number>;
+  updatedAt: Timestamp;
+}
+
+export interface GameStats extends Omit<StatsDoc, 'updatedAt'> {
+  updatedAt: Date;
+}

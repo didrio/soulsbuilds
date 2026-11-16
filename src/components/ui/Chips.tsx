@@ -25,13 +25,15 @@ interface ChipsProps {
   onAdd: (tag: string) => void;
   onRemove: (tag: string) => void;
   values: string[];
+  /** The add button's text (the landing says "More tags" next to its top tags). */
+  addLabel?: string;
 }
 
 /**
  * Chosen tags as chips (each a "Remove <tag>" button), plus an "Add tag" button that opens a popover:
  * search all tags, or browse them by group (src/data/er/tags.json). Escape or a click outside closes it.
  */
-function Chips({ onAdd, onRemove, values }: ChipsProps) {
+function Chips({ onAdd, onRemove, values, addLabel = 'Add tag' }: ChipsProps) {
   const popoverId = useId();
   const [open, setOpen] = useState(false);
   const [openGroup, setOpenGroup] = useState<string | null>(null);
@@ -74,7 +76,7 @@ function Chips({ onAdd, onRemove, values }: ChipsProps) {
             aria-controls={open ? popoverId : undefined}
             onClick={() => (open ? close() : setOpen(true))}>
             <PlusIcon />
-            Add tag
+            {addLabel}
           </Button>
           {open ? (
             <Popover id={popoverId} onEscape={close} role="group" aria-label="Add a tag">

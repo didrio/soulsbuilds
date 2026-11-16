@@ -52,3 +52,7 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
 - T14 — Acquisition data — 2026-11-15 — `npm run data` writes `acquisition.json`: sources per item (lots placed by ID →
   nearest grace, event hints, shops by range, recipes by cookbook flag, classes), 54 regions in route order, 419
   graces, 27 gates, key items, validation with explicit allow-lists; ~670 items' facts pending (T19).
+- T15 — "How to get this build" — 2026-11-15 — pure route solver (`features/editor/guide/route.ts`: earliest
+  reachable source, item prerequisites, implied and any-of gates, topological order, steps by grace, legs by
+  region) + lazy `GuideSection` on the build view (numbered, collapsible regions, item icons); unit, component
+  and e2e tests. Upgrade materials, rune farming and a starting-class suggestion are in the Backlog.

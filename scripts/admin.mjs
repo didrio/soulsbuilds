@@ -17,7 +17,10 @@
 //                                                         reports about that content as "removed" (T18)
 //   node scripts/admin.mjs grant <uid|email>              set the `admin` custom claim
 //   node scripts/admin.mjs revoke <uid|email>             clear it
-//   node scripts/admin.mjs export                         back up every document (all collections and
+//   node scripts/admin.mjs stats                          count builds, authors, accounts and tags per
+//                                                         game into the public doc stats/<game> (T20;
+//                                                         daily in CI: .github/workflows/stats.yml)
+//   node scripts/admin.mjs export                    back up every document (all collections and
 //                                                         subcollections) as JSON; read-only (T12: the
 //                                                         Spark plan has no managed backups or PITR)
 //   ... --project soulsbuilds --write                     production (owner only), applied
@@ -342,6 +345,50 @@ export async function deleteUserData(
   return result;
 }
 
+/** The games builds can belong to (`GameId` in src/lib/models.ts); `stats/<game>` per game. */
+export const STATS_GAMES = ['elden-ring'];
+
+/**
+ * Community numbers for one game (T20): builds, distinct authors, builds per tag, and all accounts.
+ * One pass over the game's builds (only `tags` and `ownerId`), plus a `count()` of users.
+ */
+export async function computeStats(db, game) {
+  const [builds, users] = await Promise.all([
+    db.collection('builds').where('game', '==', game).select('tags', 'ownerId').get(),
+    db.collection('users').count().get(),
+  ]);
+  const authors = new Set();
+  const tagCounts = {};
+  for (const build of builds.docs) {
+    authors.add(build.get('ownerId'));
+    for (const tag of new Set(build.get('tags') ?? [])) tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+  }
+  return {
+    buildCount: builds.size,
+    authorCount: authors.size,
+    userCount: users.data().count,
+    tagCounts,
+  };
+}
+
+/**
+ * Computes every game's stats and, with `write`, saves each as the public doc `stats/<game>` (read by
+ * the landing page; the rules let no client write it). Run daily by .github/workflows/stats.yml and
+ * by the seed. Resolves to the stats by game.
+ */
+export async function updateStats(db, { write = false, games = STATS_GAMES } = {}) {
+  const result = {};
+  for (const game of games) {
+    result[game] = await computeStats(db, game);
+    if (write) {
+      await db
+        .doc(`stats/${game}`)
+        .set({ ...result[game], updatedAt: FieldValue.serverTimestamp() });
+    }
+  }
+  return result;
+}
+
 /** Sets (`admin` true) or clears the admin custom claim of a user found by uid or email. */
 export async function setAdmin(auth, who, admin, { write = false } = {}) {
   const user = who.includes('@') ? await auth.getUserByEmail(who) : await auth.getUser(who);
@@ -372,7 +419,8 @@ const USAGE = `Usage: node scripts/admin.mjs <command> [args] [--project <id>] [
   delete-user <uid|email>        delete an account and everything it published
   grant <uid|email>              make a user an admin
   revoke <uid|email>             remove admin
-  export                         save every document as JSON in .admin-backups/ (read-only)`;
+  stats                          count builds, authors, accounts and tags into stats/<game>
+  export                        save every document as JSON in .admin-backups/ (read-only)`;
 
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
@@ -471,6 +519,20 @@ async function main() {
     console.log(
       'The user must sign out and in again (or wait up to an hour) to get the new claim.',
     );
+    dryRunNote();
+  } else if (command === 'stats') {
+    console.log(`${mode}: community stats on ${where}\n`);
+    const result = await updateStats(db, { write: opts.write });
+    for (const [game, stats] of Object.entries(result)) {
+      const top = Object.entries(stats.tagCounts)
+        .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+        .slice(0, 10)
+        .map(([tag, count]) => `${tag} ${count}`);
+      console.log(`stats/${game}`);
+      console.log(`  ${stats.buildCount} builds by ${stats.authorCount} authors`);
+      console.log(`  ${stats.userCount} accounts`);
+      console.log(`  ${Object.keys(stats.tagCounts).length} tags used; top: ${top.join(', ')}`);
+    }
     dryRunNote();
   } else if (command === 'export') {
     console.log(`Export (read-only): ${where}\n`);
