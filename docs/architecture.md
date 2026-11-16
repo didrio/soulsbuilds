@@ -168,3 +168,34 @@ in, Escape, focus back to the opener). Item icons are decorative (`alt=""`): the
 them.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited.
+
+## Performance (T21)
+
+Measure with `npm run perf -- <url or /route>` (`scripts/perf.mjs`): a headed Chrome at 1440×900@2x (Retina),
+load numbers (LCP, CLS, TBT, when the network settled, bytes by type), then a fast scroll down and back with
+frame times and a performance trace (main-thread rendering steps, GPU-process time, dropped frames).
+`--off grain,bg,dropshadow,shadows` switches one suspect off with injected CSS, to attribute cost before changing
+code; `--cpu 4` throttles, `--mobile`, `--warm` (returning visitor), `--list` (largest requests). Results and the
+last trace (DevTools → Performance → Load profile) go to `.perf/`. It's fine against soulsbuilds.com (page loads
+only) and `npm run preview`; on the dev server the numbers are a dev build's.
+
+What's expensive here, and why (2026-11 measurements, Mac + Chrome):
+
+- **Scrolling is GPU-bound, not JavaScript-bound.** Repainting large areas at devicePixelRatio 2 is the cost;
+  the main thread does little. Watch `gpuMs` and `droppedPct`.
+- **Never `background-attachment: fixed`** (or anything that repaints the whole page per scroll frame). On
+  `body` it dropped ~40% of frames on the landing. The top light and vignette are a `position: fixed` layer
+  behind the content (`body::before`, z-index -1) instead.
+- **The film grain** stays on top of everything (`body::after`; panels are opaque) as its own compositor layer
+  (`will-change: transform`): rasterized once, then only composited. Measured cost: negligible.
+- **Item-icon drop-shadows and the inset frame shadows** cost little once the page isn't repainting
+  (< 1% frames); they stay. Re-measure with `--off` if a page gets many more of them.
+- **No list virtualization or `content-visibility`** needed: 100+ landing rows scroll at ~118 fps.
+- **Layout shift**: `<main>` is at least a screen tall, so the footer starts below the fold and doesn't jump
+  away when content arrives (it was ~all of the CLS).
+- **Time to content is App Check's reCAPTCHA chain**: Firestore's first request waits for the App Check token
+  (reCAPTCHA Enterprise script, iframe, worker, token exchange): ~1.1 s on a cold visit. `index.html`
+  preconnects to those origins; anything more is an App Check decision (`TICKETS.md`).
+- **Caching**: hashed `/assets/*` files are immutable for a year, `/assets/icons/**` a week (names aren't
+  hashed), everything else (HTML routes, favicon, manifest) `no-cache`, so a deploy shows up at once and an old
+  `index.html` never asks for deleted chunks (`firebase.json` "headers"; `docs/firebase.md`).

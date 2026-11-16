@@ -93,7 +93,9 @@ const SkipLink = styled.a`
 const Main = styled.main`
   margin: 0 auto;
   max-width: ${CONTENT_WIDTH};
-  min-height: 60vh;
+  /* A full screen even while the page loads, so the footer starts below the fold instead of showing
+     mid-screen and then jumping away when the content arrives (most of the layout shift, T21). */
+  min-height: 100vh;
   outline: none;
   padding: 0 24px;
 

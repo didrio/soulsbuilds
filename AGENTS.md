@@ -14,13 +14,13 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T8, T10–T17, T19 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T17, T19, T21 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
 approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
 page; build page = view and edit in one layout. T14/T19/T15: "How to get this build" from `acquisition.json`.
-T8: build math (saved starting class, vitals, load + roll, poise, requirement/memory warnings). Left: App Check enforcing.
+T8: build math (class, vitals, load, poise, warnings). T21: smooth scrolling, `npm run perf`. Left: App Check enforcing.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -67,6 +67,7 @@ T8: build math (saved starting class, vitals, load + roll, poise, requirement/me
 | Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`  |
 | Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`  |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--full]` → PNG path   |
+| Measure load + scroll smoothness (T21)      | `npm run perf -- <url or /route> [--cpu 4]` (docs/architecture.md)           |
 | Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)         |
 | Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                   |
 | Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"        |
@@ -138,7 +139,7 @@ src/
 tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/
                            (scripts/admin.mjs), e2e/ (Playwright)
 public/assets/             icons/<icon>.webp (T7 data)
-scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, doctor, firebase (Java
+scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, perf, doctor, firebase (Java
                            wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript;
                            acquisition.ts + hand-written progression/places/events.ts) + name-aliases.json (2022
                            names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)

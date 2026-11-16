@@ -38,6 +38,9 @@ It prints a PNG path under `.artifacts/screenshots/`: open it with your image re
 console errors, HTTP errors and failed requests from the page: read those first, they're often the real answer.
 Screenshots cost tokens: take them of the pages you changed, desktop + mobile, not after every edit.
 
+Performance (load, scroll smoothness): `npm run perf -- <url or /route>` (opens a visible Chrome; prints a table,
+saves a trace under `.perf/`). Details and what's expensive here: `docs/architecture.md` "Performance".
+
 Seeded routes: `/` (landing), `/build/SEEDBLEED001` (full build, comment, like), `/build/SEEDMOON0001`
 (spells), `/build/SEEDFAITH001`, `/build/SEEDNAKED001` (all 10s: requirement warnings), `/user/seed-tarnished`,
 `/user/seed-ranni`, `/build/new` (needs sign-in).

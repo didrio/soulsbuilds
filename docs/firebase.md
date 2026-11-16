@@ -123,6 +123,12 @@ or the live site breaks):
   `node scripts/firebase.mjs deploy --project soulsbuilds --only firestore:rules,firestore:indexes`. Needs
   `node scripts/firebase.mjs login` once.
 - Never `firebase deploy` without `--only`. Hosting serves `dist/` with an SPA rewrite to `index.html`.
+- **Cache headers** (`firebase.json` "headers", T21; globs match the request path, before the rewrite, and
+  don't overlap because the docs don't say which rule wins): hashed Vite files `/assets/*.@(js|css|woff…)` →
+  `public, max-age=31536000, immutable`; `/assets/icons/**` → one week (names aren't hashed; `npm run data` can
+  change an icon); everything else (`!/assets/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
+  by ETag. Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
+demo-soulsbuilds --only hosting "curl -sI http://127.0.0.1:5190/"` (Hosting emulator port 5190).
 - `index.html` sends `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` to `soulsbuilds.com` (same path).
   Preview channels and Firebase's `/__/auth/*` pages (email verification and password reset links) are unaffected.
 

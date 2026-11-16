@@ -25,6 +25,7 @@
     "test:rules": "node scripts/firebase.mjs --config firebase.test.json emulators:exec --project demo-soulsbuilds-test --only firestore,auth \"vitest run --config vitest.emulator.config.ts\"",
     "e2e": "node scripts/e2e.mjs",
     "screenshot": "node scripts/screenshot.mjs",
+    "perf": "node scripts/perf.mjs",
     "doctor": "node scripts/doctor.mjs",
     "deploy": "npm run check && node scripts/firebase.mjs deploy --project soulsbuilds --only hosting"
   },

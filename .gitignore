@@ -47,3 +47,6 @@ pnpm-lock.yaml
 # ~/Documents/soulsbuilds-gamedata; these catch it if it's ever unzipped here by mistake. Never commit it.
 /soulsbuilds-gamedata/
 /soulsbuilds-export/
+
+# npm run perf results and traces (T21)
+.perf/

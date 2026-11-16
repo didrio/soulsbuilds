@@ -33,11 +33,6 @@ const GlobalStyle = createGlobalStyle`
   body {
     margin: 0;
     min-height: 100vh;
-    background:
-      radial-gradient(ellipse 120% 70% at 50% 0%, ${COLOR_BG_TOP} 0%, transparent 60%),
-      radial-gradient(ellipse at 50% 50%, transparent 55%, ${COLOR_VIGNETTE} 100%),
-      ${COLOR_BG};
-    background-attachment: fixed;
     color: ${COLOR_TEXT};
     font-family: ${FONT_UI};
     font-size: ${TEXT_MD};
@@ -46,7 +41,24 @@ const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
   }
 
+  /* Warm top light and vignette, fixed to the viewport. A fixed layer of its own, not
+     \`background-attachment: fixed\` on body: that repaints the whole page on every scroll frame and
+     dropped ~40% of frames while scrolling (T21). Behind the content (z-index -1; body has no
+     background of its own, html paints COLOR_BG). */
   body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse 120% 70% at 50% 0%, ${COLOR_BG_TOP} 0%, transparent 60%),
+      radial-gradient(ellipse at 50% 50%, transparent 55%, ${COLOR_VIGNETTE} 100%);
+  }
+
+  /* Grain over everything (panels are opaque, so it can't sit behind them). Its own compositor
+     layer: rasterized once, then only composited while scrolling. */
+  body::after {
     content: '';
     position: fixed;
     inset: 0;
@@ -54,6 +66,7 @@ const GlobalStyle = createGlobalStyle`
     pointer-events: none;
     opacity: 0.5;
     background-image: ${GRAIN};
+    will-change: transform;
   }
 
   a {

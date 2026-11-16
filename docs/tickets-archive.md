@@ -35,3 +35,11 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   `npm run data` (TypeScript pipeline, zod schemas, fixture + data tests, deterministic) → `src/data/er/` (base +
   DLC, game param IDs, real affinities and Ash of War rules) and 2,151 WebP icons; 2022 name → ID table; the
   app switch split into T13.
+- T10 — Moderation — 2026-11-15 — reports on builds and comments (`reports/{targetId}_{uid}`, rules + tests,
+  "Report" buttons), `scripts/admin.mjs` (reports, remove with JSON backup, dismiss, grant/revoke admin; tested
+  on the emulators), App Check code (off until the owner's key: moved to T12). Delete, not hide
+  (`docs/decisions.md`); no admin UI (backlog).
+- T16 — Redesign: design system, shell, browse pages — 2026-11-15 — ~50/50 modern and in-world (approved HTML
+  mockup v2): base tokens + per-game skin (CSS vars, `skins.ts`, AA contrast test), Inter/Cinzel/Garamond, in-world
+  components (Frame, Ornament, PageHero, ItemTile, selection bar), Dialog auth, game tabs removed, landing as dense
+  rows with authors, profile/legal/404 restyled; 2022 tokens kept in `legacy.ts` for T17.
