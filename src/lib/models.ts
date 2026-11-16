@@ -67,6 +67,13 @@ export interface BuildDoc extends Omit<BuildContent, 'startingClass'> {
   nameLower: string;
   likeCount: number;
   commentCount: number;
+  /**
+   * Players tracking the build (in progress or finished) and those who finished it (T36). Moved by
+   * exactly 1 with the player's tracking doc (firestore.rules). Absent on builds saved before T36
+   * until `scripts/admin.mjs counts --write` backfills them.
+   */
+  playerCount?: number;
+  finishedCount?: number;
   /** Set by the comment counter (see firestore.rules); not used by the UI. */
   lastCommentId?: string;
   createdAt: Timestamp;
@@ -79,6 +86,9 @@ export interface Build extends BuildContent {
   game: GameId;
   likeCount: number;
   commentCount: number;
+  /** Everyone tracking it, playing or finished (T36). */
+  playerCount: number;
+  finishedCount: number;
   createdAt: Date;
   updatedAt: Date;
 }

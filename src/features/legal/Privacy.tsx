@@ -29,8 +29,9 @@ function Privacy() {
         <li>
           <strong>Builds you track:</strong> when you track a build, which of its items you’ve
           marked collected, the stat levels you’ve entered, and when you started and finished. This
-          is private: only you can see it. Tracking needs an account, so it’s stored with your
-          account and nowhere else.
+          is private: only you can see it, on your profile’s Playing and Completed tabs. Tracking
+          needs an account, so it’s stored with your account and nowhere else. A build only shows
+          how many people play it and have finished it, never who.
         </li>
         <li>
           <strong>Reports:</strong> if you report a build or comment, we store the reason, your note

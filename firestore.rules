@@ -8,6 +8,8 @@ rules_version = '2';
 // Counters: `likeCount` and `commentCount` on a build only change by exactly 1, in the same batched
 // write that creates or deletes the matching like/comment doc (no Cloud Functions: they need the
 // paid Blaze plan). See likeChange() / commentChange() and the subcollection rules.
+// `playerCount` and `finishedCount` (T36) do the same with a player's private tracking doc: see
+// trackingCount() and countersMoved().
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -71,12 +73,39 @@ service cloud.firestore {
       // read or write it. Item keys and stats are the app's job beyond their shape. startedAt is set
       // by the client (progress from local storage keeps its real start) and may only move earlier
       // (merging this device's progress into the account's on sign-in).
+      //
+      // The build's counters (T36) move in the same batch whenever the doc's status changes: created,
+      // finished, un-finished, deleted. Deleting is also allowed once the build is gone.
       match /tracking/{buildId} {
-        allow read, delete: if isUser(userId);
-        allow create: if isUser(userId) && validTracking(buildId, incoming());
+        allow read: if isUser(userId);
+        allow create: if isUser(userId) && validTracking(buildId, incoming())
+          && buildCounted(buildId, 0, statusOf(incoming()));
         allow update: if isUser(userId) && validTracking(buildId, incoming())
-          && incoming().startedAt <= resource.data.startedAt;
+          && incoming().startedAt <= resource.data.startedAt
+          && (statusOf(incoming()) == statusOf(resource.data)
+            || buildCounted(buildId, statusOf(resource.data), statusOf(incoming())));
+        allow delete: if isUser(userId) && (!existsAfter(buildPath(buildId))
+          || buildCounted(buildId, statusOf(resource.data), 0));
       }
+    }
+
+    // A player's status on a build (T36): 0 not tracking, 1 playing, 2 finished.
+    function statusOf(t) {
+      return t.completedAt == null ? 1 : 2;
+    }
+
+    // The build's counters moved from status `from` to `to` (each by -1, 0 or +1), from `before` to
+    // `after` (build data). Builds saved before T36 have no counters: they count from 0.
+    function countersMoved(before, after, from, to) {
+      return from != to
+        && after.get('playerCount', 0) - before.get('playerCount', 0)
+          == (to > 0 ? 1 : 0) - (from > 0 ? 1 : 0)
+        && after.get('finishedCount', 0) - before.get('finishedCount', 0)
+          == (to == 2 ? 1 : 0) - (from == 2 ? 1 : 0);
+    }
+
+    function buildCounted(buildId, from, to) {
+      return countersMoved(get(buildPath(buildId)).data, getAfter(buildPath(buildId)).data, from, to);
     }
 
     function validTracking(buildId, t) {
@@ -191,16 +220,20 @@ service cloud.firestore {
 
       allow create: if signedIn()
         && hasExactly(incoming(), contentKeys().concat(
-          ['ownerId', 'game', 'likeCount', 'commentCount', 'createdAt', 'updatedAt']))
+          ['ownerId', 'game', 'likeCount', 'commentCount', 'playerCount', 'finishedCount',
+            'createdAt', 'updatedAt']))
         && incoming().ownerId == request.auth.uid
         && incoming().game == 'elden-ring'
         && validContent(incoming())
         && incoming().likeCount == 0
         && incoming().commentCount == 0
+        && incoming().playerCount == 0
+        && incoming().finishedCount == 0
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
 
-      allow update: if ownerEdit() || likeChange(buildId) || commentChange(buildId);
+      allow update: if ownerEdit() || likeChange(buildId) || commentChange(buildId)
+        || trackingCount(buildId);
 
       // Likes and comments are deleted afterwards (see the orphan rules below).
       allow delete: if signedIn() && (resource.data.ownerId == request.auth.uid || isAdmin());
@@ -235,6 +268,16 @@ service cloud.firestore {
           && id is string && id.matches('^[A-Za-z0-9_-]{1,40}$')
           && ((delta == 1 && !exists(comment) && existsAfter(comment))
             || (delta == -1 && exists(comment) && !existsAfter(comment)));
+      }
+
+      // playerCount / finishedCount move with the caller's own tracking doc on this build (T36).
+      function trackingCount(buildId) {
+        let t = /databases/$(database)/documents/users/$(request.auth.uid)/tracking/$(buildId);
+        return signedIn()
+          && changedKeys().hasOnly(['playerCount', 'finishedCount'])
+          && countersMoved(resource.data, incoming(),
+            exists(t) ? statusOf(get(t).data) : 0,
+            existsAfter(t) ? statusOf(getAfter(t).data) : 0);
       }
 
       // builds/{id}/likes/{uid}: one like per user; the doc id is the liker's uid.

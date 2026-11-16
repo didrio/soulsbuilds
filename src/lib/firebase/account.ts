@@ -18,7 +18,8 @@ import {
 } from 'firebase/firestore';
 import { auth, firestore } from './app';
 import { deleteBuild, listUserBuilds } from './builds';
-import { listTrackingRefs } from './tracking';
+import { trackingStatus, type TrackingStatus } from '@/lib/tracking';
+import { deleteTracking, listTracking } from './tracking';
 
 /** What deleting an account removes, found before anything is deleted. */
 export interface AccountData {
@@ -27,8 +28,11 @@ export interface AccountData {
   likes: { ref: DocumentReference; buildExists: boolean }[];
   comments: { ref: DocumentReference; buildExists: boolean }[];
   reports: DocumentReference[];
-  /** Their private progress on builds (T34). */
-  tracking: DocumentReference[];
+  /**
+   * Their private progress on builds (T34), with what the build's counters include for it (T36):
+   * its status, or `'none'` when the build is gone or is their own (deleted first).
+   */
+  tracking: { buildId: string; counted: TrackingStatus }[];
 }
 
 /** Steps done / total, for a progress line. */
@@ -55,9 +59,19 @@ export async function findAccountData(uid: string): Promise<AccountData> {
     getDocs(query(collectionGroup(firestore, 'likes'), where('userId', '==', uid))),
     getDocs(query(collectionGroup(firestore, 'comments'), where('authorId', '==', uid))),
     getDocs(query(collection(firestore, 'reports'), where('reporterId', '==', uid))),
-    listTrackingRefs(uid),
+    listTracking(uid),
   ]);
   const ownBuilds = new Set(builds.map((build) => build.id));
+  const elsewhere = tracking.filter(({ buildId }) => !ownBuilds.has(buildId));
+  const existing = new Set(
+    (
+      await Promise.all(
+        elsewhere.map(async ({ buildId }) =>
+          (await getDoc(doc(firestore, 'builds', buildId))).exists() ? [buildId] : [],
+        ),
+      )
+    ).flat(),
+  );
   return {
     buildIds: [...ownBuilds],
     likes: await withBuildExists(
@@ -69,14 +83,17 @@ export async function findAccountData(uid: string): Promise<AccountData> {
       ownBuilds,
     ),
     reports: reports.docs.map((d) => d.ref),
-    tracking,
+    tracking: tracking.map(({ buildId, state }) => ({
+      buildId,
+      counted: existing.has(buildId) ? trackingStatus(state) : 'none',
+    })),
   };
 }
 
 /**
  * Deletes everything the user has in Firestore: their builds (with every like and comment on them),
  * their likes and comments on other builds (moving those builds' counters), their reports, their
- * tracking progress (T34), and finally their profile. Everything is found first, so a failing query deletes nothing. Every step
+ * tracking progress (T34; moving the tracked builds' counters, T36), and finally their profile. Everything is found first, so a failing query deletes nothing. Every step
  * is idempotent: if it stops halfway, running it again finishes the job.
  *
  * One like/comment per batch: the rules allow 20 document lookups per batched write, and two
@@ -115,8 +132,12 @@ export async function deleteAccountData(uid: string, onProgress?: AccountProgres
     await batch.commit();
     step();
   }
-  for (const ref of [...data.reports, ...data.tracking]) {
+  for (const ref of data.reports) {
     await deleteDoc(ref);
+    step();
+  }
+  for (const { buildId, counted } of data.tracking) {
+    await deleteTracking(uid, buildId, counted);
     step();
   }
   await deleteDoc(doc(firestore, 'users', uid));

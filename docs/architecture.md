@@ -66,6 +66,14 @@ Infinity`: the page is the only writer), read from `users/{uid}/tracking/{buildI
   and decides which numbered stops are done (`stopProgress`: a stop with the build's tracked items when all are collected, any
   other stop once a later tracked one is); How to get folds done stops and marks the next, and the Loadout tab
   shows a Next stop card (`guide/NextStop`).
+  **Playing and Completed (T36)**: the build's public `playerCount`/`finishedCount` move in the same batch as
+  the tracking doc whenever its status changes (`trackingStatus`, `counterDelta` in `src/lib/tracking.ts`;
+  `saveTracking(…, from)` / `deleteTracking(…, counted)`). `saveQueue.ts` keeps each record's status in the
+  database (seeded by the read, `noteLoaded`; set when a write is sent; forgotten on a failed write, whose
+  refetch re-seeds it), and the hook moves the cached build's counts at once. The owner's profile shows
+  Playing (cards with progress and the next stop, `PlayingList`, a lazy chunk with the full data and the route)
+  and Completed (trophy tiles), from `useTrackedBuilds` (`listTracking` + `getBuild` each,
+  `queryKeys.trackedBuilds`, invalidated by every tracking change). Both private; visitors don't see the tabs.
 - **Game data** is static JSON in `src/data/er/` (from the game files, T7), bundled, read through typed
   accessors by ID in `src/data/index.ts`; the equipment rules are pure functions in `src/data/rules.ts`, shared
   with the seed and migration scripts (see `docs/data.md`). Builds store **game IDs**; an ID the data no longer
@@ -110,6 +118,9 @@ builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED
     helm, chest, gauntlet, leg, greatRune, spiritAsh: id|null
   }
   likeCount, commentCount: int    0 on create; only change by ±1 with a like/comment (see below)
+  playerCount, finishedCount: int T36: everyone tracking it (playing or finished) / those finished; 0 on
+                                  create; move by ±1 with the caller's own tracking doc; absent on builds
+                                  saved before T36 until `admin.mjs counts --write` (rules count from 0)
   lastCommentId: string           set by the comment counter (rules plumbing, unused by the UI)
   createdAt, updatedAt: timestamp server time; owner edits must bump updatedAt
 
@@ -134,7 +145,10 @@ stats/{game}                      community numbers per game (T20; doc id = Game
 - **Counters without Cloud Functions** (they need the paid Blaze plan): a like is one batched write that creates
   `likes/{uid}` and does `likeCount: increment(1)`; the rules only allow the counter to move by exactly 1 when the
   caller's like doc appears/disappears in the same batch (`exists`/`existsAfter`). Comments work the same way;
-  the batch also sets `lastCommentId` so the build rule knows which comment to check.
+  the batch also sets `lastCommentId` so the build rule knows which comment to check. Tracking (T36): the
+  tracking doc's status (none / playing / finished, from `completedAt`) before and after the batch decides how
+  `playerCount` and `finishedCount` move (`countersMoved` in the rules, checked from both docs); a write that
+  keeps the status touches no counter, and a tracking doc whose build is gone can be deleted alone.
 - **Who can do what**: anyone reads everything. Signed-in users create builds they own, like (once), and
   comment. Owners edit content and delete their builds; comment authors delete their comments. **Admins** are a
   custom claim (`request.auth.token.admin`), never a document field: they can delete any build or comment.
@@ -145,7 +159,8 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   re-authenticate with the password, then **find everything first** (own builds; likes and comments on other
   builds by collection-group queries; reports by `reporterId`), so a failing query deletes nothing; then delete
   own builds (`deleteBuild`, which takes every like and comment on them), each like/comment elsewhere in its
-  own batch with the counter (plain delete if that build is gone), the reports, the tracking docs (T34),
+  own batch with the counter (plain delete if that build is gone), the reports, the tracking docs (T34; each
+  with its build's counters, T36, unless that build is gone or their own),
   `users/{uid}`, and last the
   Auth user (`deleteUser`). Every step is idempotent: re-running finishes a half-done deletion (the owner's own
   "User not found" page offers "Finish deleting your account"). Reports _about_ the user's content stay open
@@ -156,9 +171,11 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   tracked (owner's call). Progress always counts against the build's **current** items, so an author's edit
   adds unchecked items and drops removed ones. The percentage is half gear (collected / items) and half levels
   (Σ min(yours, target) from the baseline: the starting class, or 10 lowered to the target), rounded down so 100%
-  means complete. The doc id is the build id, so T36's `playingCount`/`finishedCount` can check it with
-  `existsAfter` like likes. Account deletion and `admin.mjs delete-user` delete the user's tracking docs.
-- **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
+  means complete. The doc id is the build id, so the build's counters (T36) can check it with `existsAfter`
+  like likes. Account deletion and `admin.mjs delete-user` delete the user's tracking docs with the counters;
+  `admin.mjs remove` leaves other players' tracking of a removed build as orphans (the profile skips them).
+- **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc` /
+  `playerCount desc` ("Most played", T36; builds without the field are left out until backfilled)
   (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`; optionally
   with a tag), each optionally with a `level` range (`>=`/`<=` next to an `orderBy` on another field, which Firestore's
   multi-field range support allows; the index lists equality fields, the order field, then `level`), by

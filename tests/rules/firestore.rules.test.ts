@@ -82,6 +82,8 @@ const newBuild = (ownerId: string, overrides: Record<string, unknown> = {}) => (
   game: 'elden-ring',
   likeCount: 0,
   commentCount: 0,
+  playerCount: 0,
+  finishedCount: 0,
   createdAt: serverTimestamp(),
   updatedAt: serverTimestamp(),
   ...overrides,
@@ -114,6 +116,54 @@ const unlike = (db: Firestore, uid: string, delta = -1) => {
   batch.update(doc(db, 'builds/B1'), { likeCount: increment(delta) });
   return batch.commit();
 };
+
+/**
+ * Writes (or with `data` null, deletes) a player's tracking doc together with the build's counters,
+ * like the app (T36). Only non-zero deltas are sent.
+ */
+const track = (
+  db: Firestore,
+  uid: string,
+  data: Record<string, unknown> | null,
+  players: number,
+  finished = 0,
+  buildId = 'B1',
+) => {
+  const batch = writeBatch(db);
+  const ref = doc(db, `users/${uid}/tracking/${buildId}`);
+  if (data) batch.set(ref, data);
+  else batch.delete(ref);
+  const counters = {
+    ...(players ? { playerCount: increment(players) } : {}),
+    ...(finished ? { finishedCount: increment(finished) } : {}),
+  };
+  if (players || finished) batch.update(doc(db, `builds/${buildId}`), counters);
+  return batch.commit();
+};
+
+const counts = async (buildId = 'B1') => {
+  const data = (await getDoc(doc(as(), `builds/${buildId}`))).data() ?? {};
+  return `${data.playerCount ?? '-'}/${data.finishedCount ?? '-'}`;
+};
+
+const expectCounts = async (expected: string, buildId = 'B1') => {
+  const actual = await counts(buildId);
+  if (actual !== expected) throw new Error(`counters ${actual}, expected ${expected}`);
+};
+
+const TRACKING_STARTED = Timestamp.fromDate(new Date('2026-11-10T12:00:00Z'));
+
+/** A tracking doc as the client writes it (T34). */
+const tracking = (overrides: Record<string, unknown> = {}) => ({
+  game: 'elden-ring',
+  collected: ['weapon1:9040000', 'helm:680000'],
+  seen: ['weapon1:9040000', 'helm:680000', 'talisman:2160'],
+  stats: { vigor: 30, mind: 10, end: 20, str: 12, dex: 30, int: 9, fai: 8, arc: 30 },
+  startedAt: TRACKING_STARTED,
+  updatedAt: serverTimestamp(),
+  completedAt: null,
+  ...overrides,
+});
 
 const comment = (db: Firestore, id: string, data: Record<string, unknown>, delta = 1) => {
   const batch = writeBatch(db);
@@ -186,60 +236,144 @@ describe('users/{uid}', () => {
 });
 
 describe('users/{uid}/tracking/{buildId} (T34)', () => {
-  const STARTED = Timestamp.fromDate(new Date('2026-11-10T12:00:00Z'));
-  const tracking = (overrides: Record<string, unknown> = {}) => ({
-    game: 'elden-ring',
-    collected: ['weapon1:9040000', 'helm:680000'],
-    seen: ['weapon1:9040000', 'helm:680000', 'talisman:2160'],
-    stats: { vigor: 30, mind: 10, end: 20, str: 12, dex: 30, int: 9, fai: 8, arc: 30 },
-    startedAt: STARTED,
-    updatedAt: serverTimestamp(),
-    completedAt: null,
-    ...overrides,
-  });
-  const ref = (db: Firestore, path = 'users/alice/tracking/B1') => doc(db, path);
+  beforeEach(() => seedBuild());
+  const db = (uid = 'alice') => as(uid);
+  const ref = (fs: Firestore, path = 'users/alice/tracking/B1') => doc(fs, path);
   const seedTracking = () =>
-    seed((db) => setDoc(ref(db), { ...tracking(), updatedAt: Timestamp.now() }));
+    seed(async (fs) => {
+      await setDoc(ref(fs), { ...tracking(), updatedAt: Timestamp.now() });
+      await updateDoc(doc(fs, 'builds/B1'), { playerCount: 1 });
+    });
 
   it('only the player reads, writes and deletes their progress', async () => {
-    await assertSucceeds(setDoc(ref(as('alice')), tracking()));
-    await assertSucceeds(getDoc(ref(as('alice'))));
-    await assertSucceeds(getDocs(collection(as('alice'), 'users/alice/tracking')));
-    await assertFails(getDoc(ref(as('bob'))));
+    await assertSucceeds(track(db(), 'alice', tracking(), 1));
+    await assertSucceeds(getDoc(ref(db())));
+    await assertSucceeds(getDocs(collection(db(), 'users/alice/tracking')));
+    await assertFails(getDoc(ref(db('bob'))));
     await assertFails(getDoc(ref(as())));
-    await assertFails(getDocs(collection(as('bob'), 'users/alice/tracking')));
-    await assertFails(setDoc(ref(as('bob')), tracking()));
-    await assertFails(setDoc(ref(as()), tracking()));
-    await assertFails(deleteDoc(ref(as('bob'))));
-    await assertFails(deleteDoc(ref(as('root', { admin: true }))));
-    await assertSucceeds(deleteDoc(ref(as('alice'))));
+    await assertFails(getDocs(collection(db('bob'), 'users/alice/tracking')));
+    await assertFails(track(db('bob'), 'alice', tracking(), 0));
+    await assertFails(track(as(), 'alice', tracking(), 0));
+    await assertFails(track(db('bob'), 'alice', null, -1));
+    await assertFails(track(as('root', { admin: true }), 'alice', null, -1));
+    await assertSucceeds(track(db(), 'alice', null, -1));
   });
 
   it('holds exactly the tracking fields, with valid stats and a server updatedAt', async () => {
-    const db = as('alice');
-    await assertFails(setDoc(ref(db), { ...tracking(), public: true }));
-    await assertFails(setDoc(ref(db), tracking({ game: 'dark-souls-3' })));
-    await assertFails(setDoc(ref(db), tracking({ collected: 'weapon1:1' })));
+    const fs = db();
+    const create = (data: Record<string, unknown>) => track(fs, 'alice', data, 1);
+    await assertFails(create({ ...tracking(), public: true }));
+    await assertFails(create(tracking({ game: 'dark-souls-3' })));
+    await assertFails(create(tracking({ collected: 'weapon1:1' })));
     await assertFails(
-      setDoc(ref(db), tracking({ collected: Array.from({ length: 65 }, (_, i) => `spell:${i}`) })),
+      create(tracking({ collected: Array.from({ length: 65 }, (_, i) => `spell:${i}`) })),
     );
-    await assertFails(setDoc(ref(db), tracking({ seen: null })));
-    await assertFails(setDoc(ref(db), tracking({ stats: { ...tracking().stats, vigor: 100 } })));
-    await assertFails(setDoc(ref(db), tracking({ updatedAt: Timestamp.now() })));
-    await assertFails(setDoc(ref(db), tracking({ startedAt: '2026-11-10' })));
-    await assertFails(setDoc(ref(db), tracking({ completedAt: true })));
-    await assertFails(setDoc(ref(db, 'users/alice/tracking/bad id!'), tracking()));
-    await assertSucceeds(setDoc(ref(db), tracking({ completedAt: Timestamp.now() })));
+    await assertFails(create(tracking({ seen: null })));
+    await assertFails(create(tracking({ stats: { ...tracking().stats, vigor: 100 } })));
+    await assertFails(create(tracking({ updatedAt: Timestamp.now() })));
+    await assertFails(create(tracking({ startedAt: '2026-11-10' })));
+    await assertFails(track(fs, 'alice', tracking({ completedAt: true }), 1, 1));
+    const batch = writeBatch(fs);
+    batch.set(ref(fs, 'users/alice/tracking/bad id!'), tracking());
+    await assertFails(batch.commit());
+    await assertSucceeds(track(fs, 'alice', tracking({ completedAt: Timestamp.now() }), 1, 1));
   });
 
   it('startedAt keeps its date, or moves earlier when progress is merged', async () => {
     await seedTracking();
-    const db = as('alice');
-    await assertSucceeds(setDoc(ref(db), tracking({ collected: [] })));
-    await assertFails(setDoc(ref(db), tracking({ startedAt: Timestamp.now() })));
+    const fs = db();
+    await assertSucceeds(setDoc(ref(fs), tracking({ collected: [] })));
+    await assertFails(setDoc(ref(fs), tracking({ startedAt: Timestamp.now() })));
     await assertSucceeds(
-      setDoc(ref(db), tracking({ startedAt: Timestamp.fromDate(new Date('2026-11-01')) })),
+      setDoc(ref(fs), tracking({ startedAt: Timestamp.fromDate(new Date('2026-11-01')) })),
     );
+  });
+});
+
+describe('build counters: playerCount and finishedCount (T36)', () => {
+  beforeEach(() => seedBuild());
+
+  it('starting to track adds a player, in the same batch', async () => {
+    const bob = as('bob');
+    await assertFails(setDoc(doc(bob, 'users/bob/tracking/B1'), tracking()));
+    await assertFails(track(bob, 'bob', tracking(), 2));
+    await assertFails(track(bob, 'bob', tracking(), 1, 1));
+    await assertSucceeds(track(bob, 'bob', tracking(), 1));
+    await expectCounts('1/0');
+  });
+
+  it('a build finished on the first write adds a player and a finisher', async () => {
+    const bob = as('bob');
+    await assertFails(track(bob, 'bob', tracking({ completedAt: Timestamp.now() }), 1));
+    await assertSucceeds(track(bob, 'bob', tracking({ completedAt: Timestamp.now() }), 1, 1));
+    await expectCounts('1/1');
+  });
+
+  it('finishing and un-finishing move finishedCount; other changes move nothing', async () => {
+    const bob = as('bob');
+    await track(bob, 'bob', tracking(), 1);
+    await assertSucceeds(track(bob, 'bob', tracking({ collected: [] }), 0));
+    await assertFails(track(bob, 'bob', tracking({ collected: ['helm:680000'] }), 1));
+    const done = tracking({ completedAt: Timestamp.now() });
+    await assertFails(track(bob, 'bob', done, 0));
+    await assertFails(track(bob, 'bob', done, 1, 1));
+    await assertSucceeds(track(bob, 'bob', done, 0, 1));
+    await expectCounts('1/1');
+    await assertFails(track(bob, 'bob', tracking(), 0));
+    await assertSucceeds(track(bob, 'bob', tracking(), 0, -1));
+    await expectCounts('1/0');
+  });
+
+  it('stopping removes the player (and the finisher)', async () => {
+    const bob = as('bob');
+    await track(bob, 'bob', tracking({ completedAt: Timestamp.now() }), 1, 1);
+    await assertFails(deleteDoc(doc(bob, 'users/bob/tracking/B1')));
+    await assertFails(track(bob, 'bob', null, -1));
+    await assertSucceeds(track(bob, 'bob', null, -1, -1));
+    await expectCounts('0/0');
+  });
+
+  it('the counters never move without the caller’s own tracking doc', async () => {
+    await track(as('carol'), 'carol', tracking(), 1);
+    const bob = as('bob');
+    await assertFails(updateDoc(doc(bob, 'builds/B1'), { playerCount: increment(1) }));
+    await assertFails(updateDoc(doc(bob, 'builds/B1'), { playerCount: increment(-1) }));
+    await assertFails(updateDoc(doc(as(), 'builds/B1'), { playerCount: increment(1) }));
+    await assertFails(updateDoc(doc(as('carol'), 'builds/B1'), { finishedCount: increment(1) }));
+    // Nothing else changes in the same update.
+    const batch = writeBatch(bob);
+    batch.set(doc(bob, 'users/bob/tracking/B1'), tracking());
+    batch.update(doc(bob, 'builds/B1'), { playerCount: increment(1), likeCount: increment(1) });
+    await assertFails(batch.commit());
+    await expectCounts('1/0');
+  });
+
+  it('a build that doesn’t exist can’t be tracked; progress on a deleted one can be deleted', async () => {
+    await assertFails(track(as('bob'), 'bob', tracking(), 1, 0, 'NOPE'));
+    await track(as('bob'), 'bob', tracking(), 1);
+    await seed((fs) => deleteDoc(doc(fs, 'builds/B1')));
+    await assertSucceeds(deleteDoc(doc(as('bob'), 'users/bob/tracking/B1')));
+  });
+
+  it('a build from before T36 (no counters) counts from 0', async () => {
+    await seed(async (fs) => {
+      const { playerCount: _p, finishedCount: _f, ...old } = newBuild('alice');
+      await setDoc(doc(fs, 'builds/B1'), {
+        ...old,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
+    });
+    await assertFails(track(as('bob'), 'bob', tracking(), 2));
+    await assertSucceeds(track(as('bob'), 'bob', tracking({ completedAt: Timestamp.now() }), 1, 1));
+    await expectCounts('1/1');
+  });
+
+  it('the owner’s edit still fits next to the counters, and can’t change them', async () => {
+    await track(as('bob'), 'bob', tracking(), 1);
+    const edit = { name: 'Renamed', nameLower: 'renamed', updatedAt: serverTimestamp() };
+    await assertSucceeds(updateDoc(doc(as('alice'), 'builds/B1'), edit));
+    await assertFails(updateDoc(doc(as('alice'), 'builds/B1'), { ...edit, playerCount: 40 }));
   });
 });
 
@@ -253,11 +387,15 @@ describe('builds/{id}: create', () => {
     await assertSucceeds(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice')));
     await assertFails(setDoc(doc(as('alice'), 'builds/N2'), newBuild('bob')));
     await assertFails(setDoc(doc(as(), 'builds/N3'), newBuild('alice')));
+    const { playerCount: _p, finishedCount: _f, ...noCounters } = newBuild('alice');
+    await assertFails(setDoc(doc(as('alice'), 'builds/N4'), noCounters));
   });
 
   it.each([
     ['a non-zero likeCount', { likeCount: 5 }],
     ['a non-zero commentCount', { commentCount: 1 }],
+    ['a non-zero playerCount', { playerCount: 37 }],
+    ['a non-zero finishedCount', { finishedCount: 12 }],
     ['another game', { game: 'dark-souls-3' }],
     ['a client createdAt', { createdAt: Timestamp.now() }],
     ['a client updatedAt', { updatedAt: Timestamp.now() }],

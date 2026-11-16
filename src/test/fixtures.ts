@@ -38,6 +38,8 @@ export const makeBuild = (overrides: Partial<Build> = {}): Build => ({
   equipment: { ...emptyEquipment(), weapons: [MOONVEIL, null, null, null, null, null] },
   likeCount: 1,
   commentCount: 0,
+  playerCount: 0,
+  finishedCount: 0,
   createdAt: new Date(Date.UTC(2026, 9, 5)),
   updatedAt: new Date(Date.UTC(2026, 9, 5)),
   ...overrides,

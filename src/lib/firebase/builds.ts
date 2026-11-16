@@ -29,7 +29,8 @@ export const newBuildId = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
 /** What the editor saves. The level is always recomputed from the stats. */
 export type BuildInput = Omit<BuildContent, 'level'>;
 
-export type BuildSort = 'top' | 'new';
+/** Most liked, newest, or most played (everyone tracking it, T36). */
+export type BuildSort = 'top' | 'new' | 'played';
 
 /** Where a page of builds ended (the last build's snapshot). */
 export type BuildCursor = QueryDocumentSnapshot;
@@ -59,6 +60,8 @@ export function toBuild(snapshot: DocumentSnapshot): Build {
     equipment: data.equipment,
     likeCount: data.likeCount,
     commentCount: data.commentCount,
+    playerCount: data.playerCount ?? 0, // absent on builds saved before T36 (until backfilled)
+    finishedCount: data.finishedCount ?? 0,
     createdAt: data.createdAt.toDate(),
     updatedAt: data.updatedAt.toDate(),
   };
@@ -126,8 +129,12 @@ async function fetchPage(
   } satisfies BuildPage;
 }
 
+// "Most played" orders by playerCount, which builds from before T36 lack until the backfill
+// (`scripts/admin.mjs counts --write`): Firestore leaves such builds out of that order.
+const SORT_FIELDS = { top: 'likeCount', new: 'createdAt', played: 'playerCount' } as const;
+
 /**
- * One page of Elden Ring builds, most liked or newest first, optionally with one tag and a level
+ * One page of Elden Ring builds, most liked, newest or most played first, optionally with one tag and a level
  * range (all in Firestore).
  */
 export async function listBuilds({
@@ -140,7 +147,7 @@ export async function listBuilds({
   const constraints: QueryConstraint[] = [where('game', '==', GAME_ELDEN_RING)];
   if (tag) constraints.push(where('tags', 'array-contains', tag));
   constraints.push(...levelConstraints(levels));
-  constraints.push(orderBy(sort === 'top' ? 'likeCount' : 'createdAt', 'desc'));
+  constraints.push(orderBy(SORT_FIELDS[sort], 'desc'));
   return fetchPage(constraints, pageSize, cursor);
 }
 
@@ -182,6 +189,8 @@ export async function createBuild(ownerId: string, input: BuildInput): Promise<s
     game: GAME_ELDEN_RING,
     likeCount: 0,
     commentCount: 0,
+    playerCount: 0,
+    finishedCount: 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

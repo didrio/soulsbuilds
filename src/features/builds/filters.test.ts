@@ -56,6 +56,7 @@ describe('URL filters', () => {
     expect(params.toString()).toBe('q=moon&sort=new&tag=Malenia&tag=Mohg&min=50&max=150');
     expect(parseFilters(params)).toEqual(filters);
     expect(toSearchParams(DEFAULT_FILTERS).toString()).toBe('');
+    expect(parseFilters(new URLSearchParams('sort=played')).sort).toBe('played');
   });
 
   it('ignores junk and swaps a reversed range', () => {

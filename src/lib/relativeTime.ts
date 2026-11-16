@@ -30,5 +30,10 @@ export const formatFullDate = (date: Date) => fullDate.format(date);
 
 const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long' });
 
+const monthYear = new Intl.DateTimeFormat('en', { month: 'short', year: 'numeric' });
+
+/** "Oct 2026": when a build was finished, under its trophy (T36). */
+export const formatMonthYear = (date: Date) => monthYear.format(date);
+
 /** "4 November": a date in running text (T34, "Tracked since 4 November"). */
 export const formatDayMonth = (date: Date) => dayMonth.format(date);

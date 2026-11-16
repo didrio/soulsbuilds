@@ -32,7 +32,7 @@ const { deleteAccountData, findAccountData } = await import('@/lib/firebase/acco
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
   await import('@/lib/firebase/users');
 const { getGameStats } = await import('@/lib/firebase/stats');
-const { deleteTracking, getTracking, listTrackingRefs, saveTracking, tracksAnyBuild } =
+const { deleteTracking, getTracking, listTracking, saveTracking, tracksAnyBuild } =
   await import('@/lib/firebase/tracking');
 
 let env: RulesTestEnvironment;
@@ -260,7 +260,7 @@ describe('stats (T20)', () => {
   });
 });
 
-describe('tracking (T34)', () => {
+describe('tracking (T34) and the build’s counters (T36)', () => {
   const state = {
     collected: ['helm:680000'],
     seen: ['helm:680000', 'talisman:2160'],
@@ -268,29 +268,45 @@ describe('tracking (T34)', () => {
     startedAt: new Date('2026-11-10T12:00:00Z'),
     completedAt: null,
   };
+  const counters = async (id: string) => {
+    const build = await getBuild(id);
+    return [build?.playerCount, build?.finishedCount];
+  };
 
   it('saves, reads back, updates and deletes the player’s own progress only', async () => {
+    actAs('ivy');
+    const B9 = await createBuild('ivy', { ...input, name: 'Tracked' });
     actAs('gus');
-    expect(await getTracking('gus', 'B9')).toBeNull();
+    expect(await getTracking('gus', B9)).toBeNull();
     expect(await tracksAnyBuild('gus')).toBe(false);
-    await saveTracking('gus', 'B9', state);
+    await saveTracking('gus', B9, state, 'none');
+    expect(await counters(B9)).toEqual([1, 0]);
     expect(await tracksAnyBuild('gus')).toBe(true);
-    expect(await getTracking('gus', 'B9')).toEqual(state);
+    expect(await getTracking('gus', B9)).toEqual(state);
+    await saveTracking('gus', B9, { ...state, collected: [] }, 'playing');
     const done = { ...state, collected: [...state.seen], completedAt: new Date('2026-11-16') };
-    await saveTracking('gus', 'B9', done);
-    expect(await getTracking('gus', 'B9')).toEqual(done);
-    expect(await listTrackingRefs('gus')).toHaveLength(1);
+    await saveTracking('gus', B9, done, 'playing');
+    expect(await getTracking('gus', B9)).toEqual(done);
+    expect(await counters(B9)).toEqual([1, 1]);
+    expect(await listTracking('gus')).toEqual([{ buildId: B9, state: done }]);
+    // "Most played" (T36): the tracked build comes first, then the rest (all at 0).
+    const played = (await listBuilds({ sort: 'played' })).builds.map((b) => b.id);
+    expect(played[0]).toBe(B9);
+    expect((await listBuilds({ sort: 'played', minLevel: 100 })).builds[0]?.id).toBe(B9);
+    // A save that has the database's status wrong is refused (the app then refetches).
+    await expect(saveTracking('gus', B9, done, 'none')).rejects.toThrow();
 
     actAs('hal');
-    await expect(getTracking('gus', 'B9')).rejects.toThrow();
+    await expect(getTracking('gus', B9)).rejects.toThrow();
     await expect(tracksAnyBuild('gus')).rejects.toThrow();
-    await expect(saveTracking('gus', 'B9', state)).rejects.toThrow();
-    await expect(deleteTracking('gus', 'B9')).rejects.toThrow();
+    await expect(saveTracking('gus', B9, state, 'none')).rejects.toThrow();
+    await expect(deleteTracking('gus', B9, 'finished')).rejects.toThrow();
 
     actAs('gus');
-    await deleteTracking('gus', 'B9');
-    expect(await getTracking('gus', 'B9')).toBeNull();
+    await deleteTracking('gus', B9, 'finished');
+    expect(await getTracking('gus', B9)).toBeNull();
     expect(await tracksAnyBuild('gus')).toBe(false);
+    expect(await counters(B9)).toEqual([0, 0]);
   });
 });
 
@@ -315,13 +331,16 @@ describe('account deletion (T18)', () => {
     await likeBuild(orphaned, 'dana');
     await addComment(orphaned, 'dana', 'Old');
     await reportContent('dana', { buildId: erins, commentId: erinsComment.id }, 'spam');
-    await saveTracking('dana', erins, {
+    const progress0 = {
       collected: [],
       seen: [],
       stats: input.stats,
       startedAt: new Date(),
       completedAt: null,
-    });
+    };
+    await saveTracking('dana', erins, { ...progress0, completedAt: new Date() }, 'none');
+    await saveTracking('dana', own, progress0, 'none');
+    await saveTracking('dana', orphaned, progress0, 'none');
     // A build whose like/comment cleanup was cut short: the doc is gone, its subcollections not.
     await env.withSecurityRulesDisabled(async (context) => {
       await deleteDoc(doc(context.firestore() as unknown as Firestore, 'builds', orphaned));
@@ -338,12 +357,18 @@ describe('account deletion (T18)', () => {
     expect(found.likes.map((l) => l.buildExists).sort()).toEqual([false, true]);
     expect(found.comments).toHaveLength(3);
     expect(found.reports).toHaveLength(1);
-    expect(found.tracking).toHaveLength(1);
+    expect(
+      found.tracking.sort((a, b) => (a.buildId === erins ? -1 : b.buildId === erins ? 1 : 0)),
+    ).toEqual([
+      { buildId: erins, counted: 'finished' },
+      expect.objectContaining({ counted: 'none' }),
+      expect.objectContaining({ counted: 'none' }),
+    ]);
 
     const progress = vi.fn();
     await deleteAccountData('dana', progress);
-    // 1 build, 2 likes, 3 comments, 1 report, 1 tracked build, profile
-    expect(progress).toHaveBeenLastCalledWith(9, 9);
+    // 1 build, 2 likes, 3 comments, 1 report, 3 tracked builds, profile
+    expect(progress).toHaveBeenLastCalledWith(11, 11);
 
     actAs(null);
     expect(await getUserProfile('dana')).toBeNull();
@@ -353,6 +378,7 @@ describe('account deletion (T18)', () => {
     const after = await getBuild(erins);
     expect(after?.likeCount).toBe(1);
     expect(after?.commentCount).toBe(1);
+    expect([after?.playerCount, after?.finishedCount]).toEqual([0, 0]);
     expect((await listComments(erins)).map((c) => c.authorId)).toEqual(['erin']);
     expect(await listLikedBuildIds('erin')).toEqual([erins]);
     expect(await getUserProfile('erin')).not.toBeNull();

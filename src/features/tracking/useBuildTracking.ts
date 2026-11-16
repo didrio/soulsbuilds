@@ -6,22 +6,24 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { getStartingClass } from '@/data';
 import useAuth from '@/features/auth/useAuth';
-import { deleteTracking, errorMessage, getTracking, tracksAnyBuild } from '@/lib/firebase';
+import { errorMessage, getTracking, tracksAnyBuild } from '@/lib/firebase';
 import type { StatKey } from '@/lib/buildMath';
 import type { Build } from '@/lib/models';
 import { queryKeys } from '@/lib/queryKeys';
 import {
   applyChange,
+  counterDelta,
   newItems,
   startTracking,
   trackedItems,
   trackingBaseline,
   trackingProgress,
+  trackingStatus,
   type TrackingChange,
   type TrackingContext,
   type TrackingState,
 } from '@/lib/tracking';
-import { cancelSave, flushSaves, scheduleSave } from './saveQueue';
+import { deleteNow, flushSaves, noteLoaded, scheduleSave } from './saveQueue';
 
 /** What a build's progress is measured against: its tracked items, its stats, where stats start. */
 export function trackingContext(build: Pick<Build, 'equipment' | 'stats' | 'startingClass'>) {
@@ -30,6 +32,13 @@ export function trackingContext(build: Pick<Build, 'equipment' | 'stats' | 'star
     target: build.stats,
     baseline: trackingBaseline(build.stats, getStartingClass(build.startingClass)?.stats ?? null),
   } satisfies TrackingContext;
+}
+
+/** Reads the player's progress, and tells the save queue what the database has (T36 counters). */
+async function fetchTracking(uid: string, buildId: string) {
+  const state = await getTracking(uid, buildId);
+  noteLoaded(uid, buildId, state);
+  return state;
 }
 
 export type BuildTracking = ReturnType<typeof useBuildTracking>;
@@ -41,7 +50,7 @@ export function useBuildTracking(build: Build | null) {
   const buildId = build?.id ?? '';
   const query = useQuery({
     queryKey: queryKeys.tracking(uid ?? '', buildId),
-    queryFn: () => getTracking(uid ?? '', buildId),
+    queryFn: () => fetchTracking(uid ?? '', buildId),
     enabled: Boolean(build && uid),
     // This page is the only writer: a refetch could only undo a change that's still being saved.
     staleTime: Infinity,
@@ -63,18 +72,35 @@ export function useBuildTracking(build: Build | null) {
 
   const persist = (owner: string, next: TrackingState | null, delay?: number) => {
     const key = queryKeys.tracking(owner, buildId);
+    const buildKey = queryKeys.build(buildId);
     const onError = (cause: unknown) => {
       setError(errorMessage(cause));
       void queryClient.invalidateQueries({ queryKey: key });
+      void queryClient.invalidateQueries({ queryKey: buildKey });
     };
+    // The hero's "N playing · M finished" follows the player's own status at once (T36).
+    const previous = queryClient.getQueryData<TrackingState | null>(key) ?? null;
+    const delta = counterDelta(trackingStatus(previous), trackingStatus(next));
+    if (delta.playerCount || delta.finishedCount) {
+      queryClient.setQueryData<Build | null>(buildKey, (cached) =>
+        cached
+          ? {
+              ...cached,
+              playerCount: Math.max(0, cached.playerCount + delta.playerCount),
+              finishedCount: Math.max(0, cached.finishedCount + delta.finishedCount),
+            }
+          : cached,
+      );
+    }
     queryClient.setQueryData(key, next);
+    // The profile's Playing and Completed lists reload when they're next shown.
+    void queryClient.invalidateQueries({ queryKey: queryKeys.trackedBuilds(owner) });
     setError('');
     if (next) {
       queryClient.setQueryData(queryKeys.tracksAnyBuild(owner), true);
       scheduleSave(owner, buildId, next, onError, delay);
     } else {
-      cancelSave(owner, buildId);
-      deleteTracking(owner, buildId)
+      deleteNow(owner, buildId)
         .then(() => queryClient.invalidateQueries({ queryKey: queryKeys.tracksAnyBuild(owner) }))
         .catch(onError);
     }
@@ -112,7 +138,7 @@ export function useBuildTracking(build: Build | null) {
       try {
         const existing = await queryClient.fetchQuery({
           queryKey: queryKeys.tracking(newUid, buildId),
-          queryFn: () => getTracking(newUid, buildId),
+          queryFn: () => fetchTracking(newUid, buildId),
           staleTime: Infinity,
         });
         if (!existing) start(newUid);

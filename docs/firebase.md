@@ -218,6 +218,23 @@ it would write. Start the first run by hand (Actions → Community stats → Run
 soulsbuilds.com: the top tags and "N builds by M players" appear. Until the doc exists the landing just doesn't
 show them.
 
+## Tracking counters backfill (T36)
+
+Builds carry `playerCount` and `finishedCount` (T36), moved by the client with each tracking doc. Builds saved
+before T36 have neither until a one-time recount, and "Most played" leaves them out until then (the hero shows
+nothing for them, which is right while nobody tracks them). After the first production deploy with T36, back up
+and recount:
+
+```bash
+node scripts/admin.mjs export --project soulsbuilds
+node scripts/admin.mjs counts --project soulsbuilds          # dry run: lists the builds it would change
+node scripts/admin.mjs counts --project soulsbuilds --write
+```
+
+It reads every tracking doc (collection group) and every build once. A player's change landing mid-run can be
+overwritten, so run it at a quiet time; a second dry run should say "Every build is counted right". The same
+command repairs counters if they ever drift.
+
 ## Backups (Spark plan)
 
 Spark has no managed backups, point-in-time recovery or scheduled exports (all need Blaze). Instead:

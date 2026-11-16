@@ -181,3 +181,32 @@ export function applyChange(
 /** Whole days from start to finish ("12 days"), at least 0. */
 export const daysBetween = (from: Date, to: Date) =>
   Math.max(0, Math.round((to.getTime() - from.getTime()) / 86_400_000));
+
+/**
+ * Where a player stands on a build, as the build's public counters see it (T36): no tracking doc,
+ * one in progress, or one finished.
+ */
+export type TrackingStatus = 'none' | 'playing' | 'finished';
+
+export const trackingStatus = (state: Pick<TrackingState, 'completedAt'> | null): TrackingStatus =>
+  state === null ? 'none' : state.completedAt ? 'finished' : 'playing';
+
+/** The counters on builds/{id}: everyone tracking it, and those who finished it (firestore.rules). */
+export interface TrackingCounters {
+  playerCount: number;
+  finishedCount: number;
+}
+
+const counters = (status: TrackingStatus): TrackingCounters => ({
+  playerCount: status === 'none' ? 0 : 1,
+  finishedCount: status === 'finished' ? 1 : 0,
+});
+
+/** How a player's status change moves the build's counters (each −1, 0 or +1). */
+export function counterDelta(from: TrackingStatus, to: TrackingStatus): TrackingCounters {
+  const [before, after] = [counters(from), counters(to)];
+  return {
+    playerCount: after.playerCount - before.playerCount,
+    finishedCount: after.finishedCount - before.finishedCount,
+  };
+}

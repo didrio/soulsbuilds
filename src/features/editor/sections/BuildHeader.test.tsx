@@ -32,6 +32,24 @@ describe('BuildHeader', () => {
     expect(screen.queryByText(/Comments?$/)).not.toBeInTheDocument();
   });
 
+  it('says how many play and finished the build, leaving out zeros (T36)', () => {
+    const { container, unmount } = renderWithProviders(
+      <BuildHeader build={makeBuild({ playerCount: 49, finishedCount: 12 })} />,
+    );
+    expect(container).toHaveTextContent('37 playing · 12 finished');
+    unmount();
+    const { container: started } = renderWithProviders(
+      <BuildHeader build={makeBuild({ playerCount: 1, finishedCount: 0 })} />,
+    );
+    expect(started).toHaveTextContent('1 playing');
+    expect(started).not.toHaveTextContent('finished');
+  });
+
+  it('says nothing about players when nobody tracks the build', () => {
+    const { container } = renderWithProviders(<BuildHeader build={makeBuild()} />);
+    expect(container).not.toHaveTextContent(/playing|finished/);
+  });
+
   it('shows the main weapon as the portrait, or none without weapons', () => {
     const { container, unmount } = renderWithProviders(<BuildHeader build={makeBuild()} />);
     expect(container.querySelector('[title="Moonveil"] img')).not.toBeNull();

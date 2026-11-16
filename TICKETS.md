@@ -7,9 +7,9 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T42
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T36 — Playing and Completed · Opus · high · plan mode on. Up next is in the order of
-`docs/product.md` "Priorities": usage counts (T38, blocked on the owner), tracking (T36), link previews (T37,
-blocked on the Blaze decision), sign-in and account (T30, T31), copies and variations (T32 → T33).
+**Next:** T40 — Choose the build's main image · Opus · high · plan mode on. Up next follows
+`docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37, blocked on the
+Blaze decision), the build image (T40), sign-in and account (T30, T31), copies and variations (T32 → T33).
 T30–T40 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -29,17 +29,18 @@ and spacing, and the canvas notes say why.
 - Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). If it goes:
   `node scripts/admin.mjs rename <uid> "<new name>" --project soulsbuilds` (dry run), then `--write`.
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
+- After T36's production deploy: back up, then backfill the build counters so "Most played" includes every build:
+  `node scripts/admin.mjs counts --project soulsbuilds` (dry run), then `--write` (`docs/firebase.md`
+  "Tracking counters backfill").
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
-T34 (tracking), T35 (the route during a run) and T41 (tracking needs an account).
+T34 (tracking), T35 (the route during a run), T41 (tracking needs an account) and T36 (Playing and Completed).
 
 ## In progress
 
 (none)
-
-## Up next
 
 ### T38 — Cookie-free usage counts
 
@@ -56,30 +57,6 @@ T34 (tracking), T35 (the route during a run) and T41 (tracking needs an account)
   - `npm run perf` shows no regression; App Check is unaffected; `npm run check` passes.
 - **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
   (performance notes).
-
-### T36 — Playing and Completed: the profile, and counts on the build
-
-- **Status:** ready (T41 removed signed-out tracking, so there are no sign-in doc creates to count); T31 reworks the profile too, so do them in either order and keep the other in mind
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Your tracked builds in one place, finished builds as a small trophy shelf, and the author sees how many
-  people play and finish their build.
-- **Done when:**
-  - Profile tabs "Playing" (in-progress builds with their percentage, gear, level and next stop) and "Completed"
-    (finished builds with dates, tiles with a soft glow). ★ Both private, or Completed public (owner's call).
-  - The build hero shows "37 playing · 12 finished". A `count()` over private tracking docs would need them
-    readable by everyone, so: counters on the build (`playingCount`, `finishedCount`) moved by exactly 1 in the
-    same batch as the tracking doc's create, completion and delete, with rules like `likeCount`. Mind the rules'
-    expression budget.
-  - ★ A "Most played" sort on the landing, from the counter.
-  - Account deletion and `admin.mjs remove` keep the counters right.
-  - Tests: rules tests for the counters, unit and e2e tests; `npm run check`, `npm run test:rules` and
-    `npm run e2e` pass; screenshots.
-- **Context:** artboard `ProfileMobile.dc.html`, `features/profile/`, `firestore.rules` (counters at the top) with
-  `tests/rules/`, `lib/firebase/account.ts`, `scripts/admin.mjs`. T34's writes to change: tracking is one
-  `setDoc` per change, debounced in `features/tracking/saveQueue.ts` (start = delay 0), `deleteTracking` on
-  stop, and `startAfterSignIn` (T41: starts through the same `persist`); each create, first completion (`completedAt` null →
-  set) and delete must become a batch with the counter. Listing a user's tracking: `listTrackingRefs` in
-  `lib/firebase/tracking.ts` (the profile needs the docs, not refs). The doc id is the build id.
 
 ### T37 — Link previews: server-rendered build pages
 
@@ -175,7 +152,9 @@ T34 (tracking), T35 (the route during a run) and T41 (tracking needs an account)
   the bottom), and there's no way to change your email or password.
 - **Done when:** (a proposal: confirm the ★ items with the owner, mock on the canvas first)
   - Public profile `/user/:userId`: a header like the build hero (display name, joined date, build and like
-    counts), Builds / Liked tabs as today, with T29's row style. No email or settings on it.
+    counts), Builds / Liked tabs as today, with T29's row style, plus the owner's private Playing / Completed
+    tabs (T36: `features/tracking/TrackedBuilds`, tab counts, "N builds finished" in the tagline) kept as they
+    are. No email or settings on it.
   - ★ An Account page (`/account`, signed-in only): display name (rename), email (change via
     `verifyBeforeUpdateEmail`), password (change it with the current one; for Google users, their sign-in
     methods and "Set a password"), the verify-email notice, Log out, and Delete account (moved from the profile,
@@ -277,6 +256,11 @@ T34 (tracking), T35 (the route during a run) and T41 (tracking needs an account)
 
 Older entries: `docs/tickets-archive.md`.
 
+- T36 — Playing and Completed — 2026-11-16 — owner: both profile tabs private, "Most played" sort, stopping a
+  finished build removes it from Completed; build counters `playerCount`/`finishedCount` (±1 in the tracking
+  doc's batch, rules check both sides; `saveQueue` tracks the stored status), hero "N playing · M finished",
+  profile Playing cards (progress + next stop, lazy) and Completed trophies, `admin.mjs counts` backfill, e2e
+  `playing.spec.ts`
 - T41 — Tracking needs an account — 2026-11-16 — owner: drop existing local progress (no merge), text + icons
   modal; `TrackingIntro` (signed out: Create account / Log in, continues into tracking via
   `useOpenAuthDialog(kind, onSignedIn)` + `startAfterSignIn(uid)`; signed in with no tracked build, from

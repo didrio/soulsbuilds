@@ -30,12 +30,15 @@ export function clampLevel(value: string | number, fallback: number): number {
   return Math.min(MAX_LEVEL, Math.max(1, Math.round(level)));
 }
 
+const parseSort = (value: string | null): BuildSort =>
+  value === 'new' || value === 'played' ? value : 'top';
+
 export function parseFilters(params: URLSearchParams): BuildFilters {
   const minLevel = clampLevel(params.get('min') ?? '', 1);
   const maxLevel = clampLevel(params.get('max') ?? '', MAX_LEVEL);
   return {
     search: (params.get('q') ?? '').trim().slice(0, 80),
-    sort: params.get('sort') === 'new' ? 'new' : 'top',
+    sort: parseSort(params.get('sort')),
     tags: [...new Set(params.getAll('tag').filter(Boolean))],
     minLevel: Math.min(minLevel, maxLevel),
     maxLevel: Math.max(minLevel, maxLevel),

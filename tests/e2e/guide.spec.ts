@@ -8,7 +8,8 @@ test('a build shows how to get it', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
   await page.getByRole('link', { name: /See the route/ }).click();
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/route$/);
-  await expect(page.getByRole('link', { name: 'How to get' })).toHaveAttribute(
+  // Exact: for a moment the Loadout's "How to get this build" card is still there too.
+  await expect(page.getByRole('link', { name: 'How to get', exact: true })).toHaveAttribute(
     'aria-current',
     'page',
   );

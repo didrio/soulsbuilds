@@ -12,11 +12,15 @@ import { TextButton, TextLink } from '@/components/ui/TextButton';
 import useAuth from '@/features/auth/useAuth';
 import BuildsList from '@/features/builds/BuildsList';
 import { useUserBuilds } from '@/features/builds/queries';
+import { useTrackedBuilds } from '@/features/tracking/queries';
+import { CompletedPanel, PlayingPanel } from '@/features/tracking/TrackedBuilds';
 import { errorMessage, resendVerificationEmail } from '@/lib/firebase';
 import { LIMITS, type UserProfile } from '@/lib/models';
 import {
+  BELOW_MOBILE,
   COLOR_ACCENT,
   COLOR_LINE,
+  COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   SPACE_LG,
@@ -25,15 +29,24 @@ import {
   SPACE_SM,
   TEXT_MD,
   TEXT_SM,
+  TEXT_XS,
 } from '@/theme';
 import DeleteAccount from './DeleteAccount';
 import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
 
-type Tab = 'builds' | 'liked';
+type Tab = 'builds' | 'liked' | 'playing' | 'completed';
+
+const TAB_LABELS: Record<Tab, string> = {
+  builds: 'Builds',
+  liked: 'Liked',
+  playing: 'Playing',
+  completed: 'Completed',
+};
 
 /**
  * `/user/:userId`: display name (editable by its owner), tabs for their builds and likes, and for
- * the owner, "Delete account" at the bottom.
+ * the owner, the builds they track (T36: Playing and Completed, private) and "Delete account" at the
+ * bottom.
  */
 function Profile() {
   const { userId = '' } = useParams();
@@ -41,6 +54,14 @@ function Profile() {
   const profile = useUserProfile(userId);
   const [tab, setTab] = useState<Tab>('builds');
   const isOwner = uid === userId;
+  // The owner's tracked builds (private): the tab counts and the tagline's "N builds finished".
+  const tracked = useTrackedBuilds(isOwner ? uid : null).data;
+  const counts: Partial<Record<Tab, number>> = {
+    builds: useUserBuilds(userId).data?.length,
+    playing: tracked?.playing.length,
+    completed: tracked?.finished.length,
+  };
+  const tabs: Tab[] = isOwner ? ['builds', 'liked', 'playing', 'completed'] : ['builds', 'liked'];
 
   if (profile.isPending) return <PageMessage loading />;
   if (profile.isError) {
@@ -63,11 +84,15 @@ function Profile() {
 
   return (
     <>
-      <ProfileHeader profile={profile.data} editable={isOwner} />
+      <ProfileHeader
+        profile={profile.data}
+        editable={isOwner}
+        finished={tracked?.finished.length ?? 0}
+      />
       {isOwner && user && !user.emailVerified ? <VerifyEmailNotice /> : null}
       <TabBar>
         <Tabs role="tablist" aria-label="Profile">
-          {(['builds', 'liked'] as Tab[]).map((value) => (
+          {tabs.map((value) => (
             <TabButton
               key={value}
               type="button"
@@ -76,7 +101,8 @@ function Profile() {
               aria-selected={tab === value}
               aria-controls={`panel-${value}`}
               onClick={() => setTab(value)}>
-              {value === 'builds' ? 'Builds' : 'Liked'}
+              {TAB_LABELS[value]}
+              {counts[value] ? <TabCount>{counts[value]}</TabCount> : null}
             </TabButton>
           ))}
         </Tabs>
@@ -90,13 +116,26 @@ function Profile() {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'builds' ? <OwnBuilds userId={userId} isOwner={isOwner} /> : null}
         {tab === 'liked' ? <LikedBuilds userId={userId} isOwner={isOwner} /> : null}
+        {tab === 'playing' && isOwner ? (
+          <PlayingPanel uid={userId} onShowCompleted={() => setTab('completed')} />
+        ) : null}
+        {tab === 'completed' && isOwner ? <CompletedPanel uid={userId} /> : null}
       </div>
       {isOwner ? <DeleteAccount /> : null}
     </>
   );
 }
 
-function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: boolean }) {
+function ProfileHeader({
+  profile,
+  editable,
+  finished,
+}: {
+  profile: UserProfile;
+  editable: boolean;
+  /** The owner's finished builds (T36; private, so 0 for visitors). */
+  finished: number;
+}) {
   const rename = useUpdateDisplayName(profile.id);
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(profile.displayName);
@@ -140,7 +179,7 @@ function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: 
   return (
     <PageHero
       title={profile.displayName}
-      tagline={<Tagline userId={profile.id} joinedAt={profile.createdAt} />}>
+      tagline={<Tagline userId={profile.id} joinedAt={profile.createdAt} finished={finished} />}>
       {editable ? <TextButton onClick={() => setEditing(true)}>Change name</TextButton> : null}
     </PageHero>
   );
@@ -148,9 +187,18 @@ function ProfileHeader({ profile, editable }: { profile: UserProfile; editable: 
 
 /**
  * "Joined May 2022 · 4 builds · 17 likes received" (T20): summed from the builds the Builds tab
- * loads anyway (same query), so it costs no extra reads. Zero likes are left out.
+ * loads anyway (same query), so it costs no extra reads. Zero likes are left out. The owner also
+ * sees "3 builds finished" (T36; private).
  */
-function Tagline({ userId, joinedAt }: { userId: string; joinedAt: Date }) {
+function Tagline({
+  userId,
+  joinedAt,
+  finished,
+}: {
+  userId: string;
+  joinedAt: Date;
+  finished: number;
+}) {
   const builds = useUserBuilds(userId).data;
   const likes = builds?.reduce((sum, build) => sum + build.likeCount, 0) ?? 0;
   return (
@@ -166,6 +214,12 @@ function Tagline({ userId, joinedAt }: { userId: string; joinedAt: Date }) {
         <>
           {' · '}
           <Count>{likes}</Count> {likes === 1 ? 'like' : 'likes'} received
+        </>
+      ) : null}
+      {finished ? (
+        <>
+          {' · '}
+          <Count>{finished}</Count> {finished === 1 ? 'build' : 'builds'} finished
         </>
       ) : null}
     </>
@@ -290,6 +344,9 @@ const TabBar = styled.div`
 
 const Tabs = styled.div`
   display: flex;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
 `;
 
 const TabButton = styled.button`
@@ -299,9 +356,17 @@ const TabButton = styled.button`
   cursor: pointer;
   font-size: ${TEXT_MD};
   font-weight: 500;
+  align-items: center;
+  display: inline-flex;
+  flex: none;
+  gap: 6px;
   min-height: 48px;
   padding: 0 ${SPACE_MD};
   position: relative;
+
+  @media ${BELOW_MOBILE} {
+    padding: 0 ${SPACE_SM};
+  }
 
   &:hover {
     color: ${COLOR_TEXT};
@@ -320,6 +385,16 @@ const TabButton = styled.button`
     position: absolute;
     right: 0;
   }
+`;
+
+const TabCount = styled.span`
+  background: ${COLOR_SURFACE_RAISED};
+  border-radius: 3px;
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_XS};
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  padding: 0 5px;
 `;
 
 export default Profile;

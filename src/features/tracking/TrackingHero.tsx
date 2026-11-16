@@ -10,7 +10,6 @@ import { daysBetween } from '@/lib/tracking';
 import {
   BELOW_TABLET,
   COLOR_ACCENT,
-  COLOR_ACCENT_DEEP,
   COLOR_CELEBRATE,
   COLOR_LINE,
   COLOR_TEXT,
@@ -21,6 +20,7 @@ import {
   TEXT_MD,
   TEXT_SM,
 } from '@/theme';
+import ProgressBar from './ProgressBar';
 import { TrackingIntro } from './TrackingIntro';
 import type { BuildTracking } from './useBuildTracking';
 
@@ -59,30 +59,35 @@ export function TrackingHero({
   const { state, progress } = tracking;
   if (!state || !progress) return null;
 
-  // "Stop tracking" beside the block's label; it asks first, in a row under it.
+  // "Stop tracking" beside the block's label; it asks first, in a row under it. A finished build
+  // leaves the profile's Completed shelf and the build's finished count (T36), so it says so.
+  const finished = progress.complete && state.completedAt !== null;
+  const words = finished
+    ? { action: 'Remove from Completed', yes: 'Yes, remove', no: 'Keep it' }
+    : { action: 'Stop tracking', yes: 'Yes, stop', no: 'Keep tracking' };
   const stopButton = confirmingStop ? null : (
     <StopButton variant="ghost" onClick={() => setConfirmingStop(true)}>
-      Stop tracking
+      {words.action}
     </StopButton>
   );
   const confirmStop = confirmingStop ? (
     <Confirm>
-      <Question>Stop tracking? Your progress on this build is deleted.</Question>
+      <Question>{`${words.action}? Your progress on this build is deleted.`}</Question>
       <Button
         variant="danger"
         onClick={() => {
           setConfirmingStop(false);
           tracking.stop();
         }}>
-        Yes, stop
+        {words.yes}
       </Button>
       <Button variant="secondary" onClick={() => setConfirmingStop(false)}>
-        Keep tracking
+        {words.no}
       </Button>
     </Confirm>
   ) : null;
 
-  if (progress.complete && state.completedAt) {
+  if (finished && state.completedAt) {
     const days = daysBetween(state.startedAt, state.completedAt);
     return (
       <Complete aria-labelledby="tracking-title">
@@ -140,9 +145,7 @@ export function TrackingHero({
             <strong>{level.yours}</strong> of {level.target}
           </span>
         </LineText>
-        <Bar aria-hidden="true">
-          <Fill style={{ width: `${progress.levelPercent}%` }} />
-        </Bar>
+        <LevelBar percent={progress.levelPercent} />
       </Line>
       <ErrorMessage>{tracking.error}</ErrorMessage>
     </Progress>
@@ -250,19 +253,8 @@ const Pip = styled.span<{ $on: boolean }>`
   height: 8px;
 `;
 
-const Bar = styled.span`
-  background: ${COLOR_LINE};
-  border-radius: 3px;
-  display: block;
-  height: 6px;
+const LevelBar = styled(ProgressBar)`
   margin-top: 5px;
-  overflow: hidden;
-`;
-
-const Fill = styled.span`
-  background: linear-gradient(90deg, ${COLOR_ACCENT_DEEP}, ${COLOR_ACCENT});
-  display: block;
-  height: 100%;
 `;
 
 const Top = styled.div`

@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T29, T34, T35, T39, T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T29, T34–T36, T39, T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); the route follows it (T35: stops done, Next stop card). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -52,28 +52,29 @@ only (T41: an intro modal signed out); the route follows it (T35: stops done, Ne
 
 ## Commands
 
-| Task                                        | Command                                                                        |
-| ------------------------------------------- | ------------------------------------------------------------------------------ |
-| All checks (run before finishing)           | `npm run check`                                                                |
-| Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format`   |
-| Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                      |
-| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                          |
-| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                                |
-| What can this machine run?                  | `npm run doctor`                                                               |
-| Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                           |
-| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                           |
-| Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)        |
-| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`                 |
-| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`    |
-| Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`      |
-| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)            |
-| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`    |
-| Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]` |
-| … after clicking a button (a dialog, T41)   | `npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"`         |
-| Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)  |
-| Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)           |
-| Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                     |
-| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"          |
+| Task                                        | Command                                                                          |
+| ------------------------------------------- | -------------------------------------------------------------------------------- |
+| All checks (run before finishing)           | `npm run check`                                                                  |
+| Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format`     |
+| Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                        |
+| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                            |
+| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                                  |
+| What can this machine run?                  | `npm run doctor`                                                                 |
+| Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                             |
+| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                             |
+| Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)          |
+| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`                   |
+| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`      |
+| Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`        |
+| Tracking counters: recount/backfill (T36)   | `node scripts/admin.mjs counts [--write]` (after T36's deploy; docs/firebase.md) |
+| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)              |
+| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`      |
+| Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]`   |
+| … after clicking a button (a dialog, T41)   | `npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"`           |
+| Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)    |
+| Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)             |
+| Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                       |
+| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"            |
 
 ## How work flows: tickets and sessions
 
@@ -112,12 +113,14 @@ src/
                            age, tags, left-hand-first slot strip with faint empty cells, level, likes + comments;
                            tags.ts fits tags on one line + "+N"), filters.ts (+ topTags, toggleTag), queries.ts (useBuilds,
                            useUserBuilds, useGameStats)
-  features/profile/        Profile (rename, Builds/Liked tabs), DeleteAccount (T18), queries.ts
+  features/profile/        Profile (rename, Builds/Liked tabs; the owner's Playing/Completed, T36), DeleteAccount (T18), queries.ts
                            (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
   features/tracking/       Tracking a build (T34; account only, T41): useBuildTracking (query cache + saveQueue.ts
                            debounced Firestore saves; startAfterSignIn), TrackingIntro (the modal before the first
                            track: sign up / log in, or Start tracking), TrackingHero (Track button, progress, Build
-                           complete), TrackingCards (new items), TrackedAttributes (yours / target with − +)
+                           complete), TrackingCards (new items), TrackedAttributes (yours / target with − +);
+                           T36: queries.ts (useTrackedBuilds), TrackedBuilds (profile panels: Playing, Completed
+                           trophies) → PlayingList (lazy: progress + next stop), ProgressBar
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete; hero + tabs, T28) + useBuildEditor; tabs.ts (tab

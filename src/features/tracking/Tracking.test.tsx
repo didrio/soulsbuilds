@@ -110,8 +110,11 @@ describe('tracking signed out', () => {
         'alice',
         'SEEDMOON0001',
         expect.objectContaining({ collected: [], seen: ITEMS, stats: BASELINE }),
+        'none',
       ),
     );
+    // The hero counts the new player at once (T36).
+    expect(screen.getByRole('region', { name: build.name })).toHaveTextContent('1 playing');
   });
 
   it('keeps the progress of an account that already tracks the build', async () => {
@@ -190,6 +193,7 @@ describe('tracking signed in', () => {
         collected: [`weapon1:${MOONVEIL}`],
         stats: { ...BASELINE, vigor: 12 },
       }),
+      'playing',
     );
   });
 
@@ -209,6 +213,7 @@ describe('tracking signed in', () => {
 
   it('asks before it stops tracking, then deletes the progress', async () => {
     firebase.getTracking.mockResolvedValue(tracking());
+    firebase.getBuild.mockResolvedValue({ ...build, playerCount: 3, finishedCount: 1 });
     const { user } = renderPage('alice');
     await user.click(await screen.findByRole('button', { name: 'Stop tracking' }));
     expect(screen.getByText(/Your progress on this build is deleted/)).toBeInTheDocument();
@@ -216,8 +221,13 @@ describe('tracking signed in', () => {
     expect(firebase.deleteTracking).not.toHaveBeenCalled();
     await user.click(screen.getByRole('button', { name: 'Stop tracking' }));
     await user.click(screen.getByRole('button', { name: 'Yes, stop' }));
-    expect(firebase.deleteTracking).toHaveBeenCalledWith('alice', 'SEEDMOON0001');
+    await waitFor(() =>
+      expect(firebase.deleteTracking).toHaveBeenCalledWith('alice', 'SEEDMOON0001', 'playing'),
+    );
     expect(screen.getByRole('button', { name: 'Track this build' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: build.name })).toHaveTextContent(
+      '1 playing · 1 finished',
+    );
     // Back to the plain Loadout: items are text again.
     expect(screen.queryByRole('button', { name: /^Moonveil/ })).not.toBeInTheDocument();
     expect(screen.getByText('Moonveil')).toBeInTheDocument();
@@ -252,6 +262,7 @@ describe('tracking signed in', () => {
       'alice',
       'SEEDMOON0001',
       expect.objectContaining({ seen: ITEMS }),
+      'playing',
     );
   });
 

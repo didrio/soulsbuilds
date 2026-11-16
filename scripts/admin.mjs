@@ -13,14 +13,18 @@
 //   node scripts/admin.mjs delete-user <uid|email>        delete an account and everything it published:
 //                                                         builds (with their likes and comments), likes
 //                                                         and comments elsewhere (with the counters),
-//                                                         reports filed, profile (with its tracking),
-//                                                         Auth user; resolves reports about that
+//                                                         reports filed, profile (with its tracking,
+//                                                         moving those builds' counters), Auth user;
+//                                                         resolves reports about that
 //                                                         content as "removed" (T18)
 //   node scripts/admin.mjs grant <uid|email>              set the `admin` custom claim
 //   node scripts/admin.mjs revoke <uid|email>             clear it
 //   node scripts/admin.mjs stats                          count builds, authors, accounts and tags per
 //                                                         game into the public doc stats/<game> (T20;
 //                                                         daily in CI: .github/workflows/stats.yml)
+//   node scripts/admin.mjs counts                         recount every build's playerCount and
+//                                                         finishedCount from the tracking docs (T36:
+//                                                         the backfill after deploying T36, and a repair)
 //   node scripts/admin.mjs export                    back up every document (all collections and
 //                                                         subcollections) as JSON; read-only (T12: the
 //                                                         Spark plan has no managed backups or PITR)
@@ -234,7 +238,8 @@ async function commitInBatches(db, ops, size = 200) {
  * Deletes an account and everything it published, like the in-app "Delete account"
  * (src/lib/firebase/account.ts) but with the Admin SDK: their builds (with every like and comment
  * on them), their likes and comments on other builds (moving those counters), the reports they
- * filed, their profile with its tracking progress (T34) and their Auth user. Open reports about their builds and comments are
+ * filed, their profile with its tracking progress (T34; moving the tracked builds' playerCount and
+ * finishedCount, T36) and their Auth user. Open reports about their builds and comments are
  * resolved as "removed". `who` is a uid or an email. Writes only with `write`; then saves a JSON
  * backup in `backupDir` first. Safe to re-run. Resolves to the counts it found.
  */
@@ -319,7 +324,15 @@ export async function deleteUserData(
   writeFileSync(result.backup, toJson(backup));
 
   for (const build of builds.docs) await db.recursiveDelete(build.ref);
-  const parents = [...likesElsewhere, ...commentsElsewhere].map((d) => d.ref.parent.parent);
+  const trackedBuild = (d) => db.doc(`builds/${d.id}`);
+  const parents = [
+    ...new Map(
+      [
+        ...[...likesElsewhere, ...commentsElsewhere].map((d) => d.ref.parent.parent),
+        ...tracking.docs.map(trackedBuild),
+      ].map((ref) => [ref.path, ref]),
+    ).values(),
+  ];
   const existing = new Set(
     parents.length
       ? (await db.getAll(...parents)).filter((s) => s.exists).map((s) => s.ref.path)
@@ -338,6 +351,20 @@ export async function deleteUserData(
   await commitInBatches(
     db,
     commentsElsewhere.map((d) => counter(d, 'commentCount')),
+  );
+  // Their progress, with the tracked builds' counters (T36).
+  await commitInBatches(
+    db,
+    tracking.docs.map((d) => (batch) => {
+      batch.delete(d.ref);
+      const build = trackedBuild(d);
+      if (!existing.has(build.path)) return;
+      const finished = d.get('completedAt') ? -1 : 0;
+      batch.update(build, {
+        playerCount: FieldValue.increment(-1),
+        ...(finished ? { finishedCount: FieldValue.increment(finished) } : {}),
+      });
+    }),
   );
   await commitInBatches(
     db,
@@ -394,6 +421,53 @@ export async function updateStats(db, { write = false, games = STATS_GAMES } = {
   return result;
 }
 
+/**
+ * Recounts every build's tracking counters (T36) from the tracking docs (`users/{uid}/tracking/
+ * {buildId}`): `playerCount` = docs, `finishedCount` = docs with `completedAt`. Builds from before
+ * T36 have neither field until this runs (the "Most played" sort skips them). With `write`, updates
+ * the builds whose counters differ. A player's change that lands mid-run can be overwritten, so run it
+ * at a quiet time; a second run shows nothing left to fix. Resolves to the builds seen and the changes.
+ */
+export async function recountTracking(db, { write = false } = {}) {
+  const [tracking, builds] = await Promise.all([
+    db.collectionGroup('tracking').get(),
+    db.collection('builds').select('playerCount', 'finishedCount').get(),
+  ]);
+  const counted = new Map();
+  for (const d of tracking.docs) {
+    const count = counted.get(d.id) ?? { playerCount: 0, finishedCount: 0 };
+    count.playerCount += 1;
+    if (d.get('completedAt')) count.finishedCount += 1;
+    counted.set(d.id, count);
+  }
+  const changes = [];
+  for (const build of builds.docs) {
+    const after = counted.get(build.id) ?? { playerCount: 0, finishedCount: 0 };
+    const before = {
+      playerCount: build.get('playerCount') ?? null,
+      finishedCount: build.get('finishedCount') ?? null,
+    };
+    if (before.playerCount !== after.playerCount || before.finishedCount !== after.finishedCount) {
+      changes.push({ buildId: build.id, ref: build.ref, before, after });
+    }
+  }
+  if (write) {
+    await commitInBatches(
+      db,
+      changes.map(
+        ({ ref, after }) =>
+          (batch) =>
+            batch.update(ref, after),
+      ),
+    );
+  }
+  return {
+    builds: builds.size,
+    trackingDocs: tracking.size,
+    changes: changes.map(({ ref: _ref, ...change }) => change),
+  };
+}
+
 /** Sets (`admin` true) or clears the admin custom claim of a user found by uid or email. */
 export async function setAdmin(auth, who, admin, { write = false } = {}) {
   const user = who.includes('@') ? await auth.getUserByEmail(who) : await auth.getUser(who);
@@ -425,6 +499,7 @@ const USAGE = `Usage: node scripts/admin.mjs <command> [args] [--project <id>] [
   grant <uid|email>              make a user an admin
   revoke <uid|email>             remove admin
   stats                          count builds, authors, accounts and tags into stats/<game>
+  counts                         recount builds' playerCount and finishedCount from tracking
   export                        save every document as JSON in .admin-backups/ (read-only)`;
 
 async function main() {
@@ -539,6 +614,17 @@ async function main() {
       console.log(`  ${stats.userCount} accounts`);
       console.log(`  ${Object.keys(stats.tagCounts).length} tags used; top: ${top.join(', ')}`);
     }
+    dryRunNote();
+  } else if (command === 'counts') {
+    console.log(`${mode}: tracking counters on ${where}\n`);
+    const result = await recountTracking(db, { write: opts.write });
+    console.log(`${result.builds} builds, ${result.trackingDocs} tracking docs`);
+    const show = ({ playerCount, finishedCount }) =>
+      playerCount === null ? 'none' : `${playerCount} playing+finished, ${finishedCount} finished`;
+    for (const change of result.changes) {
+      console.log(`  ${change.buildId}: ${show(change.before)} → ${show(change.after)}`);
+    }
+    if (!result.changes.length) console.log('Every build is counted right.');
     dryRunNote();
   } else if (command === 'export') {
     console.log(`Export (read-only): ${where}\n`);

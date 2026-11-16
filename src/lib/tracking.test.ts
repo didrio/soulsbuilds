@@ -3,6 +3,7 @@ import { emptyEquipment } from '@/test/fixtures';
 import type { Stats } from './buildMath';
 import {
   applyChange,
+  counterDelta,
   daysBetween,
   newItems,
   startTracking,
@@ -10,6 +11,7 @@ import {
   trackingBaseline,
   trackingProgress,
   trackKey,
+  trackingStatus,
   type TrackingContext,
 } from './tracking';
 
@@ -209,5 +211,23 @@ describe('daysBetween', () => {
   it('counts whole days', () => {
     expect(daysBetween(new Date('2026-11-04T10:00Z'), new Date('2026-11-16T09:00Z'))).toBe(12);
     expect(daysBetween(NOW, NOW)).toBe(0);
+  });
+});
+
+describe('trackingStatus and counterDelta', () => {
+  it('reads the status from the doc', () => {
+    expect(trackingStatus(null)).toBe('none');
+    expect(trackingStatus({ completedAt: null })).toBe('playing');
+    expect(trackingStatus({ completedAt: NOW })).toBe('finished');
+  });
+
+  it('moves the counters by the status change', () => {
+    expect(counterDelta('none', 'playing')).toEqual({ playerCount: 1, finishedCount: 0 });
+    expect(counterDelta('none', 'finished')).toEqual({ playerCount: 1, finishedCount: 1 });
+    expect(counterDelta('playing', 'finished')).toEqual({ playerCount: 0, finishedCount: 1 });
+    expect(counterDelta('finished', 'playing')).toEqual({ playerCount: 0, finishedCount: -1 });
+    expect(counterDelta('finished', 'none')).toEqual({ playerCount: -1, finishedCount: -1 });
+    expect(counterDelta('playing', 'none')).toEqual({ playerCount: -1, finishedCount: 0 });
+    expect(counterDelta('playing', 'playing')).toEqual({ playerCount: 0, finishedCount: 0 });
   });
 });

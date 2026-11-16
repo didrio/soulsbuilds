@@ -301,6 +301,8 @@ async function main() {
       game: GAME,
       likeCount: build.likedBy.length,
       commentCount: build.comments.length,
+      playerCount: 0, // nobody tracks the seed builds (T36)
+      finishedCount: 0,
       ...(build.comments.length ? { lastCommentId: build.comments.at(-1).id } : {}),
       createdAt: build.createdAt,
       updatedAt: build.createdAt,

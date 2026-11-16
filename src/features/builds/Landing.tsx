@@ -48,7 +48,14 @@ import { labelText } from '@/components/ui/typography';
 const SORTS = [
   { value: 'top', label: 'Most liked' },
   { value: 'new', label: 'Newest' },
+  { value: 'played', label: 'Most played' },
 ] as const satisfies readonly { value: BuildSort; label: string }[];
+
+const SORT_STATUS: Record<BuildSort, string> = {
+  top: 'Most liked first',
+  new: 'Newest first',
+  played: 'Most played first',
+};
 
 /**
  * `/`: the current game's builds, most liked or newest first, a page at a time, or a search by name.
@@ -112,9 +119,7 @@ function Landing() {
 
   const status = filters.search
     ? `Builds whose name starts with “${filters.search}”`
-    : filters.sort === 'top'
-      ? 'Most liked first'
-      : 'Newest first';
+    : SORT_STATUS[filters.sort];
 
   return (
     <>

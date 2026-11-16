@@ -96,3 +96,22 @@ export function updateStats(
   db: Firestore,
   options?: { write?: boolean; games?: string[] },
 ): Promise<Record<string, GameStatsCounts>>;
+
+/** A build's tracking counters (T36); null when the build has none yet (saved before T36). */
+export interface TrackingCounts {
+  playerCount: number | null;
+  finishedCount: number | null;
+}
+
+/**
+ * Recounts every build's playerCount and finishedCount from the tracking docs (T36); with `write`,
+ * updates the builds that differ.
+ */
+export function recountTracking(
+  db: Firestore,
+  options?: { write?: boolean },
+): Promise<{
+  builds: number;
+  trackingDocs: number;
+  changes: { buildId: string; before: TrackingCounts; after: TrackingCounts }[];
+}>;

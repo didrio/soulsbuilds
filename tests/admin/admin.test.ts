@@ -13,6 +13,7 @@ import {
   dismissReports,
   exportAll,
   listOpenReports,
+  recountTracking,
   removeContent,
   renameUser,
   setAdmin,
@@ -168,12 +169,21 @@ describe('rename and delete-user (T18)', () => {
 
   it('deletes a user and everything they published, with counters and a backup', async () => {
     const auth = await authUser('bob');
-    await db.doc('builds/B1').update({ likeCount: 1 });
+    await db.doc('builds/B1').update({ likeCount: 1, playerCount: 3, finishedCount: 1 });
+    await db.doc('builds/B2').update({ playerCount: 1, finishedCount: 0 });
     await db.doc('builds/B3').set({ ownerId: 'bob', name: 'Bob build', commentCount: 1 });
     await db.doc('builds/B3/comments/c3').set({ authorId: 'carol', text: 'cool' });
     await db.doc('builds/B3/likes/carol').set({ userId: 'carol', createdAt: at(2) });
     await report('bob', 'B2', null, 4);
-    await db.doc('users/bob/tracking/B1').set({ collected: ['helm:1'], startedAt: at(3) });
+    await db
+      .doc('users/bob/tracking/B1')
+      .set({ collected: ['helm:1'], startedAt: at(3), completedAt: at(4) });
+    await db
+      .doc('users/bob/tracking/B2')
+      .set({ collected: [], startedAt: at(3), completedAt: null });
+    await db
+      .doc('users/bob/tracking/B3')
+      .set({ collected: [], startedAt: at(3), completedAt: null });
 
     const dry = await deleteUserData(db, auth, 'bob@example.test');
     expect(dry).toMatchObject({
@@ -185,7 +195,7 @@ describe('rename and delete-user (T18)', () => {
       comments: 1,
       reportsFiled: 1,
       reportsResolved: 1, // dave's report on c1
-      tracking: 1,
+      tracking: 3,
       backup: null,
     });
     expect((await db.doc('builds/B3').get()).exists).toBe(true);
@@ -197,6 +207,8 @@ describe('rename and delete-user (T18)', () => {
     expect((await db.collection('builds/B3/comments').get()).size).toBe(0);
     const b1 = (await db.doc('builds/B1').get()).data();
     expect([b1?.likeCount, b1?.commentCount]).toEqual([0, 1]);
+    expect([b1?.playerCount, b1?.finishedCount]).toEqual([2, 0]);
+    expect((await db.doc('builds/B2').get()).get('playerCount')).toBe(0);
     expect((await db.doc('builds/B1/comments/c2').get()).exists).toBe(true);
     expect((await db.doc('reports/B2_bob').get()).exists).toBe(false);
     expect(await status('c1_dave')).toBe('removed');
@@ -206,6 +218,7 @@ describe('rename and delete-user (T18)', () => {
     expect(backup.profile.displayName).toBe('Anne Frankly');
     expect(backup.builds[0].comments).toHaveLength(1);
     expect(backup.tracking[0]).toMatchObject({ path: 'users/bob/tracking/B1' });
+    expect(backup.tracking).toHaveLength(3);
     expect(backup.comments[0]).toMatchObject({ path: 'builds/B1/comments/c1', text: 'buy gold' });
 
     // Re-running finds nothing and changes nothing.
@@ -217,6 +230,52 @@ describe('rename and delete-user (T18)', () => {
       comments: 0,
     });
     expect((await db.doc('builds/B1').get()).get('commentCount')).toBe(1);
+    expect((await db.doc('builds/B1').get()).get('playerCount')).toBe(2);
+  });
+});
+
+describe('counts (T36)', () => {
+  beforeEach(async () => {
+    await db.recursiveDelete(db.collection('users'));
+    const track = (uid: string, buildId: string, completedAt: Timestamp | null) =>
+      db.doc(`users/${uid}/tracking/${buildId}`).set({ startedAt: at(1), completedAt });
+    await track('ann', 'B1', null);
+    await track('ben', 'B1', at(2));
+    await track('cat', 'B1', at(3));
+    await track('ann', 'GONE', null);
+    // B1 is off by one; B2 is right; B3 is from before T36 (no counters).
+    await db.doc('builds/B1').update({ playerCount: 2, finishedCount: 2 });
+    await db.doc('builds/B2').update({ playerCount: 0, finishedCount: 0 });
+    await db.doc('builds/B3').set({ ownerId: 'dave', name: 'Old build' });
+  });
+
+  it('recounts every build from the tracking docs, writing only with write', async () => {
+    const dry = await recountTracking(db);
+    expect(dry).toEqual({
+      builds: 3,
+      trackingDocs: 4,
+      changes: [
+        {
+          buildId: 'B1',
+          before: { playerCount: 2, finishedCount: 2 },
+          after: { playerCount: 3, finishedCount: 2 },
+        },
+        {
+          buildId: 'B3',
+          before: { playerCount: null, finishedCount: null },
+          after: { playerCount: 0, finishedCount: 0 },
+        },
+      ],
+    });
+    expect((await db.doc('builds/B3').get()).get('playerCount')).toBeUndefined();
+
+    await recountTracking(db, { write: true });
+    expect((await db.doc('builds/B1').get()).get('playerCount')).toBe(3);
+    expect((await db.doc('builds/B3').get()).data()).toMatchObject({
+      playerCount: 0,
+      finishedCount: 0,
+    });
+    expect((await recountTracking(db)).changes).toEqual([]);
   });
 });
 

@@ -76,6 +76,7 @@ function BuildHeader({ build, ownerActions, trackAction, progress }: BuildHeader
         <span>
           Level <Strong>{build.level}</Strong>
         </span>
+        <Players build={build} />
         <time dateTime={build.createdAt.toISOString()} title={formatFullDate(build.createdAt)}>
           {relativeTime(build.createdAt)}
         </time>
@@ -122,6 +123,30 @@ function BuildHeader({ build, ownerActions, trackAction, progress }: BuildHeader
         <ErrorMessage>{toggleLike.error ? errorMessage(toggleLike.error) : ''}</ErrorMessage>
       </Errors>
     </Pane>
+  );
+}
+
+/**
+ * "37 playing · 12 finished" (T36): from the build's counters (playing = tracking it, not finished).
+ * Each part only when it isn't zero; nothing for a build nobody tracks.
+ */
+function Players({ build }: { build: Pick<Build, 'playerCount' | 'finishedCount'> }) {
+  const finished = build.finishedCount;
+  const playing = Math.max(0, build.playerCount - finished);
+  const parts = [
+    playing ? ([playing, 'playing'] as const) : null,
+    finished ? ([finished, 'finished'] as const) : null,
+  ].filter((part) => part !== null);
+  if (!parts.length) return null;
+  return (
+    <span>
+      {parts.map(([count, label], index) => (
+        <span key={label}>
+          {index ? ' · ' : null}
+          <Strong>{count}</Strong> {label}
+        </span>
+      ))}
+    </span>
   );
 }
 

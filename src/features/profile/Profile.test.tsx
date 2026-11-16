@@ -1,14 +1,19 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeBuild, makeProfile } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import Profile from './Profile';
 
-const firebase = vi.hoisted(() => ({ getUserProfile: vi.fn(), listUserBuilds: vi.fn() }));
+const firebase = vi.hoisted(() => ({
+  getUserProfile: vi.fn(),
+  listUserBuilds: vi.fn(),
+  listTracking: vi.fn(),
+  getBuild: vi.fn(),
+}));
 vi.mock('@/lib/firebase', () => ({ ...firebase, errorMessage: () => 'error' }));
 
-const renderProfile = () =>
-  renderWithProviders(<Profile />, { route: '/user/seed-ranni', path: '/user/:userId' });
+const renderProfile = (uid: string | null = null) =>
+  renderWithProviders(<Profile />, { route: '/user/seed-ranni', path: '/user/:userId', uid });
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -33,5 +38,84 @@ describe('Profile header (T20)', () => {
     const tagline = await screen.findByText(/Joined/);
     await vi.waitFor(() => expect(tagline).toHaveTextContent(/^Joined September 2026 · 1 build$/));
     expect(screen.queryByText(/received/)).not.toBeInTheDocument();
+  });
+});
+
+describe('Playing and Completed (T36)', () => {
+  const BASE = { vigor: 10, mind: 10, end: 10, str: 10, dex: 10, int: 10, fai: 10, arc: 10 };
+  const playing = makeBuild({ id: 'PLAY', name: 'Moon Knight', ownerId: 'seed-ranni' });
+  const done = makeBuild({ id: 'DONE', name: 'Hammer Prince' });
+  const state = (overrides = {}) => ({
+    collected: [],
+    seen: [],
+    stats: BASE,
+    startedAt: new Date('2026-11-04T12:00:00Z'),
+    completedAt: null,
+    ...overrides,
+  });
+
+  beforeEach(() => {
+    firebase.listUserBuilds.mockResolvedValue([]);
+    firebase.listTracking.mockResolvedValue([
+      { buildId: 'PLAY', state: state() },
+      { buildId: 'DONE', state: state({ completedAt: new Date('2026-10-20T12:00:00Z') }) },
+      { buildId: 'GONE', state: state() },
+    ]);
+    firebase.getBuild.mockImplementation(async (id: string) =>
+      id === 'PLAY' ? playing : id === 'DONE' ? done : null,
+    );
+  });
+
+  it('are the owner’s only: visitors see Builds and Liked, and nothing is read', async () => {
+    renderProfile('someone-else');
+    expect(await screen.findByRole('tab', { name: 'Builds' })).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Playing/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /Completed/ })).not.toBeInTheDocument();
+    expect(firebase.listTracking).not.toHaveBeenCalled();
+  });
+
+  it('Playing: a card per build in progress, then the recently completed', async () => {
+    const { user } = renderProfile('seed-ranni');
+    const tab = await screen.findByRole('tab', { name: 'Playing 1' });
+    expect(screen.getByRole('tab', { name: 'Completed 1' })).toBeInTheDocument();
+    expect(await screen.findByText(/builds? finished/)).toHaveTextContent('1 build finished');
+    await user.click(tab);
+    const panel = screen.getByRole('tabpanel');
+    expect(within(panel).getByText('Only you can see what you’re playing.')).toBeInTheDocument();
+    const card = await within(panel).findByRole('link', { name: /Moon Knight/ });
+    expect(card).toHaveAttribute('href', '/build/PLAY');
+    expect(card).toHaveTextContent('started 4 November');
+    expect(card).toHaveTextContent(/\d+%/);
+    expect(card).toHaveTextContent('Gear 0 of 1');
+    expect(card).toHaveTextContent('Next stop');
+    // A deleted build is left out.
+    expect(within(panel).getAllByRole('link', { name: /Moon Knight|Hammer Prince/ })).toHaveLength(
+      2,
+    );
+
+    expect(within(panel).getByRole('heading', { name: 'Recently completed' })).toBeInTheDocument();
+    await user.click(within(panel).getByRole('button', { name: 'All 1' }));
+    expect(screen.getByRole('tab', { name: 'Completed 1' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+  });
+
+  it('Completed: a trophy per finished build, with the month', async () => {
+    const { user } = renderProfile('seed-ranni');
+    await user.click(await screen.findByRole('tab', { name: 'Completed 1' }));
+    const trophy = await screen.findByRole('link', { name: /Hammer Prince/ });
+    expect(trophy).toHaveAttribute('href', '/build/DONE');
+    expect(trophy).toHaveTextContent('Oct 2026');
+    expect(screen.queryByText('Moon Knight')).not.toBeInTheDocument();
+  });
+
+  it('says what to do when nothing is tracked', async () => {
+    firebase.listTracking.mockResolvedValue([]);
+    const { user } = renderProfile('seed-ranni');
+    await user.click(await screen.findByRole('tab', { name: 'Playing' }));
+    expect(await screen.findByText(/You’re not tracking a build/)).toBeInTheDocument();
+    await user.click(screen.getByRole('tab', { name: 'Completed' }));
+    expect(screen.getByText(/No finished builds yet/)).toBeInTheDocument();
   });
 });
