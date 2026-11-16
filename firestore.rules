@@ -125,7 +125,7 @@ service cloud.firestore {
         && slots6(e.weapons) && affinities6(e.weaponAffinities) && slots6(e.weaponSkills)
         && slots4(e.arrows)
         && e.talismans is list && e.talismans.size() <= 4
-        && e.spells is list && e.spells.size() <= 10
+        && e.spells is list && e.spells.size() <= 12
         && e.tears is list && e.tears.size() <= 2
         && e.consumables is list && e.consumables.size() <= 10
         && isItemIdOrNull(e.helm) && isItemIdOrNull(e.chest) && isItemIdOrNull(e.gauntlet)
@@ -134,7 +134,15 @@ service cloud.firestore {
 
     // The fields the owner writes. Everything else is set on create or changed by the counters.
     function contentKeys() {
-      return ['name', 'nameLower', 'description', 'tags', 'level', 'stats', 'equipment'];
+      return ['name', 'nameLower', 'description', 'tags', 'level', 'stats', 'equipment',
+        'startingClass'];
+    }
+
+    // A starting class is its CharaInitParam ID (3000 Vagabond … 3009 Wretch) or null for none; builds
+    // from before T8 don't have the field. The class's minimum stats are the app's job (budget).
+    function validStartingClass(d) {
+      return !('startingClass' in d) || d.startingClass == null
+        || (d.startingClass is int && d.startingClass >= 3000 && d.startingClass <= 3009);
     }
 
     function validContent(d) {
@@ -144,6 +152,7 @@ service cloud.firestore {
         && d.tags is list && d.tags.size() <= 20
         && validStats(d.stats)
         && validLevel(d.level, d.stats)
+        && validStartingClass(d)
         && validEquipment(d.equipment);
     }
 

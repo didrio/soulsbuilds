@@ -29,11 +29,13 @@ describe('EquipmentEditor + item picker', () => {
         weaponAffinity1: 'blood',
       });
 
-      // The row shows and names the affinity and skill; a filled weapon slot opens on that step.
+      // The row shows and names the affinity, skill and unmet requirements (all stats are 10); a
+      // filled weapon slot opens on that step.
       const row = screen.getByRole('button', {
-        name: 'Change Uchigatana (Blood affinity, Seppuku skill)',
+        name: 'Change Uchigatana (Blood affinity, Seppuku skill, Needs 11 Str, 15 Dex)',
       });
       expect(row).toHaveTextContent('Blood · Seppuku');
+      expect(row).toHaveTextContent('Needs 11 Str, 15 Dex');
       await user.click(row);
       await user.click(screen.getByRole('button', { name: 'Change weapon' }));
       // Remove empties the slot and drops its Ash and affinity.

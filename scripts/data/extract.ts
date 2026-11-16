@@ -26,6 +26,7 @@ import {
   ODD_DEFAULT_ASHES,
   WEAPON_TYPES,
 } from './constants.ts';
+import { talismanModifiers } from './character.ts';
 import { num, type Param, type Row, type TextEntry, type TextIndex } from './export.ts';
 import { DLC_BOSSES, TAGS_2022 } from './tags.ts';
 
@@ -38,6 +39,7 @@ export const PARAM_NAMES = [
   'EquipParamAccessory',
   'EquipParamGoods',
   'Magic',
+  'SpEffectParam',
 ] as const;
 export type ParamName = (typeof PARAM_NAMES)[number];
 
@@ -297,6 +299,7 @@ export function extract({ params, text }: ExportData): Extraction {
     const label = names.accessory.get(id);
     const icon = num(row, 'iconId');
     if (!label || icon <= 0) continue;
+    const modifiers = talismanModifiers(params.SpEffectParam, num(row, 'refId'));
     talismans.push({
       id,
       name: label.text,
@@ -305,6 +308,7 @@ export function extract({ params, text }: ExportData): Extraction {
       weight: round(num(row, 'weight'), 2),
       effect: names.accessoryInfo.get(id)?.text ?? '',
       group: num(row, 'accessoryGroup'),
+      ...(modifiers ? { modifiers } : {}),
     });
   }
 

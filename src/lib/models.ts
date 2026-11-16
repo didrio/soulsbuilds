@@ -48,11 +48,19 @@ export interface BuildContent {
   tags: string[];
   level: number;
   stats: Stats;
+  /**
+   * Starting class by CharaInitParam ID (3000 Vagabond … 3009 Wretch; src/data/er/character.json), or
+   * null for none. Builds from before T8 don't store it (read as null). The editor keeps every stat at
+   * or above the class's base.
+   */
+  startingClass: number | null;
   equipment: Equipment;
 }
 
 /** builds/{id} as stored. */
-export interface BuildDoc extends BuildContent {
+export interface BuildDoc extends Omit<BuildContent, 'startingClass'> {
+  /** Absent on builds saved before T8. */
+  startingClass?: number | null;
   ownerId: string;
   game: GameId;
   /** `name.toLowerCase()`, for prefix search (T9). */

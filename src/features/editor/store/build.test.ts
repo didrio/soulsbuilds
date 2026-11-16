@@ -20,6 +20,7 @@ const CRIMSON_CRYSTAL_TEAR = 11002;
 const bleed: BuildFields = {
   level: 131,
   stats: { vigor: 50, mind: 15, end: 25, str: 18, dex: 40, int: 9, fai: 8, arc: 45 },
+  startingClass: 3007, // Samurai
   equipment: {
     weapons: [RIVERS_OF_BLOOD, null, null, UCHIGATANA, null, null],
     weaponAffinities: [null, null, null, 'blood', null, null],
@@ -43,6 +44,15 @@ describe('loadBuild / selectBuildFields', () => {
     const store = makeStore();
     store.dispatch(loadBuild(bleed));
     expect(selectBuildFields(store.getState())).toEqual(bleed);
+  });
+
+  it('loads an unknown starting class as none, and keeps the saved stats as they are', () => {
+    const store = makeStore();
+    store.dispatch(loadBuild({ ...bleed, startingClass: 42 }));
+    expect(selectBuildFields(store.getState())).toMatchObject({
+      startingClass: null,
+      stats: bleed.stats,
+    });
   });
 
   it('empties slots whose IDs are not in the game data, or hold armor for another slot', () => {

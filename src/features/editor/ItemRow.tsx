@@ -11,6 +11,7 @@ import {
 } from '@/data/core';
 import {
   BELOW_MOBILE,
+  COLOR_DANGER,
   COLOR_GLOW,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
@@ -21,7 +22,7 @@ import {
   TEXT_XS,
   TRACKING_CAPS,
 } from '@/theme';
-import { itemSubline, weaponDetailLabels, weaponDetails } from './itemDetails';
+import { itemSubline, weaponDetailLabels, weaponDetails, type ItemWarning } from './itemDetails';
 import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
 import { openPicker } from './store/app';
 
@@ -52,6 +53,8 @@ export interface SlotEntry {
   subId?: WeaponSkillSlot;
   affinity?: AffinityKey | null;
   ash?: AshOfWar | null;
+  /** Unmet requirements or no room in the memory slots (T8). */
+  warning?: ItemWarning | null;
 }
 
 const isWeaponType = (type: SlotType) => type === 'SLOT_TYPE_WEAPON';
@@ -67,14 +70,14 @@ export const filledAndNext = (entries: SlotEntry[]) => {
 };
 
 /**
- * One slot as a row: the item's tile, its name, and a muted detail line (a weapon's affinity and
- * skill, a spell's memory slots). Editable rows are buttons that open the item picker for the slot,
+ * One slot as a row: the item's tile, its name, a muted detail line (a weapon's affinity and skill, a
+ * spell's memory slots) and a warning line when it can't be used as built. Editable rows are buttons that open the item picker for the slot,
  * named "Choose talisman" when empty and "Change Uchigatana (Blood affinity, Seppuku skill)" when
  * filled; read-only rows are plain text.
  */
 function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
   const dispatch = useAppDispatch();
-  const { id, type, item, affinityId, subId, affinity = null, ash = null } = entry;
+  const { id, type, item, affinityId, subId, affinity = null, ash = null, warning = null } = entry;
 
   // A weapon slot holds a weapon (the editor state's items are full data objects).
   const weapon = item && isWeaponType(type) ? weaponDetails(item as Weapon, ash, affinity) : null;
@@ -90,13 +93,17 @@ function ItemRow({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
           <Empty>{editable ? `Choose ${SLOT_LABELS[type]}` : 'Empty'}</Empty>
         )}
         {subline ? <Sub>{subline}</Sub> : null}
+        {item && warning ? <Warning $severity={warning.severity}>{warning.text}</Warning> : null}
       </Text>
     </>
   );
 
   if (!editable) return <Row>{content}</Row>;
 
-  const details = weapon ? weaponDetailLabels(weapon) : [];
+  const details = [
+    ...(weapon ? weaponDetailLabels(weapon) : []),
+    ...(warning ? [warning.text] : []),
+  ];
   const label = item
     ? `Change ${item.name}${details.length ? ` (${details.join(', ')})` : ''}`
     : `Choose ${SLOT_LABELS[type]}`;
@@ -227,6 +234,14 @@ const Empty = styled.span`
 const Sub = styled.span`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_XS};
+  line-height: 1.4;
+`;
+
+const Warning = styled.span<{ $severity: ItemWarning['severity'] }>`
+  color: ${({ $severity }) => ($severity === 'warning' ? COLOR_DANGER : COLOR_TEXT_MUTED)};
+  font-size: ${TEXT_XS};
+  font-style: ${({ $severity }) => ($severity === 'note' ? 'italic' : 'normal')};
+  font-weight: ${({ $severity }) => ($severity === 'warning' ? 600 : 400)};
   line-height: 1.4;
 `;
 

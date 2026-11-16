@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import appReducer from '@/features/editor/store/app';
 import equipmentReducer from '@/features/editor/store/equipment';
 import spellsReducer from '@/features/editor/store/spells';
+import startingClassReducer from '@/features/editor/store/startingClass';
 import statsReducer from '@/features/editor/store/stats';
 import tearsReducer from '@/features/editor/store/tears';
 
@@ -13,6 +14,7 @@ export const makeStore = () =>
       app: appReducer,
       equipment: equipmentReducer,
       spells: spellsReducer,
+      startingClass: startingClassReducer,
       stats: statsReducer,
       tears: tearsReducer,
     },

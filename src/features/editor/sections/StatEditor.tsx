@@ -1,26 +1,33 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import DropDown from '@/components/ui/DropDown';
 import Frame from '@/components/ui/Frame';
 import SectionHeading from '@/components/ui/SectionHeading';
 import TextInput from '@/components/ui/TextInput';
+import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { fadingRule } from '@/components/ui/inWorld';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { MAX_STAT, type StatKey } from '@/lib/buildMath';
+import { getStartingClass, startingClasses } from '@/data';
+import { MAX_STAT, MIN_STAT, type StatKey } from '@/lib/buildMath';
 import {
   COLOR_ACCENT,
   COLOR_ACCENT_DEEP,
   COLOR_ACCENT_STRONG,
   COLOR_GLOW_STRONG,
   COLOR_LINE,
+  COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   SPACE_MD,
+  SPACE_SM,
   TEXT_LG,
   TEXT_SM,
   TEXT_XS,
   TRACKING_CAPS,
 } from '@/theme';
-import { selectStats } from '../store/selectors';
+import { selectStatBonuses } from '../store/derived';
+import { selectStartingClass, selectStats } from '../store/selectors';
+import { setStartingClass } from '../store/startingClass';
 import { updateStat } from '../store/stats';
 
 /** The eight attributes, in the game's order. */
@@ -36,17 +43,28 @@ const STATS: [key: StatKey, name: string][] = [
 ];
 
 /**
- * One stat input. Accepts digits only (at most 2); each keystroke stores the value clamped to 1–99,
- * and the field shows the stored value again once it loses focus (so an emptied field reverts).
+ * One stat input. Accepts digits only (at most 2); each keystroke stores the value clamped to
+ * `min`–99 (`min` is the starting class's base), and the field shows the stored value again once it
+ * loses focus (so an emptied field, or one below the base, reverts).
  */
-function StatInput({ statKey, name, value }: { statKey: StatKey; name: string; value: number }) {
+function StatInput({
+  statKey,
+  name,
+  value,
+  min,
+}: {
+  statKey: StatKey;
+  name: string;
+  value: number;
+  min: number;
+}) {
   const dispatch = useAppDispatch();
   const [draft, setDraft] = useState<string | null>(null);
 
   const handleChange = (text: string) => {
     const digits = text.replace(/\D/g, '').slice(0, 2);
     setDraft(digits);
-    if (digits) dispatch(updateStat({ key: statKey, value: Number(digits) }));
+    if (digits) dispatch(updateStat({ key: statKey, value: Number(digits), min }));
   };
 
   return (
@@ -61,9 +79,16 @@ function StatInput({ statKey, name, value }: { statKey: StatKey; name: string; v
   );
 }
 
-/** Attributes panel: the rune level, then each stat as a bar and its value (an input when editable). */
+/**
+ * Attributes panel: the rune level and starting class (a picker when editable: choosing one raises the
+ * stats to its base, and no stat can go below it), then each stat as a bar and its value (an input when
+ * editable), with what talismans add ("+5").
+ */
 function StatEditor({ editable, level }: { editable: boolean; level: number }) {
+  const dispatch = useAppDispatch();
   const stats = useAppSelector(selectStats);
+  const startingClass = useAppSelector(selectStartingClass);
+  const bonuses = useAppSelector(selectStatBonuses);
 
   return (
     <Frame aria-labelledby="stats-title">
@@ -71,16 +96,49 @@ function StatEditor({ editable, level }: { editable: boolean; level: number }) {
       <Level>
         <LevelValue>{level}</LevelValue>
         <LevelLabel>Rune level</LevelLabel>
+        {editable ? (
+          <ClassPicker>
+            <DropDown
+              label="Starting class"
+              placeholder="No starting class"
+              options={startingClasses.map(({ id, name, level: classLevel }) => ({
+                value: String(id),
+                label: `${name} · level ${classLevel}`,
+              }))}
+              value={startingClass ? String(startingClass.id) : ''}
+              onChange={(value) =>
+                dispatch(setStartingClass(getStartingClass(Number(value)) ?? null))
+              }
+            />
+          </ClassPicker>
+        ) : startingClass ? (
+          <ClassName>
+            Starting class: <strong>{startingClass.name}</strong>
+          </ClassName>
+        ) : null}
       </Level>
       <Stats>
         {STATS.map(([key, name]) => (
           <Stat key={key} $editable={editable}>
-            <span>{name}</span>
+            <span>
+              {name}
+              {bonuses[key] ? (
+                <Bonus>
+                  {` +${bonuses[key]}`}
+                  <VisuallyHidden> from talismans</VisuallyHidden>
+                </Bonus>
+              ) : null}
+            </span>
             <Bar aria-hidden="true">
               <BarFill style={{ width: `${(stats[key] / MAX_STAT) * 100}%` }} />
             </Bar>
             {editable ? (
-              <StatInput statKey={key} name={name} value={stats[key]} />
+              <StatInput
+                statKey={key}
+                name={name}
+                value={stats[key]}
+                min={startingClass?.stats[key] ?? MIN_STAT}
+              />
             ) : (
               <StatValue>{stats[key]}</StatValue>
             )}
@@ -123,6 +181,29 @@ const LevelLabel = styled.span`
   font-size: ${TEXT_XS};
   letter-spacing: ${TRACKING_CAPS};
   text-transform: uppercase;
+`;
+
+const ClassPicker = styled.div`
+  margin: ${SPACE_SM} auto 0;
+  max-width: 260px;
+  text-align: left;
+`;
+
+const ClassName = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: ${SPACE_SM} 0 0;
+
+  strong {
+    color: ${COLOR_TEXT};
+    font-weight: 600;
+  }
+`;
+
+const Bonus = styled.span`
+  color: ${COLOR_ACCENT};
+  font-size: ${TEXT_XS};
+  font-weight: 600;
 `;
 
 const Stats = styled.ul`

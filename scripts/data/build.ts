@@ -13,7 +13,14 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { acquisitionSchema, DATA_FILES, makeCards, tagsSchema } from '../../src/data/schema.ts';
+import {
+  acquisitionSchema,
+  characterSchema,
+  DATA_FILES,
+  makeCards,
+  tagsSchema,
+  type Character,
+} from '../../src/data/schema.ts';
 import {
   ACQUISITION_PARAMS,
   extractAcquisition,
@@ -21,6 +28,7 @@ import {
   validateAcquisition,
   type AcquisitionInputs,
 } from './acquisition.ts';
+import { CHARACTER_PARAMS, extractCharacter, type CharacterParamName } from './character.ts';
 import { EVENTS, EXTRA_SOURCES, NO_SOURCE, PENDING_FACTS } from './events.ts';
 import { readIcons, readParam, readText } from './export.ts';
 import { extract, PARAM_NAMES, type GameData, type ParamName } from './extract.ts';
@@ -58,6 +66,15 @@ export function formatCards(data: Pick<GameData, 'weapons' | 'armor'>): string {
   const lines = (items: unknown[]) =>
     items.map((item) => `    ${JSON.stringify(item)}`).join(',\n');
   return `{\n  "weapons": [\n${lines(cards.weapons)}\n  ],\n  "armor": [\n${lines(cards.armor)}\n  ]\n}\n`;
+}
+
+/** character.json: a class or a curve per line. */
+export function formatCharacter(character: Character): string {
+  const classes = character.classes.map((item) => `    ${JSON.stringify(item)}`).join(',\n');
+  const curves = Object.entries(character.curves)
+    .map(([key, curve]) => `    ${JSON.stringify(key)}: ${JSON.stringify(curve)}`)
+    .join(',\n');
+  return `{\n  "classes": [\n${classes}\n  ],\n  "curves": {\n${curves}\n  }\n}\n`;
 }
 
 /** File name in src/data/er/ → its data. */
@@ -147,19 +164,28 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   console.log(`Reading the export in ${opts.exportDir}`);
   const params = Object.fromEntries(
-    [...PARAM_NAMES, ...ACQUISITION_PARAMS].map((name) => [
+    [...new Set([...PARAM_NAMES, ...ACQUISITION_PARAMS, ...CHARACTER_PARAMS])].map((name) => [
       name,
       readParam(join(opts.exportDir, 'params'), name),
     ]),
-  ) as Record<ParamName | (typeof ACQUISITION_PARAMS)[number], ReturnType<typeof readParam>>;
+  ) as Record<
+    ParamName | (typeof ACQUISITION_PARAMS)[number] | CharacterParamName,
+    ReturnType<typeof readParam>
+  >;
   const text = readText(join(opts.exportDir, 'text'));
   const iconFiles = readIcons(join(opts.exportDir, 'icons'));
 
   const { data, problems, notes } = extract({ params, text });
   const acquired = extractAcquisition({ params, text, data, inputs: ACQUISITION_INPUTS });
   const schemaCheck = acquisitionSchema.safeParse(acquired.acquisition);
+  const { character, problems: characterProblems } = extractCharacter(params);
+  const characterCheck = characterSchema.safeParse(character);
   const errors = [
     ...problems,
+    ...characterProblems,
+    ...(characterCheck.success
+      ? []
+      : characterCheck.error.issues.map((i) => `character.json ${i.path.join('.')}: ${i.message}`)),
     ...validate(data),
     ...acquired.problems,
     ...(schemaCheck.success
@@ -193,7 +219,8 @@ async function main() {
   writeFileSync(join(outDir, 'tags.json'), formatJson(data.tags));
   writeFileSync(join(outDir, 'cards.json'), formatCards(data));
   writeFileSync(join(outDir, 'acquisition.json'), formatAcquisition(acquired.acquisition));
-  console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 3} files to ${outDir}`);
+  writeFileSync(join(outDir, 'character.json'), formatCharacter(character));
+  console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 4} files to ${outDir}`);
 
   const icons = await writeIcons(usedIcons(data), iconFiles, opts.iconDir, {
     force: opts.forceIcons,

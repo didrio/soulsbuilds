@@ -77,6 +77,7 @@ export function useBuildEditor(buildId: string | null) {
           description: draft.description,
           tags: draft.tags,
           stats: buildFields.stats,
+          startingClass: buildFields.startingClass,
           equipment: buildFields.equipment,
         },
       },

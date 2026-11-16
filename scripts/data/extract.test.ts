@@ -112,7 +112,9 @@ describe('extract', () => {
       'Flask of Wondrous Physick',
       'Throwing Dagger',
     ]);
-    expect(data.talismans).toMatchObject([{ name: 'Crimson Amber Medallion', group: 100 }]);
+    expect(data.talismans).toMatchObject([
+      { name: 'Crimson Amber Medallion', group: 100, modifiers: { hp: 1.06 } },
+    ]);
   });
 
   it('drops Unarmed, gestures and "+N" copies', () => {

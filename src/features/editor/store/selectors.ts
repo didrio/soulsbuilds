@@ -24,6 +24,7 @@ export const selectSlotType = (state: RootState) => state.app.slotType;
 export const selectEquipment = (state: RootState) => state.equipment;
 export const selectSpellSlots = (state: RootState) => state.spells;
 export const selectStats = (state: RootState) => state.stats;
+export const selectStartingClass = (state: RootState) => state.startingClass;
 export const selectTearSlots = (state: RootState) => state.tears;
 
 export const selectHelm = (state: RootState) => state.equipment.helm;

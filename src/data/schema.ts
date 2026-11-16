@@ -141,12 +141,32 @@ export const armorSchema = z.strictObject({
   }),
 });
 
+/** The 8 attributes of a character, in the game's order (same keys as Stats in src/lib/buildMath.ts). */
+export const STAT_KEYS = ['vigor', 'mind', 'end', 'str', 'dex', 'int', 'fai', 'arc'] as const;
+const statKey = z.enum(STAT_KEYS);
+
+/**
+ * What a talisman changes for the build math (T8), from its SpEffectParam row; only the values that
+ * differ from neutral are present. Rates multiply (1.15 = +15%); `poiseDamage` multiplies the poise
+ * damage taken (Bull-Goat's 0.75, which the game shows as poise ÷ 0.75).
+ */
+export const talismanModifiersSchema = z.strictObject({
+  stats: z.partialRecord(statKey, z.number().int()).optional(),
+  hp: z.number().positive().optional(),
+  fp: z.number().positive().optional(),
+  stamina: z.number().positive().optional(),
+  equipLoad: z.number().positive().optional(),
+  poiseDamage: z.number().positive().optional(),
+  memorySlots: z.number().int().optional(),
+});
+
 export const talismanSchema = z.strictObject({
   ...item,
   weight: amount,
   effect,
   /** Talismans that share a group can't be worn together (the game's accessoryGroup). */
   group: z.number().int(),
+  modifiers: talismanModifiersSchema.optional(),
 });
 
 export const spellSchema = z.strictObject({
@@ -157,6 +177,35 @@ export const spellSchema = z.strictObject({
   slots: z.number().int().nonnegative(),
   requirements: z.strictObject({ int: amount, fai: amount, arc: amount }),
   effect,
+});
+
+/**
+ * A CalcCorrectGraph row: `stages` are stat breakpoints, `values` the result at each, and `exponents`
+ * shape the curve between breakpoint i and i+1 (src/lib/buildMath.ts curveValue).
+ */
+export const statCurveSchema = z.strictObject({
+  stages: z.array(z.number()).length(5),
+  values: z.array(z.number()).length(5),
+  exponents: z.array(z.number()).length(5),
+});
+
+export const startingClassSchema = z.strictObject({
+  /** CharaInitParam row ID (3000 Vagabond … 3009 Wretch); builds store it as `startingClass`. */
+  id,
+  name,
+  level: z.number().int().positive(),
+  stats: z.record(statKey, z.number().int().min(1).max(99)),
+});
+
+/** character.json (T8): the starting classes and the stat curves behind HP, FP, stamina and equip load. */
+export const characterSchema = z.strictObject({
+  classes: z.array(startingClassSchema).length(10),
+  curves: z.strictObject({
+    hp: statCurveSchema,
+    fp: statCurveSchema,
+    stamina: statCurveSchema,
+    equipLoad: statCurveSchema,
+  }),
 });
 
 /** Crystal tears, consumables, great runes and spirit ashes. */
@@ -209,6 +258,10 @@ export type Weapon = z.infer<typeof weaponSchema>;
 export type Arrow = z.infer<typeof arrowSchema>;
 export type Armor = z.infer<typeof armorSchema>;
 export type Talisman = z.infer<typeof talismanSchema>;
+export type TalismanModifiers = z.infer<typeof talismanModifiersSchema>;
+export type StatCurve = z.infer<typeof statCurveSchema>;
+export type StartingClass = z.infer<typeof startingClassSchema>;
+export type Character = z.infer<typeof characterSchema>;
 export type Spell = z.infer<typeof spellSchema>;
 export type Goods = z.infer<typeof goodsSchema>;
 export type Tags = z.infer<typeof tagsSchema>;

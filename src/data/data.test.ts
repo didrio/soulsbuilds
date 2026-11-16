@@ -7,6 +7,7 @@ import { z } from 'zod';
 import {
   acquisitionSchema,
   armorSchema,
+  characterSchema,
   cardsSchema,
   makeCards,
   arrowSchema,
@@ -361,5 +362,35 @@ describe('acquisition data (T14)', () => {
       const source = readFileSync(join(import.meta.dirname, file), 'utf8');
       expect(source).not.toMatch(/acquisition/);
     }
+  });
+});
+
+describe('character.json (T8)', () => {
+  const character = characterSchema.parse(
+    JSON.parse(readFileSync(join(DIR, 'character.json'), 'utf8')),
+  );
+
+  it('has the ten classes, each at level = stat sum − 79 (calculateLevel and firestore.rules)', () => {
+    expect(character.classes.map((c) => c.id)).toEqual([
+      3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009,
+    ]);
+    for (const { name, level, stats } of character.classes)
+      expect(Object.values(stats).reduce((a, b) => a + b, 0) - 79, name).toBe(level);
+  });
+
+  it('has curves whose stages rise from 1 to 99', () => {
+    for (const curve of Object.values(character.curves)) {
+      expect(curve.stages[0]).toBe(1);
+      expect(curve.stages[4]).toBe(99);
+      expect(curve.stages).toEqual([...curve.stages].sort((a, b) => a - b));
+    }
+  });
+
+  it('gives talismans the effects the build math reads', () => {
+    const byName = (name: string) => talismans.find((t) => t.name === name)?.modifiers;
+    expect(byName('Arsenal Charm')).toEqual({ equipLoad: 1.15 });
+    expect(byName("Radagon's Soreseal")).toEqual({ stats: { vigor: 5, end: 5, str: 5, dex: 5 } });
+    expect(byName('Moon of Nokstella')).toEqual({ memorySlots: 2 });
+    expect(byName("Bull-Goat's Talisman")).toEqual({ poiseDamage: 0.75 });
   });
 });

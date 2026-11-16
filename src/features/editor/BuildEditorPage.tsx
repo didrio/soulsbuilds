@@ -24,6 +24,7 @@ import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildHeader from './sections/BuildHeader';
 import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
+import CharacterStats from './sections/CharacterStats';
 import EquipmentEditor from './sections/EquipmentEditor';
 import OwnerActions from './sections/OwnerActions';
 import SpellEditor from './sections/SpellEditor';
@@ -128,6 +129,7 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
         </Main>
         <Aside>
           <StatEditor editable={editable} level={level} />
+          <CharacterStats />
           <SpellEditor editable={editable} />
         </Aside>
       </Layout>

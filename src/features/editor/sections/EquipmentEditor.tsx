@@ -4,6 +4,7 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import { useAppSelector } from '@/app/hooks';
 import { COLOR_TEXT_MUTED, TEXT_SM } from '@/theme';
 import { filledAndNext, GroupHeading, ItemGroup, ItemRows, type SlotEntry } from '../ItemRow';
+import { itemWarning } from '../itemDetails';
 import {
   ARMOR_SLOTS,
   ARROW_SLOTS,
@@ -26,6 +27,7 @@ import {
   WEAPON_SLOTS,
   type SlotType,
 } from '../slots';
+import { selectRequirementChecks } from '../store/derived';
 import { selectEquipment, selectTearSlots } from '../store/selectors';
 
 const ARMOR_TYPES: Record<(typeof ARMOR_SLOTS)[number], SlotType> = {
@@ -44,13 +46,15 @@ interface Group {
 
 /**
  * Equipment panel: weapons (right hand, left hand), arrows and bolts, armor, talismans, great rune,
- * spirit ash and the flask's crystal tears, and consumables, as rows of tiles with names. Editable:
+ * spirit ash and the flask's crystal tears, and consumables, as rows of tiles with names; a weapon whose
+ * requirements the stats don't meet says so. Editable:
  * every slot (consumables: the filled ones and the next empty one), each a button that opens the
  * picker. Read-only: only the filled slots, and only the groups that have one.
  */
 function EquipmentEditor({ editable }: { editable: boolean }) {
   const equipment = useAppSelector(selectEquipment);
   const tears = useAppSelector(selectTearSlots);
+  const checks = useAppSelector(selectRequirementChecks);
 
   const weaponEntry = (index: number): SlotEntry => {
     const id = WEAPON_SLOTS[index]!;
@@ -64,6 +68,7 @@ function EquipmentEditor({ editable }: { editable: boolean }) {
       subId,
       affinity: equipment[affinityId],
       ash: equipment[subId],
+      warning: itemWarning(checks[id]),
     };
   };
 

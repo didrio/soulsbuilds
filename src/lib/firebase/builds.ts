@@ -55,6 +55,7 @@ export function toBuild(snapshot: DocumentSnapshot): Build {
     tags: data.tags,
     level: data.level,
     stats: data.stats,
+    startingClass: data.startingClass ?? null, // absent on builds saved before T8
     equipment: data.equipment,
     likeCount: data.likeCount,
     commentCount: data.commentCount,
@@ -73,6 +74,7 @@ export function contentFields(input: BuildInput) {
     tags: input.tags,
     level: calculateLevel(input.stats),
     stats: input.stats,
+    startingClass: input.startingClass,
     equipment: input.equipment,
   };
 }

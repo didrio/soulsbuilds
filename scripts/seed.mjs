@@ -73,7 +73,6 @@ const stats = (vigor, mind, end, str, dex, int, fai, arc) => ({
   fai,
   arc,
 });
-const noWeapons = [null, null, null, null, null, null];
 
 // Builds with item names (as in the game); main() turns them into v2 documents with item IDs.
 const BUILDS = [
@@ -95,6 +94,7 @@ const BUILDS = [
       },
     ],
     stats: stats(50, 15, 25, 18, 40, 9, 8, 45),
+    startingClass: 'Samurai',
     equipment: {
       weapons: ['Rivers of Blood', null, null, 'Uchigatana', null, null],
       weaponAffinities: [null, null, null, 'blood', null, null],
@@ -125,6 +125,7 @@ const BUILDS = [
     likedBy: [],
     comments: [],
     stats: stats(40, 30, 15, 12, 18, 80, 7, 9),
+    startingClass: 'Astrologer',
     equipment: {
       weapons: ['Moonveil', null, null, 'Carian Regal Scepter', null, null],
       talismans: [
@@ -153,6 +154,7 @@ const BUILDS = [
     likedBy: [],
     comments: [],
     stats: stats(45, 20, 25, 30, 12, 9, 60, 9),
+    startingClass: 'Confessor',
     equipment: {
       weapons: ['Blasphemous Blade', null, null, 'Brass Shield', null, null],
       weaponSkills: [null, null, null, 'Barricade Shield', null, null],
@@ -176,7 +178,8 @@ const BUILDS = [
     likedBy: [],
     comments: [],
     stats: stats(10, 10, 10, 10, 10, 10, 10, 10),
-    equipment: { weapons: ['Club', ...noWeapons.slice(1)] },
+    // All 10s: the Battle Axe (Str 12) needs two hands, the Greatsword (Str 31) is out of reach.
+    equipment: { weapons: ['Club', 'Battle Axe', null, 'Greatsword', null, null] },
   },
 ];
 
@@ -238,6 +241,14 @@ function toEquipmentIds({ id: buildId, equipment: e }) {
   };
 }
 
+// A starting class name → its CharaInitParam ID (null for none), from src/data/er/character.json.
+function classId(name) {
+  if (!name) return null;
+  const found = er('character').classes.find((item) => item.name === name);
+  if (!found) throw new Error(`Seed: no starting class "${name}"`);
+  return found.id;
+}
+
 // Empties the emulator's Firestore (emulator REST API), so re-seeding gives a known state.
 async function clearFirestore() {
   const url = `http://${process.env.FIRESTORE_EMULATOR_HOST}/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
@@ -248,7 +259,13 @@ async function clearFirestore() {
 async function main() {
   // Resolve every name first: a typo fails before the emulator is touched.
   const contents = new Map(
-    BUILDS.map((build) => [build.id, buildContent({ ...build, equipment: toEquipmentIds(build) })]),
+    BUILDS.map((build) => [
+      build.id,
+      {
+        ...buildContent({ ...build, equipment: toEquipmentIds(build) }),
+        startingClass: classId(build.startingClass),
+      },
+    ]),
   );
   initializeApp({ projectId: PROJECT_ID });
   const auth = getAuth();

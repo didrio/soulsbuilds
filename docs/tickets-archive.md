@@ -27,3 +27,11 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
 - T11 — Performance and polish — 2026-11-15 — lazy routes and editor chunk, a11y/contrast/focus pass, meta and OG tags,
   self-hosted EB Garamond + Cinzel, generated icons and og:image, `core.ts` + `cards.json` data split (full data lazy),
   paged picker, light markdown view, spacing scale.
+- T13 — Builds reference items by ID — 2026-11-15 — app on `src/data/er/` (accessors by ID, `rules.ts` for Ash
+  of War/affinity/talisman rules), builds store game IDs + great rune and spirit ash slots, picker follows the
+  game's rules, rules type-check within Firestore's expression budget, names→IDs folded into the v1→v2
+  migration, "Great Hammer" tag, footer; 2022 data and icons deleted.
+- T7 — Game data v2 + Shadow of the Erdtree — 2026-11-15 — owner's Smithbox export of the game files →
+  `npm run data` (TypeScript pipeline, zod schemas, fixture + data tests, deterministic) → `src/data/er/` (base +
+  DLC, game param IDs, real affinities and Ash of War rules) and 2,151 WebP icons; 2022 name → ID table; the
+  app switch split into T13.

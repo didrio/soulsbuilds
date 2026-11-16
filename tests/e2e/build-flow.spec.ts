@@ -32,7 +32,10 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await page.getByLabel('Search items').fill('Moonveil');
   await page.getByRole('button', { name: /^Moonveil/ }).click();
   // A unique weapon: nothing to choose, so the picker closes; reopened, it shows the fixed skill.
-  await page.getByRole('button', { name: 'Change Moonveil (Transient Moonlight skill)' }).click();
+  // (Its name ends with what it needs: all stats are 10.)
+  await page
+    .getByRole('button', { name: /^Change Moonveil \(Transient Moonlight skill, Needs / })
+    .click();
   await expect(page.getByText("Transient Moonlight (can't be changed)")).toBeVisible();
   await expect(page.getByRole('combobox', { name: 'Ash of War' })).toHaveCount(0);
   await page.getByRole('button', { name: 'Change weapon' }).click();
@@ -44,16 +47,36 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await page.getByRole('combobox', { name: 'Ash of War' }).selectOption({ label: 'Seppuku' });
   await page.getByRole('combobox', { name: 'Affinity' }).selectOption({ label: 'Blood' });
   await page.getByRole('button', { name: 'Done' }).click();
+  // All stats are 10: the Uchigatana (Str 11, Dex 15) says what it needs.
   await expect(
-    page.getByRole('button', { name: 'Change Uchigatana (Blood affinity, Seppuku skill)' }),
+    page.getByRole('button', {
+      name: 'Change Uchigatana (Blood affinity, Seppuku skill, Needs 11 Str, 15 Dex)',
+    }),
   ).toBeVisible();
 
   await page.getByRole('button', { name: 'Choose great rune' }).click();
   await page.getByRole('button', { name: /^Radahn's Great Rune/ }).click();
+
+  // Samurai raises the stats to its base (level 14 here), which meets the Uchigatana's needs, and
+  // keeps them there.
+  await page
+    .getByRole('combobox', { name: 'Starting class' })
+    .selectOption({ label: 'Samurai · level 9' });
+  const attributes = page.getByRole('region', { name: 'Attributes' });
+  await expect(attributes).toContainText('14Rune level');
+  await expect(
+    page.getByRole('button', { name: 'Change Uchigatana (Blood affinity, Seppuku skill)' }),
+  ).toBeVisible();
+  const dexterity = page.getByLabel('Dexterity');
+  await dexterity.fill('9');
+  await dexterity.blur();
+  await expect(dexterity).toHaveValue('15');
+
   const vigor = page.getByLabel('Vigor');
   await vigor.fill('40');
   await vigor.blur();
-  await expect(page.getByRole('region', { name: 'Attributes' })).toContainText('31Rune level');
+  await expect(attributes).toContainText('42Rune level');
+  await expect(page.getByRole('region', { name: 'Character' })).toContainText('HP1450');
   await page.getByRole('button', { name: 'Save' }).click();
 
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
@@ -61,6 +84,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune.
   await expect(page.getByText('Blood · Seppuku')).toBeVisible();
   await expect(page.getByText("Radahn's Great Rune")).toBeVisible();
+  await expect(page.getByText('Starting class: Samurai')).toBeVisible();
   await expect(page.getByRole('link', { name: displayName })).toBeVisible();
 
   // Like (optimistic, then confirmed).

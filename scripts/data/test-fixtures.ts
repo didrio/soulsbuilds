@@ -207,7 +207,7 @@ export function fixtureParams(): ExportData['params'] {
     ),
     EquipParamAccessory: parseParamCsv(
       csv(
-        ['iconId', 'weight', 'accessoryGroup'],
+        ['iconId', 'weight', 'accessoryGroup', 'refId'],
         [
           {
             ID: 1000,
@@ -215,6 +215,7 @@ export function fixtureParams(): ExportData['params'] {
             iconId: 30,
             weight: 0.3,
             accessoryGroup: 100,
+            refId: 310000,
           },
         ],
       ),
@@ -257,6 +258,150 @@ export function fixtureParams(): ExportData['params'] {
         ],
       ),
     ),
+    SpEffectParam: spEffects([
+      { ID: 310000, Name: 'Crimson Amber Medallion', maxHpRate: 1.06 },
+      { ID: 310510, Name: "Radagon's Soreseal", ...radagonsSoreseal },
+      { ID: 311400, Name: 'Moon of Nokstella', changeMagicSlot: 2 },
+      { ID: 312100, Name: "Bull-Goat's Talisman", toughnessDamageCutRate: 0.75 },
+      { ID: 999999, Name: 'Does nothing the build math reads' },
+    ]),
+  };
+}
+
+const radagonsSoreseal = {
+  addLifeForceStatus: 5,
+  addEndureStatus: 5,
+  addStrengthStatus: 5,
+  addDexterityStatus: 5,
+};
+
+const SP_EFFECT_RATES = [
+  'maxHpRate',
+  'maxMpRate',
+  'maxStaminaRate',
+  'equipWeightChangeRate',
+  'toughnessDamageCutRate',
+];
+const SP_EFFECT_COLUMNS = [
+  ...SP_EFFECT_RATES,
+  'changeMagicSlot',
+  'addLifeForceStatus',
+  'addWillpowerStatus',
+  'addEndureStatus',
+  'addStrengthStatus',
+  'addDexterityStatus',
+  'addMagicStatus',
+  'addFaithStatus',
+  'addLuckStatus',
+];
+
+/** SpEffectParam rows: rates default to 1 (neutral) and everything else to 0, like the game's rows. */
+export function spEffects(rows: Record<string, string | number>[]): Param {
+  const neutral = Object.fromEntries(SP_EFFECT_RATES.map((column) => [column, 1]));
+  return parseParamCsv(
+    csv(
+      SP_EFFECT_COLUMNS,
+      rows.map((row) => ({ ...neutral, ...row })),
+    ),
+  );
+}
+
+/** CalcCorrectGraph rows 100, 101, 104 and 220 as the 1.17.3 export has them. */
+const CURVE_COLUMNS = [0, 1, 2, 3, 4].flatMap((i) => [
+  `stageMaxVal${i}`,
+  `stageMaxGrowVal${i}`,
+  `adjPt_maxGrowVal${i}`,
+]);
+const curveRow = (
+  ID: number,
+  Name: string,
+  stages: number[],
+  values: number[],
+  exponents: number[],
+) => ({
+  ID,
+  Name,
+  ...Object.fromEntries(
+    [0, 1, 2, 3, 4].flatMap((i) => [
+      [`stageMaxVal${i}`, stages[i] ?? 0],
+      [`stageMaxGrowVal${i}`, values[i] ?? 0],
+      [`adjPt_maxGrowVal${i}`, exponents[i] ?? 0],
+    ]),
+  ),
+});
+
+const BASE_STAT_COLUMNS = [
+  'soulLv',
+  'baseVit',
+  'baseWil',
+  'baseEnd',
+  'baseStr',
+  'baseDex',
+  'baseMag',
+  'baseFai',
+  'baseLuc',
+];
+
+/** The starting classes as [name, level, vigor, mind, end, str, dex, int, fai, arc] (1.17.3). */
+export const CLASS_FIXTURES: [string, ...number[]][] = [
+  ['Vagabond', 9, 15, 10, 11, 14, 13, 9, 9, 7],
+  ['Warrior', 8, 11, 12, 11, 10, 16, 10, 8, 9],
+  ['Hero', 7, 14, 9, 12, 16, 9, 7, 8, 11],
+  ['Bandit', 5, 10, 11, 10, 9, 13, 9, 8, 14],
+  ['Astrologer', 6, 9, 15, 9, 8, 12, 16, 7, 9],
+  ['Prophet', 7, 10, 14, 8, 11, 10, 7, 16, 10],
+  ['Confessor', 10, 10, 13, 10, 12, 12, 9, 14, 9],
+  ['Samurai', 9, 12, 11, 13, 12, 15, 9, 8, 8],
+  ['Prisoner', 9, 11, 12, 11, 11, 14, 14, 6, 9],
+  ['Wretch', 1, 10, 10, 10, 10, 10, 10, 10, 10],
+];
+
+/** The params scripts/data/character.ts reads, with the real classes and curves. */
+export function fixtureCharacterParams() {
+  return {
+    CharaInitParam: parseParamCsv(
+      csv(
+        BASE_STAT_COLUMNS,
+        CLASS_FIXTURES.map(([name, ...values], i) => ({
+          ID: 3000 + i,
+          Name: `Class - ${name}`,
+          ...Object.fromEntries(BASE_STAT_COLUMNS.map((column, j) => [column, values[j] ?? 0])),
+        })),
+      ),
+    ),
+    CalcCorrectGraph: parseParamCsv(
+      csv(CURVE_COLUMNS, [
+        curveRow(
+          100,
+          'HP Scaling - Vigor',
+          [1, 25, 40, 60, 99],
+          [300, 800, 1450, 1900, 2100],
+          [1.5, 1.1, -1.2, -1.2, 1],
+        ),
+        curveRow(
+          101,
+          'FP Scaling - Mind',
+          [1, 15, 35, 60, 99],
+          [50, 95, 200, 350, 450],
+          [1, 1, -1.2, 1, 1],
+        ),
+        curveRow(
+          104,
+          'Stamina - Endurance',
+          [1, 15, 30, 50, 99],
+          [80, 105, 130, 155, 170],
+          [1, 1, 1, 1, 1],
+        ),
+        curveRow(
+          220,
+          'Equip Load - Endurance',
+          [1, 8, 25, 60, 99],
+          [45, 45, 72, 120, 160],
+          [1, 1, 1.1, 1, 1],
+        ),
+      ]),
+    ),
+    SpEffectParam: spEffects([]),
   };
 }
 

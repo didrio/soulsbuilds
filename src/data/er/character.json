@@ -1,0 +1,20 @@
+{
+  "classes": [
+    {"id":3000,"name":"Vagabond","level":9,"stats":{"vigor":15,"mind":10,"end":11,"str":14,"dex":13,"int":9,"fai":9,"arc":7}},
+    {"id":3001,"name":"Warrior","level":8,"stats":{"vigor":11,"mind":12,"end":11,"str":10,"dex":16,"int":10,"fai":8,"arc":9}},
+    {"id":3002,"name":"Hero","level":7,"stats":{"vigor":14,"mind":9,"end":12,"str":16,"dex":9,"int":7,"fai":8,"arc":11}},
+    {"id":3003,"name":"Bandit","level":5,"stats":{"vigor":10,"mind":11,"end":10,"str":9,"dex":13,"int":9,"fai":8,"arc":14}},
+    {"id":3004,"name":"Astrologer","level":6,"stats":{"vigor":9,"mind":15,"end":9,"str":8,"dex":12,"int":16,"fai":7,"arc":9}},
+    {"id":3005,"name":"Prophet","level":7,"stats":{"vigor":10,"mind":14,"end":8,"str":11,"dex":10,"int":7,"fai":16,"arc":10}},
+    {"id":3006,"name":"Confessor","level":10,"stats":{"vigor":10,"mind":13,"end":10,"str":12,"dex":12,"int":9,"fai":14,"arc":9}},
+    {"id":3007,"name":"Samurai","level":9,"stats":{"vigor":12,"mind":11,"end":13,"str":12,"dex":15,"int":9,"fai":8,"arc":8}},
+    {"id":3008,"name":"Prisoner","level":9,"stats":{"vigor":11,"mind":12,"end":11,"str":11,"dex":14,"int":14,"fai":6,"arc":9}},
+    {"id":3009,"name":"Wretch","level":1,"stats":{"vigor":10,"mind":10,"end":10,"str":10,"dex":10,"int":10,"fai":10,"arc":10}}
+  ],
+  "curves": {
+    "hp": {"stages":[1,25,40,60,99],"values":[300,800,1450,1900,2100],"exponents":[1.5,1.1,-1.2,-1.2,1]},
+    "fp": {"stages":[1,15,35,60,99],"values":[50,95,200,350,450],"exponents":[1,1,-1.2,1,1]},
+    "stamina": {"stages":[1,15,30,50,99],"values":[80,105,130,155,170],"exponents":[1,1,1,1,1]},
+    "equipLoad": {"stages":[1,8,25,60,99],"values":[45,45,72,120,160],"exponents":[1,1,1.1,1,1]}
+  }
+}

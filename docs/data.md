@@ -35,17 +35,30 @@ through them.
 | `ashesOfWar.json` (116)                                                 | the skill it grants, weapon types it fits, affinities it allows                                                                       |
 | `skills.json` (268)                                                     | weapon skills (built-in and from Ashes), FP of the main use                                                                           |
 | `armor.json` (728)                                                      | slot, weight, poise, negation %, resistances                                                                                          |
-| `talismans.json` (154)                                                  | effect, weight, `group` (same group can't be worn together, e.g. Erdtree's Favor and +1)                                              |
+| `talismans.json` (154)                                                  | effect, weight, `group` (same group can't be worn together, e.g. Erdtree's Favor and +1), `modifiers` (T8; below)                     |
 | `spells.json` (213)                                                     | sorcery/incantation, FP, stamina, slots, INT/FAI/ARC requirements                                                                     |
 | `tears.json`, `consumables.json`, `greatRunes.json`, `spiritAshes.json` | name, icon, short effect                                                                                                              |
 | `weaponTypes.json`, `affinities.json`, `tags.json`                      | the 46 weapon types (8 DLC), the 13 affinities (key, name, row offset), tag groups                                                    |
 | `acquisition.json`                                                      | where every item comes from (T14; section below)                                                                                      |
+| `character.json`                                                        | the 10 starting classes (CharaInitParam 3000–3009: level, base stats) and the HP/FP/stamina/equip-load curves (T8; below)             |
 
 Every item has `id`, `name`, `icon` and `dlc`. **IDs are the game's param row IDs** (owner's call,
 2026-11-15): stable across patches, unique within a file (each build slot implies its file). Dagger is
 `1000000`; a weapon's affinity versions are rows `+100` (Heavy) … `+1200` (Occult), which is how
 `affinities` is computed. Affinities are string keys (`'cold'`, `'flame-art'`). Icons are
 `public/assets/icons/<icon>.webp`, 160 px (2× the largest slot), only those the data uses (~2,150, 22 MB).
+
+### Build math data (T8)
+
+`character.json` (`scripts/data/character.ts`): `classes` (id = CharaInitParam row, name, level, base stats;
+level is always stat sum − 79, which the pipeline checks) and `curves`: CalcCorrectGraph rows 100 (HP ← Vigor),
+101 (FP ← Mind), 104 (stamina ← Endurance) and 220 (equip load ← Endurance), copied raw as `{ stages, values,
+exponents }`. Talismans get `modifiers` from their SpEffectParam row (`refId`), only the non-neutral values:
+`stats` (+n, the Soreseals and Heirlooms), `hp`/`fp`/`stamina`/`equipLoad` (multipliers), `poiseDamage`
+(Bull-Goat's 0.75), `memorySlots` (Nokstella +2). All 31 such talismans in 1.17.3 are unconditional. The
+arithmetic is `src/lib/buildMath.ts` (pure; cites the rows and Fextralife, whose tables its tests check);
+`src/features/editor/store/derived.ts` feeds it the editor state. Accessors: `startingClasses`,
+`getStartingClass(id)`, `statCurves` (`@/data`).
 
 ### The pipeline (`scripts/data/`, TypeScript run directly by Node 24)
 

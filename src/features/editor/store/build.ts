@@ -10,6 +10,7 @@ import {
   getGreatRune,
   getSpell,
   getSpiritAsh,
+  getStartingClass,
   getTalisman,
   getTear,
   getWeapon,
@@ -52,6 +53,7 @@ import {
   selectLeg,
   selectSpells,
   selectSpiritAsh,
+  selectStartingClass,
   selectStats,
   selectTals,
   selectTears,
@@ -60,13 +62,14 @@ import {
   selectWeaponSkills,
 } from './selectors';
 import { clearSpells, updateSpell } from './spells';
+import { clearStartingClass, setStartingClass } from './startingClass';
 import { clearStats, setStats } from './stats';
 import { clearTears, updateTear } from './tears';
 
 type AppThunk = ThunkAction<void, RootState, unknown, UnknownAction>;
 
 /** The build fields that live in the editor's Redux state. */
-export type BuildFields = Pick<BuildContent, 'level' | 'stats' | 'equipment'>;
+export type BuildFields = Pick<BuildContent, 'level' | 'stats' | 'startingClass' | 'equipment'>;
 
 /** Empties the editor: no items, all stats 10, picker closed. */
 export const clearEditor = (): AppThunk => (dispatch) => {
@@ -74,6 +77,7 @@ export const clearEditor = (): AppThunk => (dispatch) => {
   dispatch(clearEquipment());
   dispatch(clearSpells());
   dispatch(clearStats());
+  dispatch(clearStartingClass());
   dispatch(clearTears());
 };
 
@@ -85,7 +89,7 @@ export const clearEditor = (): AppThunk => (dispatch) => {
  * from an empty editor.
  */
 export const loadBuild =
-  ({ stats, equipment }: Pick<BuildFields, 'stats' | 'equipment'>): AppThunk =>
+  ({ stats, startingClass, equipment }: Omit<BuildFields, 'level'>): AppThunk =>
   (dispatch) => {
     dispatch(clearEditor());
     const {
@@ -130,6 +134,8 @@ export const loadBuild =
     dispatch(updateLeg(getArmor(equipment.leg, 'legs') ?? null));
     dispatch(updateGreatRune(getGreatRune(equipment.greatRune) ?? null));
     dispatch(updateSpiritAsh(getSpiritAsh(equipment.spiritAsh) ?? null));
+    // The class first: the saved stats then go in as they are (an unknown class ID loads as none).
+    dispatch(setStartingClass(getStartingClass(startingClass) ?? null));
     dispatch(setStats(stats));
   };
 
@@ -141,6 +147,7 @@ export const selectBuildFields = createSelector(
   [
     selectStats,
     selectLevel,
+    selectStartingClass,
     selectArrows,
     selectCons,
     selectTals,
@@ -159,6 +166,7 @@ export const selectBuildFields = createSelector(
   (
     stats,
     level,
+    startingClass,
     arrows,
     cons,
     tals,
@@ -176,6 +184,7 @@ export const selectBuildFields = createSelector(
   ): BuildFields => ({
     level,
     stats,
+    startingClass: startingClass?.id ?? null,
     equipment: {
       weapons,
       weaponAffinities,

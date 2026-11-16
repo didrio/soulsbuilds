@@ -76,6 +76,8 @@ export const SPELL_SLOTS = [
   'spell8',
   'spell9',
   'spell10',
+  'spell11',
+  'spell12',
 ] as const;
 export const TEAR_SLOTS = ['tear1', 'tear2'] as const;
 export const ARMOR_SLOTS = ['helm', 'chest', 'gauntlet', 'leg'] as const;

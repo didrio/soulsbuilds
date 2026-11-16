@@ -35,7 +35,10 @@ Function and UX are the same for every game; only the skin (accent colors) chang
 - **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited:
   `app` (which slot the picker edits), `equipment` (weapon1–6, weaponSkill1–6 (the Ash of War),
   weaponAffinity1–6, arrow1–4, tal1–4, con1–10, helm/chest/gauntlet/leg, greatRune, spiritAsh), `spells`
-  (spell1–10), `stats` (8 stats, integers 1–99, default 10), `tears` (tear1–2). Slots hold the game data
+  (spell1–12), `stats` (8 stats, integers 1–99, default 10), `startingClass` (the class entry or null; choosing
+  one raises the stats to its base and the stat inputs clamp to it), `tears` (tear1–2). Derived numbers (vitals,
+  equip load, poise, requirement checks, memory slots) are selectors in `store/derived.ts` over
+  `src/lib/buildMath.ts`, never stored. Slots hold the game data
   objects; slot ids are literal types in `features/editor/slots.ts`. The weapon reducers keep each weapon's Ash
   and affinity valid for it (`src/data/rules.ts`), so loading or editing can't produce a combination the game
   doesn't allow.
@@ -73,12 +76,14 @@ builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED
   tags: string[]                  ≤ 20, from src/data/er/tags.json (bosses, weapon types, …)
   level: int                      sum of stats − 79, min 1 (rules check the formula)
   stats: { vigor, mind, end, str, dex, int, fai, arc }   ints 1–99
+  startingClass: int|null         T8: CharaInitParam ID 3000–3009 (character.json), required on create; absent
+                                  on older builds (read as null). Class minimums are checked by the app only
   equipment: {                    game IDs (param row IDs; each field implies its file in src/data/er/)
     weapons: (id|null)[6]                       positional: 1–3 main hand, 4–6 off hand
     weaponSkills: (id|null)[6]                  the Ash of War applied; null = the weapon's built-in skill
     weaponAffinities: (key|null)[6]             'cold', 'flame-art', …; null = Standard
     arrows: (id|null)[4]                        positional
-    talismans ≤4, spells ≤10, tears ≤2, consumables ≤10: id[]   compacted
+    talismans ≤4, spells ≤12 (T8), tears ≤2, consumables ≤10: id[]   compacted
     helm, chest, gauntlet, leg, greatRune, spiritAsh: id|null
   }
   likeCount, commentCount: int    0 on create; only change by ±1 with a like/comment (see below)

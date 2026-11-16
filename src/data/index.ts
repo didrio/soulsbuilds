@@ -9,6 +9,7 @@
 // JSON boundary: TypeScript infers a literal type for each JSON file; the `as` casts below assert the
 // types from ./schema (src/data/data.test.ts validates the committed files against the schemas).
 import armorJson from './er/armor.json';
+import characterJson from './er/character.json';
 import arrowsJson from './er/arrows.json';
 import consumablesJson from './er/consumables.json';
 import greatRunesJson from './er/greatRunes.json';
@@ -19,7 +20,17 @@ import tearsJson from './er/tears.json';
 import weaponTypesJson from './er/weaponTypes.json';
 import weaponsJson from './er/weapons.json';
 import { lookup } from './core';
-import type { Armor, Arrow, Goods, Spell, Talisman, Weapon, WeaponType } from './schema';
+import type {
+  Armor,
+  Arrow,
+  Character,
+  Goods,
+  Spell,
+  StartingClass,
+  Talisman,
+  Weapon,
+  WeaponType,
+} from './schema';
 
 export * from './core';
 
@@ -58,3 +69,11 @@ export const getArmor = (id: number | null | undefined, slot: Armor['slot']): Ar
 /** All armor pieces for one slot, in data order. */
 export const armorList = (slot: Armor['slot']): Armor[] =>
   armor.filter((piece) => piece.slot === slot);
+
+const character = characterJson as Character;
+/** The ten starting classes (Vagabond … Wretch), in the game's order. */
+export const startingClasses: StartingClass[] = character.classes;
+/** A starting class by its CharaInitParam ID (builds store it as `startingClass`). */
+export const getStartingClass = lookup(startingClasses);
+/** The CalcCorrectGraph curves for HP, FP, stamina and equip load (src/lib/buildMath.ts). */
+export const statCurves = character.curves;

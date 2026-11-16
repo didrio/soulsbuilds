@@ -39,7 +39,7 @@ console errors, HTTP errors and failed requests from the page: read those first,
 Screenshots cost tokens: take them of the pages you changed, desktop + mobile, not after every edit.
 
 Seeded routes: `/` (landing), `/build/SEEDBLEED001` (full build, comment, like), `/build/SEEDMOON0001`
-(spells), `/build/SEEDFAITH001`, `/build/SEEDNAKED001` (mostly empty), `/user/seed-tarnished`,
+(spells), `/build/SEEDFAITH001`, `/build/SEEDNAKED001` (all 10s: requirement warnings), `/user/seed-tarnished`,
 `/user/seed-ranni`, `/build/new` (needs sign-in).
 
 ## 4. Drive it (sign in, click, type)

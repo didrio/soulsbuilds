@@ -14,13 +14,13 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T7, T10–T17, T19 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T8, T10–T17, T19 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
 approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
-page; the build page is view and edit in one layout, the picker a Dialog. T14 + T19: `acquisition.json` places
-every pickable item; T15 turns it into "How to get this build" on the build view. Left from T12: App Check enforcing.
+page; build page = view and edit in one layout. T14/T19/T15: "How to get this build" from `acquisition.json`.
+T8: build math (saved starting class, vitals, load + roll, poise, requirement/memory warnings). Left: App Check enforcing.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -111,17 +111,19 @@ src/
                            (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader with like/report/tags,
                            OwnerActions, BuildDetailsForm (edit title block), Equipment/Stat/SpellEditor panels,
                            DescriptionSection, CommentsSection); ItemRow (a slot as tile + name; button in edit
-                           mode) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
+                           mode; warnings for unmet requirements) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
                            with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
                            phrases.ts, GuideSection, lazy); store/ = Redux slices for the build being edited +
-                           selectors + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
+                           selectors + derived.ts (build math selectors) + build.ts (loadBuild /
+                           selectBuildFields: build ⇄ editor state); sections/CharacterStats (HP, load, poise)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, PageMessage, ErrorMessage,
                            FocusScope, icons; in-world: Frame, SectionHeading, Ornament, PageHero, ItemTile,
                            inWorld.ts (frame + selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check), auth, builds, likes,
                            comments, users, reports),
-                           models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping),
+                           models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping, T8
+                           vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
                            array.ts
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
@@ -129,7 +131,8 @@ src/
   data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
                            (zod; types only in the app), index.ts accessors by ID (getWeapon(id),
                            armorList(slot), iconUrl…), rules.ts (Ash of War/affinity/talisman rules, shared
-                           with scripts), acquisition.ts (where items come from; lazy, T14). docs/data.md
+                           with scripts), startingClasses/statCurves (character.json, T8), acquisition.ts (where
+                           items come from; lazy, T14). docs/data.md
   test/                    Vitest setup, renderWithProviders (store, QueryClient, router, uid), fixtures
                            (+ game IDs), editor.tsx (EditorWithPicker, searchItems)
 tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/

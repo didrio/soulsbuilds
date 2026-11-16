@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T20
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T8, Build math · Opus · high · plan mode on.
+**Next:** T9, Browse and discovery (remainder) · Sonnet · medium · plan mode off.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -21,7 +21,7 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
-(T16, T17) and the headline feature, "How to get this build" (T14, T19, T15), are done; next T8, then T9. T18
+(T16, T17), the headline feature "How to get this build" (T14, T19, T15) and build math (T8) are done; next T9. T18
 (account deletion) can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
 
 ## In progress
@@ -29,21 +29,6 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 (none)
 
 ## Up next
-
-### T8 — Build math
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Make builds informative: the numbers players actually check.
-- **Done when:**
-  - [ ] Stat requirements per weapon/spell with a warning when unmet (two-handing gives 1.5× STR).
-  - [ ] Equip load and roll type (light/medium/heavy/overloaded) from armor + weapon weights and endurance;
-        poise from armor; HP/FP/stamina from vigor/mind/endurance (soft caps); starting class picker that sets
-        the minimum stats.
-  - [ ] Spell slots from memory stones / Moon of Nokstella (+2); spells beyond the slots are flagged.
-  - [ ] All in `src/lib/buildMath.*` as pure functions with table-driven tests against known in-game values.
-- **Context:** T7's data (weights, requirements, scaling). `src/lib/buildMath.ts`, `StatEditor`,
-  `SpellEditor`. Get formulas from a source the owner trusts; cite it in a comment.
 
 ### T9 — Browse and discovery (remainder)
 
@@ -88,8 +73,9 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 ## Backlog
 
 - Route (T15 follow-ups): upgrade materials (Smithing/Somber stones, needs upgrade levels on builds), rune
-  farming to the build's level (where and how long), and a suggested starting class (needs T8's class data; the
-  route already notes "or start as X" for kit items).
+  farming to the build's level (where and how long), and the starting class: builds now save one (T8,
+  `startingClass`; classes in `character.json`), so the route can say "your Samurai starts with it" instead of
+  "or start as X", and suggest a class for builds without one.
 - Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup).
 - Other games (owner, 2026-11-15: Dark Souls 1–3, maybe Demon's Souls and Bloodborne; Sekiro and Nightreign
   need their own build models) on top of T3's `game` field: data per game, per-game routes (`/ds3/...`) read by
@@ -108,6 +94,10 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 Older entries: `docs/tickets-archive.md`.
 
+- T8 — Build math — 2026-11-15 — `character.json` (classes + CalcCorrectGraph curves) and talisman `modifiers`
+  from the export; pure `buildMath` (vitals, equip load/roll, poise, requirements incl. two-handing, memory
+  slots) tested against Fextralife; `startingClass` saved (rules + tests), spells ≤ 12; Character panel,
+  class picker with minimums, requirement and memory-slot warnings.
 - T15 — "How to get this build" — 2026-11-15 — pure route solver (`features/editor/guide/route.ts`: earliest
   reachable source, item prerequisites, implied and any-of gates, topological order, steps by grace, legs by
   region) + lazy `GuideSection` on the build view (numbered, collapsible regions, item icons); unit, component
@@ -129,11 +119,3 @@ Older entries: `docs/tickets-archive.md`.
   "Report" buttons), `scripts/admin.mjs` (reports, remove with JSON backup, dismiss, grant/revoke admin; tested
   on the emulators), App Check code (off until the owner's key: moved to T12). Delete, not hide
   (`docs/decisions.md`); no admin UI (backlog).
-- T7 — Game data v2 + Shadow of the Erdtree — 2026-11-15 — owner's Smithbox export of the game files →
-  `npm run data` (TypeScript pipeline, zod schemas, fixture + data tests, deterministic) → `src/data/er/` (base +
-  DLC, game param IDs, real affinities and Ash of War rules) and 2,151 WebP icons; 2022 name → ID table; the
-  app switch split into T13.
-- T13 — Builds reference items by ID — 2026-11-15 — app on `src/data/er/` (accessors by ID, `rules.ts` for Ash
-  of War/affinity/talisman rules), builds store game IDs + great rune and spirit ash slots, picker follows the
-  game's rules, rules type-check within Firestore's expression budget, names→IDs folded into the v1→v2
-  migration, "Great Hammer" tag, footer; 2022 data and icons deleted.

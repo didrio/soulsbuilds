@@ -56,6 +56,7 @@ const content = () => ({
   tags: ['Malenia', 'Mohg'],
   level: 131,
   stats: { vigor: 50, mind: 15, end: 25, str: 18, dex: 40, int: 9, fai: 8, arc: 45 },
+  startingClass: 3007, // Samurai
   equipment: {
     weapons: [9040000, null, null, 9000000, null, null], // Rivers of Blood, Uchigatana
     weaponAffinities: [null, null, null, 'blood', null, null],
@@ -264,7 +265,7 @@ describe('builds/{id}: create', () => {
       weaponSkills: [60600, 10000, 10100, 10200, 10300, 10400],
       arrows: [50000000, 50010000, 52000000, 52010000],
       talismans: [1000, 1010, 1020, 1030],
-      spells: [4000, 4010, 4020, 4030, 4040, 4050, 4060, 4070, 4080, 4090],
+      spells: [4000, 4010, 4020, 4030, 4040, 4050, 4060, 4070, 4080, 4090, 4100, 4110],
       tears: [11011, 11000],
       consumables: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
       helm: 680000,
@@ -283,6 +284,46 @@ describe('builds/{id}: create', () => {
         nameLower: 'renamed',
         updatedAt: serverTimestamp(),
       }),
+    );
+  });
+
+  // T8: a CharaInitParam ID (3000 Vagabond … 3009 Wretch) or null; required on new builds.
+  it.each([
+    ['no starting class (null)', null],
+    ['Vagabond', 3000],
+    ['Wretch', 3009],
+  ])('accepts %s', async (_label, startingClass) => {
+    await assertSucceeds(
+      setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { startingClass })),
+    );
+  });
+
+  it.each([
+    ['an ID past the classes', 3010],
+    ['an ID before them', 2999],
+    ['the ID as text', '3007'],
+    ['a class name', 'Samurai'],
+  ])('rejects a starting class that is %s', async (_label, startingClass) => {
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { startingClass })));
+  });
+
+  it('requires the starting class field on a new build', async () => {
+    const { startingClass: _startingClass, ...withoutClass } = newBuild('alice');
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), withoutClass));
+  });
+
+  it('accepts 12 spells (Moon of Nokstella), not 13', async () => {
+    const spells = Array.from({ length: 13 }, (_, i) => 4000 + i * 10);
+    const equipment = (count: number) => ({
+      ...content().equipment,
+      spells: spells.slice(0, count),
+    });
+    const db = as('alice');
+    await assertSucceeds(
+      setDoc(doc(db, 'builds/N1'), newBuild('alice', { equipment: equipment(12) })),
+    );
+    await assertFails(
+      setDoc(doc(db, 'builds/N2'), newBuild('alice', { equipment: equipment(13) })),
     );
   });
 
@@ -324,6 +365,22 @@ describe('builds/{id}: update and delete', () => {
     await assertFails(updateDoc(doc(db, 'builds/B1'), edit({ level: 5 })));
     await assertFails(updateDoc(doc(db, 'builds/B1'), edit({ nameLower: 'nope' })));
     await assertFails(updateDoc(doc(db, 'builds/B1'), edit({ 'stats.vigor': 120 })));
+  });
+
+  it('a build from before T8 (no starting class) can be edited, and gain one', async () => {
+    await seed(async (db) => {
+      const { startingClass: _startingClass, ...old } = newBuild('alice');
+      await setDoc(doc(db, 'builds/B1'), {
+        ...old,
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      });
+    });
+    const db = as('alice');
+    await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit()));
+    await assertFails(updateDoc(doc(db, 'builds/B1'), edit({ startingClass: 42 })));
+    await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit({ startingClass: 3001 })));
+    await assertSucceeds(updateDoc(doc(db, 'builds/B1'), edit({ startingClass: null })));
   });
 
   it('nobody else edits the build', async () => {

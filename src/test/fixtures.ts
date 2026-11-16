@@ -34,6 +34,7 @@ export const makeBuild = (overrides: Partial<Build> = {}): Build => ({
   tags: ['Rennala'],
   level: 132,
   stats: { vigor: 40, mind: 30, end: 15, str: 12, dex: 18, int: 80, fai: 7, arc: 9 },
+  startingClass: null,
   equipment: { ...emptyEquipment(), weapons: [MOONVEIL, null, null, null, null, null] },
   likeCount: 1,
   commentCount: 0,

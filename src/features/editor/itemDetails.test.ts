@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { getAsh, getSpell, getWeapon, spells } from '@/data';
 import { MOONVEIL, SEPPUKU_ASH, UCHIGATANA } from '@/test/fixtures';
-import { itemSubline, weaponDetailLabels, weaponDetails } from './itemDetails';
+import { itemSubline, itemWarning, weaponDetailLabels, weaponDetails } from './itemDetails';
 
 const BRASS_SHIELD = 31130000;
 const uchigatana = getWeapon(UCHIGATANA)!;
@@ -31,5 +31,44 @@ describe('itemSubline', () => {
     const twoSlots = spells.find(({ slots }) => slots === 2)!;
     expect(itemSubline(getSpell(oneSlot.id)!, null)).toBe('1 slot');
     expect(itemSubline(twoSlots, null)).toBe('2 slots');
+  });
+});
+
+describe('itemWarning', () => {
+  it.each([
+    ['met', { status: 'met', missing: [] }, false, null],
+    ['no check (not a weapon or spell)', undefined, false, null],
+    [
+      'unmet',
+      {
+        status: 'unmet',
+        missing: [
+          { stat: 'str', required: 18 },
+          { stat: 'dex', required: 12 },
+        ],
+      },
+      false,
+      { text: 'Needs 18 Str, 12 Dex', severity: 'warning' },
+    ],
+    [
+      'two-handed',
+      { status: 'two-handed', missing: [{ stat: 'str', required: 15 }] },
+      false,
+      { text: 'Two-handed only (15 Str)', severity: 'note' },
+    ],
+    [
+      'over the memory slots',
+      { status: 'met', missing: [] },
+      true,
+      { text: 'Over the memory slots', severity: 'warning' },
+    ],
+    [
+      'unmet and over the slots (requirements first)',
+      { status: 'unmet', missing: [{ stat: 'int', required: 60 }] },
+      true,
+      { text: 'Needs 60 Int', severity: 'warning' },
+    ],
+  ] as const)('%s', (_label, check, over, expected) => {
+    expect(itemWarning(check, over)).toEqual(expected);
   });
 });

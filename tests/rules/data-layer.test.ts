@@ -54,6 +54,7 @@ const input: BuildInput = {
   description: 'Moonveil and full-moon sorceries.',
   tags: ['Rennala'],
   stats: { vigor: 40, mind: 30, end: 15, str: 12, dex: 18, int: 80, fai: 7, arc: 9 },
+  startingClass: 3004, // Astrologer
   equipment: {
     weapons: [9060000, null, null, 33090000, null, null], // Moonveil, Carian Regal Scepter
     weaponAffinities: [null, null, null, null, null, null],
@@ -102,6 +103,7 @@ describe('data layer against the rules', () => {
       game: 'elden-ring',
       name: 'Carian Moon Knight',
       level: 132,
+      startingClass: 3004,
       likeCount: 0,
       commentCount: 0,
     });
@@ -120,6 +122,8 @@ describe('data layer against the rules', () => {
       stats: { ...input.stats, int: 60 },
     });
     expect(await getBuild(buildId)).toMatchObject({ name: 'Moon Knight', level: 112 });
+    await updateBuild(buildId, { ...input, name: 'Moon Knight', startingClass: null });
+    expect(await getBuild(buildId)).toMatchObject({ startingClass: null });
   });
 
   it('likes: like once, list, unlike', async () => {
