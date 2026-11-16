@@ -3,7 +3,8 @@
 // numbering (weapon +0 rows are multiples of 10000, affinities +100…+1200).
 import { AFFINITY_KEYS } from '../../src/data/schema.ts';
 import { GEM_MOUNT_FLAGS } from './constants.ts';
-import { parseParamCsv, type TextEntry, type TextIndex } from './export.ts';
+import type { AcquisitionInputs, AcquisitionParamName } from './acquisition.ts';
+import { parseParamCsv, type Param, type TextEntry, type TextIndex } from './export.ts';
 import type { ExportData } from './extract.ts';
 import { DLC_BOSSES } from './tags.ts';
 
@@ -232,6 +233,11 @@ export function fixtureParams(): ExportData['params'] {
           { ID: 8000, Name: 'A key item', goodsType: 1, iconId: 46 },
           { ID: 9000, Name: 'Bow', goodsType: 0, iconId: 47, sortGroupId: 250 }, // a gesture
           { ID: 250, Name: 'Flask of Wondrous Physick', goodsType: 9, iconId: 48 },
+          // Key items (not in the site's files; the acquisition data names them).
+          { ID: 8148, Name: "Godrick's Great Rune (unrestored)", goodsType: 1, iconId: 49 },
+          { ID: 8158, Name: 'Spirit Calling Bell', goodsType: 1, iconId: 50 },
+          { ID: 2950, Name: 'Remembrance of the Grafted', goodsType: 1, iconId: 51 },
+          { ID: 9300, Name: "Nomadic Warrior's Cookbook [1]", goodsType: 1, iconId: 52 },
         ],
       ),
     ),
@@ -313,17 +319,26 @@ export function fixtureText(): TextIndex {
         [8000, 'Some Key'],
         [9000, 'Bow'],
         [250, 'Flask of Wondrous Physick'],
+        [8148, "Godrick's Great Rune"],
+        [8158, 'Spirit Calling Bell'],
+        [2950, 'Remembrance of the Grafted'],
+        [9300, "Nomadic Warrior's Cookbook [1]"],
       ]),
     ],
     [
       'GR_MenuText',
-      fmg(
-        ['Dagger', 'Katana', 'Glintstone Staff', 'Arrow', 'Light Greatsword'].map(
+      fmg([
+        ...['Dagger', 'Katana', 'Glintstone Staff', 'Arrow', 'Light Greatsword'].map(
           (name, i): [number, string] => [60000 + i, name],
         ),
-      ),
+        // Travel-menu regions (BonfireWarpSubCategoryParam textId).
+        [900001, 'Limgrave'],
+        [900002, 'Stormveil Castle'],
+        [900003, 'Caelid'],
+      ]),
     ],
     ['GoodsInfo', fmg([[4000, 'Fires a glintstone pebble']])],
+    ['PlaceName', fmg(GRACES.map((grace): [number, string] => [grace.textId1, grace.Name]))],
     [
       'NpcName',
       fmg(DLC_BOSSES.map((boss, i): [number, string, number] => [i, `${boss}, the Test`, 2])),
@@ -332,3 +347,349 @@ export function fixtureText(): TextIndex {
 }
 
 export const fixtureExport = (): ExportData => ({ params: fixtureParams(), text: fixtureText() });
+
+// --- Acquisition (T14) ---------------------------------------------------------------------------
+
+/** Graces: two on Limgrave tile 42_36, one on 44_36 (shifted west), Stormveil, Caelid, a tunnel. */
+const GRACES: { ID: number; Name: string; textId1: number; [column: string]: string | number }[] = [
+  {
+    ID: 61423600,
+    Name: 'Church of Elleh',
+    bonfireSubCategoryId: 61000,
+    bonfireSubCategorySortId: 20,
+    areaNo: 60,
+    gridXNo: 42,
+    gridZNo: 36,
+    posX: 0,
+    posZ: 0,
+    textId1: 700001,
+  },
+  {
+    ID: 61423601,
+    Name: 'The First Step',
+    bonfireSubCategoryId: 61000,
+    bonfireSubCategorySortId: 10,
+    areaNo: 60,
+    gridXNo: 42,
+    gridZNo: 36,
+    posX: -90,
+    posZ: -90,
+    textId1: 700002,
+  },
+  {
+    ID: 61443600,
+    Name: 'Waypoint Ruins Cellar',
+    bonfireSubCategoryId: 61000,
+    bonfireSubCategorySortId: 30,
+    areaNo: 60,
+    gridXNo: 44,
+    gridZNo: 36,
+    posX: -50,
+    posZ: 0,
+    textId1: 700003,
+  },
+  {
+    ID: 100008,
+    Name: 'Stormveil Main Gate',
+    bonfireSubCategoryId: 10000,
+    bonfireSubCategorySortId: 30,
+    areaNo: 10,
+    gridXNo: 0,
+    gridZNo: 0,
+    textId1: 700004,
+  },
+  {
+    ID: 100000,
+    Name: 'Godrick the Grafted',
+    bonfireSubCategoryId: 10000,
+    bonfireSubCategorySortId: 999,
+    areaNo: 10,
+    gridXNo: 0,
+    gridZNo: 0,
+    textId1: 700005,
+  },
+  {
+    ID: 64523800,
+    Name: 'Starscourge Radahn',
+    bonfireSubCategoryId: 64000,
+    bonfireSubCategorySortId: 420,
+    areaNo: 60,
+    gridXNo: 52,
+    gridZNo: 38,
+    textId1: 700006,
+  },
+  {
+    ID: 320700,
+    Name: 'Gael Tunnel',
+    bonfireSubCategoryId: 64000,
+    bonfireSubCategorySortId: 100,
+    areaNo: 32,
+    gridXNo: 7,
+    gridZNo: 0,
+    textId1: 700007,
+  },
+];
+
+const LOT_COLUMNS = [1, 2, 3, 4, 5, 6, 7, 8].flatMap((i) => [
+  `lotItemId0${i}`,
+  `lotItemCategory0${i}`,
+  `lotItemBasePoint0${i}`,
+  `getItemFlagId0${i}`,
+]);
+/** One item lot: `[category, id]` entries (1 goods, 2 weapon, 3 armor, 4 talisman, 5 Ash of War). */
+const lot = (ID: number, Name: string, entries: [number, number][], flag = 0) => ({
+  ID,
+  Name,
+  getItemFlagId: flag,
+  ...Object.fromEntries(
+    entries.flatMap(([category, id], i) => [
+      [`lotItemId0${i + 1}`, id],
+      [`lotItemCategory0${i + 1}`, category],
+      [`lotItemBasePoint0${i + 1}`, 1000],
+    ]),
+  ),
+});
+const SHOP_COLUMNS = [
+  'equipId',
+  'value',
+  'mtrlId',
+  'eventFlag_forStock',
+  'eventFlag_forRelease',
+  'equipType',
+  'costType',
+];
+const CLASS_COLUMNS = [
+  'equip_Wep_Right',
+  'equip_Subwep_Right',
+  'equip_Wep_Left',
+  'equip_Subwep_Left',
+  'equip_Arrow',
+  'equip_Bolt',
+  'equip_SubArrow',
+  'equip_SubBolt',
+  'equip_Helm',
+  'equip_Armer',
+  'equip_Gaunt',
+  'equip_Leg',
+  ...[1, 2, 3, 4].map((i) => `equip_Accessory0${i}`),
+  ...[1, 2, 3, 4, 5, 6, 7].map((i) => `equip_Spell_0${i}`),
+  ...[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => `item_${String(i).padStart(2, '0')}`),
+];
+
+export function fixtureAcquisitionParams(): Record<AcquisitionParamName, Param> {
+  return {
+    BonfireWarpSubCategoryParam: parseParamCsv(
+      csv(
+        ['textId'],
+        [
+          { ID: 61000, Name: 'Limgrave', textId: 900001 },
+          { ID: 10000, Name: 'Stormveil Castle', textId: 900002 },
+          { ID: 64000, Name: 'Caelid', textId: 900003 },
+        ],
+      ),
+    ),
+    BonfireWarpParam: parseParamCsv(
+      csv(
+        [
+          'textId1',
+          'bonfireSubCategoryId',
+          'bonfireSubCategorySortId',
+          'areaNo',
+          'gridXNo',
+          'gridZNo',
+          'posX',
+          'posZ',
+        ],
+        [{ ID: 0, Name: 'unused row 0', textId1: 700001 }, ...GRACES],
+      ),
+    ),
+    WorldMapLegacyConvParam: parseParamCsv(
+      csv(
+        [
+          'srcAreaNo',
+          'srcGridXNo',
+          'dstAreaNo',
+          'dstGridXNo',
+          'dstGridZNo',
+          'dstPosX',
+          'dstPosZ',
+          'isBasePoint',
+        ],
+        [
+          {
+            ID: 1,
+            Name: 'a cave with no grace',
+            srcAreaNo: 31,
+            srcGridXNo: 0,
+            dstAreaNo: 60,
+            dstGridXNo: 44,
+            dstGridZNo: 36,
+            dstPosX: 10,
+            dstPosZ: 10,
+            isBasePoint: 1,
+          },
+        ],
+      ),
+    ),
+    ItemLotParam_map: parseParamCsv(
+      csv(
+        ['getItemFlagId', ...LOT_COLUMNS],
+        [
+          lot(1042360010, '', [
+            [2, 1000100],
+            [1, 8158],
+          ]), // Heavy Dagger → Dagger; the bell
+          lot(1043360000, '', [[3, 40000]]), // no grace on 43_36: nearest is the Waypoint
+          lot(1044360020, '', [[1, 9300]], 67000), // a cookbook; its flag releases a recipe
+          lot(1042370050, '', [[1, 191]]), // restored Great Rune at a tower
+          lot(31000010, '', [[4, 1000]]), // a cave without a grace (legacy conversion)
+          lot(10000100, '[LD - Stormveil] Glintstone Pebble', [[1, 4000]]),
+          lot(942370070, '[Troll Carriage] Arrow', [[2, 50000000]]),
+          lot(20661, '[Gael Tunnel - Magma Wyrm] Moonveil', [[2, 9060000]]),
+          lot(10010, "[Stormveil - Godrick] Godrick's Great Rune", [[1, 8148]]),
+          lot(10011, '[Stormveil - Godrick] Remembrance of the Grafted', [[1, 2950]]),
+          lot(101000, '[Knight Somebody] Ash of War: Quickstep', [[5, 10000]]),
+          lot(102000, '[Mystery] Black Knife Tiche', [[1, 200001]]), // +1 copy → the base ash
+        ],
+      ),
+    ),
+    ItemLotParam_enemy: parseParamCsv(
+      csv(
+        ['getItemFlagId', ...LOT_COLUMNS],
+        [lot(431100000, '[Godrick Soldier] Milady', [[2, 23510000]])],
+      ),
+    ),
+    ShopLineupParam: parseParamCsv(
+      csv(SHOP_COLUMNS, [
+        {
+          ID: 100500,
+          Name: '[Merchant Kale] Throwing Dagger',
+          equipId: 1050,
+          value: 100,
+          equipType: 3,
+        },
+        {
+          ID: 101900,
+          Name: '[Remembrance of the Grafted] Glintstone Staff',
+          equipId: 33000000,
+          mtrlId: 900000,
+          equipType: 0,
+        },
+        {
+          ID: 110000,
+          Name: '[Alteration] Iron Armor',
+          equipId: 40100,
+          mtrlId: 900100,
+          equipType: 1,
+        },
+        { ID: 110200, Name: '[Reversion] Iron Armor', equipId: 40100, equipType: 1 },
+      ]),
+    ),
+    ShopLineupParam_Recipe: parseParamCsv(
+      csv(SHOP_COLUMNS, [
+        { ID: 1, Name: '', equipId: 1050, equipType: 3 },
+        {
+          ID: 32000,
+          Name: "Arrow - Nomadic Warrior's Cookbook [1]",
+          equipId: 50000000,
+          equipType: 0,
+          eventFlag_forRelease: 67000,
+        },
+      ]),
+    ),
+    EquipMtrlSetParam: parseParamCsv(
+      csv(
+        ['materialId01', 'materialCate01'],
+        [
+          {
+            ID: 900000,
+            Name: 'Remembrance of the Grafted * 1',
+            materialId01: 2950,
+            materialCate01: 4,
+          },
+          { ID: 900100, Name: '', materialId01: 40000, materialCate01: 1 },
+        ],
+      ),
+    ),
+    CharaInitParam: parseParamCsv(
+      csv(
+        CLASS_COLUMNS,
+        [
+          'Vagabond',
+          'Warrior',
+          'Hero',
+          'Bandit',
+          'Astrologer',
+          'Prophet',
+          'Confessor',
+          'Samurai',
+          'Prisoner',
+          'Wretch',
+        ].map((name, i) => ({
+          ID: 3000 + i,
+          Name: `Class - ${name}`,
+          ...(i === 0 ? { equip_Wep_Right: 1000000 } : {}),
+        })),
+      ),
+    ),
+  };
+}
+
+export function fixtureAcquisitionInputs(): AcquisitionInputs {
+  return {
+    regions: [
+      { name: 'Limgrave', requires: [] },
+      { name: 'Stormveil Castle', requires: ['margit'] },
+      { name: 'Caelid', requires: [] },
+    ],
+    locationRequires: [['Starscourge Radahn', ['godrick']]],
+    gates: [
+      { id: 'margit', label: 'Defeat Margit' },
+      { id: 'godrick', label: 'Defeat Godrick', at: 'Godrick the Grafted', requires: ['margit'] },
+      { id: 'spirit-bell', label: 'Get the Spirit Calling Bell', item: 'Spirit Calling Bell' },
+      { id: 'two', label: 'Any one boss', anyOf: { count: 1, gates: ['margit', 'godrick'] } },
+    ],
+    implied: {
+      ashesOfWar: 'margit',
+      spiritAshes: 'spirit-bell',
+      tears: 'margit',
+      affinities: Object.fromEntries(
+        AFFINITY_KEYS.map((key) => [key, key === 'standard' ? null : 'margit']),
+      ) as AcquisitionInputs['implied']['affinities'],
+    },
+    shops: [
+      { from: 100500, to: 100524, kind: 'shop', merchant: 'Merchant Kalé', at: 'Church of Elleh' },
+      {
+        from: 101900,
+        to: 101949,
+        kind: 'remembrance',
+        merchant: 'Finger Reader Enia',
+        at: 'region:Limgrave',
+      },
+      {
+        from: 110000,
+        to: 110199,
+        kind: 'alteration',
+        merchant: 'Alter at a Site of Grace',
+        at: null,
+      },
+      { from: 110200, to: 110399, kind: 'ignore' },
+    ],
+    aliases: { Stormveil: 'region:Stormveil Castle' },
+    events: {
+      'Knight Somebody': { kind: 'quest', at: 'Church of Elleh', detail: 'Knight Somebody' },
+    },
+    enemies: { 'Godrick Soldier': { at: 'Stormveil Main Gate', note: 'by the gate' } },
+    extraSources: {
+      'consumables:Flask of Wondrous Physick': [
+        { kind: 'quest', at: 'The First Step', detail: 'Melina' },
+      ],
+    },
+    noSource: { 'spells:Heal': 'Not in this fixture' },
+    pending: [
+      'ashesOfWar:Ash of War: Bloody Slash',
+      'tears:Crimsonspill Crystal Tear',
+      'spiritAshes:Black Knife Tiche',
+    ],
+  };
+}

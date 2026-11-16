@@ -39,6 +39,7 @@ through them.
 | `spells.json` (213)                                                     | sorcery/incantation, FP, stamina, slots, INT/FAI/ARC requirements                                                                     |
 | `tears.json`, `consumables.json`, `greatRunes.json`, `spiritAshes.json` | name, icon, short effect                                                                                                              |
 | `weaponTypes.json`, `affinities.json`, `tags.json`                      | the 46 weapon types (8 DLC), the 13 affinities (key, name, row offset), tag groups                                                    |
+| `acquisition.json`                                                      | where every item comes from (T14; section below)                                                                                      |
 
 Every item has `id`, `name`, `icon` and `dlc`. **IDs are the game's param row IDs** (owner's call,
 2026-11-15): stable across patches, unique within a file (each build slot implies its file). Dagger is
@@ -73,6 +74,47 @@ counts in `src/data/data.test.ts`, look at the diff (one item per line).
 - Katar, Pata and Golem's Halberd come with an Ash their type can't otherwise take (`ODD_DEFAULT_ASHES`).
 - Not items: Unarmed (`110000`), the bare Head/Body/Arms/Legs rows, gestures (goods sort group 250).
 - Upgrade copies (spirit ash +1…+10, written "+1" or "+ 1"; flasks +1…+12) collapse to one item.
+
+## Acquisition: where every item comes from (T14)
+
+`src/data/er/acquisition.json` (~400 KB, 39 KB gzipped) is what T15's "How to get this build" composes a route
+from. Written by `npm run data` (`scripts/data/acquisition.ts`) from the item lots, shops, recipes, starting
+classes and graces, plus hand-written facts. Read it through `src/data/acquisition.ts` (`sourcesOf(file, id)`,
+`getLocation`, `getRegion`, `getGate`, `keyItemName`, `implied`): its own module, never imported by `core.ts`
+or `index.ts`, so load it lazily. Shape: `acquisitionSchema` in `src/data/schema.ts`.
+
+- **regions**: the 54 travel-menu sub-categories (Limgrave, Stormveil Castle, Gravesite Plain…) in canonical
+  route order, each with the gates it needs. **locations**: the 419 Sites of Grace (BonfireWarpParam IDs).
+  **gates**: bosses (`margit`, `two-great-runes`, `dlc` = Mohg + Radahn…), medallions and tools
+  (`spirit-bell`, `whetstone-knife`, the whetblades), acyclic. **implied**: the gate an item type or affinity
+  needs. **keyItems**: whetblades, cookbooks, remembrances, unrestored Great Runes… (no icons).
+- **items**: file → item ID → sources, earliest first. A source is `{ kind, location, region, detail, cost?,
+item?, requires? }`; kinds: `pickup boss enemy shop remembrance quest start alteration craft`. `item` is what
+  you need first (the remembrance to trade, the cookbook, the armor to alter, the unrestored rune). `location`
+  null + `region` set = only the region is known; both null = no place yet.
+
+**How places are derived** (the export has no map positions):
+
+| Source                          | Placed by                                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Open-world lot `1 0XX ZZ …`     | tile m60_XX_ZZ (`2…` = m61, DLC; `9XXZZ…` = carriages) → nearest grace                               |
+| Dungeon lot `AABB …`            | mAA_BB → its entrance grace (lowest menu sort); no grace → WorldMapLegacyConvParam → nearest         |
+| Event lot (ID < 10⁷)            | row-name hint `[Place - Boss]` (+ `ALIASES`; a boss named like a grace gets that grace), or `EVENTS` |
+| Enemy lot                       | `ENEMIES` farm spot by enemy type                                                                    |
+| Shop / remembrance / alteration | `SHOPS` ID ranges (unclassified range = build fails); material from EquipMtrlSetParam                |
+| Recipe                          | its release flag is the cookbook's own lot/shop flag; flag 0 = known from the start                  |
+| Starting class                  | CharaInitParam 3000–3009                                                                             |
+
+Limits: every item in a big dungeon shows at its entrance grace; open-world items at the grace nearest their
+tile, which may be across a cliff. Good enough for "go here"; not a walkthrough.
+
+**Hand-written inputs** (TypeScript, commented): `scripts/data/progression.ts` (regions in route order, gates,
+implied gates), `places.ts` (shop ranges, hint aliases, enemy farm spots), `events.ts` (event lots, extra
+sources such as keepsakes, `NO_SOURCE` with reasons, `PENDING_FACTS`). Facts may be checked on a wiki, facts
+only (`docs/decisions.md`). **Validation**: every pickable item has a placed source unless allow-listed, an
+allow-listed item that has one fails (keeps the lists true), references resolve, gates are acyclic.
+
+**Spot-check**: `node scripts/data/sample-acquisition.ts [count] [seed]` prints random items with their sources.
 
 ## Builds and the 2022 names
 

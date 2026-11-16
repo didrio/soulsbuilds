@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import {
+  acquisitionSchema,
   armorSchema,
   cardsSchema,
   makeCards,
@@ -206,5 +207,140 @@ describe('game data v2', () => {
   it('keeps core.ts, which every page loads, from importing the full data (T11)', () => {
     const core = readFileSync(join(import.meta.dirname, 'core.ts'), 'utf8');
     expect(core).not.toMatch(/from '\.\/(index|er\/(weapons|armor|arrows|spells|talismans|tears))/);
+  });
+});
+
+describe('acquisition data (T14)', () => {
+  const acquisition = acquisitionSchema.parse(
+    JSON.parse(readFileSync(join(DIR, 'acquisition.json'), 'utf8')),
+  );
+  const locationName = (id: number | null) => acquisition.locations.find((l) => l.id === id)?.name;
+  const regionName = (id: number | null) => acquisition.regions.find((r) => r.id === id)?.name;
+  type File = keyof typeof acquisition.items;
+  const sources = (file: File, items: { id: number; name: string }[], name: string) =>
+    acquisition.items[file][String(byName(items, name).id)] ?? [];
+  /** "kind place [region] detail" for the first few sources: easy to read in a failing test. */
+  const summary = (file: File, items: { id: number; name: string }[], name: string) =>
+    sources(file, items, name).map(
+      (s) =>
+        `${s.kind} ${locationName(s.location) ?? ''} [${regionName(s.region) ?? ''}] ${s.detail}`,
+    );
+  const placed = (file: File, id: number, depth = 0): boolean =>
+    (acquisition.items[file][String(id)] ?? []).some(
+      (s) =>
+        s.location !== null ||
+        s.region !== null ||
+        s.kind === 'start' ||
+        (s.kind === 'craft' && !s.item) ||
+        (s.item !== undefined && depth < 5 && placed(s.item.file, s.item.id, depth + 1)),
+    );
+
+  it('has the regions, graces and gates of the route (regulation 1.17.3)', () => {
+    expect([acquisition.regions.length, acquisition.locations.length]).toEqual([54, 419]);
+    expect(acquisition.regions[0]?.name).toBe('Stranded Graveyard');
+    expect(acquisition.regions.filter((r) => r.dlc).length).toBe(18);
+    expect(acquisition.gates.map((g) => g.id)).toContain('dlc');
+  });
+
+  it('pins coverage: items with a placed source per file (T19 raises these to the totals)', () => {
+    const coverage = Object.fromEntries(
+      Object.entries(files)
+        .filter(([file]) => file !== 'skills.json')
+        .map(([file, items]) => {
+          const key = file.replace('.json', '') as File;
+          return [key, items.filter((item) => placed(key, item.id)).length];
+        }),
+    );
+    // Out of 116 / 487 / 68 / 728 / 154 / 213 / 37 / 262 / 6 / 84.
+    expect(coverage).toEqual({
+      ashesOfWar: 88,
+      weapons: 321,
+      arrows: 64,
+      armor: 358,
+      talismans: 130,
+      spells: 192,
+      tears: 36,
+      consumables: 233,
+      greatRunes: 6,
+      spiritAshes: 71,
+    });
+  });
+
+  it('knows where known items come from (checked against the wiki)', () => {
+    expect(summary('weapons', weapons, 'Moonveil')).toEqual([
+      'boss Gael Tunnel [Caelid] Magma Wyrm',
+    ]);
+    // Not a remembrance trade: Loretta drops the Ash at Caria Manor.
+    expect(summary('ashesOfWar', ashesOfWar, "Ash of War: Loretta's Slash")[0]).toBe(
+      'boss Main Caria Manor Gate [Liurnia of the Lakes] Loretta',
+    );
+    expect(summary('weapons', weapons, 'Uchigatana')).toEqual([
+      'pickup Deathtouched Catacombs [Stormhill] ',
+      'start  [] Samurai',
+    ]);
+    expect(summary('weapons', weapons, 'Sword of Night and Flame')[0]).toMatch(
+      /\[Liurnia of the Lakes\]/,
+    );
+    expect(summary('talismans', talismans, "Radagon's Soreseal")[0]).toBe(
+      "pickup Fort Faroth [Greyoll's Dragonbarrow] ",
+    );
+    expect(summary('talismans', talismans, "Erdtree's Favor")[0]).toMatch(/\[Stranded Graveyard\]/);
+    expect(summary('weapons', weapons, "Bloodhound's Fang")[0]).toBe(
+      'boss  [Limgrave] Bloodhound Knight Darriwil (evergaol)',
+    );
+    expect(summary('weapons', weapons, 'Claymore')[0]).toMatch(/\[Weeping Peninsula\]/);
+    expect(summary('weapons', weapons, 'Rivers of Blood')[0]).toMatch(/\[Flame Peak\]/);
+    expect(summary('spiritAshes', goods('spiritAshes.json'), 'Mimic Tear Ashes')[0]).toMatch(
+      /\[Nokron, Eternal City\]/,
+    );
+    expect(summary('weapons', weapons, "Astrologer's Staff")).toContain('start  [] Astrologer');
+  });
+
+  it('knows shops with their prices and what a trade or a restored rune needs first', () => {
+    expect(sources('weapons', weapons, 'Torch')[0]).toMatchObject({
+      kind: 'shop',
+      detail: 'Merchant Kalé',
+      cost: { amount: 200, currency: 'runes' },
+    });
+    expect(sources('spells', spells, 'Dragonfire')[0]).toMatchObject({
+      detail: 'Dragon Communion',
+      cost: { amount: 1, currency: 'dragon-hearts' },
+    });
+    const blade = sources('weapons', weapons, 'Blasphemous Blade')[0];
+    expect(blade).toMatchObject({ kind: 'remembrance', detail: 'Finger Reader Enia' });
+    const remembrance = acquisition.keyItems.find((k) => k.id === blade?.item?.id);
+    expect(remembrance?.name).toBe('Remembrance of the Blasphemous');
+    expect(acquisition.items.keyItems[String(remembrance?.id)]?.[0]?.detail).toBe('Rykard');
+
+    const rune = sources('greatRunes', goods('greatRunes.json'), "Godrick's Great Rune")[0];
+    expect(locationName(rune!.location)).toBe('Limgrave Tower Bridge');
+    expect(acquisition.items.keyItems[String(rune?.item?.id)]?.[0]).toMatchObject({
+      kind: 'boss',
+      detail: 'Godrick',
+    });
+    expect(locationName(acquisition.items.keyItems[String(rune?.item?.id)]![0]!.location)).toBe(
+      'Godrick the Grafted',
+    );
+  });
+
+  it('places the tools that gates need', () => {
+    const gateSource = (id: string) => {
+      const item = acquisition.gates.find((g) => g.id === id)?.item;
+      const first = item && acquisition.items[item.file][String(item.id)]?.[0];
+      return first && `${locationName(first.location) ?? ''} [${regionName(first.region)}]`;
+    };
+    expect(gateSource('whetstone-knife')).toBe('Gatefront [Limgrave]');
+    expect(gateSource('red-hot-whetblade')).toBe('Redmane Castle Plaza [Caelid]');
+    expect(gateSource('glintstone-whetblade')).toMatch(/\[Academy of Raya Lucaria\]/);
+    expect(gateSource('black-whetblade')).toMatch(/\[Nokron, Eternal City\]/);
+    expect(gateSource('sanctified-whetblade')).toMatch(/\[Leyndell, Royal Capital\]/);
+    expect(gateSource('academy-key')).toMatch(/\[Liurnia of the Lakes\]/);
+  });
+
+  it('stays out of core.ts and index.ts (it loads with the build guide only)', () => {
+    for (const file of ['core.ts', 'index.ts']) {
+      const source = readFileSync(join(import.meta.dirname, file), 'utf8');
+      expect(source).not.toMatch(/acquisition/);
+    }
   });
 });

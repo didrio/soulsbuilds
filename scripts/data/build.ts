@@ -13,10 +13,35 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { DATA_FILES, makeCards, tagsSchema } from '../../src/data/schema.ts';
+import { acquisitionSchema, DATA_FILES, makeCards, tagsSchema } from '../../src/data/schema.ts';
+import {
+  ACQUISITION_PARAMS,
+  extractAcquisition,
+  formatAcquisition,
+  validateAcquisition,
+  type AcquisitionInputs,
+} from './acquisition.ts';
+import { EVENTS, EXTRA_SOURCES, NO_SOURCE, PENDING_FACTS } from './events.ts';
 import { readIcons, readParam, readText } from './export.ts';
 import { extract, PARAM_NAMES, type GameData, type ParamName } from './extract.ts';
 import { writeIcons } from './icons.ts';
+import { ALIASES, ENEMIES, SHOPS } from './places.ts';
+import { GATES, IMPLIED, LOCATION_REQUIRES, REGIONS } from './progression.ts';
+
+/** The hand-written facts (scripts/data/{progression,places,events}.ts) as one input. */
+export const ACQUISITION_INPUTS: AcquisitionInputs = {
+  regions: REGIONS,
+  locationRequires: LOCATION_REQUIRES,
+  gates: GATES,
+  implied: IMPLIED,
+  shops: SHOPS,
+  aliases: ALIASES,
+  events: EVENTS,
+  enemies: ENEMIES,
+  extraSources: EXTRA_SOURCES,
+  noSource: NO_SOURCE,
+  pending: PENDING_FACTS,
+};
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -122,13 +147,29 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   console.log(`Reading the export in ${opts.exportDir}`);
   const params = Object.fromEntries(
-    PARAM_NAMES.map((name) => [name, readParam(join(opts.exportDir, 'params'), name)]),
-  ) as Record<ParamName, ReturnType<typeof readParam>>;
+    [...PARAM_NAMES, ...ACQUISITION_PARAMS].map((name) => [
+      name,
+      readParam(join(opts.exportDir, 'params'), name),
+    ]),
+  ) as Record<ParamName | (typeof ACQUISITION_PARAMS)[number], ReturnType<typeof readParam>>;
   const text = readText(join(opts.exportDir, 'text'));
   const iconFiles = readIcons(join(opts.exportDir, 'icons'));
 
   const { data, problems, notes } = extract({ params, text });
-  const errors = [...problems, ...validate(data)];
+  const acquired = extractAcquisition({ params, text, data, inputs: ACQUISITION_INPUTS });
+  const schemaCheck = acquisitionSchema.safeParse(acquired.acquisition);
+  const errors = [
+    ...problems,
+    ...validate(data),
+    ...acquired.problems,
+    ...(schemaCheck.success
+      ? []
+      : schemaCheck.error.issues
+          .slice(0, 10)
+          .map((i) => `acquisition.json ${i.path.join('.')}: ${i.message}`)),
+    ...validateAcquisition(acquired.acquisition, data, ACQUISITION_INPUTS),
+  ];
+  notes.push(...acquired.notes);
 
   for (const note of notes) console.log(`  · ${note}`);
   const counts = Object.entries(dataFiles(data)).map(([file, items]) => {
@@ -151,7 +192,8 @@ async function main() {
     writeFileSync(join(outDir, file), formatJson(items));
   writeFileSync(join(outDir, 'tags.json'), formatJson(data.tags));
   writeFileSync(join(outDir, 'cards.json'), formatCards(data));
-  console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 2} files to ${outDir}`);
+  writeFileSync(join(outDir, 'acquisition.json'), formatAcquisition(acquired.acquisition));
+  console.log(`✓ Wrote ${Object.keys(DATA_FILES).length + 3} files to ${outDir}`);
 
   const icons = await writeIcons(usedIcons(data), iconFiles, opts.iconDir, {
     force: opts.forceIcons,

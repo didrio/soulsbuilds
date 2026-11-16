@@ -216,6 +216,118 @@ export type CardWeapon = z.infer<typeof cardWeaponSchema>;
 export type CardArmor = z.infer<typeof cardArmorSchema>;
 export type Cards = z.infer<typeof cardsSchema>;
 
+// --- Acquisition (T14): where every item comes from, for "How to get this build" (T15). ---------------
+// Written by scripts/data/acquisition.ts from the item lots, shops, recipes, starting classes and graces,
+// plus hand-written facts in scripts/data/{progression,places,events}.ts. docs/data.md "Acquisition".
+
+/** The item files a source can point at; `keyItems` are the gate and prerequisite items below. */
+export const ACQUISITION_FILES = [
+  'weapons',
+  'arrows',
+  'armor',
+  'talismans',
+  'ashesOfWar',
+  'spells',
+  'tears',
+  'consumables',
+  'greatRunes',
+  'spiritAshes',
+  'keyItems',
+] as const;
+export const acquisitionFileSchema = z.enum(ACQUISITION_FILES);
+
+export const SOURCE_KINDS = [
+  'pickup',
+  'boss',
+  'enemy',
+  'shop',
+  'remembrance',
+  'quest',
+  'start',
+  'alteration',
+  'craft',
+] as const;
+
+const gateId = z.string().regex(/^[a-z0-9-]+$/);
+const itemRef = z.strictObject({ file: acquisitionFileSchema, id });
+
+export const sourceSchema = z.strictObject({
+  kind: z.enum(SOURCE_KINDS),
+  /** Site of Grace nearest to it (locations[].id), null when only the region is known or it's anywhere. */
+  location: id.nullable(),
+  /** Region (regions[].id); set whenever `location` is, and alone for e.g. "a scarab in Liurnia". */
+  region: id.nullable(),
+  /** Who or what: the boss, merchant, enemy, NPC, starting class, cookbook… ('' for a plain pickup). */
+  detail: z.string(),
+  cost: z.strictObject({ amount, currency: z.enum(['runes', 'dragon-hearts']) }).optional(),
+  /** Needed first: the remembrance to trade, the cookbook to craft, the armor to alter. */
+  item: itemRef.optional(),
+  /** Gates this source needs beyond its location's. */
+  requires: z.array(gateId).optional(),
+});
+
+export const regionSchema = z.strictObject({
+  /** The game's travel-menu sub-category (BonfireWarpSubCategoryParam row ID). */
+  id,
+  name,
+  dlc: z.boolean(),
+  requires: z.array(gateId),
+  /** Canonical route order (1 = first); the solver's tie-breaker. */
+  order: z.number().int().positive(),
+});
+
+export const locationSchema = z.strictObject({
+  /** BonfireWarpParam row ID of the Site of Grace. */
+  id,
+  name,
+  region: id,
+  /** The region's gates plus any of its own. */
+  requires: z.array(gateId),
+  order: z.number().int().positive(),
+});
+
+export const gateSchema = z.strictObject({
+  id: gateId,
+  /** What to do, imperative: "Defeat Margit, the Fell Omen". */
+  label: name,
+  requires: z.array(gateId),
+  /** Where it happens (a boss's grace). */
+  at: id.optional(),
+  /** Obtained with this item (usually a key item; its sources say where). */
+  item: itemRef.optional(),
+  /** Met by any `count` of these gates (e.g. two great runes). */
+  anyOf: z
+    .strictObject({ count: z.number().int().positive(), gates: z.array(gateId).min(1) })
+    .optional(),
+});
+
+export const acquisitionSchema = z.strictObject({
+  regions: z.array(regionSchema),
+  locations: z.array(locationSchema),
+  gates: z.array(gateSchema),
+  keyItems: z.array(z.strictObject({ id, name })),
+  /** Gates an item implies by what it is: an Ash of War needs the Whetstone Knife, and so on. */
+  implied: z.strictObject({
+    ashesOfWar: gateId,
+    spiritAshes: gateId,
+    tears: gateId,
+    affinities: z.record(affinityKeySchema, gateId.nullable()),
+  }),
+  /** File → item ID → its sources, best first (earliest location). */
+  items: z.record(
+    acquisitionFileSchema,
+    z.record(z.string().regex(/^\d+$/), z.array(sourceSchema)),
+  ),
+});
+
+export type AcquisitionFile = z.infer<typeof acquisitionFileSchema>;
+export type SourceKind = (typeof SOURCE_KINDS)[number];
+export type Source = z.infer<typeof sourceSchema>;
+export type Region = z.infer<typeof regionSchema>;
+export type Location = z.infer<typeof locationSchema>;
+export type Gate = z.infer<typeof gateSchema>;
+export type Acquisition = z.infer<typeof acquisitionSchema>;
+
 /** Every file in src/data/er/ and the schema of one entry (tags.json is a single object). */
 export const DATA_FILES = {
   'affinities.json': affinitySchema,

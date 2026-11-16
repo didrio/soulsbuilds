@@ -2,12 +2,12 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T19**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T20**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T14, acquisition data (first half of "How to get this build") · Opus · high · plan mode on.
+**Next:** T19, acquisition facts (place every pending item) · Opus · high · plan mode off.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -22,9 +22,8 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16 design system and shell, T17 the remaining pages: done), then the headline feature, "How to get this build" (T14
-acquisition data, T15 route + UI), then T8 and T9. The redesign comes first so that T15's and T8's new UI is built
-once, in the new design. T14 is data only and could run before or alongside the redesign. T18 (account deletion)
-can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
+acquisition pipeline: done; T19 the remaining hand-written facts; T15 route + UI), then T8 and T9. T18 (account
+deletion) can slot in anywhere; the privacy policy promises deletion by GitHub issue until then.
 
 ## In progress
 
@@ -32,46 +31,38 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 ## Up next
 
-### T14 — Acquisition data (where every item comes from)
+### T19 — Acquisition facts: place every pending item
 
-- **Status:** ready (data only; any time after T12, before T15)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Know how to get every pickable item from a fresh save, as data `npm run data` produces. First half
-  of the headline feature "How to get this build" (owner's idea, 2026-11-15): from a fresh save, a short guide
-  to every item in the build, in an efficient order.
+- **Status:** ready (after T14; before T15)
+- **Session:** Opus · high effort · plan mode off
+- **Goal:** Empty `PENDING_FACTS` in `scripts/data/events.ts` (~670 items at T14's end) so every pickable item
+  has a placed source, as T14's "Done when" asked; T14 landed the pipeline and split the hand-written facts off
+  (owner's call, 2026-11-15).
 - **Done when:**
-  - [ ] `npm run data` also writes `src/data/er/acquisition.json`: for each item ID (weapons, armor, talismans,
-        spells, Ashes of War, spirit ashes, tears, great runes, consumables, arrows) a list of **sources**
-        `{ kind: pickup | boss | enemy | shop | remembrance | quest | start | alteration, location, detail, cost? }`;
-        **locations** `{ id, name, region, grace?, requires: gateId[], order }`; and **gates**
-        `{ id, label, requires }` (e.g. `stormveil`, `two-great-runes`, `academy-key`, `haligtree-medallion`,
-        `dlc` = Mohg + Radahn, `spirit-bell`, the affinity whetblades).
-  - [ ] Derived from the params: map lots → map tile → region + nearest grace (BonfireWarpParam positions and
-        text); row-name brackets as the place/boss hint; shops → merchant (a small hand-written merchant →
-        location table); remembrance trades → their boss; enemy drops → enemy (+ a hand-written farm spot for
-        the ones a build might need).
-  - [ ] Hand-written inputs in `scripts/data/` (e.g. `progression.ts`: locations, gates and their canonical
-        route order; `quest-items.json`: quest and event rewards). `src/data/er/` stays machine-written.
-  - [ ] Validation: every pickable item has a source (the pipeline fails on a gap unless it's on an explicit
-        allow-list); location and gate references resolve; the gate graph is acyclic. Pipeline tests on
-        `test-fixtures.ts`; `src/data/data.test.ts` pins coverage and checks ~20 known items (e.g. Moonveil →
-        Gael Tunnel, Magma Wyrm; Ash of War: Loretta's Slash → Loretta's remembrance).
-  - [ ] The owner spot-checks ~30 random items with their sources (the session prints them).
-- **Context:** **Deterministic, no AI** (owner's call, 2026-11-15; `docs/decisions.md`): data per item + a
-  small gate graph, and T15's pure function composes the route for any build. Read `docs/data.md`,
-  `scripts/data/{export,extract,build}.ts`, `src/data/schema.ts`. Checked 2026-11-15 in the export:
-  `ItemLotParam_map` (5,592 rows, 2,342 with `[Place - Detail]` names, e.g.
-  `[Gael Tunnel - Magma Wyrm] Moonveil`), `ItemLotParam_enemy` (5,135, named by enemy), `ShopLineupParam`
-  (1,297, `[Merchant] Item`), `BonfireWarpParam` (area, grid, position, text ID), `WorldMapPlaceNameParam`.
-  Map lot IDs seem to encode the tile (`1041550010` → m60_41_55; `20…` → DLC m61): verify against named rows
-  first. Coverage: weapons 477/487 have a lot or shop source, armor 722/728, and talismans, spells, Ashes of
-  War, spirit ashes and tears all of them; the gaps are quest rewards (Nagakiba, Rogier's Rapier, Dryleaf
-  Arts, Ragged set…). Row names are Smithbox/Paramdex community labels, allowed as **hints** (owner's call).
-  Size: acquisition data loads with the build page's full data only, never in `@/data/core`.
+  - [ ] `places.ts ENEMIES`: a farm grace + short note for the 88 enemy types whose drops have no other source
+        (Banished Knight, Godrick Soldier, Cuckoo Knight, Horned Warrior…; `node scripts/data/build.ts --out
+/tmp/x` lists them in its notes). This alone places ~300 items and the altered armor built on them.
+  - [ ] `events.ts EVENTS`: the NPC/quest hint labels (`Knight Bernahl`, `Corpse - Patches`, `Latenna`,
+        `Reward - "…" Painting`, `Gideon Ofnir - …`, `Gurranq - Nth Deathroot`…) and the 120 unnamed DLC event
+        lots (DLC bosses like Rellana, Bayle and Romina; quest rewards like Freyja, Ansbach, Thiollier), by lot
+        ID. Quest rewards say who and roughly when in `detail`.
+  - [ ] `EXTRA_SOURCES` for items no param hands out (Nagakiba from Yura, Rogier's Rapier, Dryleaf Arts, the
+        Ragged set, Knight set, Finger Robe…), the DLC merchant lineup `102250–102269` (who and where), Twin
+        Maiden Husks' Bell Bearing lineups (`101808–101899`, today ignored: classify with the bearing as `needs`
+        if any item depends on them), and region-only merchants that deserve a grace (Gowry, Iji, Thops, Pidia).
+  - [ ] The coverage pins in `src/data/data.test.ts` rise to the item totals (or the remaining entries move to
+        `NO_SOURCE` with a reason); the 20 pending key items (DLC remembrances, Forager Brood cookbooks, Haligtree
+        Medallion right half) are placed.
+  - [ ] The owner spot-checks 30 items (`node scripts/data/sample-acquisition.ts 30 <seed>`).
+- **Context:** `docs/data.md` "Acquisition". Facts may be checked on the wiki (facts only, no text copied;
+  `docs/decisions.md`). Work file by file with `node scripts/data/build.ts --out <scratch dir>` (the pipeline
+  fails on a stale pending entry, so drop entries as facts land). Places are grace names (`'Church of Elleh'`,
+  `'Elden Throne@Leyndell, Royal Capital'`), IDs, or `'region:<name>'`; grace names are in the generated
+  `locations`.
 
 ### T15 — "How to get this build" on the build page
 
-- **Status:** ready (after T14)
+- **Status:** ready (after T19)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** A short, numbered route from a fresh save to the whole build, in an efficient order. Plain,
   scannable steps: where to go, in what order, not a walkthrough.
@@ -90,7 +81,8 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
   - [ ] Component test + an e2e check on a seeded build; desktop and `--mobile` screenshots.
   - [ ] Backlog entries for what's out of scope: upgrade materials (builds don't store upgrade levels), rune
         farming to the build's level, a suggested starting class (needs T8's class data).
-- **Context:** T14's `acquisition.json` + accessors in `src/data/index.ts`; `BuildEditorPage` (a comment marks
+- **Context:** T14's `acquisition.json` + accessors in `src/data/acquisition.ts` (lazy-load it; docs/data.md
+  "Acquisition": `item` on a source = needed first, `region` without `location` = region-only, `implied` gates); `BuildEditorPage` (a comment marks
   where the section goes, between Equipment and About this build) and `sections/` in T17's design (`Frame` +
   `SectionHeading` panels, `ItemTile` for icons); `add-feature` skill.
 
@@ -169,6 +161,9 @@ can slot in anywhere; the privacy policy promises deletion by GitHub issue until
 
 Older entries: `docs/tickets-archive.md`.
 
+- T14 — Acquisition data — 2026-11-15 — `npm run data` writes `acquisition.json`: sources per item (lots placed by ID →
+  nearest grace, event hints, shops by range, recipes by cookbook flag, classes), 54 regions in route order, 419
+  graces, 27 gates, key items, validation with explicit allow-lists; ~670 items' facts pending (T19).
 - T17 — Redesign: build page, editor and item picker — 2026-11-15 — view and edit in one mockup layout (title
   block, framed panels, `ItemRow` tiles, stat bars, prose write-up), picker on a tall `Dialog` with filters and a
   weapon step for Ash of War/affinity, comments/report/like restyled; `legacy.ts`, `Slot` and 2022 icons deleted.

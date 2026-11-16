@@ -14,12 +14,13 @@ Firebase Hosting (soulsbuilds.web.app).
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-15 (T1–T7, T10–T13, T16, T17 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
+As of 2026-11-15 (T1–T7, T10–T14, T16, T17 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (React
 Compiler), RTK 2, TanStack Query 5, styled-components 6, Firebase 12 (Spark), strict TypeScript. Firestore model
 v2 with tested rules (2022 data migrated); search, likes, comments, reports + `scripts/admin.mjs`; privacy/terms;
 Playwright e2e. Game data v2 (base + DLC) in `src/data/er/`; builds store game IDs. CI: checks, PR previews,
 approved production deploys on `main`. Redesign (T16, T17): token design system (base + per-game skin) on every
-page; the build page is view and edit in one layout, the picker a Dialog. Left from T12: the owner enforces App Check.
+page; the build page is view and edit in one layout, the picker a Dialog. T14: `acquisition.json` (where every item
+comes from; ~670 items still pending, T19). Left from T12: the owner enforces App Check.
 **Next:** see `TICKETS.md`.
 
 ## Golden rules
@@ -127,15 +128,16 @@ src/
   data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
                            (zod; types only in the app), index.ts accessors by ID (getWeapon(id),
                            armorList(slot), iconUrl…), rules.ts (Ash of War/affinity/talisman rules, shared
-                           with scripts). docs/data.md
+                           with scripts), acquisition.ts (where items come from; lazy, T14). docs/data.md
   test/                    Vitest setup, renderWithProviders (store, QueryClient, router, uid), fixtures
                            (+ game IDs), editor.tsx (EditorWithPicker, searchItems)
 tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/
                            (scripts/admin.mjs), e2e/ (Playwright)
 public/assets/             icons/<icon>.webp (T7 data)
 scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, doctor, firebase (Java
-                           wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript) +
-                           name-aliases.json (2022 names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
+                           wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript;
+                           acquisition.ts + hand-written progression/places/events.ts) + name-aliases.json (2022
+                           names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
 firestore.rules            v2 security rules (deployed by CI with hosting); firestore.indexes.json
 docs/                      architecture, firebase, data, decisions, game-data-extraction, tickets-archive
