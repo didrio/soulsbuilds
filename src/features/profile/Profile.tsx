@@ -29,11 +29,15 @@ import {
   TEXT_SM,
   TRACKING_CAPS,
 } from '@/theme';
+import DeleteAccount from './DeleteAccount';
 import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
 
 type Tab = 'builds' | 'liked';
 
-/** `/user/:userId`: display name (editable by its owner), and tabs for their builds and likes. */
+/**
+ * `/user/:userId`: display name (editable by its owner), tabs for their builds and likes, and for
+ * the owner, "Delete account" at the bottom.
+ */
 function Profile() {
   const { userId = '' } = useParams();
   const { uid, user } = useAuth();
@@ -55,6 +59,7 @@ function Profile() {
     return (
       <PageMessage title="User not found">
         <TextLink to="/">Browse builds</TextLink>
+        {isOwner ? <DeleteAccount finishing /> : null}
       </PageMessage>
     );
   }
@@ -90,6 +95,7 @@ function Profile() {
         {tab === 'builds' ? <OwnBuilds userId={userId} isOwner={isOwner} /> : null}
         {tab === 'liked' ? <LikedBuilds userId={userId} isOwner={isOwner} /> : null}
       </div>
+      {isOwner ? <DeleteAccount /> : null}
     </>
   );
 }

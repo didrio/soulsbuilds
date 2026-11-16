@@ -59,7 +59,8 @@ service cloud.firestore {
       allow update: if isUser(userId)
         && changedKeys().hasOnly(['displayName'])
         && isText(incoming().displayName, 40);
-      allow delete: if false;
+      // Account deletion (T18): the last Firestore step before the Auth account goes.
+      allow delete: if isUser(userId);
     }
 
     // ---- builds/{id} ---------------------------------------------------------------------------
@@ -252,11 +253,18 @@ service cloud.firestore {
       allow read: if true;
     }
 
+    // Account deletion (T18) finds a user's comments on every build with a collection-group query
+    // (by authorId); comments are public anyway.
+    match /{path=**}/comments/{commentId} {
+      allow read: if true;
+    }
+
     // ---- reports/{id}: abuse reports (T10) -----------------------------------------------------
     // A signed-in user reports a build or a comment once: the doc id is `${targetId}_${uid}`, so a
     // second report is an update, which is refused. The target must exist. Admins read every report;
-    // a reporter may read their own (so the UI can say "already reported"). Nobody changes or
-    // deletes reports from a client: scripts/admin.mjs resolves them with the Admin SDK.
+    // a reporter may read (and list, by reporterId) their own, so the UI can say "already reported".
+    // Nobody changes reports from a client: scripts/admin.mjs resolves them with the Admin SDK. A
+    // reporter may delete their own, which account deletion (T18) does.
 
     function isId(value) {
       return value is string && value.matches('^[A-Za-z0-9_-]{1,40}$');
@@ -283,9 +291,10 @@ service cloud.firestore {
         && incoming().status == 'open'
         && incoming().createdAt == request.time
         && reportTargetOk(reportId, incoming());
-      allow get: if isAdmin() || (signedIn() && resource.data.reporterId == request.auth.uid);
-      allow list: if isAdmin();
-      allow update, delete: if false;
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.reporterId == request.auth.uid);
+      allow delete: if signedIn() && resource.data.reporterId == request.auth.uid;
+      allow update: if false;
     }
   }
 }

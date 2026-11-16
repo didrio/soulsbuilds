@@ -43,3 +43,6 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   mockup v2): base tokens + per-game skin (CSS vars, `skins.ts`, AA contrast test), Inter/Cinzel/Garamond, in-world
   components (Frame, Ornament, PageHero, ItemTile, selection bar), Dialog auth, game tabs removed, landing as dense
   rows with authors, profile/legal/404 restyled; 2022 tokens kept in `legacy.ts` for T17.
+- T17 — Redesign: build page, editor and item picker — 2026-11-15 — view and edit in one mockup layout (title
+  block, framed panels, `ItemRow` tiles, stat bars, prose write-up), picker on a tall `Dialog` with filters and a
+  weapon step for Ash of War/affinity, comments/report/like restyled; `legacy.ts`, `Slot` and 2022 icons deleted.

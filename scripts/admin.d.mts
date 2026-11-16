@@ -47,3 +47,31 @@ export function exportAll(
   db: Firestore,
   options?: { dir?: string; projectId?: string | null },
 ): Promise<{ file: string; counts: Record<string, number>; total: number }>;
+
+/** Changes a display name (trimmed, 1–40 characters) in the profile and the Auth user (T18). */
+export function renameUser(
+  db: Firestore,
+  auth: Auth,
+  uid: string,
+  name: string,
+  options?: { write?: boolean },
+): Promise<{ uid: string; before: string; after: string }>;
+
+/** Deletes an account (uid or email) and everything it published, backed up first (T18). */
+export function deleteUserData(
+  db: Firestore,
+  auth: Auth,
+  who: string,
+  options?: { write?: boolean; backupDir?: string },
+): Promise<{
+  uid: string;
+  email: string | null;
+  authUser: boolean;
+  profile: boolean;
+  builds: number;
+  likes: number;
+  comments: number;
+  reportsFiled: number;
+  reportsResolved: number;
+  backup: string | null;
+}>;

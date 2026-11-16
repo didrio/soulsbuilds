@@ -3,7 +3,7 @@
 // the ones it shouldn't make are refused. `npm run test:rules`.
 import { readFileSync } from 'node:fs';
 import { initializeTestEnvironment, type RulesTestEnvironment } from '@firebase/rules-unit-testing';
-import type { Firestore } from 'firebase/firestore';
+import { deleteDoc, doc, type Firestore } from 'firebase/firestore';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import type { BuildInput } from '@/lib/firebase/builds';
 
@@ -28,6 +28,7 @@ const { hasLiked, likeBuild, listLikedBuildIds, unlikeBuild } =
   await import('@/lib/firebase/likes');
 const { addComment, deleteComment, listComments } = await import('@/lib/firebase/comments');
 const { reportContent } = await import('@/lib/firebase/reports');
+const { deleteAccountData, findAccountData } = await import('@/lib/firebase/account');
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
   await import('@/lib/firebase/users');
 
@@ -230,5 +231,72 @@ describe('data layer against the rules', () => {
     expect(await getBuild(buildId)).toBeNull();
     expect(await listComments(buildId)).toEqual([]);
     expect(await listLikedBuildIds('bob')).toEqual([]);
+  });
+});
+
+describe('account deletion (T18)', () => {
+  it('removes everything of the user, keeps counters right, and can run again', async () => {
+    actAs('dana');
+    await createUserProfile('dana', 'Dana');
+    const own = await createBuild('dana', { ...input, name: 'Dana build' });
+    actAs('erin');
+    await createUserProfile('erin', 'Erin');
+    const erins = await createBuild('erin', { ...input, name: 'Erin build' });
+    const orphaned = await createBuild('erin', { ...input, name: 'Erin old build' });
+    await likeBuild(own, 'erin');
+    await addComment(own, 'erin', 'Nice one');
+    await likeBuild(erins, 'erin');
+    const erinsComment = await addComment(erins, 'erin', 'My notes');
+
+    actAs('dana');
+    await likeBuild(erins, 'dana');
+    await addComment(erins, 'dana', 'First');
+    await addComment(erins, 'dana', 'Second');
+    await likeBuild(orphaned, 'dana');
+    await addComment(orphaned, 'dana', 'Old');
+    await reportContent('dana', { buildId: erins, commentId: erinsComment.id }, 'spam');
+    // A build whose like/comment cleanup was cut short: the doc is gone, its subcollections not.
+    await env.withSecurityRulesDisabled(async (context) => {
+      await deleteDoc(doc(context.firestore() as unknown as Firestore, 'builds', orphaned));
+    });
+
+    // Nobody else can delete Dana's data (the first step, her build, is refused).
+    actAs('erin');
+    await expect(deleteAccountData('dana')).rejects.toThrow();
+    expect(await getBuild(own)).not.toBeNull();
+
+    actAs('dana');
+    const found = await findAccountData('dana');
+    expect(found.buildIds).toEqual([own]);
+    expect(found.likes.map((l) => l.buildExists).sort()).toEqual([false, true]);
+    expect(found.comments).toHaveLength(3);
+    expect(found.reports).toHaveLength(1);
+
+    const progress = vi.fn();
+    await deleteAccountData('dana', progress);
+    expect(progress).toHaveBeenLastCalledWith(8, 8); // 1 build, 2 likes, 3 comments, 1 report, profile
+
+    actAs(null);
+    expect(await getUserProfile('dana')).toBeNull();
+    expect(await getBuild(own)).toBeNull();
+    expect(await listUserBuilds('dana')).toEqual([]);
+    expect(await listLikedBuildIds('dana')).toEqual([]);
+    const after = await getBuild(erins);
+    expect(after?.likeCount).toBe(1);
+    expect(after?.commentCount).toBe(1);
+    expect((await listComments(erins)).map((c) => c.authorId)).toEqual(['erin']);
+    expect(await listLikedBuildIds('erin')).toEqual([erins]);
+    expect(await getUserProfile('erin')).not.toBeNull();
+
+    actAs('dana');
+    expect(await findAccountData('dana')).toEqual({
+      buildIds: [],
+      likes: [],
+      comments: [],
+      reports: [],
+    });
+    // Running it again (e.g. after a failure halfway) is a no-op.
+    await deleteAccountData('dana');
+    expect((await getBuild(erins))?.commentCount).toBe(1);
   });
 });

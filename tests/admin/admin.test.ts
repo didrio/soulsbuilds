@@ -1,5 +1,5 @@
 // scripts/admin.mjs against the emulators: reports listing, remove (with backups and counters),
-// dismiss, the admin claim, and export. `npm run test:rules`.
+// dismiss, the admin claim, rename, delete-user and export. `npm run test:rules`.
 import { mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -8,10 +8,12 @@ import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp, type Firestore } from 'firebase-admin/firestore';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import {
+  deleteUserData,
   dismissReports,
   exportAll,
   listOpenReports,
   removeContent,
+  renameUser,
   setAdmin,
 } from '../../scripts/admin.mjs';
 
@@ -131,6 +133,84 @@ describe('admin script', () => {
     expect((await auth.getUser(user.uid)).customClaims).toEqual({ beta: true, admin: true });
     await setAdmin(auth, user.uid, false, { write: true });
     expect((await auth.getUser(user.uid)).customClaims).toEqual({ beta: true });
+  });
+});
+
+describe('rename and delete-user (T18)', () => {
+  const authUser = async (uid: string) => {
+    const auth = getAuth(app);
+    await auth.deleteUser(uid).catch(() => undefined);
+    await auth.createUser({ uid, email: `${uid}@example.test`, displayName: 'Old' });
+    return auth;
+  };
+
+  beforeEach(async () => {
+    await db.doc('users/bob').set({ displayName: 'Anne Frankly', createdAt: at(1) });
+  });
+
+  it('renames: trimmed, 1–40 characters, dry run by default, Auth copy too', async () => {
+    const auth = await authUser('bob');
+    await expect(renameUser(db, auth, 'bob', '   ')).rejects.toThrow('1–40');
+    await expect(renameUser(db, auth, 'bob', 'x'.repeat(41))).rejects.toThrow('1–40');
+    await expect(renameUser(db, auth, 'nobody', 'Bob')).rejects.toThrow('No profile');
+    expect(await renameUser(db, auth, 'bob', ' Bob ')).toEqual({
+      uid: 'bob',
+      before: 'Anne Frankly',
+      after: 'Bob',
+    });
+    expect((await db.doc('users/bob').get()).get('displayName')).toBe('Anne Frankly');
+    await renameUser(db, auth, 'bob', ' Bob ', { write: true });
+    expect((await db.doc('users/bob').get()).get('displayName')).toBe('Bob');
+    expect((await auth.getUser('bob')).displayName).toBe('Bob');
+  });
+
+  it('deletes a user and everything they published, with counters and a backup', async () => {
+    const auth = await authUser('bob');
+    await db.doc('builds/B1').update({ likeCount: 1 });
+    await db.doc('builds/B3').set({ ownerId: 'bob', name: 'Bob build', commentCount: 1 });
+    await db.doc('builds/B3/comments/c3').set({ authorId: 'carol', text: 'cool' });
+    await db.doc('builds/B3/likes/carol').set({ userId: 'carol', createdAt: at(2) });
+    await report('bob', 'B2', null, 4);
+
+    const dry = await deleteUserData(db, auth, 'bob@example.test');
+    expect(dry).toMatchObject({
+      uid: 'bob',
+      authUser: true,
+      profile: true,
+      builds: 1,
+      likes: 1,
+      comments: 1,
+      reportsFiled: 1,
+      reportsResolved: 1, // dave's report on c1
+      backup: null,
+    });
+    expect((await db.doc('builds/B3').get()).exists).toBe(true);
+
+    const result = await deleteUserData(db, auth, 'bob', { write: true, backupDir });
+    expect((await db.doc('users/bob').get()).exists).toBe(false);
+    expect((await db.doc('builds/B3').get()).exists).toBe(false);
+    expect((await db.collection('builds/B3/comments').get()).size).toBe(0);
+    const b1 = (await db.doc('builds/B1').get()).data();
+    expect([b1?.likeCount, b1?.commentCount]).toEqual([0, 1]);
+    expect((await db.doc('builds/B1/comments/c2').get()).exists).toBe(true);
+    expect((await db.doc('reports/B2_bob').get()).exists).toBe(false);
+    expect(await status('c1_dave')).toBe('removed');
+    expect(await status('B1_carol')).toBe('open');
+    await expect(auth.getUser('bob')).rejects.toMatchObject({ code: 'auth/user-not-found' });
+    const backup = JSON.parse(readFileSync(result.backup!, 'utf8'));
+    expect(backup.profile.displayName).toBe('Anne Frankly');
+    expect(backup.builds[0].comments).toHaveLength(1);
+    expect(backup.comments[0]).toMatchObject({ path: 'builds/B1/comments/c1', text: 'buy gold' });
+
+    // Re-running finds nothing and changes nothing.
+    expect(await deleteUserData(db, auth, 'bob', { write: true, backupDir })).toMatchObject({
+      authUser: false,
+      profile: false,
+      builds: 0,
+      likes: 0,
+      comments: 0,
+    });
+    expect((await db.doc('builds/B1').get()).get('commentCount')).toBe(1);
   });
 });
 

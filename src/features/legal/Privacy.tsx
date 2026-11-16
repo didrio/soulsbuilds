@@ -56,11 +56,18 @@ function Privacy() {
       <h2>Keeping and deleting your data</h2>
       <p>
         We keep your data until you delete it or ask us to. You can delete your own builds and
-        comments at any time from their page. To delete your account and everything you published,{' '}
-        <a href={ISSUES_URL}>open an issue on GitHub</a> titled “Delete my account” with your
-        display name. <strong>Don’t post your email address</strong>: issues are public. We’ll ask
-        you to confirm the account is yours (for example by posting a code we give you as a comment
-        on one of your builds), then delete it.
+        comments at any time from their page.
+      </p>
+      <p>
+        To delete your account, open your profile, choose <strong>Delete account</strong> at the
+        bottom and enter your password. This deletes your account, your builds (with their likes and
+        comments), your comments and likes on other builds, and your reports, straight away. Copies
+        may stay for a while in the backups the site’s maintainer keeps privately.
+      </p>
+      <p>
+        If you can’t sign in any more, <a href={ISSUES_URL}>open an issue on GitHub</a> titled
+        “Delete my account” with your display name. <strong>Don’t post your email address</strong>:
+        issues are public. We’ll ask you to confirm the account is yours, then delete it.
       </p>
 
       <h2>Children</h2>

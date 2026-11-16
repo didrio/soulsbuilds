@@ -64,6 +64,7 @@ const AUTH_MESSAGES: Record<string, string> = {
   'auth/email-already-in-use': 'An account with that email already exists. Try logging in.',
   'auth/weak-password': 'Choose a password of at least 6 characters.',
   'auth/too-many-requests': 'Too many attempts. Wait a minute and try again.',
+  'auth/requires-recent-login': 'For your security, log in again and retry.',
   'auth/network-request-failed': 'Network error. Check your connection and try again.',
 };
 

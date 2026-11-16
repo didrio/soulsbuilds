@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T24
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T18, Account deletion (in-app) and admin rename · Opus · high · plan mode on.
+**Next:** T22, Layout: lean landing, compact build page · Opus · high · plan mode on.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
@@ -17,13 +17,14 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
   and Auth (`docs/firebase.md` "App Check" step 4).
 - Console: delete the disposable test account "claude" (Authentication → Users); unlink Google Analytics if it's
   linked (Project settings → Integrations); set the email templates' sender name to "Souls Builds".
-- Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). T18 adds an admin rename.
+- Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). If it goes:
+  `node scripts/admin.mjs rename <uid> "<new name>" --project soulsbuilds` (dry run), then `--write`.
 - Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done. Then: T18 (account deletion; the privacy policy promises deletion by GitHub issue until then), T22
-(layout), T20 (community feel), T23 (App Check wait; owner can move it up).
+done, and so is T18 (account deletion). Then: T22 (layout), T20 (community feel), T23 (App Check wait; owner
+can move it up).
 
 ## In progress
 
@@ -31,31 +32,9 @@ done. Then: T18 (account deletion; the privacy policy promises deletion by GitHu
 
 ## Up next
 
-### T18 — Account deletion (in-app) and admin rename
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Let users delete their account themselves, and let admins fix a display name, so the privacy policy's
-  "open a GitHub issue" path becomes a fallback.
-- **Done when:**
-  - [ ] Profile (owner only): "Delete account", with a confirm step that says what goes (account, builds with
-        their likes and comments, your comments and likes elsewhere, your reports). Re-authentication if Auth asks
-        for it (`auth/requires-recent-login`).
-  - [ ] Data removal without Cloud Functions (Spark): client-side batches under rules that allow an owner to delete
-        their own docs, and the counters (`likeCount`, `commentCount`) on other people's builds kept right in the
-        same batches; then `deleteUser`. Decide and document what happens if it fails halfway (re-runnable).
-  - [ ] `scripts/admin.mjs rename <uid> <name> [--write]` (display name moderation) and `delete-user <uid>`
-        (the same removal via the Admin SDK, with a JSON backup like `remove`).
-  - [ ] Rules tests for every new delete path; e2e: sign up, create, comment, delete account, the build is gone.
-  - [ ] Privacy page updated (delete it yourself from your profile; GitHub issue as a fallback).
-- **Context:** `firestore.rules` (expression budget: keep it cheap), `tests/rules/`, `src/lib/firebase/`
-  (`builds.ts`, `likes.ts`, `comments.ts`, `users.ts`, `auth.ts`), `src/features/profile/Profile.tsx`,
-  `scripts/admin.mjs` (`removeContent` is the pattern), `src/features/legal/Privacy.tsx`. Counters change in
-  the same batch as the doc they count (AGENTS.md).
-
 ### T22 — Layout: lean landing, compact build page
 
-- **Status:** ready (after T18)
+- **Status:** ready
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Show more of each build at once and bring the write-up and comments up the page, keeping the
   equipment prominent. Landing: drop the hero so the builds start higher, and make every row the same height.
@@ -169,6 +148,10 @@ done. Then: T18 (account deletion; the privacy policy promises deletion by GitHu
 
 Older entries: `docs/tickets-archive.md`.
 
+- T18 — Account deletion and admin rename — 2026-11-15 — profile "Delete account" (password re-auth; finds
+  everything, then deletes builds, likes/comments elsewhere with counters, reports, profile, Auth user;
+  re-runnable), rules for own profile/report delete + comments collection-group read, `admin.mjs rename` and
+  `delete-user` (backup first), privacy page updated; e2e `account.spec.ts`.
 - T21 — Performance — 2026-11-15 — `npm run perf` (headed Chrome + CDP: load vitals, scroll frames, GPU time,
   `--off` attribution); `background-attachment: fixed` → fixed layer behind content (landing 72 → 118 fps, 40% →
   2% dropped), grain on its own layer, `<main>` ≥ 1 screen (CLS 0.17 → 0), hosting cache headers, preconnects.
@@ -192,6 +175,3 @@ Older entries: `docs/tickets-archive.md`.
 - T14 — Acquisition data — 2026-11-15 — `npm run data` writes `acquisition.json`: sources per item (lots placed by ID →
   nearest grace, event hints, shops by range, recipes by cookbook flag, classes), 54 regions in route order, 419
   graces, 27 gates, key items, validation with explicit allow-lists; ~670 items' facts pending (T19).
-- T17 — Redesign: build page, editor and item picker — 2026-11-15 — view and edit in one mockup layout (title
-  block, framed panels, `ItemRow` tiles, stat bars, prose write-up), picker on a tall `Dialog` with filters and a
-  weapon step for Ash of War/affinity, comments/report/like restyled; `legacy.ts`, `Slot` and 2022 icons deleted.

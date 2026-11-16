@@ -170,7 +170,18 @@ describe('users/{uid}', () => {
     await assertFails(updateDoc(doc(as('alice'), 'users/alice'), { createdAt: Timestamp.now() }));
     await assertFails(updateDoc(doc(as('alice'), 'users/alice'), { admin: true }));
     await assertFails(updateDoc(doc(as('bob'), 'users/alice'), { displayName: 'Bob' }));
-    await assertFails(deleteDoc(doc(as('alice'), 'users/alice')));
+  });
+
+  it('a user deletes only their own profile (account deletion)', async () => {
+    await seed((db) =>
+      setDoc(doc(db, 'users/alice'), { displayName: 'A', createdAt: Timestamp.now() }),
+    );
+    await assertFails(deleteDoc(doc(as('bob'), 'users/alice')));
+    await assertFails(deleteDoc(doc(as(), 'users/alice')));
+    await assertFails(deleteDoc(doc(as('root', { admin: true }), 'users/alice')));
+    await assertSucceeds(deleteDoc(doc(as('alice'), 'users/alice')));
+    // Re-running a half-done account deletion: the profile is already gone.
+    await assertSucceeds(deleteDoc(doc(as('alice'), 'users/alice')));
   });
 });
 
@@ -459,6 +470,26 @@ describe('builds/{id}/likes/{uid}', () => {
       getDocs(query(collectionGroup(as(), 'likes'), where('userId', '==', 'bob'))),
     );
   });
+
+  it('a user removes their likes on several builds, one batch each (account deletion)', async () => {
+    await seedBuild();
+    await seed((db) =>
+      setDoc(doc(db, 'builds/B2'), {
+        ...newBuild('carol'),
+        createdAt: Timestamp.now(),
+        updatedAt: Timestamp.now(),
+      }),
+    );
+    await like(as('bob'), 'bob');
+    await like(as('bob'), 'bob', 1, 'B2');
+    for (const buildId of ['B1', 'B2']) {
+      const db = as('bob');
+      const batch = writeBatch(db);
+      batch.delete(doc(db, `builds/${buildId}/likes/bob`));
+      batch.update(doc(db, `builds/${buildId}`), { likeCount: increment(-1) });
+      await assertSucceeds(batch.commit());
+    }
+  });
 });
 
 describe('builds/{id}/comments/{id}', () => {
@@ -501,6 +532,16 @@ describe('builds/{id}/comments/{id}', () => {
     await assertFails(deleteComment(as('alice'), 'c1'));
     await assertSucceeds(deleteComment(as('bob'), 'c1'));
     await assertSucceeds(deleteComment(as('root', { admin: true }), 'c2'));
+  });
+});
+
+describe('comments across builds', () => {
+  it('anyone can list a user’s comments on every build (account deletion)', async () => {
+    await seedBuild();
+    await comment(as('bob'), 'c1', { authorId: 'bob', text: 'Nice' });
+    await assertSucceeds(
+      getDocs(query(collectionGroup(as(), 'comments'), where('authorId', '==', 'bob'))),
+    );
   });
 });
 
@@ -578,18 +619,30 @@ describe('reports/{id}', () => {
     await assertSucceeds(setDoc(ref, report('carol', { reason: 'other', note: 'x'.repeat(500) })));
   });
 
-  it('only admins list reports; a reporter reads only their own; nobody edits them', async () => {
+  it('admins list every report; a reporter reads and lists only their own; nobody edits them', async () => {
     await setDoc(doc(as('carol'), 'reports/B1_carol'), report('carol'));
     await assertSucceeds(getDoc(doc(as('carol'), 'reports/B1_carol')));
     await assertFails(getDoc(doc(as('alice'), 'reports/B1_carol')));
     await assertFails(getDocs(collection(as('carol'), 'reports')));
+    const byReporter = (db: Firestore, uid: string) =>
+      getDocs(query(collection(db, 'reports'), where('reporterId', '==', uid)));
+    await assertSucceeds(byReporter(as('carol'), 'carol'));
+    await assertFails(byReporter(as('alice'), 'carol'));
+    await assertFails(byReporter(as(), 'carol'));
     await assertSucceeds(getDocs(collection(as('root', { admin: true }), 'reports')));
     await assertSucceeds(getDoc(doc(as('root', { admin: true }), 'reports/B1_carol')));
     await assertFails(updateDoc(doc(as('carol'), 'reports/B1_carol'), { note: 'changed' }));
     await assertFails(
       updateDoc(doc(as('root', { admin: true }), 'reports/B1_carol'), { status: 'dismissed' }),
     );
-    await assertFails(deleteDoc(doc(as('carol'), 'reports/B1_carol')));
+  });
+
+  it('a reporter deletes their own reports (account deletion); nobody else does', async () => {
+    await setDoc(doc(as('carol'), 'reports/B1_carol'), report('carol'));
+    await assertFails(deleteDoc(doc(as('alice'), 'reports/B1_carol')));
+    await assertFails(deleteDoc(doc(as(), 'reports/B1_carol')));
+    await assertFails(deleteDoc(doc(as('root', { admin: true }), 'reports/B1_carol')));
+    await assertSucceeds(deleteDoc(doc(as('carol'), 'reports/B1_carol')));
   });
 });
 

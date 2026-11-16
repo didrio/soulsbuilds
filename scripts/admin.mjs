@@ -9,6 +9,12 @@
 //                                                         or one comment (with the counter); resolves
 //                                                         its reports as "removed"
 //   node scripts/admin.mjs dismiss <buildId> [commentId]  resolve its open reports as "dismissed"
+//   node scripts/admin.mjs rename <uid> <name>            change a display name (moderation, T18)
+//   node scripts/admin.mjs delete-user <uid|email>        delete an account and everything it published:
+//                                                         builds (with their likes and comments), likes
+//                                                         and comments elsewhere (with the counters),
+//                                                         reports filed, profile, Auth user; resolves
+//                                                         reports about that content as "removed" (T18)
 //   node scripts/admin.mjs grant <uid|email>              set the `admin` custom claim
 //   node scripts/admin.mjs revoke <uid|email>             clear it
 //   node scripts/admin.mjs export                         back up every document (all collections and
@@ -16,8 +22,8 @@
 //                                                         Spark plan has no managed backups or PITR)
 //   ... --project soulsbuilds --write                     production (owner only), applied
 //
-// Moderation is delete, not hide (docs/decisions.md): before deleting, `remove` saves what it deletes
-// as JSON under .admin-backups/ (gitignored), so a mistake can be put back by hand.
+// Moderation is delete, not hide (docs/decisions.md): before deleting, `remove` and `delete-user` save
+// what they delete as JSON under .admin-backups/ (gitignored), so a mistake can be put back by hand.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -184,6 +190,158 @@ export async function dismissReports(db, target, { write = false } = {}) {
   return { reports: reports.length };
 }
 
+const ignoreUserNotFound = (error) => {
+  if (error?.code === 'auth/user-not-found') return null;
+  throw error;
+};
+
+/** The same limit as firestore.rules (`isText(displayName, 40)`) and LIMITS.displayName. */
+const DISPLAY_NAME_MAX = 40;
+
+/**
+ * Changes a user's display name (moderation): the public profile, and the Auth profile's copy if the
+ * Auth user exists. The name is trimmed and must be 1–40 characters, like the rules require.
+ */
+export async function renameUser(db, auth, uid, name, { write = false } = {}) {
+  const displayName = name.trim();
+  if (!displayName || displayName.length > DISPLAY_NAME_MAX) {
+    throw new Error(`A display name is 1–${DISPLAY_NAME_MAX} characters (after trimming)`);
+  }
+  const ref = db.doc(`users/${uid}`);
+  const snapshot = await ref.get();
+  if (!snapshot.exists) throw new Error(`No profile users/${uid}`);
+  if (write) {
+    await ref.update({ displayName });
+    await auth.updateUser(uid, { displayName }).catch(ignoreUserNotFound);
+  }
+  return { uid, before: snapshot.get('displayName'), after: displayName };
+}
+
+/** Commits `ops` (functions that add one write to a batch) in batches of at most `size` writes. */
+async function commitInBatches(db, ops, size = 200) {
+  for (let i = 0; i < ops.length; i += size) {
+    const batch = db.batch();
+    ops.slice(i, i + size).forEach((op) => op(batch));
+    await batch.commit();
+  }
+}
+
+/**
+ * Deletes an account and everything it published, like the in-app "Delete account"
+ * (src/lib/firebase/account.ts) but with the Admin SDK: their builds (with every like and comment
+ * on them), their likes and comments on other builds (moving those counters), the reports they
+ * filed, their profile and their Auth user. Open reports about their builds and comments are
+ * resolved as "removed". `who` is a uid or an email. Writes only with `write`; then saves a JSON
+ * backup in `backupDir` first. Safe to re-run. Resolves to the counts it found.
+ */
+export async function deleteUserData(
+  db,
+  auth,
+  who,
+  { write = false, backupDir = join(root, '.admin-backups') } = {},
+) {
+  const authUser = who.includes('@')
+    ? await auth.getUserByEmail(who)
+    : await auth.getUser(who).catch(ignoreUserNotFound);
+  const uid = authUser?.uid ?? who;
+  const profileRef = db.doc(`users/${uid}`);
+  const [profile, builds, likes, comments, filed] = await Promise.all([
+    profileRef.get(),
+    db.collection('builds').where('ownerId', '==', uid).get(),
+    db.collectionGroup('likes').where('userId', '==', uid).get(),
+    db.collectionGroup('comments').where('authorId', '==', uid).get(),
+    db.collection('reports').where('reporterId', '==', uid).get(),
+  ]);
+  const ownIds = new Set(builds.docs.map((build) => build.id));
+  const elsewhere = (snapshot) => snapshot.docs.filter((d) => !ownIds.has(d.ref.parent.parent.id));
+  const likesElsewhere = elsewhere(likes);
+  const commentsElsewhere = elsewhere(comments);
+
+  const about = new Map();
+  const addReports = (reports) =>
+    reports
+      .filter((report) => report.get('reporterId') !== uid)
+      .forEach((report) => about.set(report.id, report));
+  for (const buildId of ownIds) {
+    addReports(await openReportsFor(db, { buildId }, { includeComments: true }));
+  }
+  for (const comment of commentsElsewhere) {
+    const target = { buildId: comment.ref.parent.parent.id, commentId: comment.id };
+    addReports(await openReportsFor(db, target));
+  }
+
+  const result = {
+    uid,
+    email: authUser?.email ?? null,
+    authUser: Boolean(authUser),
+    profile: profile.exists,
+    builds: ownIds.size,
+    likes: likesElsewhere.length,
+    comments: commentsElsewhere.length,
+    reportsFiled: filed.size,
+    reportsResolved: about.size,
+    backup: null,
+  };
+  if (!write) return result;
+
+  const docData = (d) => ({ path: d.ref.path, ...d.data() });
+  const backup = {
+    uid,
+    email: result.email,
+    removedAt: new Date().toISOString(),
+    profile: profile.exists ? profile.data() : null,
+    builds: await Promise.all(
+      builds.docs.map(async (build) => {
+        const [buildComments, buildLikes] = await Promise.all([
+          build.ref.collection('comments').get(),
+          build.ref.collection('likes').get(),
+        ]);
+        return {
+          ...docData(build),
+          comments: buildComments.docs.map(docData),
+          likes: buildLikes.docs.map(docData),
+        };
+      }),
+    ),
+    likes: likesElsewhere.map(docData),
+    comments: commentsElsewhere.map(docData),
+    reports: filed.docs.map(docData),
+  };
+  mkdirSync(backupDir, { recursive: true });
+  result.backup = join(backupDir, `${stampNow()}_user_${uid}.json`);
+  writeFileSync(result.backup, toJson(backup));
+
+  for (const build of builds.docs) await db.recursiveDelete(build.ref);
+  const parents = [...likesElsewhere, ...commentsElsewhere].map((d) => d.ref.parent.parent);
+  const existing = new Set(
+    parents.length
+      ? (await db.getAll(...parents)).filter((s) => s.exists).map((s) => s.ref.path)
+      : [],
+  );
+  const counter = (d, field) => (batch) => {
+    batch.delete(d.ref);
+    const build = d.ref.parent.parent;
+    if (existing.has(build.path)) batch.update(build, { [field]: FieldValue.increment(-1) });
+  };
+  // A like or comment and its counter stay in one batch (two writes each).
+  await commitInBatches(
+    db,
+    likesElsewhere.map((d) => counter(d, 'likeCount')),
+  );
+  await commitInBatches(
+    db,
+    commentsElsewhere.map((d) => counter(d, 'commentCount')),
+  );
+  await commitInBatches(
+    db,
+    filed.docs.map((report) => (batch) => batch.delete(report.ref)),
+  );
+  await resolveReports(db, [...about.values()], 'removed');
+  await profileRef.delete();
+  if (authUser) await auth.deleteUser(uid).catch(ignoreUserNotFound);
+  return result;
+}
+
 /** Sets (`admin` true) or clears the admin custom claim of a user found by uid or email. */
 export async function setAdmin(auth, who, admin, { write = false } = {}) {
   const user = who.includes('@') ? await auth.getUserByEmail(who) : await auth.getUser(who);
@@ -210,6 +368,8 @@ const USAGE = `Usage: node scripts/admin.mjs <command> [args] [--project <id>] [
   reports                        list open reports
   remove <buildId> [commentId]   delete the build or comment, resolve its reports
   dismiss <buildId> [commentId]  resolve its reports, keep the content
+  rename <uid> <name>            change a display name (quote a name with spaces)
+  delete-user <uid|email>        delete an account and everything it published
   grant <uid|email>              make a user an admin
   revoke <uid|email>             remove admin
   export                         save every document as JSON in .admin-backups/ (read-only)`;
@@ -276,6 +436,29 @@ async function main() {
       const result = await dismissReports(db, target, { write: opts.write });
       console.log(`Open reports to dismiss: ${result.reports}`);
     }
+    dryRunNote();
+  } else if (command === 'rename') {
+    const [uid, ...words] = args;
+    if (!uid || !words.length) throw new Error('rename needs a uid and a name');
+    const result = await renameUser(db, getAuth(), uid, words.join(' '), { write: opts.write });
+    console.log(`${mode}: ${where}`);
+    console.log(`${result.uid}: "${result.before}" → "${result.after}"`);
+    dryRunNote();
+  } else if (command === 'delete-user') {
+    const [who] = args;
+    if (!who) throw new Error('delete-user needs a uid or email');
+    const result = await deleteUserData(db, getAuth(), who, { write: opts.write });
+    console.log(`${mode}: delete user ${result.uid} (${result.email ?? 'no email'}) on ${where}\n`);
+    console.log(`  Auth user: ${result.authUser ? 'yes' : 'none'}`);
+    console.log(`  Profile: ${result.profile ? 'yes' : 'none'}`);
+    console.log(`  Builds (with their likes and comments): ${result.builds}`);
+    console.log(`  Likes on other builds: ${result.likes}`);
+    console.log(`  Comments on other builds: ${result.comments}`);
+    console.log(`  Reports they filed: ${result.reportsFiled}`);
+    console.log(
+      `  Open reports about their content, to resolve as removed: ${result.reportsResolved}`,
+    );
+    if (result.backup) console.log(`\nBackup: ${result.backup}`);
     dryRunNote();
   } else if (command === 'grant' || command === 'revoke') {
     const [who] = args;

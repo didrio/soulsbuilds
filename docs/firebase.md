@@ -35,7 +35,8 @@ public by design; security rules protect the data.
   The emulators load it, and production has run it since the T12 cutover (2026-11-15, with the v1→v2 migration).
   It now ships with every approved production deploy from CI.
 - `firestore.indexes.json` has the composite indexes the queries need (builds by game + likes/date, by tag, by
-  owner; likes by user). A new index takes minutes to build in production; queries that need it fail until then.
+  owner; likes by user) and, under `fieldOverrides`, collection-group single-field indexes for account
+  deletion (likes by `userId`, comments by `authorId`). A new index takes minutes to build in production; queries that need it fail until then.
 - Production also holds an unused 2022 doc, `app/tags` (the old boss-tag list). No rule matches it, so clients
   can't read it; it's in the T12 backup.
 
@@ -66,8 +67,9 @@ dropped item names and how many builds lost each.
 ## Moderation: reports and admins (T10)
 
 - Signed-in users report a build or a comment from its page ("Report": a reason from a fixed list plus an
-  optional note). Reports live in `reports/{targetId}_{uid}`: one per user per target, create-only from a client,
-  readable by admins (and by the reporter, for "already reported"). Rules and tests: `firestore.rules`,
+  optional note). Reports live in `reports/{targetId}_{uid}`: one per user per target, created from a client,
+  readable by admins (and by the reporter, for "already reported"); a reporter may delete their own (account
+  deletion). Rules and tests: `firestore.rules`,
   `tests/rules/`.
 - **Admins** have the `admin: true` custom claim (never a Firestore field). The rules let admins delete any
   build or comment; the app has no admin UI yet: moderation runs from `scripts/admin.mjs` (Admin SDK, dry run
@@ -77,6 +79,8 @@ dropped item names and how many builds lost each.
 node scripts/admin.mjs reports                                   # open reports, grouped by target
 node scripts/admin.mjs remove <buildId> [commentId] --write      # delete it, resolve its reports
 node scripts/admin.mjs dismiss <buildId> [commentId] --write     # keep it, resolve its reports
+node scripts/admin.mjs rename <uid> "New name" --write           # fix a display name (1–40 chars)
+node scripts/admin.mjs delete-user <uid|email> --write           # account + everything it published
 node scripts/admin.mjs grant you@example.com --write             # admin claim (revoke to undo)
 node scripts/admin.mjs reports --project soulsbuilds             # production (ADC, owner only)
 node scripts/admin.mjs export [--project soulsbuilds]            # JSON backup of every document
@@ -84,6 +88,10 @@ node scripts/admin.mjs export [--project soulsbuilds]            # JSON backup o
 
 - **Delete, not hide** (`docs/decisions.md`). `remove` first saves what it deletes (the build with its comments
   and likes, or the comment) as JSON in `.admin-backups/` (gitignored), so a mistake can be restored by hand.
+  `delete-user` (T18) does the same for an account: the in-app "Delete account" scope (builds with their likes
+  and comments, likes and comments elsewhere with the counters, reports filed, profile, Auth user), backed up
+  first, and it resolves open reports about that user's content as `removed`. Use it when someone asks by
+  GitHub issue (they can't sign in) or an in-app deletion stopped halfway.
   Resolved reports keep their doc with `status: 'removed' | 'dismissed'` and `resolvedAt`.
 - A new admin claim reaches the user's ID token on their next sign-in (or within an hour).
 

@@ -95,7 +95,8 @@ builds/{id}/likes/{uid}           one like per user (doc id = liker's uid)
 builds/{id}/comments/{autoId}
   authorId: uid, text: string (trimmed, 1–1000), createdAt: timestamp
 
-reports/{targetId}_{uid}          one report per user per build/comment (T10); create-only from clients
+reports/{targetId}_{uid}          one report per user per build/comment (T10); clients create, and delete
+                                  their own (account deletion, T18)
   reporterId: uid, buildId, commentId: string|null (null = the build itself)
   reason: 'spam'|'offensive'|'harassment'|'other', note: string (trimmed, ≤ 500, may be '')
   status: 'open' (client) → 'removed'|'dismissed' + resolvedAt (scripts/admin.mjs), createdAt: timestamp
@@ -110,12 +111,22 @@ reports/{targetId}_{uid}          one report per user per build/comment (T10); c
   custom claim (`request.auth.token.admin`), never a document field: they can delete any build or comment.
   Deleting a build deletes the build doc first, then its likes/comments (anyone signed in may clean up children
   of a build that no longer exists). Signed-in users report builds and comments; only admins read reports
-  (a reporter may read their own). Moderation runs from `scripts/admin.mjs` (`docs/firebase.md`).
+  (a reporter may read and list their own). Moderation runs from `scripts/admin.mjs` (`docs/firebase.md`).
+- **Account deletion (T18)**, client-side (`src/lib/firebase/account.ts`, the profile's "Delete account"):
+  re-authenticate with the password, then **find everything first** (own builds; likes and comments on other
+  builds by collection-group queries; reports by `reporterId`), so a failing query deletes nothing; then delete
+  own builds (`deleteBuild`, which takes every like and comment on them), each like/comment elsewhere in its
+  own batch with the counter (plain delete if that build is gone), the reports, `users/{uid}`, and last the
+  Auth user (`deleteUser`). Every step is idempotent: re-running finishes a half-done deletion (the owner's own
+  "User not found" page offers "Finish deleting your account"). Reports _about_ the user's content stay open
+  for admins (shown as "already deleted"). `scripts/admin.mjs delete-user` does the same with the Admin SDK.
 - **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc`
   (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`; optionally
   with a tag), each optionally with a `level` range (`>=`/`<=` next to an `orderBy` on another field, which Firestore's
   multi-field range support allows; the index lists equality fields, the order field, then `level`), by
-  `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab). The emulator doesn't need indexes; production does (deployed in T12).
+  `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab).
+  Account deletion's equality-only collection-group queries (likes by `userId`, comments by `authorId`) use
+  single-field `fieldOverrides` with a `COLLECTION_GROUP` scope. The emulator doesn't need indexes; production does (deployed in T12).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
   The 2022 model (`users.{admin,email,name,builds,likedBuilds}`, builds with `user`, string stats, `likes`,
   `comments[]`, item **names**) existed only in production, migrated at T12 (2026-11-15); the script stays for

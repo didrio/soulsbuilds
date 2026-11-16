@@ -1,6 +1,13 @@
 // Server data for user profiles (TanStack Query over src/lib/firebase).
 import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getUserProfile, listLikedBuildIds, getBuild, updateDisplayName } from '@/lib/firebase';
+import {
+  deleteAccount,
+  getBuild,
+  getUserProfile,
+  listLikedBuildIds,
+  updateDisplayName,
+  type AccountProgress,
+} from '@/lib/firebase';
 import type { Build, UserProfile } from '@/lib/models';
 import { queryKeys } from '@/lib/queryKeys';
 
@@ -44,5 +51,18 @@ export function useUpdateDisplayName(userId: string) {
   return useMutation({
     mutationFn: (displayName: string) => updateDisplayName(userId, displayName),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.user(userId) }),
+  });
+}
+
+/**
+ * Deletes the signed-in user's account and everything they published (T18). On success every cached
+ * query is dropped: their builds, likes and comments are gone from every list.
+ */
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ password, onProgress }: { password: string; onProgress?: AccountProgress }) =>
+      deleteAccount(password, onProgress),
+    onSuccess: () => queryClient.clear(),
   });
 }
