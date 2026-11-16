@@ -10,7 +10,7 @@ import { queryKeys } from '@/lib/queryKeys';
 import { AuthField, AuthForm, AuthSwitch } from './styles';
 
 /** Registration form (email, password, display name), shown in the auth dialog. */
-function SignUp({ onDone, onSwitch }: { onDone: () => void; onSwitch: () => void }) {
+function SignUp({ onDone, onSwitch }: { onDone: (uid: string) => void; onSwitch: () => void }) {
   const queryClient = useQueryClient();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +28,7 @@ function SignUp({ onDone, onSwitch }: { onDone: () => void; onSwitch: () => void
     try {
       const uid = await signUp(email, password, name);
       await queryClient.invalidateQueries({ queryKey: queryKeys.user(uid) });
-      onDone();
+      onDone(uid);
     } catch (err) {
       setError(errorMessage(err));
       setBusy(false);

@@ -29,8 +29,8 @@ function Privacy() {
         <li>
           <strong>Builds you track:</strong> when you track a build, which of its items you’ve
           marked collected, the stat levels you’ve entered, and when you started and finished. This
-          is private: only you can see it. Signed out, it stays in your browser’s local storage;
-          when you sign up or log in, it moves into your account.
+          is private: only you can see it. Tracking needs an account, so it’s stored with your
+          account and nowhere else.
         </li>
         <li>
           <strong>Reports:</strong> if you report a build or comment, we store the reason, your note
@@ -55,8 +55,8 @@ function Privacy() {
       </ul>
       <p>
         We don’t use analytics, ads or tracking cookies, and we don’t sell or share your data. Your
-        browser keeps your sign-in in local storage so you stay signed in, and, while you’re signed
-        out, the builds you track; reCAPTCHA may set its own Google cookies.
+        browser keeps your sign-in in local storage so you stay signed in; reCAPTCHA may set its own
+        Google cookies.
       </p>
 
       <h2>Keeping and deleting your data</h2>

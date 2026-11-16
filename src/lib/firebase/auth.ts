@@ -20,8 +20,10 @@ export function onAuthChange(callback: (user: AuthUser | null) => void): () => v
   return onAuthStateChanged(auth, callback);
 }
 
-export async function signIn(email: string, password: string): Promise<void> {
-  await signInWithEmailAndPassword(auth, email.trim(), password);
+/** Signs in with email and password; resolves to the uid. */
+export async function signIn(email: string, password: string): Promise<string> {
+  const { user } = await signInWithEmailAndPassword(auth, email.trim(), password);
+  return user.uid;
 }
 
 /** Creates the account and its public profile; resolves to the new uid. */

@@ -35,7 +35,7 @@ import TabLinkCard from './sections/TabLinkCard';
 import GuideSection, { hasItems, loadRoute, NextStop } from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
 import { TrackButton, TrackingHero } from '@/features/tracking/TrackingHero';
-import { KeepProgressCard, NewItemsNotice } from '@/features/tracking/TrackingCards';
+import { NewItemsNotice } from '@/features/tracking/TrackingCards';
 import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
 import { parseTab, tabPath, visibleTabs } from './tabs';
@@ -137,12 +137,7 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
           }
         />
       ) : null}
-      {!editable && tracking.state ? (
-        <>
-          <KeepProgressCard tracking={tracking} />
-          <NewItemsNotice tracking={tracking} />
-        </>
-      ) : null}
+      {!editable && tracking.state ? <NewItemsNotice tracking={tracking} /> : null}
       <div>
         <BuildTabs
           buildId={routeId}

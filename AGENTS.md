@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T29, T34, T35, T39 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T29, T34, T35, T39, T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
-route (T14/19/15). Tracking (T34): check off gear and level stats, signed out in local storage, private
-`users/{uid}/tracking`; the route follows it (T35: stops done, Next stop card). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
+only (T41: an intro modal signed out); the route follows it (T35: stops done, Next stop card). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -69,7 +69,7 @@ route (T14/19/15). Tracking (T34): check off gear and level stats, signed out in
 | Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)            |
 | Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`    |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]` |
-| … with local storage (e.g. tracking, T34)   | `npm run screenshot -- /build/SEEDBLEED001 --storage <file.json>`              |
+| … after clicking a button (a dialog, T41)   | `npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"`         |
 | Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)  |
 | Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)           |
 | Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                     |
@@ -101,8 +101,8 @@ index.html                 Vite entry (meta, theme-color, icons) → src/main.ts
 src/
   main.tsx                 createRoot + <AppProviders><App/>
   app/                     App (shell: global styles + game skin, header (phone menu, T26), log in/sign up dialog (pages open
-                           it with authDialog.ts useOpenAuthDialog), item-picker modal, footer; useScrollToTop; AppCheckNotice =
-                           "reCAPTCHA blocked", T24; useSyncLocalTracking), game.ts (game registry + useCurrentGame),
+                           it with authDialog.ts useOpenAuthDialog(kind, onSignedIn)), item-picker modal, footer; useScrollToTop; AppCheckNotice =
+                           "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
@@ -114,10 +114,10 @@ src/
                            useUserBuilds, useGameStats)
   features/profile/        Profile (rename, Builds/Liked tabs), DeleteAccount (T18), queries.ts
                            (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
-  features/tracking/       Tracking a build (T34): useBuildTracking (query cache + saveQueue.ts debounced Firestore saves,
-                           or localTracking.ts signed out), useSyncLocalTracking (local → account on sign-in),
-                           TrackingHero (Track button, progress, Build complete), TrackingCards (Keep my progress,
-                           new items), TrackedAttributes (yours / target with − +)
+  features/tracking/       Tracking a build (T34; account only, T41): useBuildTracking (query cache + saveQueue.ts
+                           debounced Firestore saves; startAfterSignIn), TrackingIntro (the modal before the first
+                           track: sign up / log in, or Start tracking), TrackingHero (Track button, progress, Build
+                           complete), TrackingCards (new items), TrackedAttributes (yours / target with − +)
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete; hero + tabs, T28) + useBuildEditor; tabs.ts (tab
@@ -141,7 +141,7 @@ src/
                            selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check; appCheckStatus watches
                            for a token that never comes, T24), auth, builds, likes,
-                           comments, users, reports, account (deletion, T18), stats (T20), tracking (T34)),
+                           comments, users, reports, account (deletion, T18), stats (T20), tracking (T34; tracksAnyBuild, T41)),
                            models.ts (v2 types + LIMITS), queryKeys.ts, equipment.ts (mainWeaponId), markdown.ts
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8

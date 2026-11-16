@@ -52,17 +52,18 @@ Function and UX are the same for every game; only the skin (accent colors) chang
   are a local draft while editing. Ownership is computed at render from `useAuth()` and the build, so there is
   no load race. Save (`selectBuildFields` + draft → `createBuild`/`updateBuild`) only writes the owner-editable
   fields; a failed save shows the error and keeps the editor open. Cancel reloads the saved build.
-- **Tracking (T34)** (`src/features/tracking/`): `useBuildTracking(build)` holds the player's progress on the
-  build page in the query cache (`queryKeys.tracking(uid or 'local', buildId)`, `staleTime: Infinity`: the page
-  is the only writer). Signed in it reads `users/{uid}/tracking/{buildId}`; each change updates the cache at
-  once and `saveQueue.ts` writes the whole doc after a 500 ms pause (flushed on `pagehide` and unmount), so
-  rapid +/− taps are one write. Signed out it reads and writes local storage (`localTracking.ts`,
-  `soulsbuilds.tracking.v1`, guarded: blocked storage just means no saved progress). `useSyncLocalTracking`
-  (mounted in `App`) moves local progress into the account when a uid appears, merged with what's there
-  (`mergeTracking`), and keeps a build local if its write fails. The math is pure, in `src/lib/tracking.ts`.
-  "Keep my progress" opens sign-up through `useOpenAuthDialog` (`src/app/authDialog.ts`). The route follows
-  progress (T35): `guide/progress.ts` maps a route item to its tracking keys (`isCollected`) and decides which
-  numbered stops are done (`stopProgress`: a stop with the build's tracked items when all are collected, any
+- **Tracking (T34)** (`src/features/tracking/`): tracking needs an account (T41). `useBuildTracking(build)` holds
+  the player's progress on the build page in the query cache (`queryKeys.tracking(uid, buildId)`, `staleTime:
+Infinity`: the page is the only writer), read from `users/{uid}/tracking/{buildId}`; each change updates the
+  cache at once and `saveQueue.ts` writes the whole doc after a 500 ms pause (flushed on `pagehide` and unmount),
+  so rapid +/− taps are one write. The math is pure, in `src/lib/tracking.ts`. "Track this build" opens the
+  intro (`TrackingIntro`, a `Dialog`) when signed out, or signed in while `tracksAnyBuild(uid)` (one `limit(1)`
+  read, `queryKeys.tracksAnyBuild`) says no build is tracked yet; otherwise it starts at once. Signed out, the
+  intro opens sign-up or log-in through `useOpenAuthDialog(kind, onSignedIn)` (`src/app/authDialog.ts`): App
+  calls `onSignedIn(uid)` after a successful sign-in, and `startAfterSignIn(uid)` starts tracking on that account
+  unless it already tracks the build (the uid comes from the auth result, since `useAuth` may lag a render).
+  The route follows progress (T35): `guide/progress.ts` maps a route item to its tracking keys (`isCollected`)
+  and decides which numbered stops are done (`stopProgress`: a stop with the build's tracked items when all are collected, any
   other stop once a later tracked one is); How to get folds done stops and marks the next, and the Loadout tab
   shows a Next stop card (`guide/NextStop`).
 - **Game data** is static JSON in `src/data/er/` (from the game files, T7), bundled, read through typed

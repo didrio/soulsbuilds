@@ -4,13 +4,13 @@
 // errors and failed requests, which are often the real answer.
 //
 //   npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>]
-//                         [--storage <file.json>]
+//                         [--click <button name>]
 //   npm run screenshot -- /build/SEEDBLEED001 --mobile
 //   npm run screenshot -- /build/SEEDBLEED001 --width 1000   (desktop at another width)
-//   npm run screenshot -- /build/SEEDBLEED001 --storage tracking.json
-//     (local storage to start with, as { key: value }, values as strings or JSON: e.g. signed-out
-//     tracking, T34: { "soulsbuilds.tracking.v1": { "SEEDBLEED001": { ... } } })
-import { mkdir, readFile } from 'node:fs/promises';
+//   npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"
+//     (clicks the button with that accessible name first, e.g. to open a dialog; signed out only:
+//     for signed-in pages drive the browser or write an e2e test)
+import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
@@ -32,7 +32,7 @@ function parseArgs(argv) {
     full: false,
     wait: 1500,
     name: null,
-    storage: null,
+    click: null,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -41,7 +41,7 @@ function parseArgs(argv) {
     else if (arg === '--width') opts.width = Number(argv[(i += 1)]);
     else if (arg === '--wait') opts.wait = Number(argv[(i += 1)]);
     else if (arg === '--name') opts.name = argv[(i += 1)];
-    else if (arg === '--storage') opts.storage = argv[(i += 1)];
+    else if (arg === '--click') opts.click = argv[(i += 1)];
     else if (arg === '--help' || arg === '-h') opts.help = true;
     else if (!arg.startsWith('--')) opts.route = arg.startsWith('/') ? arg : `/${arg}`;
     else throw new Error(`Unknown option ${arg}`);
@@ -53,7 +53,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
     console.log(
-      'npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>] [--storage <file.json>]',
+      'npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>] [--click <button name>]',
     );
     return;
   }
@@ -71,14 +71,6 @@ async function main() {
   const viewport = opts.width ? { ...base, width: opts.width } : base;
   const browser = await chromium.launch({ executablePath: CHROME });
   const page = await browser.newPage({ viewport, isMobile: opts.mobile, hasTouch: opts.mobile });
-  if (opts.storage) {
-    const entries = Object.entries(JSON.parse(await readFile(opts.storage, 'utf8'))).map(
-      ([key, value]) => [key, typeof value === 'string' ? value : JSON.stringify(value)],
-    );
-    await page.addInitScript((pairs) => {
-      for (const [key, value] of pairs) localStorage.setItem(key, value);
-    }, entries);
-  }
   const problems = [];
   page.on('console', (msg) => msg.type() === 'error' && problems.push(`console: ${msg.text()}`));
   page.on('pageerror', (error) => problems.push(`page error: ${error.message}`));
@@ -93,6 +85,10 @@ async function main() {
   // Not 'networkidle': Firestore keeps a streaming connection open, so the network never idles.
   await page.goto(`${BASE_URL}${opts.route}`, { waitUntil: 'load', timeout: 30_000 });
   await page.waitForTimeout(opts.wait);
+  if (opts.click) {
+    await page.getByRole('button', { name: opts.click, exact: true }).first().click();
+    await page.waitForTimeout(500);
+  }
 
   const slug =
     opts.name ??

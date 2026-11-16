@@ -33,11 +33,12 @@ npm run screenshot -- /build/SEEDBLEED001            # desktop 1280×900
 npm run screenshot -- /build/SEEDBLEED001 --mobile   # 390×844 phone
 npm run screenshot -- /build/SEEDBLEED001/route --width 1000   # desktop at another width (build tabs: /description, /route, /comments)
 npm run screenshot -- /user/seed-ranni --full        # whole page
-npm run screenshot -- /build/SEEDBLEED001 --storage track.json   # local storage first (signed-out tracking, T34)
+npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"   # click a button first (a dialog, T41)
 ```
 
-`--storage` takes a JSON file of local-storage entries (`{ "soulsbuilds.tracking.v1": { "<buildId>": { collected,
-seen, stats, startedAt, completedAt } } }`): the way to see tracking at 0%, mid-run or complete without clicking.
+`--click` presses the button with that accessible name before the shot (signed out). Signed-in pages (tracking
+progress, the signed-in intro) need a session: drive `http://127.0.0.1:5180` in the browser pane and sign up
+there, or cover them in an e2e test (`tests/e2e/helpers.ts` `completeSignUp`).
 
 It prints a PNG path under `.artifacts/screenshots/`: open it with your image reader (Read). It also prints
 console errors, HTTP errors and failed requests from the page: read those first, they're often the real answer.

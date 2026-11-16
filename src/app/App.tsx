@@ -5,7 +5,6 @@ import Login from '@/features/auth/Login';
 import SignUp from '@/features/auth/SignUp';
 import useAuth from '@/features/auth/useAuth';
 import { selectSlotType } from '@/features/editor/store/selectors';
-import { useSyncLocalTracking } from '@/features/tracking/useSyncLocalTracking';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
@@ -20,7 +19,7 @@ import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppSelector } from './hooks';
 import AppCheckNotice from './AppCheckNotice';
-import { AuthDialogContext, type AuthDialogKind } from './authDialog';
+import { AuthDialogContext, type AuthDialogKind, type OpenAuthDialog } from './authDialog';
 import AppRoutes from './routes';
 import { useScrollToTop } from './useScrollToTop';
 
@@ -30,28 +29,38 @@ const ItemSelector = lazy(() => import('@/features/editor/ItemSelector'));
 /**
  * The page shell: global styles and the current game's skin, header, the log in / sign up dialog
  * (pages open it with `useOpenAuthDialog`), the routes, the footer, and the item picker modal (open
- * while Redux `app.slotType` is set). Signing in moves this device's tracking into the account.
+ * while Redux `app.slotType` is set).
  */
 function App() {
   const slotType = useAppSelector(selectSlotType);
   const { uid } = useAuth();
   const game = useCurrentGame();
-  const [authDialog, setAuthDialog] = useState<AuthDialogKind | null>(null);
+  const [authDialog, setAuthDialog] = useState<{
+    kind: AuthDialogKind;
+    onSignedIn?: (uid: string) => void;
+  } | null>(null);
 
+  const openAuthDialog: OpenAuthDialog = (kind, onSignedIn) => setAuthDialog({ kind, onSignedIn });
+  // Switching between log in and sign up keeps what happens after.
+  const switchAuth = (kind: AuthDialogKind) =>
+    setAuthDialog((open) => (open ? { ...open, kind } : { kind }));
   const closeAuth = () => setAuthDialog(null);
+  const signedIn = (newUid: string) => {
+    authDialog?.onSignedIn?.(newUid);
+    closeAuth();
+  };
   useScrollToTop();
-  useSyncLocalTracking();
 
   return (
-    <AuthDialogContext value={setAuthDialog}>
+    <AuthDialogContext value={openAuthDialog}>
       <Shell>
         <GlobalStyle />
         <GameSkinStyle $game={game.id} />
         <SkipLink href="#main">Skip to content</SkipLink>
         <Header
-          openDialog={uid ? null : authDialog}
-          onLogIn={() => setAuthDialog('login')}
-          onSignUp={() => setAuthDialog('signup')}
+          openDialog={uid ? null : (authDialog?.kind ?? null)}
+          onLogIn={() => openAuthDialog('login')}
+          onSignUp={() => openAuthDialog('signup')}
         />
         <Main id="main" tabIndex={-1}>
           <AppCheckNotice />
@@ -60,12 +69,12 @@ function App() {
         <Footer />
         {authDialog && !uid ? (
           <Dialog
-            title={authDialog === 'login' ? 'Log in' : 'Create your account'}
+            title={authDialog.kind === 'login' ? 'Log in' : 'Create your account'}
             onClose={closeAuth}>
-            {authDialog === 'login' ? (
-              <Login onDone={closeAuth} onSwitch={() => setAuthDialog('signup')} />
+            {authDialog.kind === 'login' ? (
+              <Login onDone={signedIn} onSwitch={() => switchAuth('signup')} />
             ) : (
-              <SignUp onDone={closeAuth} onSwitch={() => setAuthDialog('login')} />
+              <SignUp onDone={signedIn} onSwitch={() => switchAuth('login')} />
             )}
           </Dialog>
         ) : null}

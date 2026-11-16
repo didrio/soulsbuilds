@@ -178,24 +178,6 @@ export function applyChange(
   return { ...next, completedAt: complete ? (state.completedAt ?? now) : null };
 }
 
-const earlier = (a: Date | null, b: Date | null) =>
-  a && b ? (a.getTime() <= b.getTime() ? a : b) : (a ?? b);
-
-/**
- * Two records of the same build (this device's and the account's, on sign-in) as one: everything
- * collected or seen in either, the higher of each stat, the earlier start and completion.
- */
-export function mergeTracking(a: TrackingState, b: TrackingState): TrackingState {
-  const union = (x: string[], y: string[]) => [...new Set([...x, ...y])].slice(0, MAX_TRACKED_KEYS);
-  return {
-    collected: union(a.collected, b.collected),
-    seen: union(a.seen, b.seen),
-    stats: mapStats((key) => Math.max(a.stats[key], b.stats[key])),
-    startedAt: earlier(a.startedAt, b.startedAt)!,
-    completedAt: earlier(a.completedAt, b.completedAt),
-  };
-}
-
 /** Whole days from start to finish ("12 days"), at least 0. */
 export const daysBetween = (from: Date, to: Date) =>
   Math.max(0, Math.round((to.getTime() - from.getTime()) / 86_400_000));

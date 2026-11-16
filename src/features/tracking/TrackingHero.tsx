@@ -21,16 +21,25 @@ import {
   TEXT_MD,
   TEXT_SM,
 } from '@/theme';
+import { TrackingIntro } from './TrackingIntro';
 import type { BuildTracking } from './useBuildTracking';
 
-/** "Track this build": the build page's primary action (T34). Hidden once tracking. */
+/**
+ * "Track this build": the build page's primary action (T34). Hidden once tracking. Signed out, or
+ * signed in with no build tracked yet, it opens the intro first (T41); otherwise it starts at once.
+ */
 export function TrackButton({ tracking }: { tracking: BuildTracking }) {
+  const [intro, setIntro] = useState(false);
   if (tracking.loading || tracking.state) return null;
+  const showIntro = !tracking.signedIn || tracking.firstTime;
   return (
-    <Button onClick={tracking.start}>
-      <CheckIcon />
-      Track this build
-    </Button>
+    <>
+      <Button onClick={showIntro ? () => setIntro(true) : tracking.start}>
+        <CheckIcon />
+        Track this build
+      </Button>
+      {intro ? <TrackingIntro tracking={tracking} onClose={() => setIntro(false)} /> : null}
+    </>
   );
 }
 

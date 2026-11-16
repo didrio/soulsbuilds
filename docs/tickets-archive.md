@@ -95,3 +95,11 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   Inter values (14px, tabular); accent budget (neutral panels, tags, icons); `Frame` plain + `$hero` (corner marks,
   skin `tint`) on the build title pane; 1240px, `SPACE_PANEL/GROUP/REGION`; header with phone "+" and menu;
   write-up headings. Not seen on screen: write-up h1–h4 (no seeded write-up has headings).
+- T27 — Loadout panel and stats card — 2026-11-16 — `sections/Loadout` (every slot always shown, items by name:
+  left | right hand 64px, armor/talismans/flask + great rune and spirit ash 44px, spells one cell per memory slot;
+  arrows/consumables only when used, owner) and `sections/StatsCard` (attributes, vitals, load bar with 30/70% marks;
+  phones 4×2); stats first below 900px; hands stacked on phones; `ItemSlot` gone (`Tooltip` now unused).
+- T28 — Build page tabs — 2026-11-16 — hero (main weapon, `lib/equipment.ts`) + tabs at `/build/:id/:tab?`
+  (`tabs.ts`, sticky `BuildTabs`); owner, mid-session: stats in a left column on every desktop tab (one panel with
+  the gear on Loadout, `BuildSummary` elsewhere), no Description tab without a write-up; Jump to (`rehypeJumpTo`);
+  route as numbered areas; editor pinned dark (`index.html`); `BELOW_WIDE`, `screenshot --width`.

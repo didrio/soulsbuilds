@@ -32,7 +32,7 @@ const { deleteAccountData, findAccountData } = await import('@/lib/firebase/acco
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
   await import('@/lib/firebase/users');
 const { getGameStats } = await import('@/lib/firebase/stats');
-const { deleteTracking, getTracking, listTrackingRefs, saveTracking } =
+const { deleteTracking, getTracking, listTrackingRefs, saveTracking, tracksAnyBuild } =
   await import('@/lib/firebase/tracking');
 
 let env: RulesTestEnvironment;
@@ -272,7 +272,9 @@ describe('tracking (T34)', () => {
   it('saves, reads back, updates and deletes the player’s own progress only', async () => {
     actAs('gus');
     expect(await getTracking('gus', 'B9')).toBeNull();
+    expect(await tracksAnyBuild('gus')).toBe(false);
     await saveTracking('gus', 'B9', state);
+    expect(await tracksAnyBuild('gus')).toBe(true);
     expect(await getTracking('gus', 'B9')).toEqual(state);
     const done = { ...state, collected: [...state.seen], completedAt: new Date('2026-11-16') };
     await saveTracking('gus', 'B9', done);
@@ -281,12 +283,14 @@ describe('tracking (T34)', () => {
 
     actAs('hal');
     await expect(getTracking('gus', 'B9')).rejects.toThrow();
+    await expect(tracksAnyBuild('gus')).rejects.toThrow();
     await expect(saveTracking('gus', 'B9', state)).rejects.toThrow();
     await expect(deleteTracking('gus', 'B9')).rejects.toThrow();
 
     actAs('gus');
     await deleteTracking('gus', 'B9');
     expect(await getTracking('gus', 'B9')).toBeNull();
+    expect(await tracksAnyBuild('gus')).toBe(false);
   });
 });
 

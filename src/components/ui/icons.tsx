@@ -95,3 +95,26 @@ export const MinusIcon = ({ size = 16, ...rest }: IconProps) => (
     <path d="M5 12h14" />
   </svg>
 );
+
+/** An arrow up: levelling a stat. */
+export const LevelUpIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M12 19V5M6 11l6-6 6 6" />
+  </svg>
+);
+
+/** A map pin: a stop on the route. */
+export const PinIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
+    <circle cx="12" cy="9.5" r="2.5" />
+  </svg>
+);
+
+/** A screen and a phone: on every device. */
+export const DevicesIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M15 16H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3M7 20h8" />
+    <rect x="17" y="11" width="5" height="9" rx="1" />
+  </svg>
+);

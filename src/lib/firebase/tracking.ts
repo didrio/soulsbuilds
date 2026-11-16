@@ -1,12 +1,13 @@
 // users/{uid}/tracking/{buildId}: a player's private progress on a build (T34). Only its owner reads or
-// writes it (firestore.rules); signed-out progress lives in local storage instead
-// (src/features/tracking/localTracking.ts) and is merged in here on sign-in.
+// writes it (firestore.rules). Tracking needs an account (T41): there is no signed-out progress.
 import {
   collection,
   deleteDoc,
   doc,
   getDoc,
   getDocs,
+  limit,
+  query,
   serverTimestamp,
   setDoc,
   Timestamp,
@@ -54,6 +55,12 @@ export async function saveTracking(
 /** Stops tracking a build: its progress is deleted. */
 export async function deleteTracking(uid: string, buildId: string): Promise<void> {
   await deleteDoc(trackingRef(uid, buildId));
+}
+
+/** Whether the user tracks any build (one read): the tracking intro shows until they do (T41). */
+export async function tracksAnyBuild(uid: string): Promise<boolean> {
+  const snapshot = await getDocs(query(collection(firestore, 'users', uid, 'tracking'), limit(1)));
+  return !snapshot.empty;
 }
 
 /** Every tracking record of the user's (account deletion). */

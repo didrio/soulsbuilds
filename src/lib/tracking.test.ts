@@ -4,7 +4,6 @@ import type { Stats } from './buildMath';
 import {
   applyChange,
   daysBetween,
-  mergeTracking,
   newItems,
   startTracking,
   trackedItems,
@@ -12,7 +11,6 @@ import {
   trackingProgress,
   trackKey,
   type TrackingContext,
-  type TrackingState,
 } from './tracking';
 
 const stats = (values: number[]): Stats => {
@@ -204,32 +202,6 @@ describe('startTracking and applyChange', () => {
     const edited = context({ items: ['weapon1:1'] });
     state = applyChange(state, { type: 'toggle', key: 'weapon1:1' }, edited, NOW);
     expect(state).toMatchObject({ collected: ['weapon1:1'], seen: ['weapon1:1'] });
-  });
-});
-
-describe('mergeTracking', () => {
-  it('unites both records', () => {
-    const a: TrackingState = {
-      collected: ['helm:3'],
-      seen: ['helm:3'],
-      stats: stats([20, 10, 10, 10, 10, 10, 10, 10]),
-      startedAt: new Date('2026-11-10'),
-      completedAt: null,
-    };
-    const b: TrackingState = {
-      collected: ['weapon1:1', 'helm:3'],
-      seen: ['weapon1:1'],
-      stats: stats([15, 12, 10, 10, 10, 10, 10, 10]),
-      startedAt: new Date('2026-11-12'),
-      completedAt: new Date('2026-11-14'),
-    };
-    expect(mergeTracking(a, b)).toEqual({
-      collected: ['helm:3', 'weapon1:1'],
-      seen: ['helm:3', 'weapon1:1'],
-      stats: stats([20, 12, 10, 10, 10, 10, 10, 10]),
-      startedAt: new Date('2026-11-10'),
-      completedAt: new Date('2026-11-14'),
-    });
   });
 });
 

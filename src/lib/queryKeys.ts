@@ -21,4 +21,6 @@ export const queryKeys = {
   stats: (game: GameId) => ['stats', game] as const,
   /** The signed-in player's progress on a build (T34). */
   tracking: (userId: string, buildId: string) => ['tracking', userId, buildId] as const,
+  /** Whether the signed-in player tracks any build yet (T41: the intro shows until they do). */
+  tracksAnyBuild: (userId: string) => ['tracksAnyBuild', userId] as const,
 };

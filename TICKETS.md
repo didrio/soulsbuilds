@@ -7,10 +7,10 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T42
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T41 — Tracking needs an account · Opus · high · plan mode on. Up next is in the
-order of `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), tracking (T41 → T36), link
-previews (T37, blocked on the Blaze decision), sign-in and account (T30, T31), copies and variations (T32 → T33).
-T30–T41 start with owner questions (★ in each ticket).
+**Next:** T36 — Playing and Completed · Opus · high · plan mode on. Up next is in the order of
+`docs/product.md` "Priorities": usage counts (T38, blocked on the owner), tracking (T36), link previews (T37,
+blocked on the Blaze decision), sign-in and account (T30, T31), copies and variations (T32 → T33).
+T30–T40 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -33,7 +33,7 @@ and spacing, and the canvas notes say why.
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
-T34 (tracking) and T35 (the route during a run).
+T34 (tracking), T35 (the route during a run) and T41 (tracking needs an account).
 
 ## In progress
 
@@ -57,31 +57,9 @@ T34 (tracking) and T35 (the route during a run).
 - **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
   (performance notes).
 
-### T41 — Tracking needs an account: an intro modal instead of local progress
-
-- **Status:** ready (after T35)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Tracking lives on the account only (owner, 2026-11-16). "Track this build" still shows signed out,
-  but pressing it opens a modal that explains tracking (check off gear as you find it, level your stats, the
-  route's next stop, progress on every device) and invites the visitor to sign up or log in. A signed-in user
-  sees the same modal, with "Start tracking", the first time: while they track no build yet (one small query;
-  nothing new stored, no rules change; owner's call).
-- **Done when:**
-  - The modal (`Dialog`, one component for both cases); sign up / log in continues into tracking after auth
-    (`useOpenAuthDialog`).
-  - Signed-out local-storage tracking is gone: `localTracking.ts`, `useSyncLocalTracking`, `KeepProgressCard`,
-    `mergeTracking` if unused, and the tracking use of `screenshot --storage`. ★ Whether existing local progress
-    is merged once on sign-in before the code goes (T34 shipped 2026-11-16, so little exists).
-  - The privacy page matches; unit tests and `tracking.spec.ts` (and T35's tracked `guide.spec.ts`) updated;
-    `npm run check` and `npm run e2e` pass; screenshots of the modal both ways, desktop and `--mobile`.
-- **Context:** `features/tracking/` (`useBuildTracking`, `TrackingHero` `TrackButton`, `TrackingCards`,
-  `localTracking`, `useSyncLocalTracking`), `lib/firebase/tracking.ts` (`listTrackingRefs`), `app/authDialog.ts`,
-  `features/legal/Privacy.tsx`, docs/architecture.md "Tracking", the run-app skill (`--storage`).
-
 ### T36 — Playing and Completed: the profile, and counts on the build
 
-- **Status:** ready after T41 (which removes signed-out tracking, so `useSyncLocalTracking`'s doc creates go
-  away); T31 reworks the profile too, so do them in either order and keep the other in mind
+- **Status:** ready (T41 removed signed-out tracking, so there are no sign-in doc creates to count); T31 reworks the profile too, so do them in either order and keep the other in mind
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Your tracked builds in one place, finished builds as a small trophy shelf, and the author sees how many
   people play and finish their build.
@@ -99,7 +77,7 @@ T34 (tracking) and T35 (the route during a run).
 - **Context:** artboard `ProfileMobile.dc.html`, `features/profile/`, `firestore.rules` (counters at the top) with
   `tests/rules/`, `lib/firebase/account.ts`, `scripts/admin.mjs`. T34's writes to change: tracking is one
   `setDoc` per change, debounced in `features/tracking/saveQueue.ts` (start = delay 0), `deleteTracking` on
-  stop, and `useSyncLocalTracking` creating docs on sign-in; each create, first completion (`completedAt` null →
+  stop, and `startAfterSignIn` (T41: starts through the same `persist`); each create, first completion (`completedAt` null →
   set) and delete must become a batch with the counter. Listing a user's tracking: `listTrackingRefs` in
   `lib/firebase/tracking.ts` (the profile needs the docs, not refs). The doc id is the build id.
 
@@ -299,6 +277,12 @@ T34 (tracking) and T35 (the route during a run).
 
 Older entries: `docs/tickets-archive.md`.
 
+- T41 — Tracking needs an account — 2026-11-16 — owner: drop existing local progress (no merge), text + icons
+  modal; `TrackingIntro` (signed out: Create account / Log in, continues into tracking via
+  `useOpenAuthDialog(kind, onSignedIn)` + `startAfterSignIn(uid)`; signed in with no tracked build, from
+  `tracksAnyBuild` (`limit(1)`): Start tracking / Not now); local storage, sync, Keep my progress and
+  `mergeTracking` gone; `screenshot --storage` → `--click`; e2e `helpers.ts` `completeSignUp`.
+
 - T35 — The route during a run — 2026-11-16 — owner: flat numbered stops (mockup), reasons hand-written on gates
   (`progression.ts` `reason`, pipeline fails without) and worded from the route's links for prerequisite key
   items (`route.ts` `usedFor`/`gate`, `phrases.ts` `itemReason`), region-only stops named by who/what; key items
@@ -322,12 +306,3 @@ Older entries: `docs/tickets-archive.md`.
   scroller so its popover isn't clipped); 88px rows by named grid areas (portrait = `mainWeaponId`, strip
   left hand first, empty cells faint, "Level" label); tablet 140px, phones auto height (60px portrait, name on two
   lines). The phone Filters button is gone (sort and level always show).
-
-- T28 — Build page tabs — 2026-11-16 — hero (main weapon, `lib/equipment.ts`) + tabs at `/build/:id/:tab?`
-  (`tabs.ts`, sticky `BuildTabs`); owner, mid-session: stats in a left column on every desktop tab (one panel with
-  the gear on Loadout, `BuildSummary` elsewhere), no Description tab without a write-up; Jump to (`rehypeJumpTo`);
-  route as numbered areas; editor pinned dark (`index.html`); `BELOW_WIDE`, `screenshot --width`.
-- T27 — Loadout panel and stats card — 2026-11-16 — `sections/Loadout` (every slot always shown, items by name:
-  left | right hand 64px, armor/talismans/flask + great rune and spirit ash 44px, spells one cell per memory slot;
-  arrows/consumables only when used, owner) and `sections/StatsCard` (attributes, vitals, load bar with 30/70% marks;
-  phones 4×2); stats first below 900px; hands stacked on phones; `ItemSlot` gone (`Tooltip` now unused).

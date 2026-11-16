@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
-import { useOpenAuthDialog } from '@/app/authDialog';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT_LINE,
@@ -11,41 +9,7 @@ import {
   TEXT_MD,
 } from '@/theme';
 import { panel } from '@/components/ui/inWorld';
-import { keepProgressLater, setKeepProgressLater } from './localTracking';
 import type { BuildTracking } from './useBuildTracking';
-
-/**
- * Signed out, once there's something to keep (an item collected): progress lives in this browser, and
- * an account keeps it everywhere. "Keep my progress" opens sign-up (the progress moves into the new
- * account); "Later" hides the card until the browser session ends.
- */
-export function KeepProgressCard({ tracking }: { tracking: BuildTracking }) {
-  const openAuthDialog = useOpenAuthDialog();
-  const [later, setLater] = useState(keepProgressLater);
-  const { state, progress, signedIn } = tracking;
-  if (signedIn || later || !state || !progress || progress.complete || !state.collected.length) {
-    return null;
-  }
-  return (
-    <Card aria-label="Keep your progress">
-      <Text>
-        <strong>Your progress is saved in this browser.</strong>{' '}
-        <Muted>Create an account to keep it on every device, like your phone by the console.</Muted>
-      </Text>
-      <Actions>
-        <Button onClick={() => openAuthDialog('signup')}>Keep my progress</Button>
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setKeepProgressLater();
-            setLater(true);
-          }}>
-          Later
-        </Button>
-      </Actions>
-    </Card>
-  );
-}
 
 /** "2 new items since you started": items the author added after the player started tracking. */
 export function NewItemsNotice({ tracking }: { tracking: BuildTracking }) {
@@ -64,9 +28,10 @@ export function NewItemsNotice({ tracking }: { tracking: BuildTracking }) {
   );
 }
 
-const Card = styled.section`
+const Notice = styled.div`
   ${panel}
   align-items: center;
+  border-color: ${COLOR_ACCENT_LINE};
   display: flex;
   gap: ${SPACE_GROUP};
   padding: 10px 12px 10px 20px;
@@ -79,10 +44,6 @@ const Card = styled.section`
   }
 `;
 
-const Notice = styled(Card).attrs({ as: 'div' })`
-  border-color: ${COLOR_ACCENT_LINE};
-`;
-
 const Text = styled.p`
   flex: 1;
   font-size: ${TEXT_MD};
@@ -91,15 +52,4 @@ const Text = styled.p`
 
 const Muted = styled.span`
   color: ${COLOR_TEXT_MUTED};
-`;
-
-const Actions = styled.div`
-  display: flex;
-  gap: ${SPACE_SM};
-
-  @media ${BELOW_MOBILE} {
-    & > button:first-child {
-      flex: 1;
-    }
-  }
 `;

@@ -1,5 +1,5 @@
-// Tracking a build (T34) on the build page: signed out (local storage) and signed in (the data
-// layer, mocked).
+// Tracking a build (T34) on the build page, with the data layer mocked. Tracking needs an account
+// (T41): signed out, and signed in before the first tracked build, "Track this build" opens the intro.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BuildEditorPage from '@/features/editor/BuildEditorPage';
@@ -12,8 +12,8 @@ import {
   WHITE_MASK,
   emptyEquipment,
 } from '@/test/fixtures';
+import { AuthDialogContext, type OpenAuthDialog } from '@/app/authDialog';
 import { renderWithProviders } from '@/test/render';
-import { readLocal } from './localTracking';
 import { flushSaves } from './saveQueue';
 
 const firebase = vi.hoisted(() => ({
@@ -24,6 +24,7 @@ const firebase = vi.hoisted(() => ({
   getTracking: vi.fn(),
   saveTracking: vi.fn(),
   deleteTracking: vi.fn(),
+  tracksAnyBuild: vi.fn(),
 }));
 vi.mock('@/lib/firebase', () => ({
   ...firebase,
@@ -52,8 +53,15 @@ const tracking = (overrides: Partial<TrackingState> = {}): TrackingState => ({
   ...overrides,
 });
 
+const openAuthDialog = vi.fn<OpenAuthDialog>();
+
 const renderPage = (uid: string | null = null, route = '/build/SEEDMOON0001') =>
-  renderWithProviders(<BuildEditorPage />, { route, path: '/build/:buildId/:tab?', uid });
+  renderWithProviders(
+    <AuthDialogContext value={openAuthDialog}>
+      <BuildEditorPage />
+    </AuthDialogContext>,
+    { route, path: '/build/:buildId/:tab?', uid },
+  );
 
 const item = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
 
@@ -66,15 +74,13 @@ beforeEach(() => {
   firebase.getTracking.mockResolvedValue(null);
   firebase.saveTracking.mockResolvedValue(undefined);
   firebase.deleteTracking.mockResolvedValue(undefined);
+  firebase.tracksAnyBuild.mockResolvedValue(true);
 });
 
-afterEach(() => {
-  localStorage.clear();
-  sessionStorage.clear();
-});
+afterEach(() => act(() => flushSaves()));
 
 describe('tracking signed out', () => {
-  it('starts tracking, marks items collected in this browser, and offers an account', async () => {
+  it('opens the intro, which continues into tracking after sign-up', async () => {
     const { user } = renderPage();
     // The first render in this file loads the full game data: slow in a full parallel run.
     const track = await screen.findByRole(
@@ -84,15 +90,76 @@ describe('tracking signed out', () => {
     );
     await user.click(track);
 
-    const progress = screen.getByRole('region', { name: 'Your progress' });
-    expect(progress).toHaveTextContent('0% complete');
-    expect(progress).toHaveTextContent('Gear0 of 3');
+    const intro = screen.getByRole('dialog', { name: 'Track this build' });
+    expect(intro).toHaveTextContent('Check off gear as you find it');
+    expect(intro).toHaveTextContent('Tracking needs a free account.');
+    expect(within(intro).queryByRole('button', { name: 'Start tracking' })).not.toBeInTheDocument();
+    expect(firebase.getTracking).not.toHaveBeenCalled();
+
+    await user.click(within(intro).getByRole('button', { name: 'Create account' }));
+    expect(screen.queryByRole('dialog', { name: 'Track this build' })).not.toBeInTheDocument();
+    expect(openAuthDialog).toHaveBeenCalledWith('signup', expect.any(Function));
+    expect(firebase.saveTracking).not.toHaveBeenCalled();
+
+    // Signed up as alice: tracking starts on her account.
+    const onSignedIn = openAuthDialog.mock.calls[0]?.[1];
+    if (!onSignedIn) throw new Error('no sign-in callback');
+    act(() => onSignedIn('alice'));
+    await waitFor(() =>
+      expect(firebase.saveTracking).toHaveBeenCalledWith(
+        'alice',
+        'SEEDMOON0001',
+        expect.objectContaining({ collected: [], seen: ITEMS, stats: BASELINE }),
+      ),
+    );
+  });
+
+  it('keeps the progress of an account that already tracks the build', async () => {
+    const { user } = renderPage();
+    await user.click(await screen.findByRole('button', { name: 'Track this build' }));
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+    expect(openAuthDialog).toHaveBeenCalledWith('login', expect.any(Function));
+
+    firebase.getTracking.mockResolvedValue(tracking({ collected: [`weapon1:${MOONVEIL}`] }));
+    const onSignedIn = openAuthDialog.mock.calls[0]?.[1];
+    if (!onSignedIn) throw new Error('no sign-in callback');
+    await act(async () => onSignedIn('alice'));
+    expect(firebase.getTracking).toHaveBeenCalledWith('alice', 'SEEDMOON0001');
+    act(() => flushSaves());
+    expect(firebase.saveTracking).not.toHaveBeenCalled();
+  });
+});
+
+describe('tracking signed in, the first time', () => {
+  it('shows the intro with Start tracking until the player tracks a build', async () => {
+    firebase.tracksAnyBuild.mockResolvedValue(false);
+    const { user } = renderPage('alice');
+    await user.click(await screen.findByRole('button', { name: 'Track this build' }));
+    expect(firebase.tracksAnyBuild).toHaveBeenCalledWith('alice');
+
+    // Not now: nothing changes.
+    const intro = screen.getByRole('dialog', { name: 'Track this build' });
+    expect(intro).not.toHaveTextContent('Tracking needs a free account.');
+    await user.click(within(intro).getByRole('button', { name: 'Not now' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(firebase.saveTracking).not.toHaveBeenCalled();
+
+    await user.click(screen.getByRole('button', { name: 'Track this build' }));
+    await user.click(screen.getByRole('button', { name: 'Start tracking' }));
+    expect(screen.getByRole('region', { name: 'Your progress' })).toHaveTextContent('0% complete');
+    await waitFor(() => expect(firebase.saveTracking).toHaveBeenCalledTimes(1));
+  });
+
+  it('starts at once once the player tracks another build', async () => {
+    const { user } = renderPage('alice');
+    await user.click(await screen.findByRole('button', { name: 'Track this build' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Your progress' })).toHaveTextContent('Gear0 of 3');
     expect(screen.queryByRole('button', { name: 'Track this build' })).not.toBeInTheDocument();
 
     // Items are toggles; empty slots (placeholders) aren't buttons and don't count.
     const mask = item('White Mask');
     expect(mask).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByRole('region', { name: 'Keep your progress' })).not.toBeInTheDocument();
     await user.click(mask);
     expect(item('White Mask')).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByRole('heading', { name: 'Armor' }).parentElement).toHaveTextContent(
@@ -101,32 +168,7 @@ describe('tracking signed out', () => {
     expect(within(screen.getByRole('list', { name: 'Armor' })).getAllByRole('button')).toHaveLength(
       1,
     );
-    expect(progress).toHaveTextContent('Gear1 of 3');
-    expect(readLocal('SEEDMOON0001')?.collected).toEqual([`helm:${WHITE_MASK}`]);
-    expect(firebase.saveTracking).not.toHaveBeenCalled();
-
-    // Once there's progress: keep it with an account, or later (for this session).
-    const card = screen.getByRole('region', { name: 'Keep your progress' });
-    expect(card).toHaveTextContent('Your progress is saved in this browser.');
-    await user.click(within(card).getByRole('button', { name: 'Later' }));
-    expect(screen.queryByRole('region', { name: 'Keep your progress' })).not.toBeInTheDocument();
-  });
-
-  it('picks up where the player left off', async () => {
-    localStorage.setItem(
-      'soulsbuilds.tracking.v1',
-      JSON.stringify({
-        SEEDMOON0001: {
-          ...tracking({ collected: [`weapon1:${MOONVEIL}`] }),
-          startedAt: '2026-11-04T12:00:00.000Z',
-        },
-      }),
-    );
-    renderPage();
-    expect(await screen.findByRole('region', { name: 'Your progress' })).toHaveTextContent(
-      'Gear1 of 3',
-    );
-    expect(item('Moonveil')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('region', { name: 'Your progress' })).toHaveTextContent('Gear1 of 3');
   });
 });
 
@@ -149,8 +191,6 @@ describe('tracking signed in', () => {
         stats: { ...BASELINE, vigor: 12 },
       }),
     );
-    expect(localStorage.getItem('soulsbuilds.tracking.v1')).toBeNull();
-    expect(screen.queryByRole('region', { name: 'Keep your progress' })).not.toBeInTheDocument();
   });
 
   it('steps stats between the starting point and 99, ticking reached targets', async () => {

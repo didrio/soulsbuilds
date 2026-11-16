@@ -1,7 +1,8 @@
 // "How to get this build" (T15) on a seeded build: its own tab (T28), opened from the Loadout tab's
 // card; the route shows numbered stops with their items and why each is needed (T35). Tracking the
-// build: progress along the route, and the Next stop card on the Loadout tab. `npm run e2e`.
+// build (signed in, T41): progress along the route, and the Next stop card on the Loadout tab. `npm run e2e`.
 import { expect, test } from '@playwright/test';
+import { completeSignUp } from './helpers';
 
 test('a build shows how to get it', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
@@ -23,7 +24,11 @@ test('a build shows how to get it', async ({ page }) => {
 
 test('tracking a build shows the next stop and progress along the route', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
+  await page.getByRole('button', { name: 'Sign up' }).click();
+  await completeSignUp(page, 'route');
+  // A new account tracks no build yet: the intro first.
   await page.getByRole('button', { name: 'Track this build' }).click();
+  await page.getByRole('button', { name: 'Start tracking' }).click();
 
   // Nothing collected: the first stop is next.
   const card = page.locator('section', { hasText: 'Next stop' });

@@ -1,14 +1,22 @@
-// Tracking a build (T34): signed out, track a build and collect two items (saved in this browser),
-// then sign up from "Keep my progress": the progress moves into the new account and is still there
-// after a reload, on the account. Then stop tracking. `npm run e2e`.
+// Tracking a build (T34) needs an account (T41): signed out, "Track this build" opens the intro;
+// creating an account from it starts tracking on the new account. Collect two items, the progress is
+// still there after a reload (Firestore), then stop. A second build starts at once (no intro once the
+// player tracks a build). `npm run e2e`.
 import { expect, test } from '@playwright/test';
+import { completeSignUp } from './helpers';
 
-const unique = Date.now().toString(36);
 const SEED_BUILD = '/build/SEEDBLEED001';
 
-test('track a build signed out, then keep the progress by signing up', async ({ page }) => {
+test('track a build: sign up from the intro, collect, reload, stop', async ({ page }) => {
   await page.goto(SEED_BUILD);
   await page.getByRole('button', { name: 'Track this build' }).click();
+  const intro = page.getByRole('dialog', { name: 'Track this build' });
+  await expect(intro).toContainText('Tracking needs a free account.');
+  await intro.getByRole('button', { name: 'Create account' }).click();
+  await expect(intro).toHaveCount(0);
+  await completeSignUp(page, 'track');
+
+  // Signed up: tracking started on the new account.
   const progress = page.getByRole('region', { name: 'Your progress', exact: true });
   await expect(progress).toContainText('0%');
 
@@ -22,27 +30,8 @@ test('track a build signed out, then keep the progress by signing up', async ({ 
   await expect(progress).toContainText('Gear2 of 14');
   await expect(progress).toContainText('Level10 of 131');
 
-  // Saved in this browser: a reload keeps it.
-  await page.reload();
-  await expect(page.getByRole('region', { name: 'Your progress', exact: true })).toContainText(
-    'Gear2 of 14',
-  );
-
-  // Keep it: sign up from the card.
-  const card = page.getByRole('region', { name: 'Keep your progress' });
-  await card.getByRole('button', { name: 'Keep my progress' }).click();
-  const form = page.getByRole('form', { name: 'Sign up' });
-  await form.getByLabel('Email').fill(`track-${unique}@example.test`);
-  await form.getByLabel('Password').fill('e2e-password-123');
-  await form.getByLabel('Display name').fill(`Tracker ${unique}`);
-  await form.getByRole('button', { name: 'Create account' }).click();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
-  await expect(card).toHaveCount(0);
-
-  // Now in the account: local storage is empty, and a reload reads it from Firestore.
-  await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('soulsbuilds.tracking.v1')))
-    .toBeNull();
+  // Saved to the account: a reload reads it from Firestore.
+  await page.waitForTimeout(1000); // the save waits for a pause (500 ms)
   await page.reload();
   const kept = page.getByRole('region', { name: 'Your progress', exact: true });
   await expect(kept).toContainText('Gear2 of 14');
@@ -52,16 +41,16 @@ test('track a build signed out, then keep the progress by signing up', async ({ 
     'true',
   );
 
-  // A change while signed in is saved to the account too.
-  await page.getByRole('button', { name: /^Shard of Alexander/ }).click();
-  await expect(kept).toContainText('Gear3 of 14');
-  await page.waitForTimeout(1000); // the save waits for a pause (500 ms)
-  await page.reload();
+  // Another build: no intro now, tracking starts at once.
+  await page.goto('/build/SEEDMOON0001');
+  await page.getByRole('button', { name: 'Track this build' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page.getByRole('region', { name: 'Your progress', exact: true })).toContainText(
-    'Gear3 of 14',
+    '0%',
   );
 
   // Stop tracking asks first, then the build is untracked.
+  await page.goto(SEED_BUILD);
   await page.getByRole('button', { name: 'Stop tracking' }).click();
   await page.getByRole('button', { name: 'Yes, stop' }).click();
   await expect(page.getByRole('button', { name: 'Track this build' })).toBeVisible();

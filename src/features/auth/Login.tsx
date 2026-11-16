@@ -8,7 +8,7 @@ import styled from 'styled-components';
 import { AuthField, AuthForm, AuthNotice, AuthSwitch } from './styles';
 
 /** Email + password sign-in (and "Forgot password?"), shown in the auth dialog. */
-function Login({ onDone, onSwitch }: { onDone: () => void; onSwitch: () => void }) {
+function Login({ onDone, onSwitch }: { onDone: (uid: string) => void; onSwitch: () => void }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,9 +21,9 @@ function Login({ onDone, onSwitch }: { onDone: () => void; onSwitch: () => void 
     setError('');
     setNotice('');
     try {
-      await signIn(email, password);
+      const uid = await signIn(email, password);
       setPassword('');
-      onDone();
+      onDone(uid);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
