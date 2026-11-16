@@ -24,7 +24,7 @@ const shownLevel = () =>
     ?.textContent;
 
 const renderPage = (route: string, uid: string | null = null) =>
-  renderWithProviders(<BuildEditorPage />, { route, path: '/build/:buildId', uid });
+  renderWithProviders(<BuildEditorPage />, { route, path: '/build/:buildId/:tab?', uid });
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -103,5 +103,74 @@ describe('BuildEditorPage', () => {
     expect(await screen.findByLabelText('Build name')).toHaveValue('');
     expect(screen.getByRole('heading', { name: 'New build' })).toBeInTheDocument();
     expect(shownLevel()).toBe('1');
+  });
+
+  describe('tabs', () => {
+    const tabNames = () =>
+      within(screen.getByRole('navigation', { name: 'Build sections' }))
+        .getAllByRole('link')
+        .map((link) => link.textContent);
+
+    it('opens on Loadout, with every tab and the comment count', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild({ commentCount: 2 }));
+      renderPage('/build/SEEDMOON0001');
+      expect(await screen.findByRole('link', { name: 'Loadout' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      expect(tabNames()).toEqual(['Loadout', 'Description', 'How to get', 'Comments 2']);
+      expect(screen.getByRole('region', { name: 'Loadout' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Read the description/ })).toHaveAttribute(
+        'href',
+        '/build/SEEDMOON0001/description',
+      );
+    });
+
+    it('opens the tab a link names, with the summary column', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      renderPage('/build/SEEDMOON0001/comments');
+      expect(await screen.findByRole('heading', { name: 'Comments' })).toBeInTheDocument();
+      expect(screen.queryByRole('region', { name: 'Loadout' })).not.toBeInTheDocument();
+      expect(screen.getByRole('complementary', { name: 'Stats' })).toBeInTheDocument();
+    });
+
+    it('switches tabs without losing the page', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      const { user } = renderPage('/build/SEEDMOON0001');
+      await user.click(await screen.findByRole('link', { name: 'Description' }));
+      expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      expect(firebase.getBuild).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows Loadout for an unknown tab', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      renderPage('/build/SEEDMOON0001/nope');
+      expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Loadout' })).toHaveAttribute('aria-current', 'page');
+    });
+
+    it('has no Description tab without a description, even for the owner', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
+      renderPage('/build/SEEDMOON0001/description', 'seed-ranni');
+      expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
+      expect(tabNames()).toEqual(['Loadout', 'How to get', 'Comments 0']);
+      expect(screen.queryByRole('link', { name: /Read the description/ })).not.toBeInTheDocument();
+    });
+
+    it('edits on Loadout and Description only', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      const { user } = renderPage('/build/SEEDMOON0001/route', 'seed-ranni');
+      await user.click(await screen.findByRole('button', { name: 'Edit' }));
+      expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
+      expect(tabNames()).toEqual(['Loadout', 'Description']);
+      await user.click(screen.getByRole('link', { name: 'Description' }));
+      expect(await screen.findByText(/Markdown works/)).toBeInTheDocument();
+      // The draft survives the tab switch.
+      expect(screen.getByLabelText('Build name')).toHaveValue('Carian Moon Knight');
+    });
   });
 });

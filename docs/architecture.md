@@ -7,12 +7,12 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 
 `src/app/routes.tsx` defines the routes:
 
-| Route             | Component         | What it does                                                                                              |
-| ----------------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `/`               | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL |
-| `/build/:buildId` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments                     |
-| `/user/:userId`   | `Profile`         | Display name (the owner can rename), tabs for the user's builds and the builds they liked                 |
-| `*`               | `NotFound`        | 404 page                                                                                                  |
+| Route                   | Component         | What it does                                                                                                                         |
+| ----------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                     | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                            |
+| `/build/:buildId/:tab?` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28) |
+| `/user/:userId`         | `Profile`         | Display name (the owner can rename), tabs for the user's builds and the builds they liked                                            |
+| `*`                     | `NotFound`        | 404 page                                                                                                                             |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
 Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. The item picker
@@ -193,12 +193,25 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   build (or Sign up) as the primary button; on phones a labelled "+" (New build) or Sign up, and a Menu button
   that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
-**Build page** (T17, reshaped in T22 and T27, `features/editor/`): view and edit share one layout, top to bottom:
-the **title pane** (`BuildHeader`, in the hero frame since T26: name as `<h1>`, author and level, Like/Report/owner
-actions on the right, tags; in edit mode `BuildDetailsForm` takes its place), the **Loadout** across the page, the
-write-up beside the **Stats** card (340 px; on tablets and phones the Stats card comes first, then the Loadout,
-then the write-up), then **"How to get this build"** collapsed and **Comments** across the page (thread at a
-readable 72ch). `sections/Loadout` (T27) is a fixed layout: every slot always shows, so it takes the same space on
+**Build page** (T17, reshaped in T22, T27 and T28, `features/editor/`): view and edit share one layout. The
+**hero** (`BuildHeader`, the hero frame: the main weapon (`lib/equipment.ts` `mainWeaponId`) as a 112px tile with
+the skin's tint glow, name as `<h1>`, author, level and age, tags, then Like/Report/owner actions on the right; on
+tablets and phones a 76px tile and the actions in a row under the tags; in edit mode `BuildDetailsForm` takes its
+place), then a **tab bar** (`sections/BuildTabs`: `NavLink`s, sticky at the window's top, sideways-scrolling on
+phones; Comments shows the stored count), then the tab. Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`):
+`/build/x` Loadout, `/description`, `/route`, `/comments`; an unknown tab, or one the build doesn't show (no
+write-up: no Description tab, for the owner too; editing and `/build/new`: Loadout and Description only), redirects
+to Loadout. Switching tabs keeps the editor (and an edit in progress) and the scroll position
+(`useScrollToTop` compares `pageKey`s; the bar scrolls itself back to the top when it was stuck). Desktop: the
+stats sit in a fixed 340px left column on every tab: on **Loadout** one panel with the gear (`LoadoutPanel` =
+`StatsCard` | `Loadout`), then "Read the description" and "See the route" cards (`TabLinkCard`; the first
+paragraph via `lib/markdown.ts`) and "More by"; on the other tabs `BuildSummary`, a sticky condensed column (level,
+attributes, HP/FP/stamina, the gear as icon buttons that name themselves on hover, focus or tap; not sticky on
+short windows). Tablets and phones: one column, the stats card then the loadout on the Loadout tab only.
+**Description**: the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
+`user-content-<slug>` on the highest heading level used twice). **How to get** (`GuideSection`): the route shown
+at once as a numbered path of areas (`GuideRoute`: stops with place, Boss mark, what to do, the build's items as
+icon tiles and others as dashed ones). **Comments**: the thread at a readable 72ch. `sections/Loadout` (T27) is a fixed layout: every slot always shows, so it takes the same space on
 every build: left hand | right hand (3 weapons each, 64px tiles; stacked on phones, left hand first), then armor,
 talismans, and the flask's tears with the great rune and spirit ash in three columns (44px), arrows and bolts and
 consumables only when the build has some (always while editing), then spells as one cell per memory slot (a
@@ -217,8 +230,8 @@ in, Escape, focus back to the opener). Item icons are decorative (`alt=""`): the
 the tile button's accessible name.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited; the guide's route and its ~400 KB
-acquisition data (`guide/GuideRoute`) only when the reader expands "How to get this build" (fetched early on
-hover/focus of the button).
+acquisition data (`guide/GuideRoute`) only when the How to get tab opens (fetched early on hover/focus of the
+Loadout tab's "See the route" card).
 
 ## Performance (T21)
 

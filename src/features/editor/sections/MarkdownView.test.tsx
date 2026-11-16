@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import MarkdownView from './MarkdownView';
 
@@ -17,6 +17,18 @@ describe('MarkdownView', () => {
     const link = screen.getByRole('link', { name: 'wiki' });
     expect(link).toHaveAttribute('target', '_blank');
     expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
+
+  it('links the sections from a Jump to row, in the same tab', () => {
+    render(<MarkdownView source={'## Weapon\n\nSword.\n\n## Stats\n\nFaith.'} />);
+    const jump = screen.getByRole('navigation', { name: 'Jump to' });
+    const link = within(jump).getByRole('link', { name: 'Stats' });
+    expect(link).toHaveAttribute('href', '#user-content-stats');
+    expect(link).not.toHaveAttribute('target');
+    expect(screen.getByRole('heading', { name: 'Stats' })).toHaveAttribute(
+      'id',
+      'user-content-stats',
+    );
   });
 
   it('never renders scripts, raw HTML or javascript: links', () => {

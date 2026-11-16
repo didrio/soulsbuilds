@@ -42,7 +42,7 @@ import { setStartingClass } from '../store/startingClass';
 import { updateStat } from '../store/stats';
 
 /** The eight attributes, in the game's order, with the short names phones show. */
-const STATS: [key: StatKey, name: string, short: string][] = [
+export const STATS: [key: StatKey, name: string, short: string][] = [
   ['vigor', 'Vigor', 'Vig'],
   ['mind', 'Mind', 'Mnd'],
   ['end', 'Endurance', 'End'],
@@ -60,7 +60,10 @@ const ROLLS: { roll: Exclude<RollType, 'overloaded'>; name: string }[] = [
   { roll: 'heavy', name: 'Heavy' },
 ];
 
-const formatNumber = (value: number) => value.toLocaleString('en-US');
+/** The stats column's width on desktop (T28): the Loadout tab's left part and the other tabs' summary. */
+export const STATS_COLUMN_WIDTH = 340;
+
+export const formatNumber = (value: number) => value.toLocaleString('en-US');
 
 /**
  * One stat input. Accepts digits only (at most 2); each keystroke stores the value clamped to

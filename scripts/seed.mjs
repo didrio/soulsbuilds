@@ -83,7 +83,11 @@ const BUILDS = [
     createdAt: at(10, 2),
     name: 'Bloodhound Samurai',
     description:
-      'A **bleed** build around Rivers of Blood.\n\n- Level 131\n- Two-hand the katana\n- Swap to the Uchigatana for long fights',
+      // Sections, so the Description tab's "Jump to" row shows (T28).
+      'A **bleed** build around Rivers of Blood.\n\n- Level 131\n- Two-hand the katana\n- Swap to the Uchigatana for long fights\n\n' +
+      '## Weapons\n\nRivers of Blood for Corpse Piler; the Uchigatana with Seppuku when a fight runs long.\n\n' +
+      "## Talismans\n\nLord of Blood's Exultation and Rotten Winged Sword Insignia stack with every bleed proc.\n\n" +
+      "## Playing it\n\nOpen with Corpse Piler, back off, and let the bleed build up. Mohg's Great Rune turns each proc into a heal.",
     tags: ['Malenia', 'Mohg'],
     likedBy: ['seed-ranni'],
     comments: [

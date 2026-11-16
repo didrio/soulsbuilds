@@ -1,17 +1,19 @@
-import { Link, useParams } from 'react-router';
-import styled, { css } from 'styled-components';
+import { Link, Navigate, useParams } from 'react-router';
+import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import PageMessage from '@/components/ui/PageMessage';
 import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
 import { errorMessage } from '@/lib/firebase';
+import { firstParagraph } from '@/lib/markdown';
 import {
   BELOW_MOBILE,
   BELOW_TABLET,
   COLOR_BG,
   COLOR_LINE_STRONG,
   SHADOW_OVERLAY,
+  SHORT_SCREEN,
   SPACE_GUTTER,
   SPACE_LG,
   SPACE_MD,
@@ -21,33 +23,42 @@ import {
 } from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildHeader from './sections/BuildHeader';
+import BuildSummary from './sections/BuildSummary';
+import BuildTabs, { TAB_BAR_HEIGHT } from './sections/BuildTabs';
 import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
-import Loadout from './sections/Loadout';
+import LoadoutPanel from './sections/LoadoutPanel';
 import MoreByAuthor from './sections/MoreByAuthor';
-import GuideSection from './guide/GuideSection';
+import { STATS_COLUMN_WIDTH } from './sections/StatsCard';
+import TabLinkCard from './sections/TabLinkCard';
+import GuideSection, { hasItems, loadRoute } from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
-import StatsCard from './sections/StatsCard';
 import { selectLevel } from './store/build';
+import { parseTab, tabPath, visibleTabs } from './tabs';
 import { useBuildEditor } from './useBuildEditor';
 
-/** `/build/:buildId` (or `/build/new`): one editor per build, so state never leaks between builds. */
+/**
+ * `/build/:buildId/:tab?` (or `/build/new`): one editor per build, so state never leaks between
+ * builds; switching tabs keeps it (and an edit in progress).
+ */
 function BuildEditorPage() {
-  const { buildId = 'new' } = useParams();
+  const { buildId = 'new', tab } = useParams();
   const id = buildId === 'new' ? null : buildId;
-  return <BuildEditor key={buildId} buildId={id} />;
+  return <BuildEditor key={buildId} buildId={id} tabParam={tab} />;
 }
 
 /**
- * View, create and edit a build in one layout (T22, T27): the title pane, the loadout across the page,
- * the write-up beside the stats card (on tablets and phones: the stats card, the loadout, then the
- * write-up), then "How to get this build" (collapsed) and comments across the page. Edit mode turns the same panels into controls,
- * leaves out the guide and comments, and adds a sticky Save/Cancel bar.
+ * View, create and edit a build (T22, T27, T28): the hero, a tab bar (Loadout, Description, How to
+ * get, Comments), then the tab. Desktop: the stats in a fixed left column on every tab: on Loadout
+ * one panel with the gear, elsewhere a condensed summary. Tablets and phones: one column, the stats
+ * on the Loadout tab only. Editing (and new builds): Loadout and Description only, and a sticky
+ * Save/Cancel bar.
  */
-function BuildEditor({ buildId }: { buildId: string | null }) {
+function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
   const editor = useBuildEditor(buildId);
   const level = useAppSelector(selectLevel);
   const { auth, build, buildQuery, editable, isNew } = editor;
+  const routeId = buildId ?? 'new';
 
   if (isNew) {
     if (auth.loading) return <PageMessage loading />;
@@ -79,6 +90,13 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
     }
   }
 
+  // An unknown tab, or one this build doesn't show (no description, or editing): Loadout.
+  const tabs = visibleTabs({ editable, hasDescription: Boolean(build?.description) });
+  const tab = parseTab(tabParam);
+  if (!tab || !tabs.includes(tab)) return <Navigate to={tabPath(routeId, 'loadout')} replace />;
+
+  const preview = build ? firstParagraph(build.description) : '';
+
   return (
     <Page>
       <Back to="/">← All builds</Back>
@@ -108,24 +126,65 @@ function BuildEditor({ buildId }: { buildId: string | null }) {
           }
         />
       ) : null}
-      <Layout>
-        <LoadoutArea>
-          <Loadout editable={editable} />
-        </LoadoutArea>
-        <Main>
-          <DescriptionSection
-            description={editor.description}
-            editable={editable}
-            onChange={editor.setDescription}
-          />
-        </Main>
-        <Aside>
-          <StatsCard editable={editable} level={level} />
-        </Aside>
-      </Layout>
-      {!editable && build ? <GuideSection equipment={build.equipment} /> : null}
-      {!editable && build ? <CommentsSection buildId={build.id} ownerId={build.ownerId} /> : null}
-      {!editable && build ? <MoreByAuthor buildId={build.id} ownerId={build.ownerId} /> : null}
+      <div>
+        <BuildTabs
+          buildId={routeId}
+          current={tab}
+          tabs={tabs}
+          commentCount={editable ? undefined : build?.commentCount}
+        />
+        {tab === 'loadout' ? (
+          <Content>
+            <LoadoutPanel editable={editable} level={level} />
+            {!editable && build ? (
+              <>
+                {preview || hasItems(build.equipment) ? (
+                  <Cards>
+                    {preview ? (
+                      <TabLinkCard
+                        to={tabPath(build.id, 'description')}
+                        label="Description"
+                        action="Read the description">
+                        {preview}
+                      </TabLinkCard>
+                    ) : null}
+                    {hasItems(build.equipment) ? (
+                      <TabLinkCard
+                        to={tabPath(build.id, 'route')}
+                        label="How to get this build"
+                        action="See the route"
+                        onPrefetch={() => void loadRoute()}>
+                        Every item, in a sensible order through the usual progression from a fresh
+                        save.
+                      </TabLinkCard>
+                    ) : null}
+                  </Cards>
+                ) : null}
+                <MoreByAuthor buildId={build.id} ownerId={build.ownerId} />
+              </>
+            ) : null}
+          </Content>
+        ) : (
+          <WithSummary>
+            <Summary>
+              <BuildSummary level={level} />
+            </Summary>
+            <Content>
+              {tab === 'description' ? (
+                <DescriptionSection
+                  description={editor.description}
+                  editable={editable}
+                  onChange={editor.setDescription}
+                />
+              ) : null}
+              {tab === 'route' && build ? <GuideSection equipment={build.equipment} /> : null}
+              {tab === 'comments' && build ? (
+                <CommentsSection buildId={build.id} ownerId={build.ownerId} />
+              ) : null}
+            </Content>
+          </WithSummary>
+        )}
+      </div>
       {editable ? (
         <EditBar aria-label="Save changes">
           <ErrorMessage>{editor.saveError}</ErrorMessage>
@@ -155,40 +214,51 @@ const Back = styled(TextLink)`
   margin: ${SPACE_MD} 0 -${SPACE_SM};
 `;
 
-// The loadout across the page, then the write-up + the 340 px stats card; on tablets and phones one
-// column, the stats card first (T27).
-const Layout = styled.div`
-  align-items: start;
+// A tab's panels, stacked under the tab bar.
+const Content = styled.div`
   display: grid;
-  gap: ${SPACE_LG} ${SPACE_REGION};
-  grid-template-areas: 'loadout loadout' 'main aside';
-  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: ${SPACE_LG};
+  margin-top: ${SPACE_REGION};
+  min-width: 0;
+`;
+
+// The other tabs: the summary column on the left, sticky under the tab bar; the tab beside it. Tablets
+// and phones: the tab alone.
+const WithSummary = styled.div`
+  align-items: start;
+  column-gap: ${SPACE_REGION};
+  display: grid;
+  grid-template-columns: ${STATS_COLUMN_WIDTH}px minmax(0, 1fr);
 
   @media ${BELOW_TABLET} {
-    grid-template-areas: 'aside' 'loadout' 'main';
     grid-template-columns: minmax(0, 1fr);
   }
 `;
 
-const LoadoutArea = styled.div`
-  grid-area: loadout;
-  min-width: 0;
+const Summary = styled.div`
+  margin-top: ${SPACE_REGION};
+  position: sticky;
+  top: ${TAB_BAR_HEIGHT + 16}px;
+
+  @media ${SHORT_SCREEN} {
+    position: static;
+  }
+
+  @media ${BELOW_TABLET} {
+    display: none;
+  }
 `;
 
-const column = css`
+// "Read the description" and "See the route", side by side; stacked on phones.
+const Cards = styled.div`
   display: grid;
-  gap: ${SPACE_REGION};
-  min-width: 0;
-`;
+  gap: ${SPACE_LG};
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
 
-const Main = styled.div`
-  ${column}
-  grid-area: main;
-`;
-
-const Aside = styled.aside`
-  ${column}
-  grid-area: aside;
+  @media ${BELOW_MOBILE} {
+    grid-auto-flow: row;
+  }
 `;
 
 // Stays on screen at the bottom while editing, so Save is always one Tab or tap away.

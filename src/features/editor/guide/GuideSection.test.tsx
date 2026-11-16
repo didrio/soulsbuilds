@@ -10,24 +10,15 @@ const withMoonveil = () => ({
 });
 
 describe('GuideSection', () => {
-  it('is left out for a build with no items', () => {
-    const { container } = renderWithProviders(<GuideSection equipment={emptyEquipment()} />);
-    expect(container).toBeEmptyDOMElement();
+  it('says there is nothing to find for a build with no items', () => {
+    renderWithProviders(<GuideSection equipment={emptyEquipment()} />);
+    expect(screen.getByText(/nothing to find/)).toBeInTheDocument();
   });
 
-  it('starts collapsed; Show loads the route, Hide folds it away', async () => {
-    const { user } = renderWithProviders(<GuideSection equipment={withMoonveil()} />);
-    const section = screen.getByRole('region', { name: 'How to get this build' });
-    expect(section).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
-
-    const toggle = screen.getByRole('button', { name: 'Show the route' });
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    await user.click(toggle);
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  it('shows the route directly (loaded with its data)', async () => {
+    renderWithProviders(<GuideSection equipment={withMoonveil()} />);
+    expect(screen.getByRole('region', { name: 'How to get this build' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Show the route' })).not.toBeInTheDocument();
     expect((await screen.findAllByRole('heading', { level: 3 })).length).toBeGreaterThan(0);
-
-    await user.click(screen.getByRole('button', { name: 'Hide the route' }));
-    expect(screen.queryByRole('heading', { level: 3 })).not.toBeInTheDocument();
   });
 });

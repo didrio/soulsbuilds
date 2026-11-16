@@ -3,8 +3,9 @@
 // the PNG path, so an agent can open it with its image reader. Also prints the page's console
 // errors and failed requests, which are often the real answer.
 //
-//   npm run screenshot -- [route] [--mobile] [--full] [--wait <ms>] [--name <file>]
+//   npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>]
 //   npm run screenshot -- /build/SEEDBLEED001 --mobile
+//   npm run screenshot -- /build/SEEDBLEED001 --width 1000   (desktop at another width)
 import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -20,11 +21,12 @@ const VIEWPORTS = {
 };
 
 function parseArgs(argv) {
-  const opts = { route: '/', mobile: false, full: false, wait: 1500, name: null };
+  const opts = { route: '/', mobile: false, width: null, full: false, wait: 1500, name: null };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--mobile') opts.mobile = true;
     else if (arg === '--full') opts.full = true;
+    else if (arg === '--width') opts.width = Number(argv[(i += 1)]);
     else if (arg === '--wait') opts.wait = Number(argv[(i += 1)]);
     else if (arg === '--name') opts.name = argv[(i += 1)];
     else if (arg === '--help' || arg === '-h') opts.help = true;
@@ -37,7 +39,9 @@ function parseArgs(argv) {
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
-    console.log('npm run screenshot -- [route] [--mobile] [--full] [--wait <ms>] [--name <file>]');
+    console.log(
+      'npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>]',
+    );
     return;
   }
 
@@ -50,7 +54,8 @@ async function main() {
     process.exit(1);
   }
 
-  const viewport = opts.mobile ? VIEWPORTS.mobile : VIEWPORTS.desktop;
+  const base = opts.mobile ? VIEWPORTS.mobile : VIEWPORTS.desktop;
+  const viewport = opts.width ? { ...base, width: opts.width } : base;
   const browser = await chromium.launch({ executablePath: CHROME });
   const page = await browser.newPage({ viewport, isMobile: opts.mobile, hasTouch: opts.mobile });
   const problems = [];
@@ -70,7 +75,7 @@ async function main() {
 
   const slug =
     opts.name ??
-    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}`;
+    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}`;
   const dir = join(root, '.artifacts', 'screenshots');
   await mkdir(dir, { recursive: true });
   const file = join(dir, `${slug}.png`);

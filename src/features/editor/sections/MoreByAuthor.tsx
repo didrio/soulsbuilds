@@ -30,7 +30,7 @@ import {
 const SHOWN = 3;
 
 /**
- * View mode, after the comments (T20): up to three of the author's other builds, most liked first, as
+ * View mode, at the bottom of the Loadout tab (T20, T28): up to three of the author's other builds, most liked first, as
  * compact cards, and a link to their profile when there are more. Nothing while loading or when the
  * author has no other builds.
  */

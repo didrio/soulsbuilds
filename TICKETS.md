@@ -7,8 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T39
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T28 — Build page tabs · Opus · high · plan mode on. Up next is in the order of
-`docs/product.md` "Priorities": the redesign (T28; T29 any time now), usage counts (T38,
+**Next:** T29 — Landing: slim toolbar, rows with a portrait · Sonnet · medium · plan mode off. Up next is in the
+order of `docs/product.md` "Priorities": the redesign (T29), usage counts (T38,
 blocked on the owner), tracking (T34 → T35 → T36), link previews (T37, blocked on the Blaze decision), sign-in and
 account (T30, T31), copies and variations (T32 → T33). T30–T38 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -32,60 +32,13 @@ and spacing, and the canvas notes say why.
 
 **Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations) and T27 (loadout and stats card).
+done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card) and T28 (build page tabs).
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T28 — Build page tabs: hero, Loadout / Description / How to get / Comments
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Split the build page into tabs under a hero, so each section gets the whole page and visitors see at
-  once that a route and comments exist (owner's idea, 2026-11-16; the long one-page layout tried to fit too
-  much).
-- **Done when:**
-  - Routes: `/build/:buildId` is Loadout; `/build/:buildId/description`, `/route` and `/comments` are the other
-    tabs (one `BuildEditorPage`, via a `:tab?` param or nested routes); an unknown tab shows Loadout.
-    `useScrollToTop` doesn't jump to the top on a tab switch within the same build (keep the position, or bring
-    the tab bar into view if it's off-screen). Links to a build's comments (T20) go to `/comments`.
-  - Hero (replaces the title pane): the main weapon (first filled right-hand slot, else the first weapon) as a
-    112px portrait tile with the skin's `tint` glow; the build name as `<h1>`; "by author · Level · age"; tags;
-    Like and Report; the owner's Edit and Delete. The comment count moves to the Comments tab.
-  - Tab bar under the hero: links (`NavLink`, `aria-current="page"`), 48px tall, active = text color + accent
-    underline, Comments shows its count; it sticks under the header while scrolling; on phones it scrolls
-    sideways.
-  - Always opens on Loadout; a shared link to a tab opens that tab. The Description tab is hidden when the build
-    has none (its owner sees it, with "Add a description" entering edit mode).
-  - Loadout tab: the T27 loadout panel, then two link cards: "Read the description" (first paragraph as plain
-    text, 3 lines) and "See the route". Don't load the acquisition data just for that card. "More by <author>"
-    at the bottom of this tab.
-  - Description tab: the full write-up, plus a "Jump to" row of its h2 headings. That needs heading ids:
-    check what `rehype-sanitize` does to `id`s (its `clobberPrefix`); a small local rehype step is fine, but ask
-    the owner before adding a dependency.
-  - How to get tab: the route shown directly (no "Show the route" button; its data still loads on first open),
-    restyled as a numbered path of areas. Each step shows place, how and items: the build's own items as icon
-    tiles, others as dashed tiles, bosses marked.
-  - Comments tab: `CommentsSection`.
-  - Desktop: the stats card is a sticky 340px right rail on every tab. Phones: stats only in the Loadout tab.
-    (T27: `StatsCard` is already 340px in the aside, and `Loadout` assumes ~800px+ on desktop: at 900–1100px a
-    loadout beside the rail gets narrow, so check its 3 columns and the 5-column spell grid there.)
-  - Edit mode and `/build/new`: only the Loadout and Description tabs, with the sticky Save bar as today.
-  - Tests: component tests for the tab bar and the tab param; e2e updated (`guide.spec.ts` opens the tab,
-    `community.spec.ts` comment heading and link) plus a tab check (deep link, Back button); `npm run check`
-    and `npm run e2e` pass; screenshots of every tab and of a build without a description, desktop and
-    `--mobile`.
-  - Docs: replace the decision row "Build page layout"; routes and sections in AGENTS.md's project map and
-    `docs/architecture.md`.
-- **Context:** Artboards `BuildTabs.dc.html` and `BuildTabsMobile.dc.html` (clickable in Play; notes c1–c5 beside
-  them explain each choice). Files: `app/routes.tsx`, `app/useScrollToTop.ts`,
-  `features/editor/BuildEditorPage.tsx`, `useBuildEditor.ts`, `sections/{BuildHeader,OwnerActions,
-DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.tsx`,
-  `guide/{GuideSection,GuideRoute,route,phrases}`. Routes are expensive to change later, hence plan mode. The
-  main-weapon helper is shared with T29 (whichever lands first adds it).
 
 ### T29 — Landing: slim toolbar, rows with a portrait
 
@@ -110,7 +63,8 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
   - `BuildsList`, `Landing` and `tags` tests updated; `npm run check` and `npm run e2e` pass; screenshots desktop
     and `--mobile`.
 - **Context:** Artboards `Landing.dc.html` (Tweaks › Layout = Rows) and `LandingMobile.dc.html`. Files:
-  `features/builds/{Landing,BuildsList,tags,filters}`, `components/ui/{SegmentedControl,Chips,ItemTile}`.
+  `features/builds/{Landing,BuildsList,tags,filters}`, `components/ui/{SegmentedControl,Chips,ItemTile}`. The main
+  weapon is `mainWeaponId` in `src/lib/equipment.ts` (T28).
 
 ### T38 — Cookie-free usage counts
 
@@ -130,7 +84,7 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 ### T34 — Track a build: the Loadout as a checklist
 
-- **Status:** ready (after T28; T38 first if the owner approves it)
+- **Status:** ready (T38 first if the owner approves it)
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Players following a build mark the gear they've collected and how far their stats are, and watch their
   progress fill to 100%. The site's main value for people who never post a build (`docs/product.md`).
@@ -294,7 +248,7 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 ### T32 — Make a copy: a build based on another
 
-- **Status:** ready (after T28: the button lives in the build hero); owner decisions first
+- **Status:** ready (the button goes in T28's build hero); owner decisions first
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -355,6 +309,9 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
   farming to the build's level (where and how long), and the starting class: builds now save one (T8,
   `startingClass`; classes in `character.json`), so the route can say "your Samurai starts with it" instead of
   "or start as X", and suggest a class for builds without one.
+- Markdown editor in the site's palette: since T28 it's pinned to the editor's own dark theme (`data-color-mode`
+  in `index.html`), GitHub's bluish dark rather than `COLOR_INSET`/`COLOR_TEXT`; override its CSS variables in
+  `sections/Markdown.tsx` (`--color-canvas-default` and friends, see `@uiw/react-md-editor`'s README).
 - Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup).
 - Other games (owner, 2026-11-15: Dark Souls 1–3, maybe Demon's Souls and Bloodborne; Sekiro and Nightreign
   need their own build models) on top of T3's `game` field: data per game, per-game routes (`/ds3/...`) read by
@@ -376,6 +333,10 @@ DescriptionSection,CommentsSection,MoreByAuthor,BuildDetailsForm,MarkdownView}.t
 
 Older entries: `docs/tickets-archive.md`.
 
+- T28 — Build page tabs — 2026-11-16 — hero (main weapon, `lib/equipment.ts`) + tabs at `/build/:id/:tab?`
+  (`tabs.ts`, sticky `BuildTabs`); owner, mid-session: stats in a left column on every desktop tab (one panel with
+  the gear on Loadout, `BuildSummary` elsewhere), no Description tab without a write-up; Jump to (`rehypeJumpTo`);
+  route as numbered areas; editor pinned dark (`index.html`); `BELOW_WIDE`, `screenshot --width`.
 - T27 — Loadout panel and stats card — 2026-11-16 — `sections/Loadout` (every slot always shown, items by name:
   left | right hand 64px, armor/talismans/flask + great rune and spirit ash 44px, spells one cell per memory slot;
   arrows/consumables only when used, owner) and `sections/StatsCard` (attributes, vitals, load bar with 30/70% marks;

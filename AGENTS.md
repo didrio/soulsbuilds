@@ -15,14 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T27 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T28 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
-`stats/{game}`. Build page = view and edit in one layout, with build math (T8), "How to get this build"
-(T14/19/15), and since T27 a fixed-layout Loadout + Stats card. App Check: wait measured, blocked reCAPTCHA → a
-notice; left: enforcing. Redesign v2: foundations (T26), loadout (T27); T28–T29 reshape the build page and the
-landing. **Next:** `TICKETS.md`.
+`stats/{game}`. Build page (T28): hero + tabs at their own URLs (Loadout, Description, How to get, Comments), stats
+in a left column on desktop, build math (T8), the route (T14/19/15). App Check: wait measured, blocked reCAPTCHA →
+a notice; left: enforcing. Redesign v2: foundations (T26), loadout (T27), build page (T28); T29 the landing. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -53,27 +52,27 @@ landing. **Next:** `TICKETS.md`.
 
 ## Commands
 
-| Task                                        | Command                                                                       |
-| ------------------------------------------- | ----------------------------------------------------------------------------- |
-| All checks (run before finishing)           | `npm run check`                                                               |
-| Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format`  |
-| Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                     |
-| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                         |
-| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                               |
-| What can this machine run?                  | `npm run doctor`                                                              |
-| Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                          |
-| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                          |
-| Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)       |
-| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`                |
-| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`   |
-| Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`     |
-| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)           |
-| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`   |
-| Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--full]` → PNG path    |
-| Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md) |
-| Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)          |
-| Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                    |
-| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"         |
+| Task                                        | Command                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------ |
+| All checks (run before finishing)           | `npm run check`                                                                |
+| Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format`   |
+| Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                      |
+| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                          |
+| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                                |
+| What can this machine run?                  | `npm run doctor`                                                               |
+| Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                           |
+| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                           |
+| Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)        |
+| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`                 |
+| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`    |
+| Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`      |
+| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)            |
+| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`    |
+| Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]` |
+| Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)  |
+| Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)           |
+| Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                     |
+| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"          |
 
 ## How work flows: tickets and sessions
 
@@ -102,7 +101,7 @@ src/
   main.tsx                 createRoot + <AppProviders><App/>
   app/                     App (shell: global styles + game skin, header (phone menu, T26), log in/sign up dialog, item-picker
                            modal, footer; useScrollToTop; AppCheckNotice = "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
-                           routes.tsx (/, /build/:buildId, /user/:userId, /privacy, /terms, 404), AppProviders
+                           routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }), Login, SignUp
@@ -114,14 +113,16 @@ src/
                            (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
-  features/editor/         BuildEditorPage (view/create/edit/delete, one layout) + useBuildEditor; queries.ts
-                           (useBuild, useSaveBuild, likes, comments); sections/ (BuildHeader = title pane with like/report/tags,
-                           OwnerActions, BuildDetailsForm (edit title block), Loadout (every slot, fixed layout, T27),
-                           StatsCard (attributes + HP, load, poise, T27),
-                           DescriptionSection, CommentsSection, MoreByAuthor); ItemRow (any slot as tile + name; button in
+  features/editor/         BuildEditorPage (view/create/edit/delete; hero + tabs, T28) + useBuildEditor; tabs.ts (tab
+                           list, URLs, which show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments);
+                           sections/ (BuildHeader = hero: main weapon, like/report/tags, OwnerActions, BuildTabs
+                           (sticky tab bar), BuildDetailsForm (edit title block), LoadoutPanel (StatsCard | Loadout in
+                           one panel on desktop), Loadout (every slot, fixed layout, T27), StatsCard (attributes + HP,
+                           load, poise, T27), BuildSummary (the other tabs' condensed stats + gear column), TabLinkCard,
+                           DescriptionSection, MarkdownView + rehypeJumpTo ("Jump to"), CommentsSection, MoreByAuthor); ItemRow (any slot as tile + name; button in
                            edit mode; placeholder when empty; warnings for unmet requirements) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
                            with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
-                           phrases.ts, GuideSection (collapsed shell) → GuideRoute (lazy, on expand)); store/ = Redux slices for the build being edited +
+                           phrases.ts, GuideSection (the How to get tab) → GuideRoute (lazy: numbered areas)); store/ = Redux slices for the build being edited +
                            selectors + derived.ts (build math selectors) + build.ts (loadBuild /
                            selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
@@ -132,11 +133,12 @@ src/
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check; appCheckStatus watches
                            for a token that never comes, T24), auth, builds, likes,
                            comments, users, reports, account (deletion, T18), stats (T20)),
-                           models.ts (v2 types + LIMITS), queryKeys.ts, buildMath.ts (level, stat clamping, T8
+                           models.ts (v2 types + LIMITS), queryKeys.ts, equipment.ts (mainWeaponId), markdown.ts
+                           (firstParagraph), buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
                            relativeTime.ts ("3 days ago"), array.ts
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
-                           TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
+                           TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET/WIDE, SHORT_SCREEN), GlobalStyle,
                            GameSkinStyle
   data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
                            (zod; types only in the app), index.ts accessors by ID (getWeapon(id),
@@ -191,6 +193,9 @@ TICKETS.md                 Ordered backlog; one ticket per session
 - **React 19 ignores `defaultProps` on function components**: use default parameters.
 - **styled-components 6 forwards every prop to the DOM** (no filter installed): style-only props must be
   `$transient`, typed on the styled call (`styled.div<{ $open: boolean }>`).
+- **Prettier splits `${fn}minmax(…)` into `minmax (…)`** inside styled-components CSS, which is invalid, so the
+  whole declaration is dropped silently. Return whole values from interpolations (`$a ? '112px minmax(0, 1fr)' :
+'minmax(0, 1fr)'`).
 - **React Compiler is on** (`@rolldown/plugin-babel` + `reactCompilerPreset()` in `vite.config.ts`; plugin-react
   v6 has no `babel` option). It memoizes components, so new code doesn't need `useMemo`/`useCallback` for
   performance, but must follow the Rules of React (no mutating props/state, no reading refs during render).

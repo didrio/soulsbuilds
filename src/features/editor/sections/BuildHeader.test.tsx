@@ -1,6 +1,6 @@
 import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { makeBuild, makeProfile } from '@/test/fixtures';
+import { emptyEquipment, makeBuild, makeProfile } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import BuildHeader from './BuildHeader';
 
@@ -22,22 +22,24 @@ beforeEach(() => {
 });
 
 describe('BuildHeader', () => {
-  it('links the comment count down to the comments and says how old the build is', async () => {
+  it('says how old the build is, with no comment count (it moved to the Comments tab)', async () => {
     const createdAt = new Date(Date.now() - 3 * 24 * 3600 * 1000);
     renderWithProviders(<BuildHeader build={makeBuild({ commentCount: 2, createdAt })} />);
-    expect(await screen.findByRole('link', { name: '2 Comments' })).toHaveAttribute(
-      'href',
-      '#comments-title',
+    expect(await screen.findByText('3 days ago')).toHaveAttribute(
+      'dateTime',
+      createdAt.toISOString(),
     );
-    expect(screen.getByText('3 days ago')).toHaveAttribute('dateTime', createdAt.toISOString());
+    expect(screen.queryByText(/Comments?$/)).not.toBeInTheDocument();
   });
 
-  it('says "1 Comment" and "0 Comments"', async () => {
-    const { unmount } = renderWithProviders(<BuildHeader build={makeBuild({ commentCount: 1 })} />);
-    expect(await screen.findByRole('link', { name: '1 Comment' })).toBeInTheDocument();
+  it('shows the main weapon as the portrait, or none without weapons', () => {
+    const { container, unmount } = renderWithProviders(<BuildHeader build={makeBuild()} />);
+    expect(container.querySelector('[title="Moonveil"] img')).not.toBeNull();
     unmount();
-    renderWithProviders(<BuildHeader build={makeBuild({ commentCount: 0 })} />);
-    expect(await screen.findByRole('link', { name: '0 Comments' })).toBeInTheDocument();
+    const { container: bare } = renderWithProviders(
+      <BuildHeader build={makeBuild({ equipment: emptyEquipment() })} />,
+    );
+    expect(bare.querySelector('img')).toBeNull();
   });
 
   it('signed out: shows the count, not a button', async () => {

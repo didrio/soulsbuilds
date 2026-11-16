@@ -31,6 +31,7 @@ instance with `npm run seed` (it wipes the emulator's Firestore first). Emulator
 ```
 npm run screenshot -- /build/SEEDBLEED001            # desktop 1280×900
 npm run screenshot -- /build/SEEDBLEED001 --mobile   # 390×844 phone
+npm run screenshot -- /build/SEEDBLEED001/route --width 1000   # desktop at another width (build tabs: /description, /route, /comments)
 npm run screenshot -- /user/seed-ranni --full        # whole page
 ```
 

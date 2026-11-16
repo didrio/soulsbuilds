@@ -1,6 +1,7 @@
 // Read-only rendering of a build's markdown description. Light on purpose (react-markdown + GFM, no
 // editor, no syntax highlighter): view mode is what most visitors load (T11). Raw HTML in the source is
-// not rendered, and everything that is goes through rehype-sanitize.
+// not rendered, and everything that is goes through rehype-sanitize. Then `rehypeJumpTo` adds section
+// ids and the "Jump to" row (T28).
 import Markdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import remarkGfm from 'remark-gfm';
@@ -17,24 +18,32 @@ import {
   COLOR_TEXT_MUTED,
   FONT_PROSE,
   FONT_UI,
+  SPACE_SM,
+  TEXT_SM,
   TEXT_XL,
   TEXT_XS,
 } from '@/theme';
+import { TAB_BAR_HEIGHT } from './BuildTabs';
+import rehypeJumpTo from './rehypeJumpTo';
 
 const REMARK_PLUGINS = [remarkGfm];
-const REHYPE_PLUGINS = [rehypeSanitize];
+const REHYPE_PLUGINS = [rehypeSanitize, rehypeJumpTo];
 
 function MarkdownView({ source }: { source: string }) {
   return (
     <Body>
       <Markdown
         components={{
-          // User links open in a new tab without handing over the opener.
-          a: ({ node: _node, children, ...props }) => (
-            <a {...props} target="_blank" rel="noopener noreferrer">
-              {children}
-            </a>
-          ),
+          // User links open in a new tab without handing over the opener; links within the
+          // write-up (Jump to) stay in it.
+          a: ({ node: _node, children, ...props }) =>
+            props.href?.startsWith('#') ? (
+              <a {...props}>{children}</a>
+            ) : (
+              <a {...props} target="_blank" rel="noopener noreferrer">
+                {children}
+              </a>
+            ),
         }}
         rehypePlugins={REHYPE_PLUGINS}
         remarkPlugins={REMARK_PLUGINS}>
@@ -60,6 +69,57 @@ const Body = styled.div`
 
   & > :last-child {
     margin-bottom: 0;
+  }
+
+  /* A section heading jumped to lands under the sticky tab bar. */
+  & [id] {
+    scroll-margin-top: ${TAB_BAR_HEIGHT + 16}px;
+  }
+
+  /* "Jump to": the label, then the sections as small chips (44 px tap targets). */
+  & > nav.jump-to {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    font-family: ${FONT_UI};
+    gap: 0 6px;
+    margin: 0 0 ${SPACE_SM};
+  }
+
+  & > nav.jump-to > span {
+    ${labelText}
+    margin-right: 6px;
+  }
+
+  & > nav.jump-to > a {
+    align-items: center;
+    color: ${COLOR_TEXT_MUTED};
+    display: inline-flex;
+    font-size: ${TEXT_SM};
+    isolation: isolate;
+    min-height: 44px;
+    padding: 0 10px;
+    position: relative;
+    text-decoration: none;
+  }
+
+  /* The visible chip is 32 px, inside the 44 px link. */
+  & > nav.jump-to > a::before {
+    background: ${COLOR_INSET};
+    border: 1px solid ${COLOR_LINE};
+    border-radius: 3px;
+    content: '';
+    inset: 6px 0;
+    position: absolute;
+    z-index: -1;
+  }
+
+  & > nav.jump-to > a:hover {
+    color: ${COLOR_TEXT};
+  }
+
+  & > nav.jump-to > a:hover::before {
+    border-color: ${COLOR_LINE_STRONG};
   }
 
   & h1,

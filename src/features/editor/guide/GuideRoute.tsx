@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import styled from 'styled-components';
 import ItemTile from '@/components/ui/ItemTile';
 import { acquisition } from '@/data/acquisition';
@@ -7,93 +6,102 @@ import type { Equipment } from '@/lib/models';
 import {
   BELOW_MOBILE,
   COLOR_LINE,
+  COLOR_LINE_STRONG,
+  COLOR_SURFACE,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_UI,
   SPACE_MD,
   SPACE_SM,
-  SPACE_XS,
+  TEXT_LABEL,
   TEXT_MD,
   TEXT_SM,
   TEXT_XS,
 } from '@/theme';
+import { displayText } from '@/components/ui/typography';
+import { DashedTile } from './GuideTiles';
 import { actionLead, actionNote, itemInfo, itemNotes, legTitle, stepPlace } from './phrases';
-import { planRoute, type RouteAction } from './route';
-import { labelText } from '@/components/ui/typography';
+import { equipmentItems, planRoute, type ItemRef, type RouteAction, type RouteStep } from './route';
 
-const isPhone = () =>
-  typeof window !== 'undefined' && (window.matchMedia?.(BELOW_MOBILE).matches ?? false);
+const refKey = (ref: ItemRef) => `${ref.file}:${ref.id}`;
+
+/** A step that is a fight: a boss or a progression gate. */
+const isBoss = (step: RouteStep) =>
+  step.actions.some((action) => action.kind === 'boss' || action.kind === 'gate');
 
 /**
- * The route of "How to get this build" (T15): numbered steps from a fresh save to every item of the
- * build, one collapsible list per region (numbering runs on across them). On phones only the first
- * region starts open. Lazy-loaded with the ~400 KB acquisition data when the reader expands the
- * section (`GuideSection`, T22).
+ * The route of "How to get this build" (T15, T28): a numbered path of areas from a fresh save to every
+ * item of the build. Each area lists its stops: the place (bosses marked), what to do, and the items,
+ * the build's own as icon tiles, others (key items…) as dashed tiles. Lazy-loaded with the ~400 KB
+ * acquisition data when the How to get tab opens (`GuideSection`).
  */
 function GuideRoute({ equipment }: { equipment: Equipment }) {
   const route = planRoute(equipment, acquisition);
-  const [phone] = useState(isPhone);
+  const own = new Set(equipmentItems(equipment).map(refKey));
   if (route.legs.length === 0) return <Hint>None of these items has a known source yet.</Hint>;
 
-  // Numbering runs on across the regions: each list starts where the last one ended.
-  const starts: number[] = [];
-  let next = 1;
-  for (const leg of route.legs) {
-    starts.push(next);
-    next += leg.steps.length;
-  }
-
   return (
-    <div>
+    <Path>
       {route.legs.map((leg, index) => (
-        <Leg key={index} open={!phone || index === 0}>
-          <Summary>
-            <LegHeading>{legTitle(leg)}</LegHeading>
-            <Count>
-              {leg.steps.length} {leg.steps.length === 1 ? 'step' : 'steps'}
-            </Count>
-          </Summary>
-          <Steps start={starts[index]}>
+        <Area key={index}>
+          <AreaNumber aria-hidden="true">{index + 1}</AreaNumber>
+          <div>
+            <AreaHead>
+              <AreaName>{legTitle(leg)}</AreaName>
+              <Count>
+                {leg.steps.length} {leg.steps.length === 1 ? 'stop' : 'stops'}
+              </Count>
+            </AreaHead>
             {leg.steps.map((step, stepIndex) => {
               const place = stepPlace(leg, step.location);
               return (
-                <Step key={stepIndex}>
-                  {place ? <Place>{place}</Place> : null}
+                <Stop key={stepIndex}>
+                  {place || isBoss(step) ? (
+                    <PlaceLine>
+                      {place ? <Place>{place}</Place> : null}
+                      {isBoss(step) ? <BossChip>Boss</BossChip> : null}
+                    </PlaceLine>
+                  ) : null}
                   {step.actions.map((action, actionIndex) => (
-                    <Action key={actionIndex} action={action} />
+                    <Action key={actionIndex} action={action} own={own} />
                   ))}
-                </Step>
+                </Stop>
               );
             })}
-          </Steps>
-        </Leg>
+          </div>
+        </Area>
       ))}
-    </div>
+    </Path>
   );
 }
 
-/** One thing to do at a step: "Buy from Twin Maiden Husks: [icon] Spirit Calling Bell (100 runes)". */
-function Action({ action }: { action: RouteAction }) {
+/** One thing to do at a stop: "Buy from Twin Maiden Husks", then its items as tiles with names. */
+function Action({ action, own }: { action: RouteAction; own: Set<string> }) {
   const note = actionNote(action);
   return (
-    <ActionLine>
+    <>
       <Lead>
         {actionLead(action)}
-        {action.items.length > 0 ? ':' : null}
+        {note ? ` (${note})` : null}
       </Lead>
-      {action.items.map((item) => {
-        const { name, icon } = itemInfo(item.ref);
-        const notes = itemNotes(action, item);
-        return (
-          <Item key={`${item.ref.file}:${item.ref.id}`}>
-            {icon ? <ItemTile src={iconUrl(icon)} size={28} /> : null}
-            <ItemName>{name}</ItemName>
-            {notes.length > 0 ? <Note>({notes.join(', ')})</Note> : null}
-          </Item>
-        );
-      })}
-      {note ? <Note>({note})</Note> : null}
-    </ActionLine>
+      {action.items.length > 0 ? (
+        <Items>
+          {action.items.map((item) => {
+            const { name, icon } = itemInfo(item.ref);
+            const notes = itemNotes(action, item);
+            const mine = own.has(refKey(item.ref)) && icon !== null;
+            return (
+              <Item key={refKey(item.ref)}>
+                {mine ? <ItemTile src={iconUrl(icon)} size={36} /> : <DashedTile $size={36} />}
+                <span>
+                  <ItemName>{name}</ItemName>
+                  {notes.length > 0 ? <Note>{` · ${notes.join(', ')}`}</Note> : null}
+                </span>
+              </Item>
+            );
+          })}
+        </Items>
+      ) : null}
+    </>
   );
 }
 
@@ -103,41 +111,73 @@ const Hint = styled.p`
   margin: 0;
 `;
 
-const Leg = styled.details`
-  border-top: 1px solid ${COLOR_LINE};
-
-  &:last-child {
-    border-bottom: 1px solid ${COLOR_LINE};
-  }
-`;
-
-// The whole bar toggles the region; ≥ 44 px tall for touch.
-const Summary = styled.summary`
-  align-items: center;
-  cursor: pointer;
-  display: flex;
-  gap: ${SPACE_SM};
+// One area per number, on a vertical line that joins the numbers.
+const Path = styled.ol`
   list-style: none;
-  min-height: 44px;
+  margin: 0;
+  padding: 0;
+`;
 
-  &::-webkit-details-marker {
-    display: none;
+const Area = styled.li`
+  column-gap: ${SPACE_MD};
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  padding-bottom: ${SPACE_SM};
+  position: relative;
+
+  &:not(:last-child)::before {
+    background: ${COLOR_LINE};
+    bottom: 0;
+    content: '';
+    left: 15px;
+    position: absolute;
+    top: 32px;
+    width: 1px;
   }
 
-  &::before {
-    color: ${COLOR_TEXT_MUTED};
-    content: '▸';
-    font-size: ${TEXT_SM};
-    transition: transform 0.15s ease;
-  }
+  @media ${BELOW_MOBILE} {
+    column-gap: ${SPACE_SM};
+    grid-template-columns: 28px minmax(0, 1fr);
 
-  details[open] > &::before {
-    transform: rotate(90deg);
+    &:not(:last-child)::before {
+      left: 13px;
+      top: 28px;
+    }
   }
 `;
 
-const LegHeading = styled.h3`
-  ${labelText}
+const AreaNumber = styled.span`
+  align-items: center;
+  background: ${COLOR_SURFACE};
+  border: 1px solid ${COLOR_LINE_STRONG};
+  border-radius: 50%;
+  box-sizing: border-box;
+  color: ${COLOR_TEXT_MUTED};
+  display: flex;
+  font-size: ${TEXT_XS};
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+
+  @media ${BELOW_MOBILE} {
+    height: 28px;
+    width: 28px;
+  }
+`;
+
+const AreaHead = styled.div`
+  align-items: baseline;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px ${SPACE_SM};
+  padding-top: 3px;
+`;
+
+const AreaName = styled.h3`
+  ${displayText}
+  font-size: 20px;
   margin: 0;
 `;
 
@@ -147,54 +187,53 @@ const Count = styled.span`
   white-space: nowrap;
 `;
 
-const Steps = styled.ol`
-  margin: 0 0 ${SPACE_MD};
-  padding-left: 2.2em;
-
-  li::marker {
-    color: ${COLOR_TEXT_MUTED};
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-  }
-
-  @media ${BELOW_MOBILE} {
-    padding-left: 1.8em;
-  }
+const Stop = styled.div`
+  padding: ${SPACE_SM} 0 ${SPACE_SM};
 `;
 
-const Step = styled.li`
-  padding: ${SPACE_XS} 0;
-
-  & + & {
-    border-top: 1px solid ${COLOR_LINE};
-  }
+const PlaceLine = styled.div`
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
-const Place = styled.div`
+const Place = styled.span`
   color: ${COLOR_TEXT};
-  font-family: ${FONT_UI};
   font-size: ${TEXT_MD};
   font-weight: 600;
 `;
 
-const ActionLine = styled.div`
-  align-items: center;
+const BossChip = styled.span`
+  border: 1px solid ${COLOR_LINE_STRONG};
+  border-radius: 3px;
   color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_LABEL};
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 0 6px;
+`;
+
+const Lead = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: 2px 0 0;
+`;
+
+const Items = styled.ul`
   display: flex;
   flex-wrap: wrap;
-  font-size: ${TEXT_SM};
-  gap: 2px ${SPACE_SM};
-  margin-top: 2px;
+  gap: 8px 20px;
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
 `;
 
-const Lead = styled.span`
-  color: ${COLOR_TEXT_MUTED};
-`;
-
-const Item = styled.span`
+const Item = styled.li`
   align-items: center;
   display: inline-flex;
-  gap: 6px;
+  font-size: ${TEXT_MD};
+  gap: 8px;
 `;
 
 const ItemName = styled.span`
@@ -203,6 +242,7 @@ const ItemName = styled.span`
 
 const Note = styled.span`
   color: ${COLOR_TEXT_MUTED};
+  font-variant-numeric: tabular-nums;
 `;
 
 export default GuideRoute;

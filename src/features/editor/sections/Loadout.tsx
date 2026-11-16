@@ -6,6 +6,7 @@ import { useAppSelector } from '@/app/hooks';
 import {
   BELOW_MOBILE,
   BELOW_TABLET,
+  BELOW_WIDE,
   COLOR_DANGER,
   COLOR_LINE,
   COLOR_TEXT,
@@ -60,6 +61,8 @@ const ARMOR_TYPES: Record<(typeof ARMOR_SLOTS)[number], SlotType> = {
 
 /** Columns of the spell grid: one cell per memory slot, so 10 slots make two rows on desktop. */
 const SPELL_COLUMNS = 5;
+/** Below 1100 px, where the gear column beside the stats is narrow (T28). */
+const SPELL_COLUMNS_MEDIUM = 3;
 const SPELL_COLUMNS_NARROW = 2;
 
 /** The memory slots a spell cell spans: the spell's cost, 1 for an empty cell. */
@@ -99,7 +102,7 @@ function Group({
 }
 
 /**
- * The Loadout panel (T27): everything the build equips, every item by name, in a fixed layout so it
+ * The Loadout panel (T27; on desktop beside the stats in one panel, T28): everything the build equips, every item by name, in a fixed layout so it
  * takes the same space on every build. Left hand | right hand (stacked on phones; 3 weapons each, 64px tiles, affinity
  * and skill, a warning when the stats don't meet the requirements); armor, talismans, and the flask's
  * tears with the great rune and spirit ash in three columns (44px tiles); arrows and bolts and
@@ -373,6 +376,10 @@ const SpellGrid = styled.ul`
   margin: 0;
   padding: 0;
 
+  @media ${BELOW_WIDE} {
+    grid-template-columns: repeat(${SPELL_COLUMNS_MEDIUM}, minmax(0, 1fr));
+  }
+
   @media ${BELOW_TABLET} {
     column-gap: ${SPACE_GROUP};
     grid-template-columns: repeat(${SPELL_COLUMNS_NARROW}, minmax(0, 1fr));
@@ -382,6 +389,10 @@ const SpellGrid = styled.ul`
 const SpellCell = styled.li<{ $span: number }>`
   grid-column: span ${({ $span }) => Math.min(Math.max($span, 1), SPELL_COLUMNS)};
   min-width: 0;
+
+  @media ${BELOW_WIDE} {
+    grid-column: span ${({ $span }) => Math.min(Math.max($span, 1), SPELL_COLUMNS_MEDIUM)};
+  }
 
   @media ${BELOW_TABLET} {
     grid-column: span ${({ $span }) => Math.min(Math.max($span, 1), SPELL_COLUMNS_NARROW)};
