@@ -1,18 +1,17 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { onAuthChange } from '@/lib/firebase';
-import { AuthContext, type AuthValue } from './authContext';
+import { onAuthChange, reloadUser } from '@/lib/firebase';
+import { AuthContext, authValue, SIGNED_OUT, type AuthValue } from './authContext';
 
 /** Listens to Firebase Auth once for the whole app; read it with `useAuth()`. */
 function AuthProvider({ children }: { children: ReactNode }) {
-  const [value, setValue] = useState<AuthValue>({ loading: true, user: null, uid: null });
+  const [value, setValue] = useState<AuthValue>({ ...SIGNED_OUT, loading: true });
 
-  useEffect(
-    () =>
-      onAuthChange((user) => {
-        setValue({ loading: false, user, uid: user?.uid ?? null });
-      }),
-    [],
-  );
+  useEffect(() => {
+    const refreshUser = async () => {
+      setValue(authValue(await reloadUser(), refreshUser));
+    };
+    return onAuthChange((user) => setValue(authValue(user, refreshUser)));
+  }, []);
 
   return <AuthContext value={value}>{children}</AuthContext>;
 }

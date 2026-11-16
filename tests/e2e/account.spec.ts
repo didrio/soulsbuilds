@@ -1,7 +1,7 @@
 // Account deletion (T18): sign up → create a build → like and comment on someone else's build →
 // delete the account from the profile → the build, the comment and the like are gone. `npm run e2e`.
 import { expect, test } from '@playwright/test';
-import { pickGoogleAccount, signUpWithEmail } from './helpers';
+import { accountMenu, pickGoogleAccount, signUpWithEmail } from './helpers';
 
 const unique = Date.now().toString(36);
 const email = `delete-${unique}@example.test`;
@@ -34,10 +34,11 @@ test('delete your account and everything you published', async ({ page }) => {
   await page.getByRole('button', { name: 'Post' }).click();
   await expect(page.getByText(comment)).toBeVisible();
 
-  // Delete the account from the profile.
-  await page.getByRole('link', { name: 'Profile' }).click();
+  // Delete the account from the Account page (T31; it was at the bottom of the profile).
+  await accountMenu(page, 'Profile');
   await expect(page.getByRole('heading', { name: displayName })).toBeVisible();
   const profile = new URL(page.url()).pathname;
+  await accountMenu(page, 'Account');
   await page.getByRole('button', { name: 'Delete account' }).click();
   const dialog = page.getByRole('dialog', { name: 'Delete your account?' });
   await dialog.getByLabel('Your password').fill('wrong-password');
@@ -84,9 +85,10 @@ test('a Google account confirms its deletion with Google (T30)', async ({ page }
   await step.getByLabel('Display name', { exact: true }).fill(name);
   await step.getByRole('button', { name: 'Continue' }).click();
 
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await expect(page.getByRole('heading', { name })).toBeVisible();
   const profile = new URL(page.url()).pathname;
+  await accountMenu(page, 'Account');
   await page.getByRole('button', { name: 'Delete account' }).click();
   const dialog = page.getByRole('dialog', { name: 'Delete your account?' });
   await expect(dialog.getByLabel('Your password')).toHaveCount(0);

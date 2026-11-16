@@ -12,7 +12,29 @@ export async function chooseName(page: Page, displayName: string) {
   await step.getByLabel('Display name', { exact: true }).fill(displayName);
   await step.getByRole('button', { name: 'Continue' }).click();
   await expect(step).toBeHidden();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await expect(accountButton(page)).toBeVisible();
+}
+
+/** The header's account menu button (T31: the signed-in user's display name). */
+export const accountButton = (page: Page, name?: string) =>
+  page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('button', name ? { name, exact: true } : { expanded: false });
+
+/** The header's Log in button (signed out, `/account` shows its own too). */
+export const headerLogIn = (page: Page) =>
+  page.getByRole('navigation', { name: 'Main' }).getByRole('button', { name: 'Log in' });
+
+/** Opens the header's account menu and picks Profile, Account or Log out (T31). */
+export async function accountMenu(page: Page, item: 'Profile' | 'Account' | 'Log out') {
+  await accountButton(page).click();
+  const panel = page.getByRole('navigation', { name: 'Your account' });
+  await (
+    item === 'Log out'
+      ? panel.getByRole('button', { name: item })
+      : panel.getByRole('link', { name: item })
+  ).click();
+  await expect(panel).toBeHidden();
 }
 
 /** Fills the open sign-up form (email + password), then chooses the display name. */

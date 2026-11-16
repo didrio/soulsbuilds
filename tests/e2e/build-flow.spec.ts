@@ -1,7 +1,7 @@
 // The main user journey on the emulators: sign up → create a build → like → comment → edit →
 // profile → delete → logout. `npm run e2e`.
 import { expect, test, type Page } from '@playwright/test';
-import { signUpWithEmail } from './helpers';
+import { accountMenu, signUpWithEmail } from './helpers';
 
 const unique = Date.now().toString(36);
 const email = `e2e-${unique}@example.test`;
@@ -114,7 +114,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByText('My own build, my own comment.')).toBeVisible();
 
   // Profile: own builds and liked builds.
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await expect(page.getByRole('heading', { name: displayName })).toBeVisible();
   await expect(page.getByRole('link', { name: new RegExp(`${buildName} v2`) })).toBeVisible();
   await page.getByRole('tab', { name: 'Liked' }).click();
@@ -136,7 +136,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByText('You haven’t made any builds yet.')).toBeVisible();
 
   // Log out.
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await accountMenu(page, 'Log out');
   await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
 });
 
@@ -189,21 +189,14 @@ test('report a build once; the login dialog closes with Escape', async ({ page }
   await expect(page.getByText('You already reported this build.')).toBeVisible();
 });
 
-test('rename, password reset, verification notice and consumables', async ({ page }) => {
+test('password reset and consumables', async ({ page }) => {
   const resetEmail = `t6-${unique}@example.test`;
   await page.goto('/');
   await page.getByRole('button', { name: 'Sign up' }).click();
   await signUpWithEmail(page, resetEmail, `T6 ${unique}`, password);
 
-  // Profile: unverified notice with resend, and rename.
-  await page.getByRole('link', { name: 'Profile' }).click();
-  await expect(page.getByText(/Verify your email/)).toBeVisible();
-  await page.getByRole('button', { name: 'Resend email' }).click();
-  await expect(page.getByText('Verification email sent. Check your inbox.')).toBeVisible();
-  await page.getByRole('button', { name: 'Change name' }).click();
-  await page.getByRole('textbox', { name: 'Display name' }).fill(`Renamed ${unique}`);
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('heading', { name: `Renamed ${unique}` })).toBeVisible();
+  // (Rename and the verification notice moved to the Account page: settings.spec.ts, T31.)
+  await accountMenu(page, 'Profile');
 
   // Consumables: pick one, save, and see it in view mode.
   await page.getByRole('link', { name: 'Create a build' }).click();
@@ -218,7 +211,7 @@ test('rename, password reset, verification notice and consumables', async ({ pag
   await expect(page.getByText('Consumables')).toBeVisible();
 
   // Password reset from the login dialog.
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await accountMenu(page, 'Log out');
   await page.getByRole('button', { name: 'Log in' }).click();
   const login = page.getByRole('form', { name: 'Log in' });
   await login.getByLabel('Email').fill(resetEmail);

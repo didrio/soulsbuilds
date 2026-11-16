@@ -2,7 +2,15 @@
 // you were, "Forgot password?", Google in the Auth emulator's popup, and "Log in to create a build"
 // continuing to the editor. `npm run e2e`.
 import { expect, test } from '@playwright/test';
-import { chooseName, E2E_PASSWORD, pickGoogleAccount, uniqueId } from './helpers';
+import {
+  accountButton,
+  accountMenu,
+  chooseName,
+  E2E_PASSWORD,
+  headerLogIn,
+  pickGoogleAccount,
+  uniqueId,
+} from './helpers';
 
 const SEED_BUILD = '/build/SEEDBLEED001';
 
@@ -30,11 +38,11 @@ test('sign up, choose a name, log out, log in where you were, reset request', as
   // The account exists; the name comes next. Still on the build afterwards.
   await chooseName(page, name);
   await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}$`));
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await expect(page.getByRole('heading', { name })).toBeVisible();
 
   // Log out, then back in from the build page: no name step this time, same page after.
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await accountMenu(page, 'Log out');
   await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
   await page.goto(SEED_BUILD);
   await page.getByRole('button', { name: 'Log in' }).click();
@@ -45,12 +53,12 @@ test('sign up, choose a name, log out, log in where you were, reset request', as
   await expect(login.getByRole('alert')).toHaveText('Wrong email or password.');
   await login.getByLabel('Password').fill(E2E_PASSWORD);
   await login.getByRole('button', { name: 'Log in' }).click();
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await expect(accountButton(page)).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}$`));
 
   // "Forgot password?": its own view, the email carried over, the same answer for any email.
-  await page.getByRole('button', { name: 'Log out' }).click();
+  await accountMenu(page, 'Log out');
   await page.getByRole('button', { name: 'Log in' }).click();
   await login.getByLabel('Email').fill(email);
   await login.getByRole('button', { name: 'Forgot password?' }).click();
@@ -74,19 +82,23 @@ test('Continue with Google: the name step once, never the Google name', async ({
   const step = page.getByRole('dialog', { name: 'Choose a display name' });
   await expect(step.getByLabel('Display name', { exact: true })).toHaveValue('');
   await chooseName(page, name);
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await expect(page.getByRole('heading', { name })).toBeVisible();
   await expect(page.getByText('Real Person Name')).toHaveCount(0);
-  // Google verified the email: no "Verify your email" notice.
-  await expect(page.getByText(/Verify your email/)).toHaveCount(0);
+  // Google verified the email: no "Not verified" row; Google is the sign-in method (T31).
+  await accountMenu(page, 'Account');
+  await expect(page.getByText('Not verified')).toHaveCount(0);
+  await expect(
+    page.getByRole('region', { name: 'Sign-in' }).getByText('Google', { exact: true }),
+  ).toBeVisible();
 
   // The same Google account again: straight in.
-  await page.getByRole('button', { name: 'Log out' }).click();
-  await page.getByRole('button', { name: 'Log in' }).click();
+  await accountMenu(page, 'Log out');
+  await headerLogIn(page).click();
   await pickGoogleAccount(page, page.getByRole('button', { name: 'Continue with Google' }), email, {
     existing: true,
   });
-  await expect(page.getByRole('button', { name: 'Log out' })).toBeVisible();
+  await expect(accountButton(page)).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 

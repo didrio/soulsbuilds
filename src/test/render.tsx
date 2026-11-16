@@ -3,6 +3,7 @@
 //   const { user, store } = renderWithProviders(<BuildsList builds={[...]} />, { route: '/' });
 //   renderWithProviders(<Header />, { uid: 'alice' });
 //   renderWithProviders(<Profile />, { route: '/user/alice', path: '/user/:userId' });
+//   renderWithProviders(<AccountPage />, { uid: 'alice', providers: ['google.com'] });
 // With the default path ('*') any /build/:id navigation shows "build page"; with a specific path,
 // navigating anywhere else shows "other page".
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -12,7 +13,7 @@ import type { ReactElement } from 'react';
 import { Provider } from 'react-redux';
 import { MemoryRouter, Route, Routes } from 'react-router';
 import { makeStore } from '@/app/store';
-import { AuthContext, SIGNED_OUT, type AuthValue } from '@/features/auth/authContext';
+import { AuthContext, SIGNED_OUT, authValue, type AuthValue } from '@/features/auth/authContext';
 import type { AuthUser } from '@/lib/firebase';
 
 export { makeStore };
@@ -23,13 +24,36 @@ export function renderWithProviders(
     route = '/',
     path = '*',
     uid = null,
-  }: { route?: string; path?: string; uid?: string | null } = {},
+    providers = ['password'],
+    emailVerified = true,
+    email = uid ? `${uid}@example.com` : null,
+    refreshUser = () => Promise.resolve(),
+  }: {
+    route?: string;
+    path?: string;
+    uid?: string | null;
+    /** The signed-in user's sign-in methods (`'password'`, `'google.com'`). */
+    providers?: string[];
+    emailVerified?: boolean;
+    email?: string | null;
+    refreshUser?: () => Promise<void>;
+  } = {},
 ) {
   const store = makeStore();
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
-  const auth: AuthValue = uid ? { loading: false, uid, user: { uid } as AuthUser } : SIGNED_OUT;
+  const auth: AuthValue = uid
+    ? authValue(
+        {
+          uid,
+          email,
+          emailVerified,
+          providerData: providers.map((providerId) => ({ providerId })),
+        } as AuthUser,
+        refreshUser,
+      )
+    : SIGNED_OUT;
   const user = userEvent.setup();
   const result = render(
     <QueryClientProvider client={queryClient}>

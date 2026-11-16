@@ -1,41 +1,30 @@
 import { screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
-import Profile from './Profile';
+import AccountPage from './AccountPage';
 
 const firebase = vi.hoisted(() => ({
   deleteAccount: vi.fn(),
   getUserProfile: vi.fn(),
-  hasPassword: vi.fn(),
-  listUserBuilds: vi.fn(),
 }));
 vi.mock('@/lib/firebase', () => ({
   ...firebase,
-  listLikedBuildIds: () => Promise.resolve([]),
-  getBuild: () => Promise.resolve(null),
-  updateDisplayName: vi.fn(),
-  resendVerificationEmail: vi.fn(),
   errorMessage: () => 'Wrong email or password.',
 }));
 
 const alice = { id: 'alice', displayName: 'Alice', createdAt: new Date('2026-01-01') };
-const asProfile = (uid: string | null) =>
-  renderWithProviders(<Profile />, { route: '/user/alice', path: '/user/:userId', uid });
+let providers = ['password'];
+// The Account page (T31; T18 had it at the bottom of the profile).
+const asProfile = (uid: string) =>
+  renderWithProviders(<AccountPage />, { route: '/account', path: '/account', uid, providers });
 
 beforeEach(() => {
   firebase.getUserProfile.mockResolvedValue(alice);
-  firebase.listUserBuilds.mockResolvedValue([]);
   firebase.deleteAccount.mockReset();
-  firebase.hasPassword.mockReturnValue(true);
+  providers = ['password'];
 });
 
 describe('Delete account', () => {
-  it('is offered only on your own profile', async () => {
-    asProfile('bob');
-    expect(await screen.findByRole('heading', { name: 'Alice' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Delete account' })).not.toBeInTheDocument();
-  });
-
   it('says what goes and needs your password', async () => {
     const { user } = asProfile('alice');
     await user.click(await screen.findByRole('button', { name: 'Delete account' }));
@@ -69,7 +58,7 @@ describe('Delete account', () => {
   });
 
   it('a Google-only account confirms with Google instead of a password (T30)', async () => {
-    firebase.hasPassword.mockReturnValue(false);
+    providers = ['google.com'];
     firebase.deleteAccount.mockResolvedValue(true);
     const { user } = asProfile('alice');
     await user.click(await screen.findByRole('button', { name: 'Delete account' }));
@@ -83,7 +72,7 @@ describe('Delete account', () => {
   });
 
   it('closing the Google window deletes nothing and keeps the dialog', async () => {
-    firebase.hasPassword.mockReturnValue(false);
+    providers = ['google.com'];
     firebase.deleteAccount.mockResolvedValue(false);
     const { user } = asProfile('alice');
     await user.click(await screen.findByRole('button', { name: 'Delete account' }));
@@ -95,7 +84,7 @@ describe('Delete account', () => {
     expect(screen.queryByText('other page')).not.toBeInTheDocument();
   });
 
-  it('offers to finish on your own profile once the profile doc is gone', async () => {
+  it('offers to finish once the profile doc is gone', async () => {
     firebase.getUserProfile.mockResolvedValue(null);
     asProfile('alice');
     expect(

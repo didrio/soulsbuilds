@@ -1,6 +1,6 @@
 import { FirebaseError } from 'firebase/app';
 import { describe, expect, it, vi } from 'vitest';
-import { errorField, errorMessage, hasPassword, sendPasswordReset } from './auth';
+import { errorField, errorMessage, hasPassword, isWrongPassword, sendPasswordReset } from './auth';
 
 vi.mock('./app', () => ({ auth: {} }));
 const sendPasswordResetEmail = vi.hoisted(() => vi.fn());
@@ -32,6 +32,10 @@ describe('errorMessage', () => {
     expect(errorMessage(authError('auth/account-exists-with-different-credential'))).toMatch(
       /Log in with your email and password/,
     );
+  });
+
+  it('asks to confirm again after an old sign-in (T31)', () => {
+    expect(errorMessage(authError('auth/requires-recent-login'))).toMatch(/confirm it’s you again/);
   });
 
   it('falls back to a generic message', () => {
@@ -70,5 +74,14 @@ describe('sendPasswordReset', () => {
   it('still reports other errors', async () => {
     sendPasswordResetEmail.mockRejectedValueOnce(authError('auth/invalid-email'));
     await expect(sendPasswordReset('nope')).rejects.toThrow('auth/invalid-email');
+  });
+});
+
+describe('isWrongPassword (T31)', () => {
+  it('is true for both wrong-password codes only', () => {
+    expect(isWrongPassword(authError('auth/invalid-credential'))).toBe(true);
+    expect(isWrongPassword(authError('auth/wrong-password'))).toBe(true);
+    expect(isWrongPassword(authError('auth/weak-password'))).toBe(false);
+    expect(isWrongPassword(new Error('auth/wrong-password'))).toBe(false);
   });
 });

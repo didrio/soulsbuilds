@@ -20,8 +20,10 @@ import {
   SHADOW_OVERLAY,
   SPACE_GUTTER,
   TEXT_MD,
+  TEXT_SM,
   TEXT_XS,
 } from '@/theme';
+import AccountMenu, { useDisplayName } from './AccountMenu';
 import { useCurrentGame } from './game';
 
 interface HeaderProps {
@@ -32,9 +34,9 @@ interface HeaderProps {
 }
 
 /**
- * Full-width bar: the wordmark and the current game; Builds, Profile, Log out and New build (the
- * primary button), or Builds, Log in and Sign up. Phones: a labelled "+" (New build) and a Menu
- * button that opens the rest as a panel under the bar.
+ * Full-width bar: the wordmark and the current game; Builds, the account menu (the display name:
+ * Profile, Account, Log out; T31) and New build (the primary button), or Builds, Log in and Sign up.
+ * Phones: a labelled "+" (New build) and a Menu button that opens the rest as a panel under the bar.
  */
 function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const { loading, uid } = useAuth();
@@ -43,38 +45,17 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
 
-  const links = (onNavigate?: () => void) => (
-    <>
-      <NavItem to="/" end onClick={onNavigate}>
-        Builds
-      </NavItem>
-      {uid ? (
-        <>
-          <NavItem to={`/user/${uid}`} onClick={onNavigate}>
-            Profile
-          </NavItem>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              onNavigate?.();
-              void signOut();
-            }}>
-            Log out
-          </Button>
-        </>
-      ) : (
-        <Button
-          variant="ghost"
-          aria-haspopup="dialog"
-          aria-expanded={openDialog === 'login'}
-          onClick={() => {
-            onNavigate?.();
-            onLogIn();
-          }}>
-          Log in
-        </Button>
-      )}
-    </>
+  const logIn = (onNavigate?: () => void) => (
+    <Button
+      variant="ghost"
+      aria-haspopup="dialog"
+      aria-expanded={openDialog === 'login'}
+      onClick={() => {
+        onNavigate?.();
+        onLogIn();
+      }}>
+      Log in
+    </Button>
   );
 
   return (
@@ -85,7 +66,10 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
         {loading ? null : (
           <>
             <Nav aria-label="Main">
-              {links()}
+              <NavItem to="/" end>
+                Builds
+              </NavItem>
+              {uid ? <AccountMenu /> : logIn()}
               {uid ? (
                 <ButtonLink to="/build/new" variant="primary">
                   <PlusIcon />
@@ -126,7 +110,16 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
                 </MenuButton>
                 {menuOpen ? (
                   <Menu id={menuId} onEscape={closeMenu}>
-                    <nav aria-label="Main">{links(closeMenu)}</nav>
+                    <nav aria-label="Main">
+                      <NavItem to="/" end onClick={closeMenu}>
+                        Builds
+                      </NavItem>
+                      {uid ? (
+                        <PhoneAccountLinks uid={uid} onNavigate={closeMenu} />
+                      ) : (
+                        logIn(closeMenu)
+                      )}
+                    </nav>
                   </Menu>
                 ) : null}
               </OutsideClickHandler>
@@ -135,6 +128,32 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
         )}
       </Inner>
     </Bar>
+  );
+}
+
+/** The phone menu's account part (T31): who's signed in, then Profile, Account and Log out. */
+function PhoneAccountLinks({ uid, onNavigate }: { uid: string; onNavigate: () => void }) {
+  const name = useDisplayName();
+  return (
+    <>
+      <SignedInAs>
+        Signed in as <b>{name}</b>
+      </SignedInAs>
+      <NavItem to={`/user/${uid}`} onClick={onNavigate}>
+        Profile
+      </NavItem>
+      <NavItem to="/account" onClick={onNavigate}>
+        Account
+      </NavItem>
+      <Button
+        variant="ghost"
+        onClick={() => {
+          onNavigate();
+          void signOut();
+        }}>
+        Log out
+      </Button>
+    </>
   );
 }
 
@@ -280,8 +299,24 @@ const Menu = styled(FocusScope)`
   }
 
   & > nav > a + a,
-  & > nav > a + button {
+  & > nav > a + button,
+  & > nav > p {
     border-top: 1px solid ${COLOR_LINE};
+  }
+`;
+
+const SignedInAs = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: 0;
+  overflow: hidden;
+  padding: 12px 8px 4px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  & > b {
+    color: ${COLOR_TEXT};
+    font-weight: 600;
   }
 `;
 

@@ -1,7 +1,7 @@
 // Account deletion (T18), client-side: the Spark plan has no Cloud Functions. Everything goes
 // through the same rules as the rest of the app: counters on other people's builds move in the same
 // batch as the like/comment they count. docs/decisions.md "Account deletion".
-import { EmailAuthProvider, deleteUser, reauthenticateWithCredential } from 'firebase/auth';
+import { deleteUser } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import {
   collection,
@@ -17,7 +17,7 @@ import {
   type DocumentReference,
 } from 'firebase/firestore';
 import { auth, firestore } from './app';
-import { hasPassword, reauthenticateWithGoogle } from './auth';
+import { hasPassword, reauthenticate } from './auth';
 import { deleteBuild, listUserBuilds } from './builds';
 import { trackingStatus, type TrackingStatus } from '@/lib/tracking';
 import { deleteTracking, listTracking } from './tracking';
@@ -157,14 +157,7 @@ export async function deleteAccount(
 ): Promise<boolean> {
   const user = auth.currentUser;
   if (!user?.email) throw new FirebaseError('auth/user-not-found', 'Not signed in');
-  if (hasPassword(user)) {
-    await reauthenticateWithCredential(
-      user,
-      EmailAuthProvider.credential(user.email, password ?? ''),
-    );
-  } else if (!(await reauthenticateWithGoogle(user))) {
-    return false;
-  }
+  if (!(await reauthenticate(hasPassword(user) ? (password ?? '') : null))) return false;
   await deleteAccountData(user.uid, onProgress);
   await deleteUser(user);
   return true;

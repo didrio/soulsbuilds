@@ -2,16 +2,16 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T44**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T46**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T31 — Profile and account settings · Opus · high · plan mode on. Up next follows `docs/product.md`
-"Priorities": usage counts (T38, blocked on the owner), link previews (T37, blocked on the Blaze decision),
-account settings (T31; sign-in, T30, is done), then rules budget (T42) before copies and variations (T32 → T33),
-and the branded email action page (T43).
-T31–T33 start with owner questions (★ in each ticket).
+**Next:** T44 — Check off route stops that aren't gear · Opus · high · plan mode on (a gap the owner hit while
+tracking). Then `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
+blocked on the Blaze decision), rules budget (T42) before copies and variations (T32 → T33), the branded email
+action page (T43), and item hover cards (T45, no rush).
+T32, T33, T44 and T45 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -42,13 +42,35 @@ and spacing, and the canvas notes say why.
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
-T40 (the build image) and T30 (sign up and log in).
+T40 (the build image), T30 (sign up and log in) and T31 (profile and account settings).
 
 ## In progress
 
 (none)
 
 ## Up next
+
+### T44 — Check off route stops that aren't gear
+
+- **Status:** ready (owner, 2026-11-16, while tracking a build)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** While tracking a build, the player can mark a route stop done when it has nothing to check off: key
+  items (Flask of Wondrous Physick, the Haligtree Secret Medallion halves), a boss, an Ash of War. Today such a
+  stop only counts as done once a later stop with tracked gear is done (`stopProgress` in
+  `features/editor/guide/progress.ts`), so "Next stop" stays stuck on it.
+- **Done when:** (★ owner questions first)
+  - ★ A "Mark done" control on those stops (per stop, or per key item?), in `GuideRoute` and the Loadout tab's
+    `NextStop` card; unchecking works too. ★ Whether they count toward the progress percentage (suggest: no, it
+    stays about the build's gear and stats).
+  - Stored in the private tracking doc. Options: key-item keys in `collected` (e.g. `key:<id>`, mind the 64
+    cap) or a new `stopsDone` list (a rules change in `validTracking`: `hasExactly` + a size cap, with rules
+    tests). Existing docs keep working with no migration.
+  - `stopProgress` treats a marked stop as done; the "a later stop is done" inference stays for unmarked ones.
+    Unit tests in `progress.test.ts`, the tracking e2e extended; `npm run check`, `npm run test:rules`,
+    `npm run e2e`; screenshots desktop and `--mobile`.
+- **Context:** `features/editor/guide/{progress.ts,GuideRoute.tsx,NextStop.tsx}`, `lib/tracking.ts`
+  (`applyChange`, `trackingProgress`), `features/tracking/{useBuildTracking.ts,saveQueue.ts}`,
+  `firestore.rules` `validTracking` with `tests/rules/`.
 
 ### T38 — Cookie-free usage counts
 
@@ -80,32 +102,6 @@ T40 (the build image) and T30 (sign up and log in).
   - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
 - **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
   replaces the backlog's "Per-build share previews".
-
-### T31 — Profile and account settings
-
-- **Status:** ready (T30 added Google sign-in: Google-only accounts have no password to change)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** A public profile in the redesign v2 look, and the account settings people expect from a real site,
-  kept apart from it. Today the profile page mixes both (rename at the top, the verify notice, Delete account at
-  the bottom), and there's no way to change your email or password.
-- **Done when:** (a proposal: confirm the ★ items with the owner, mock on the canvas first)
-  - Public profile `/user/:userId`: a header like the build hero (display name, joined date, build and like
-    counts), Builds / Liked tabs as today, with T29's row style, plus the owner's private Playing / Completed
-    tabs (T36: `features/tracking/TrackedBuilds`, tab counts, "N builds finished" in the tagline) kept as they
-    are. No email or settings on it.
-  - ★ An Account page (`/account`, signed-in only): display name (rename), email (change via
-    `verifyBeforeUpdateEmail`), password (change it with the current one; for Google users, their sign-in
-    methods and "Set a password"), the verify-email notice, Log out, and Delete account (moved from the profile,
-    behavior unchanged).
-  - Re-authentication handled in one place, with a clear message on `auth/requires-recent-login`.
-  - ★ Header: when signed in, the display name opens a small menu (Profile, Account, Log out) instead of
-    separate links; on phones it lives in the menu.
-  - Tests: unit tests for the settings forms; e2e covers rename, password change, log out, and account deletion
-    still passes; `npm run check` and `npm run e2e` pass; screenshots desktop and `--mobile`.
-  - Docs: a decision row (public profile vs account page), the privacy page true to what's stored, routes in
-    AGENTS.md's project map.
-- **Context:** `features/profile/{Profile,DeleteAccount,queries}`, `lib/firebase/{auth,users,account}.ts`,
-  `app/Header.tsx`, `app/routes.tsx`; decisions "Account deletion", "Emails", "Email verification".
 
 ### T42 — Free up rules budget on builds before the next field
 
@@ -207,6 +203,35 @@ T40 (the build image) and T30 (sign up and log in).
   styles), `app/routes.tsx`, decision "Email verification" (send-only). The emulator's links point at its own
   handler, so e2e builds the `/auth/action?mode=…&oobCode=…` URL from the oobCodes endpoint.
 
+### T45 — Item cards on hover across the build page
+
+- **Status:** ready (owner, 2026-11-16: no rush)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** Hovering over (or focusing) any item image on the build page, on any tab (Loadout, Description, How
+  to get, the hero, the summary column), shows a small card with the item's name and the few facts a player
+  wants at a glance. The landing page's rows stay as they are.
+- **Done when:** (★ owner questions first: which facts per kind; how it works on phones)
+  - One shared hover card for every item tile on the build page. The facts are per kind, kept short. A
+    proposal to confirm:
+    - Weapons: type, affinity and skill, scaling grades, requirements (met or unmet for this build's stats,
+      like `itemWarning`), weight.
+    - Armor: weight and poise.
+    - Talismans, tears, Great Runes: their effect.
+    - Spells: FP cost, slots and requirements.
+    - Spirit Ashes: FP/HP cost.
+  - ★ Only what `src/data/` already has (check `schema.ts`); a missing fact means a pipeline change in
+    `scripts/data/` from the owner's export, never a new source (golden rule 5).
+  - Opens on hover and keyboard focus, closes on Escape and when the pointer leaves. Phones have no hover:
+    ★ tap shows it, or the card stays desktop-only. It never covers the edit-mode tile buttons or blocks a
+    click. Visual only for screen readers unless the facts also go in the accessible name or description.
+  - The card's facts come from a pure helper (e.g. extending `features/editor/itemDetails.ts`) with unit
+    tests; component tests for show and hide; `npm run check`; screenshots desktop and `--mobile`; `npm run
+perf` shows no regression (the full data loads with the editor only, docs/data.md).
+- **Context:** `components/ui/{Tooltip,ItemTile}.tsx` (Tooltip already places a bubble on screen and is
+  `aria-hidden`), `features/editor/{ItemRow.tsx,itemDetails.ts}`, `sections/{Loadout,BuildSummary,
+BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,schema.ts}`, the Gotcha on
+  `@/data/core` vs `@/data`.
+
 ## Backlog
 
 - Route (T15 follow-ups): upgrade materials (Smithing/Somber stones, needs upgrade levels on builds), rune
@@ -237,6 +262,12 @@ T40 (the build image) and T30 (sign up and log in).
 
 Older entries: `docs/tickets-archive.md`.
 
+- T31 — Profile and account settings — 2026-11-16 — owner: no canvas mock, name menu in the header, Google-only
+  accounts set a password (no email change), framed profile hero. `/account` (`features/account/`: display name,
+  email + verify notice + change by link, sign-in methods + change/set password, Log out, DeleteAccount moved
+  here); `reauthenticate` in `lib/firebase/auth.ts` before every change (set password = `updatePassword`:
+  `linkWithCredential` fails for the account's own email); `useAuth()` snapshots email/verified/providers +
+  `refreshUser()`; `app/AccountMenu`; e2e `settings.spec.ts` + `helpers.ts` `accountMenu`/`headerLogIn`.
 - T30 — Sign up and log in — 2026-11-16 — owner: Google + email, display name in its own step, 8 characters,
   action page later (T43), no canvas mock. `features/auth/AuthDialog` (views Login, SignUp, ForgotPassword,
   ChooseName; any signed-in account without `users/{uid}` gets the name step, closing it logs out), GoogleButton
@@ -254,13 +285,3 @@ Older entries: `docs/tickets-archive.md`.
   doc's batch, rules check both sides; `saveQueue` tracks the stored status), hero "N playing · M finished",
   profile Playing cards (progress + next stop, lazy) and Completed trophies, `admin.mjs counts` backfill, e2e
   `playing.spec.ts`
-- T41 — Tracking needs an account — 2026-11-16 — owner: drop existing local progress (no merge), text + icons
-  modal; `TrackingIntro` (signed out: Create account / Log in, continues into tracking via
-  `useOpenAuthDialog(kind, onSignedIn)` + `startAfterSignIn(uid)`; signed in with no tracked build, from
-  `tracksAnyBuild` (`limit(1)`): Start tracking / Not now); local storage, sync, Keep my progress and
-  `mergeTracking` gone; `screenshot --storage` → `--click`; e2e `helpers.ts` `completeSignUp`.
-- T35 — The route during a run — 2026-11-16 — owner: flat numbered stops (mockup), reasons hand-written on gates
-  (`progression.ts` `reason`, pipeline fails without) and worded from the route's links for prerequisite key
-  items (`route.ts` `usedFor`/`gate`, `phrases.ts` `itemReason`), region-only stops named by who/what; key items
-  with icons (+80 webp); `guide/progress.ts` (done/next), "N of M stops done" + folding, `NextStop` card on Loadout.
-  Mid-session: tracking becomes account-only → T41.

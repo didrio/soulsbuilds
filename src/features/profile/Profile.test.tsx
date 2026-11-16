@@ -41,6 +41,35 @@ describe('Profile header (T20)', () => {
   });
 });
 
+describe('Profile hero (T31)', () => {
+  beforeEach(() => firebase.listUserBuilds.mockResolvedValue([]));
+
+  it('shows the name, and no settings to visitors', async () => {
+    renderProfile('someone-else');
+    expect(await screen.findByRole('heading', { level: 1, name: 'Ranni Fan' })).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Account settings' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Change name|Delete account/ })).toBeNull();
+  });
+
+  it('links the owner to their account settings, which aren’t on the page', async () => {
+    renderProfile('seed-ranni');
+    expect(await screen.findByRole('link', { name: 'Account settings' })).toHaveAttribute(
+      'href',
+      '/account',
+    );
+    expect(screen.queryByRole('button', { name: /Change name|Delete account/ })).toBeNull();
+    expect(screen.queryByText(/Verify your email/)).not.toBeInTheDocument();
+  });
+
+  it('offers the owner to finish a deletion that stopped halfway', async () => {
+    firebase.getUserProfile.mockResolvedValue(null);
+    renderProfile('seed-ranni');
+    expect(
+      await screen.findByRole('button', { name: 'Finish deleting your account' }),
+    ).toBeInTheDocument();
+  });
+});
+
 describe('Playing and Completed (T36)', () => {
   const BASE = { vigor: 10, mind: 10, end: 10, str: 10, dex: 10, int: 10, fai: 10, arc: 10 };
   const playing = makeBuild({ id: 'PLAY', name: 'Moon Knight', ownerId: 'seed-ranni' });

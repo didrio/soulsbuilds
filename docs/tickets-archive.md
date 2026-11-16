@@ -118,3 +118,13 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   rows keep the other hand's placeholder), Spells hidden without spells and never shows free-slot placeholders; edit
   mode unchanged. Not seen on screen: mobile Loadout, the Spells section; with no weapons the Armor row's top rule sits
   right under the heading.
+- T35 — The route during a run — 2026-11-16 — owner: flat numbered stops (mockup), reasons hand-written on gates
+  (`progression.ts` `reason`, pipeline fails without) and worded from the route's links for prerequisite key
+  items (`route.ts` `usedFor`/`gate`, `phrases.ts` `itemReason`), region-only stops named by who/what; key items
+  with icons (+80 webp); `guide/progress.ts` (done/next), "N of M stops done" + folding, `NextStop` card on Loadout.
+  Mid-session: tracking becomes account-only → T41.
+- T41 — Tracking needs an account — 2026-11-16 — owner: drop existing local progress (no merge), text + icons
+  modal; `TrackingIntro` (signed out: Create account / Log in, continues into tracking via
+  `useOpenAuthDialog(kind, onSignedIn)` + `startAfterSignIn(uid)`; signed in with no tracked build, from
+  `tracksAnyBuild` (`limit(1)`): Start tracking / Not now); local storage, sync, Keep my progress and
+  `mergeTracking` gone; `screenshot --storage` → `--click`; e2e `helpers.ts` `completeSignUp`.

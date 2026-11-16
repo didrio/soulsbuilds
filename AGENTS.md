@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T30, T34–T36, T39–T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T31, T34–T36, T39–T41 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step. App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); the route follows it (T35); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step. Account page (T31) apart from the public profile. App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -104,9 +104,9 @@ src/
   app/                     App (shell: global styles + game skin, header (phone menu, T26), auth dialog state (pages open
                            it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; AppCheckNotice =
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
-                           routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /privacy, /terms, 404), AppProviders
+                           routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /account, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
-                           Header
+                           Header + AccountMenu (T31: the display name opens Profile, Account, Log out)
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
                            ForgotPassword, ChooseName = the display-name step for any account without a profile;
                            GoogleButton, FormField + useFieldErrors: errors by field, focus the first)
@@ -115,8 +115,11 @@ src/
                            age, tags, left-hand-first slot strip with faint empty cells, level, likes + comments;
                            tags.ts fits tags on one line + "+N"), filters.ts (+ topTags, toggleTag), queries.ts (useBuilds,
                            useUserBuilds, useGameStats)
-  features/profile/        Profile (rename, Builds/Liked tabs; the owner's Playing/Completed, T36), DeleteAccount (T18), queries.ts
-                           (useUserProfile(s), useLikedBuilds, useDeleteAccount…)
+  features/profile/        Profile = the public page (T31: framed hero; Builds/Liked tabs; the owner's Playing/Completed,
+                           T36), queries.ts (useUserProfile(s), useLikedBuilds, useUpdateDisplayName)
+  features/account/        AccountPage (`/account`, T31): DisplayNameSection, EmailSection (verify notice, change
+                           by link), SignInSection (change / set a password), DeleteAccount (T18); errors.ts
+                           (changeErrors), queries.ts (useDeleteAccount)
   features/tracking/       Tracking a build (T34; account only, T41): useBuildTracking (query cache + saveQueue.ts
                            debounced Firestore saves; startAfterSignIn), TrackingIntro (the modal before the first
                            track: sign up / log in, or Start tracking), TrackingHero (Track button, progress, Build

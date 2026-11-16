@@ -72,11 +72,12 @@ function Privacy() {
         comments at any time from their page.
       </p>
       <p>
-        To delete your account, open your profile, choose <strong>Delete account</strong> at the
-        bottom and enter your password (or, if you signed up with Google, confirm with Google). This
-        deletes your account, your builds (with their likes and comments), your comments and likes
-        on other builds, your reports and the builds you track, straight away. Copies may stay for a
-        while in the backups the site’s maintainer keeps privately.
+        To delete your account, open <strong>Account</strong> from the menu under your name, choose{' '}
+        <strong>Delete account</strong> at the bottom and enter your password (or, if you signed up
+        with Google, confirm with Google). This deletes your account, your builds (with their likes
+        and comments), your comments and likes on other builds, your reports and the builds you
+        track, straight away. Copies may stay for a while in the backups the site’s maintainer keeps
+        privately.
       </p>
       <p>
         If you can’t sign in any more, <a href={ISSUES_URL}>open an issue on GitHub</a> titled

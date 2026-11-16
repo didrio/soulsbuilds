@@ -7,15 +7,20 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 
 `src/app/routes.tsx` defines the routes:
 
-| Route                   | Component         | What it does                                                                                                                         |
-| ----------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                     | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                            |
-| `/build/:buildId/:tab?` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28) |
-| `/user/:userId`         | `Profile`         | Display name (the owner can rename), tabs for the user's builds and the builds they liked                                            |
-| `*`                     | `NotFound`        | 404 page                                                                                                                             |
+| Route                   | Component         | What it does                                                                                                                                              |
+| ----------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                     | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                 |
+| `/build/:buildId/:tab?` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                      |
+| `/user/:userId`         | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31) |
+| `/account`              | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account             |
+| `*`                     | `NotFound`        | 404 page                                                                                                                                                  |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
-Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. The item picker
+Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. Signed in, the
+header's display name opens `AccountMenu` (Profile, Account, Log out; on phones they're in the Menu panel).
+Account changes (`changeEmail`, `changePassword`, `setPassword` in `lib/firebase/auth.ts`) re-authenticate first,
+every time; `useAuth()` copies `email`, `emailVerified` and `providers` off the Auth user and `refreshUser()`
+re-reads them, since Auth changes the user object in place. The item picker
 (`ItemSelector`) is a modal that opens whenever Redux `app.slotType` is set.
 
 **Games.** Souls Builds will cover more FromSoftware games; Elden Ring is the only one today. `src/app/game.ts`
@@ -161,8 +166,8 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   Deleting a build deletes the build doc first, then its likes/comments (anyone signed in may clean up children
   of a build that no longer exists). Signed-in users report builds and comments; only admins read reports
   (a reporter may read and list their own). Moderation runs from `scripts/admin.mjs` (`docs/firebase.md`).
-- **Account deletion (T18)**, client-side (`src/lib/firebase/account.ts`, the profile's "Delete account"):
-  re-authenticate with the password, then **find everything first** (own builds; likes and comments on other
+- **Account deletion (T18)**, client-side (`src/lib/firebase/account.ts`, "Delete account" on `/account`, T31):
+  re-authenticate (`reauthenticate` in `auth.ts`: the password, or Google for a Google-only account), then **find everything first** (own builds; likes and comments on other
   builds by collection-group queries; reports by `reporterId`), so a failing query deletes nothing; then delete
   own builds (`deleteBuild`, which takes every like and comment on them), each like/comment elsewhere in its
   own batch with the counter (plain delete if that build is gone), the reports, the tracking docs (T34; each

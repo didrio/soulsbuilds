@@ -4,7 +4,11 @@ import { renderWithProviders } from '@/test/render';
 import Header from './Header';
 
 const signOut = vi.hoisted(() => vi.fn(() => Promise.resolve()));
-vi.mock('@/lib/firebase', () => ({ signOut }));
+vi.mock('@/lib/firebase', () => ({
+  signOut,
+  getUserProfile: (id: string) =>
+    Promise.resolve({ id, displayName: 'Alice', createdAt: new Date('2026-01-01') }),
+}));
 
 const renderHeader = (uid: string | null = null) => {
   const onLogIn = vi.fn();
@@ -30,16 +34,38 @@ describe('Header', () => {
     expect(onSignUp).toHaveBeenCalled();
   });
 
-  it('signed in: Profile, Log out and New build', async () => {
+  it('signed in: the display name opens Profile, Account and Log out (T31)', async () => {
     const { user } = renderHeader('u1');
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getByRole('link', { name: 'Profile' })).toHaveAttribute('href', '/user/u1');
+    expect(within(nav).queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
     expect(within(nav).getByRole('link', { name: 'New build' })).toHaveAttribute(
       'href',
       '/build/new',
     );
-    await user.click(within(nav).getByRole('button', { name: 'Log out' }));
+    const name = await within(nav).findByRole('button', { name: 'Alice' });
+    expect(name).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(name);
+    expect(name).toHaveAttribute('aria-expanded', 'true');
+    const panel = screen.getByRole('navigation', { name: 'Your account' });
+    expect(within(panel).getByRole('link', { name: 'Profile' })).toHaveAttribute(
+      'href',
+      '/user/u1',
+    );
+    expect(within(panel).getByRole('link', { name: 'Account' })).toHaveAttribute(
+      'href',
+      '/account',
+    );
+    // Focus starts inside; Escape closes and returns it to the name.
+    expect(within(panel).getByRole('link', { name: 'Profile' })).toHaveFocus();
+    await user.keyboard('{Escape}');
+    expect(name).toHaveAttribute('aria-expanded', 'false');
+    expect(name).toHaveFocus();
+
+    await user.click(name);
+    await user.click(screen.getByRole('button', { name: 'Log out' }));
     expect(signOut).toHaveBeenCalled();
+    expect(name).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('phones: a labelled "+" and a menu that closes on Escape or a choice', async () => {
@@ -60,6 +86,12 @@ describe('Header', () => {
 
     await user.click(menuButton);
     const reopened = document.getElementById(menuButton.getAttribute('aria-controls')!)!;
+    expect(await within(reopened).findByText('Alice')).toBeInTheDocument();
+    expect(within(reopened).getByText(/Signed in as/)).toBeInTheDocument();
+    expect(within(reopened).getByRole('link', { name: 'Account', hidden: true })).toHaveAttribute(
+      'href',
+      '/account',
+    );
     await user.click(within(reopened).getByRole('link', { name: 'Profile', hidden: true }));
     expect(menuButton).toHaveAttribute('aria-expanded', 'false');
   });

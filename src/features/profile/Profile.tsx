@@ -1,21 +1,20 @@
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router';
 import styled from 'styled-components';
-import Button, { ButtonLink } from '@/components/ui/Button';
+import { ButtonLink } from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import Frame from '@/components/ui/Frame';
 import { PlusIcon } from '@/components/ui/icons';
-import PageHero from '@/components/ui/PageHero';
 import PageMessage from '@/components/ui/PageMessage';
-import TextInput from '@/components/ui/TextInput';
-import { TextButton, TextLink } from '@/components/ui/TextButton';
+import { TextLink } from '@/components/ui/TextButton';
+import { displayText } from '@/components/ui/typography';
 import useAuth from '@/features/auth/useAuth';
 import BuildsList from '@/features/builds/BuildsList';
 import { useUserBuilds } from '@/features/builds/queries';
 import { useTrackedBuilds } from '@/features/tracking/queries';
 import { CompletedPanel, PlayingPanel } from '@/features/tracking/TrackedBuilds';
-import { errorMessage, resendVerificationEmail } from '@/lib/firebase';
-import { LIMITS, type UserProfile } from '@/lib/models';
+import { errorMessage } from '@/lib/firebase';
+import type { UserProfile } from '@/lib/models';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
@@ -23,16 +22,18 @@ import {
   COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
+  SPACE_GUTTER,
   SPACE_LG,
   SPACE_MD,
   SPACE_REGION,
   SPACE_SM,
+  TEXT_LG,
   TEXT_MD,
-  TEXT_SM,
   TEXT_XS,
+  TEXT_XXL,
 } from '@/theme';
-import DeleteAccount from './DeleteAccount';
-import { useLikedBuilds, useUpdateDisplayName, useUserProfile } from './queries';
+import DeleteAccount from '@/features/account/DeleteAccount';
+import { useLikedBuilds, useUserProfile } from './queries';
 
 type Tab = 'builds' | 'liked' | 'playing' | 'completed';
 
@@ -44,13 +45,13 @@ const TAB_LABELS: Record<Tab, string> = {
 };
 
 /**
- * `/user/:userId`: display name (editable by its owner), tabs for their builds and likes, and for
- * the owner, the builds they track (T36: Playing and Completed, private) and "Delete account" at the
- * bottom.
+ * `/user/:userId`, the public profile: a hero with the name and counts, tabs for their builds and
+ * likes, and for the owner, the builds they track (T36: Playing and Completed, private). Settings
+ * live on `/account` (T31).
  */
 function Profile() {
   const { userId = '' } = useParams();
-  const { uid, user } = useAuth();
+  const { uid } = useAuth();
   const profile = useUserProfile(userId);
   const [tab, setTab] = useState<Tab>('builds');
   const isOwner = uid === userId;
@@ -86,10 +87,9 @@ function Profile() {
     <>
       <ProfileHeader
         profile={profile.data}
-        editable={isOwner}
+        isOwner={isOwner}
         finished={tracked?.finished.length ?? 0}
       />
-      {isOwner && user && !user.emailVerified ? <VerifyEmailNotice /> : null}
       <TabBar>
         <Tabs role="tablist" aria-label="Profile">
           {tabs.map((value) => (
@@ -121,67 +121,32 @@ function Profile() {
         ) : null}
         {tab === 'completed' && isOwner ? <CompletedPanel uid={userId} /> : null}
       </div>
-      {isOwner ? <DeleteAccount /> : null}
     </>
   );
 }
 
+/**
+ * The profile's hero (T31): the build page's frame, the name, and the tagline. The owner gets a link
+ * to their account settings (rename, email, password, deletion), which aren't on the public page.
+ */
 function ProfileHeader({
   profile,
-  editable,
+  isOwner,
   finished,
 }: {
   profile: UserProfile;
-  editable: boolean;
+  isOwner: boolean;
   /** The owner's finished builds (T36; private, so 0 for visitors). */
   finished: number;
 }) {
-  const rename = useUpdateDisplayName(profile.id);
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(profile.displayName);
-
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    if (!name.trim()) return;
-    rename.mutate(name, { onSuccess: () => setEditing(false) });
-  };
-
-  if (editing) {
-    return (
-      <PageHero title={profile.displayName}>
-        <RenameForm onSubmit={handleSubmit} aria-label="Change display name">
-          <NameInput>
-            <TextInput
-              aria-label="Display name"
-              maxLength={LIMITS.displayName}
-              onChange={setName}
-              required
-              value={name}
-            />
-          </NameInput>
-          <Button type="submit" disabled={!name.trim() || rename.isPending}>
-            Save
-          </Button>
-          <Button
-            variant="ghost"
-            onClick={() => {
-              setName(profile.displayName);
-              setEditing(false);
-            }}>
-            Cancel
-          </Button>
-          <ErrorMessage>{rename.error ? errorMessage(rename.error) : ''}</ErrorMessage>
-        </RenameForm>
-      </PageHero>
-    );
-  }
-
   return (
-    <PageHero
-      title={profile.displayName}
-      tagline={<Tagline userId={profile.id} joinedAt={profile.createdAt} finished={finished} />}>
-      {editable ? <TextButton onClick={() => setEditing(true)}>Change name</TextButton> : null}
-    </PageHero>
+    <Hero $hero aria-labelledby="profile-name">
+      <Name id="profile-name">{profile.displayName}</Name>
+      <HeroTagline>
+        <Tagline userId={profile.id} joinedAt={profile.createdAt} finished={finished} />
+      </HeroTagline>
+      {isOwner ? <TextLink to="/account">Account settings</TextLink> : null}
+    </Hero>
   );
 }
 
@@ -223,38 +188,6 @@ function Tagline({
         </>
       ) : null}
     </>
-  );
-}
-
-/** Shown to the owner until their email is verified (send-only: nothing is gated on it). */
-function VerifyEmailNotice() {
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
-  const [error, setError] = useState('');
-
-  const resend = async () => {
-    setStatus('sending');
-    setError('');
-    try {
-      await resendVerificationEmail();
-      setStatus('sent');
-    } catch (err) {
-      setError(errorMessage(err));
-      setStatus('idle');
-    }
-  };
-
-  return (
-    <Notice role="status">
-      <span>
-        {status === 'sent'
-          ? 'Verification email sent. Check your inbox.'
-          : 'Verify your email: we sent you a link when you signed up.'}
-      </span>
-      <TextButton disabled={status === 'sending'} onClick={() => void resend()}>
-        Resend email
-      </TextButton>
-      <ErrorMessage>{error}</ErrorMessage>
-    </Notice>
   );
 }
 
@@ -305,30 +238,36 @@ const Count = styled.b`
   font-weight: 600;
 `;
 
-const Notice = styled(Frame)`
-  align-items: center;
+const Hero = styled(Frame)`
   display: flex;
-  flex-wrap: wrap;
-  font-size: ${TEXT_SM};
-  gap: 0 ${SPACE_MD};
-  justify-content: center;
-  margin: ${SPACE_LG} auto 0;
-  max-width: 640px;
-  padding-bottom: 6px;
-  padding-top: 6px;
-`;
-
-const RenameForm = styled.form`
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: ${SPACE_SM};
-  justify-content: flex-start;
-  margin-top: ${SPACE_MD};
+  margin-top: 32px;
+
+  @media ${BELOW_MOBILE} {
+    margin-top: ${SPACE_GUTTER};
+  }
 `;
 
-const NameInput = styled.div`
-  width: 260px;
+const Name = styled.h1`
+  ${displayText}
+  font-size: ${TEXT_XXL};
+  margin: 0;
+  overflow-wrap: anywhere;
+
+  @media ${BELOW_MOBILE} {
+    font-size: 28px;
+  }
+`;
+
+const HeroTagline = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_LG};
+  margin: 0;
+
+  @media ${BELOW_MOBILE} {
+    font-size: 15px;
+  }
 `;
 
 const TabBar = styled.div`

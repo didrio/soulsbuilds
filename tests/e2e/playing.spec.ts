@@ -4,7 +4,7 @@
 // Tests create their own users and don't need a fresh database, so the counts are compared with
 // what the build showed before. `npm run e2e`.
 import { expect, test, type Page } from '@playwright/test';
-import { completeSignUp } from './helpers';
+import { accountMenu, completeSignUp } from './helpers';
 
 const BUILD = '/build/SEEDNAKED001';
 const NAME = 'Wretch Speedrun';
@@ -40,7 +40,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   await page.getByRole('button', { name: /^Club/ }).click();
 
   // The profile's Playing tab: the build with its progress and next stop. Private.
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await page.getByRole('tab', { name: 'Playing 1' }).click();
   await expect(page.getByText('Only you can see what you’re playing.')).toBeVisible();
   const card = page.getByRole('link', { name: new RegExp(NAME) });
@@ -58,7 +58,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   await page.reload();
   await expectCounts(page, [playing, finished + 1]);
 
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await expect(page.getByText(/1 build finished/)).toBeVisible();
   await page.getByRole('tab', { name: 'Completed 1' }).click();
   await expect(
@@ -73,7 +73,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   await expectCounts(page, [playing, finished]);
   await page.reload();
   await expectCounts(page, [playing, finished]);
-  await page.getByRole('link', { name: 'Profile' }).click();
+  await accountMenu(page, 'Profile');
   await page.getByRole('tab', { name: 'Completed' }).click();
   await expect(page.getByText(/No finished builds yet/)).toBeVisible();
 });

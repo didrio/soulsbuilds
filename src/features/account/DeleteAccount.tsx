@@ -4,48 +4,57 @@ import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import Dialog from '@/components/ui/Dialog';
 import ErrorMessage from '@/components/ui/ErrorMessage';
+import SectionHeading from '@/components/ui/SectionHeading';
 import TextInput from '@/components/ui/TextInput';
 import { TextButton } from '@/components/ui/TextButton';
 import { AuthField, AuthForm } from '@/features/auth/styles';
 import useAuth from '@/features/auth/useAuth';
-import { errorMessage, hasPassword } from '@/lib/firebase';
-import {
-  COLOR_DANGER,
-  COLOR_LINE,
-  COLOR_TEXT_MUTED,
-  SPACE_LG,
-  SPACE_MD,
-  SPACE_SM,
-  SPACE_XL,
-  TEXT_SM,
-} from '@/theme';
+import { errorMessage } from '@/lib/firebase';
+import { COLOR_DANGER, SPACE_LG, SPACE_MD, SPACE_SM, TEXT_SM } from '@/theme';
 import { useDeleteAccount } from './queries';
-import { labelText } from '@/components/ui/typography';
+import { Section, SectionLead } from './styles';
 
 /**
- * The owner's "Delete account" (T18), at the bottom of their profile. With `finishing`, it's the
- * retry offered on their own "User not found" page after a deletion stopped halfway (the profile
- * goes last before the Auth account, so that's the only state a retry can find).
+ * "Delete account" (T18), the last section of the Account page (T31; it was at the bottom of the
+ * profile). With `finishing`, it's the retry offered on the owner's "User not found" profile and
+ * Account page after a deletion stopped halfway (the profile goes last before the Auth account, so
+ * that's the only state a retry can find).
  */
 function DeleteAccount({ finishing = false }: { finishing?: boolean }) {
   const [open, setOpen] = useState(false);
+  const dialog = open ? <DeleteAccountDialog onClose={() => setOpen(false)} /> : null;
+  if (finishing) {
+    return (
+      <Finishing>
+        <p>Your account wasn’t fully deleted.</p>
+        <DangerTextButton onClick={() => setOpen(true)}>
+          Finish deleting your account
+        </DangerTextButton>
+        {dialog}
+      </Finishing>
+    );
+  }
   return (
-    <Strip $finishing={finishing}>
-      {finishing ? <p>Your account wasn’t fully deleted.</p> : <StripText>Account</StripText>}
-      <DangerTextButton onClick={() => setOpen(true)}>
-        {finishing ? 'Finish deleting your account' : 'Delete account'}
-      </DangerTextButton>
-      {open ? <DeleteAccountDialog onClose={() => setOpen(false)} /> : null}
-    </Strip>
+    <Section aria-labelledby="account-delete">
+      <SectionHeading id="account-delete">Delete account</SectionHeading>
+      <SectionLead>
+        Deletes your account, your builds and everything you’ve posted. It can’t be undone.
+      </SectionLead>
+      <div>
+        <Button variant="danger" onClick={() => setOpen(true)}>
+          Delete account
+        </Button>
+      </div>
+      {dialog}
+    </Section>
   );
 }
 
 function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
   const navigate = useNavigate();
   const remove = useDeleteAccount();
-  const { user } = useAuth();
   // T30: a Google-only account has no password; it confirms in a Google window instead.
-  const withPassword = user ? hasPassword(user) : true;
+  const withPassword = useAuth().providers.includes('password');
   const [password, setPassword] = useState('');
   const [progress, setProgress] = useState<[number, number] | null>(null);
 
@@ -113,25 +122,17 @@ function DeleteAccountDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
-const Strip = styled.div<{ $finishing: boolean }>`
+const Finishing = styled.div`
   align-items: center;
-  border-top: ${({ $finishing }) => ($finishing ? 'none' : `1px solid ${COLOR_LINE}`)};
-  color: ${COLOR_TEXT_MUTED};
   display: flex;
-  flex-direction: ${({ $finishing }) => ($finishing ? 'column' : 'row')};
+  flex-direction: column;
   font-size: ${TEXT_SM};
   gap: ${SPACE_SM} ${SPACE_MD};
-  justify-content: ${({ $finishing }) => ($finishing ? 'center' : 'space-between')};
-  margin-top: ${({ $finishing }) => ($finishing ? SPACE_MD : SPACE_XL)};
-  padding-top: ${SPACE_SM};
+  margin-top: ${SPACE_MD};
 
   & > p {
     margin: 0;
   }
-`;
-
-const StripText = styled.span`
-  ${labelText}
 `;
 
 const DangerTextButton = styled(TextButton)`

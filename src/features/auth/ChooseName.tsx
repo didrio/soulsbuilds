@@ -45,7 +45,7 @@ function ChooseName({ uid, onDone, onLogOut }: ChooseNameProps) {
   return (
     <AuthForm onSubmit={handleSubmit} aria-label="Choose a display name" noValidate>
       <AuthLead>
-        It’s shown on your builds and comments. You can change it later on your profile.
+        It’s shown on your builds and comments. You can change it later in your account settings.
       </AuthLead>
       <FormField
         id="choose-name"

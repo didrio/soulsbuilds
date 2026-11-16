@@ -1,16 +1,21 @@
 // Firebase Auth: sign up/in (email and password, or Google), sign out, password reset, and readable
-// error messages. The public profile (users/{uid}) is created separately, in the "Choose a display name"
+// error messages; the account settings' changes (T31: email, password, re-authentication). The public profile (users/{uid}) is created separately, in the "Choose a display name"
 // step (T30), so a Google account's real name is never used by default.
 import {
   createUserWithEmailAndPassword,
+  EmailAuthProvider,
   GoogleAuthProvider,
   onAuthStateChanged,
+  reauthenticateWithCredential,
   reauthenticateWithPopup,
+  reload,
   sendEmailVerification,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut as firebaseSignOut,
+  updatePassword,
+  verifyBeforeUpdateEmail,
   type User,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
@@ -70,8 +75,8 @@ export async function signInWithGoogle(): Promise<string | null> {
   }
 }
 
-/** Re-authenticates the signed-in user with Google (before deleting the account); false if cancelled. */
-export async function reauthenticateWithGoogle(user: AuthUser): Promise<boolean> {
+/** Re-authenticates the signed-in user with Google; false if they closed the window. */
+async function reauthenticateWithGoogle(user: AuthUser): Promise<boolean> {
   try {
     await reauthenticateWithPopup(user, googleProvider());
     return true;
@@ -103,10 +108,75 @@ export async function sendPasswordReset(email: string): Promise<void> {
   }
 }
 
-/** Sends the signed-in user a verification email (the profile's "Resend" button). */
-export async function resendVerificationEmail(): Promise<void> {
+function currentUser(): AuthUser {
   if (!auth.currentUser) throw new FirebaseError('auth/user-not-found', 'Not signed in');
-  await sendEmailVerification(auth.currentUser);
+  return auth.currentUser;
+}
+
+/** Sends the signed-in user a verification email (the Account page's "Resend" button). */
+export async function resendVerificationEmail(): Promise<void> {
+  await sendEmailVerification(currentUser());
+}
+
+/**
+ * Confirms the signed-in user is who they say before a sensitive change (T31): with their current
+ * password, or with `null`, in a Google window. Auth refuses these changes after an old sign-in
+ * (`auth/requires-recent-login`); asking every time also means a wrong password changes nothing.
+ * Resolves to false when they close the Google window.
+ */
+export async function reauthenticate(password: string | null): Promise<boolean> {
+  const user = currentUser();
+  if (password === null) return reauthenticateWithGoogle(user);
+  await reauthenticateWithCredential(
+    user,
+    EmailAuthProvider.credential(user.email ?? '', password),
+  );
+  return true;
+}
+
+/** Changes the password of an email + password account, after checking the current one. */
+export async function changePassword(current: string, next: string): Promise<void> {
+  await reauthenticate(current);
+  await updatePassword(currentUser(), next);
+}
+
+/**
+ * Sends a link to `newEmail`; the account's email changes when it's opened (and Firebase then signs
+ * the user out everywhere, so they log in with the new address). Email + password accounts only: a
+ * Google account's address belongs to Google.
+ */
+export async function changeEmail(newEmail: string, password: string): Promise<void> {
+  await reauthenticate(password);
+  await verifyBeforeUpdateEmail(currentUser(), newEmail.trim());
+}
+
+/**
+ * Adds a password to a Google-only account, so it can also log in with its email. Confirmed in a
+ * Google window first; resolves to false (nothing changed) when it's closed.
+ */
+export async function setPassword(password: string): Promise<boolean> {
+  if (!(await reauthenticate(null))) return false;
+  // Not `linkWithCredential`: an email credential for the account's own address fails with
+  // `auth/email-already-in-use`. Setting the password adds the 'password' sign-in method.
+  await updatePassword(currentUser(), password);
+  return true;
+}
+
+/**
+ * Reloads the signed-in user from Auth (a verified email, a new sign-in method), which
+ * `onAuthStateChanged` doesn't report; resolves to the user, or null when signed out.
+ */
+export async function reloadUser(): Promise<AuthUser | null> {
+  if (auth.currentUser) await reload(auth.currentUser);
+  return auth.currentUser;
+}
+
+/** Whether an error means the current password was wrong (on a form that only asks for that). */
+export function isWrongPassword(error: unknown): boolean {
+  return (
+    error instanceof FirebaseError &&
+    ['auth/invalid-credential', 'auth/wrong-password'].includes(error.code)
+  );
 }
 
 const PASSWORD_LENGTH = `Choose a password of at least ${LIMITS.password} characters.`;
@@ -128,7 +198,9 @@ const AUTH_MESSAGES: Record<string, string> = {
   'auth/popup-blocked': 'Your browser blocked the Google window. Allow pop-ups and try again.',
   'auth/user-mismatch': 'That’s a different Google account. Choose the one you signed up with.',
   'auth/too-many-requests': 'Too many attempts. Wait a minute and try again.',
-  'auth/requires-recent-login': 'For your security, log in again and retry.',
+  'auth/requires-recent-login': 'For your security, confirm it’s you again, then retry.',
+  'auth/provider-already-linked': 'Your account already has a password.',
+  'auth/credential-already-in-use': 'Another account already uses that sign-in.',
   'auth/network-request-failed': 'Network error. Check your connection and try again.',
 };
 
