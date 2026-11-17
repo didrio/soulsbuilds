@@ -21,7 +21,12 @@ and spacing, and the canvas notes say why.
   again later, set up the custom email domain, or ask Firebase support; details in `docs/firebase.md` "Sign-in
   setup" step 6. Until then the emails use Firebase's default page.
 - Approve the first CI production run (Actions → the run → Review deployments); it proves Workload Identity end to
-  end. Open a throwaway PR once to see the preview comment.
+  end and is the first CI deploy of the link-preview function (T37; its roles were granted 2026-11-17: if it names
+  a missing permission, add that role and note it in `docs/firebase.md` "Link previews"). Open a throwaway PR once to see the preview comment.
+- T37/T38 are live (deployed by hand 2026-11-17). Still to check: paste a never-shared build link into Discord and
+  see the card; open soulsbuilds.com and see a hit at abhpro.goatcounter.com (if none, add the domain to its
+  allowed domains); `localStorage.skipgc = 't'` on the site keeps your own visits out; look at the first month's
+  Blaze bill (the $5 budget alert is set per `docs/firebase.md`).
 - In a day or two: App Check → APIs, check that nearly all requests are verified, then **Enforce** for Firestore
   and Auth (`docs/firebase.md` "App Check" step 4). Automated browsers (perf runs, bots) count as unverified.
 - App Check token TTL → **1 day** (T23; App Check → Apps → the web app → reCAPTCHA Enterprise → Token time to
