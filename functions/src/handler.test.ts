@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import type { BuildDoc } from '@/lib/models';
+import { stripHome } from '@/lib/share';
 import { emptyEquipment, makeBuild, MOONVEIL, SEPPUKU_ASH, UCHIGATANA } from '@/test/fixtures';
 import { handle, type Deps } from './handler';
 
@@ -221,7 +222,9 @@ describe('build pages', () => {
   });
 
   it('serves the plain page for the new-build page, a non-build path and a failed read', async () => {
-    const plain = new TextDecoder().decode(INDEX);
+    // Without the home page's static intro (T69): that's for `/`, which Hosting serves itself.
+    const plain = stripHome(new TextDecoder().decode(INDEX));
+    expect(plain).toContain('<div id="root"></div>');
     const created = await handle('/build/new', deps());
     expect(created.status).toBe(200);
     expect(html(created)).toBe(plain);

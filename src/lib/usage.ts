@@ -72,4 +72,8 @@ export type UsageEvent =
   | 'share-native'
   // T68: the planner opened signed out, and a sign-in (or sign-up) started from its Save.
   | 'planner-opened-signed-out'
-  | 'signed-in-to-save';
+  | 'signed-in-to-save'
+  // T69: the home page intro's three buttons.
+  | 'intro-plan'
+  | 'intro-example'
+  | 'intro-browse';

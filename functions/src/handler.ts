@@ -36,6 +36,7 @@ import {
   SITE_ORIGIN,
   shareMeta,
   sitemapXml,
+  stripHome,
   type SitemapEntry,
 } from '@/lib/share';
 import type { CardData } from './card';
@@ -99,7 +100,8 @@ function text(status: number, body: string): Reply {
 
 async function indexHtml(deps: Deps): Promise<string | null> {
   const bytes = await deps.fetchStatic('/index.html');
-  return bytes ? new TextDecoder().decode(bytes) : null;
+  // The home page's static intro (T69) is for `/` only, which Hosting serves itself.
+  return bytes ? stripHome(new TextDecoder().decode(bytes)) : null;
 }
 
 /** The facts the page and the card both use. */

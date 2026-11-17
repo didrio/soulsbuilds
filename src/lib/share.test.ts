@@ -9,6 +9,7 @@ import {
   injectRoot,
   shareMeta,
   sitemapXml,
+  stripHome,
   truncate,
 } from './share';
 
@@ -57,7 +58,7 @@ describe('truncate', () => {
 });
 
 describe('injectMeta', () => {
-  const html = readFileSync('index.html', 'utf8');
+  const html = stripHome(readFileSync('index.html', 'utf8'));
   const meta = {
     title: 'A "quoted" <build> · Souls Builds',
     description: 'Level 1 & more.',
@@ -97,8 +98,24 @@ describe('escapeHtml', () => {
   });
 });
 
-describe('injectRoot', () => {
+describe('stripHome (T69)', () => {
   const index = readFileSync('index.html', 'utf8');
+
+  it("takes the home page's static intro out of the root, leaving it empty", () => {
+    expect(index).not.toContain('<div id="root"></div>');
+    const html = stripHome(index);
+    expect(html).toContain('<div id="root"></div>');
+    expect(html).not.toContain('sb-home');
+    expect(html).not.toContain('Plan, share and follow');
+    // Only the home block goes: the head, the redirect script and the app's script stay.
+    expect(html).toContain('<title>');
+    expect(html).toContain('soulsbuilds.web.app');
+    expect(html).toContain('src="/src/main.tsx"');
+  });
+});
+
+describe('injectRoot', () => {
+  const index = stripHome(readFileSync('index.html', 'utf8'));
 
   it("puts the content inside the app's root div, once", () => {
     const html = injectRoot(index, '<main>$& Bleed</main>');

@@ -35,7 +35,7 @@ beforeEach(() => {
 
 describe('Landing', () => {
   it('lists the most liked builds', async () => {
-    renderWithProviders(<Landing />);
+    renderWithProviders(<Landing />, { uid: 'alice' });
     expect(await screen.findByText('Bleed')).toBeInTheDocument();
     expect(firebase.listBuilds).toHaveBeenCalledWith(expect.objectContaining({ sort: 'top' }));
     expect(
@@ -124,6 +124,46 @@ describe('Landing', () => {
       expect(screen.queryByText(/builds by/)).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: /Add tag/ })).toBeInTheDocument();
     });
+  });
+});
+
+describe('Landing intro (T69)', () => {
+  it('signed out: the intro holds the h1, with one link or button per thing to do', async () => {
+    renderWithProviders(<Landing />);
+    expect(await screen.findByText('Bleed')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Plan, share and follow Elden Ring builds' }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: 'Elden Ring builds' }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start planning' })).toHaveAttribute(
+      'href',
+      '/build/new',
+    );
+    expect(screen.getByRole('link', { name: 'See an example route' })).toHaveAttribute(
+      'href',
+      '/build/IAumzY2DNj2NHObXD0QB/moonveil-early-game-spellblade/guide',
+    );
+    expect(screen.getByRole('button', { name: 'Browse builds' })).toBeInTheDocument();
+  });
+
+  it('"Browse builds" moves focus to the list', async () => {
+    Element.prototype.scrollIntoView = vi.fn();
+    const { user } = renderWithProviders(<Landing />);
+    await user.click(screen.getByRole('button', { name: 'Browse builds' }));
+    expect(screen.getByRole('heading', { name: 'Elden Ring builds' })).toHaveFocus();
+    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+  });
+
+  it('signed in: no intro, the list keeps the h1', async () => {
+    renderWithProviders(<Landing />, { uid: 'alice' });
+    expect(await screen.findByText('Bleed')).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Elden Ring builds' }),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Start planning' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Plan, share and follow/)).not.toBeInTheDocument();
   });
 });
 

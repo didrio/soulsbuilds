@@ -8,6 +8,11 @@ that follow from it go in `docs/decisions.md`.
 
 **The best way to share a Souls build, and the easiest way to actually get one.**
 
+The home page says it to signed-out visitors (T69, `features/builds/intro.ts`): **"Plan, share and follow
+Elden Ring builds"**, then "A free build planner: put a build together with live stats, follow a step-by-step
+route to every item in it, and share it with one link. No account needed to start." Plan, follow, share: the
+three buttons.
+
 ## Three jobs
 
 - **Share**: post a build as a page worth linking: every item named, visual, readable on a phone.

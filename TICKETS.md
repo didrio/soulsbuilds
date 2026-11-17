@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T71
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T69, home page intro (Opus · high effort · plan mode off); then T70 (Up next: newcomers, the owner's request of 2026-11-17). The remaining tickets (T65, T57–T61)
+**Next:** T70, a "new here?" strip on build pages (Sonnet · medium effort · plan mode off; Up next: newcomers, the owner's request of 2026-11-17). The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -40,6 +40,8 @@ and spacing, and the canvas notes say why.
 - After T62 deploys (CI on `main`: hosting, rules and indexes together): wait for the new `commentLikes.userId`
   collection-group index to show **Enabled** (Firestore → Indexes; account deletion fails until then), then on
   a build's Discussion tab like a comment, reply to one, and switch Top/Newest.
+- After T69 deploys: `curl -s https://soulsbuilds.com/ | grep -c 'Plan, share and follow'` (expect 1) and
+  `curl -s https://soulsbuilds.com/build/IAumzY2DNj2NHObXD0QB | grep -c 'sb-home'` (expect 0: the function strips it).
 - After T56 deploys: paste a build URL into https://search.google.com/test/rich-results (breadcrumbs should pass; `CreativeWork` has no rich result, only a schema check), and resubmit the sitemap in Search Console (its URLs now carry the slugs).
 - T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
   is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
@@ -87,40 +89,12 @@ read only the meta tags); the home title promises a "Build Planner" (the top sea
 "Seeding") but signed out, `/build/new` is a log-in wall and the header has no way to plan; build pages (where
 most people arrive) never say that the Guide is a step-by-step route to every item you can track. Not mainly
 SEO (T50–T56 did that): it's what people see once they arrive. Owner's calls: plan before signing up; an intro
-band above the home list; a slim dismissible strip on build pages. T68 (plan without an account) is done; in order:
-
-#### T69 — Home page intro: what Souls Builds is, three things you can do
-
-- **Status:** ready
-- **Session:** Opus · high effort · plan mode off
-- **Goal:** A signed-out visitor on `/` sees in one screen what the site is and has one button per thing they
-  can do; signed-in users see the page as it is now.
-- **Done when:**
-  - New `features/builds/LandingIntro.tsx` at the top of `Landing.tsx`, signed out only (`useAuth()`: not
-    loading, no uid). It holds the page's `h1` ("Plan, share and follow Elden Ring builds" or similar); the
-    list keeps "Elden Ring builds" with the community count as an `h2`.
-  - One sentence under the heading, then three short panels (`Frame`, `SectionHeading`, `Label`; real item
-    icons via `iconUrl` from `@/data/core`), one button each: **Plan a build** (stats, HP, equip load and poise
-    update as you pick gear → `/build/new`); **Follow it in your run** (where every item is, in order; check
-    them off as you go → an example build's Guide: one seeded build with a strong early route, e.g.
-    `moonveil-early`, whose fixed id `IAumzY2DNj2NHObXD0QB` is the same locally and in production; one constant
-    with a unit test that the id is in `content/builds/er/`); **Share and discover** (one link shows the whole
-    build; browse what people play → scrolls to the list).
-  - Phones: the panels stack as compact rows so the list starts within about a screen.
-  - Crawlers: a static version (h1, the sentence, three links) inside `index.html`'s `#root`, which React
-    replaces on mount, so `/` has real text (check Hosting serves `/` from `index.html`; `functions/src/handler.ts`
-    doesn't route it).
-  - Usage: `intro-plan`, `intro-example`, `intro-browse`.
-  - Tests: `Landing.test.tsx` (signed out shows the intro and its links; signed in doesn't); new color pairs
-    in `src/theme/colors.test.ts`; e2e stays green. Screenshots of `/` signed out and in, desktop and `--mobile`.
-  - Docs: AGENTS.md project map (`features/builds/`); `docs/product.md` if the pitch wording settles.
-- **Context:** `features/builds/Landing.tsx`, `components/ui/{Frame,SectionHeading}`, `typography.ts`,
-  docs/architecture.md "Styling" (accent budget, type tiers), `content/builds/er/moonveil-early.json`,
-  `index.html`, `lib/share.ts` `homeMeta`.
+band above the home list; a slim dismissible strip on build pages. T68 (plan without an account) and T69 (the home
+intro) are done; left:
 
 #### T70 — Build pages: a slim "new here?" strip for signed-out visitors
 
-- **Status:** after T69 (its "How it works" link goes to T69's intro)
+- **Status:** ready (T69's intro is on `/` signed out, so "How it works" → `/` lands on it)
 - **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** Someone landing on a build from a shared link or search learns in one line what the site is and
   what the Guide does, without the build losing its place above the fold.
@@ -356,6 +330,11 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T69 — Home page intro — 2026-11-17 — signed out, `/` opens with `LandingIntro` (the page's h1, one sentence,
+  three panels: Start planning, See an example route = the Moonveil seed's Guide, Browse builds; copy in
+  `features/builds/intro.ts`); the list title steps down to h2; a static copy in `index.html`'s `#root` for
+  crawlers, which the link-preview function strips (`share.ts` `stripHome`); usage `intro-*`; Privacy's counted
+  actions updated.
 - T68 — Plan a build without an account — 2026-11-17 — owner's request (newcomers can't tell what the site is for;
   first of T68–T70): `/build/new` opens for anyone (`useBuildEditor`: a new build is editable signed out); Save
   signed out opens the sign-up dialog and saves as the new account through `onSignedIn` (`useSaveBuild` takes the

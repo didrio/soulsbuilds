@@ -104,6 +104,18 @@ export function injectRoot(html: string, inner: string): string {
   return html.replace('<div id="root"></div>', () => `<div id="root">${inner}</div>`);
 }
 
+/**
+ * `index.html` without the home page's static intro (T69: the `<!--home-->…<!--/home-->` block inside
+ * `#root`), so the link-preview function's build and hub pages, and its 404s, carry only their own content,
+ * and `injectRoot` finds the empty root.
+ */
+export function stripHome(html: string): string {
+  return html.replace(
+    /<div id="root">\s*<!--home-->[\s\S]*?<!--\/home-->\s*<\/div>/,
+    () => '<div id="root"></div>',
+  );
+}
+
 /** `snippet` at the end of the page's head (T56: structured data). */
 export function injectHead(html: string, snippet: string): string {
   return html.replace('</head>', () => `${snippet}\n  </head>`);

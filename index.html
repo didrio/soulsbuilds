@@ -54,7 +54,91 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
+    <!-- The home page's intro as plain HTML (T69), for crawlers that don't run JavaScript: the same words as
+         src/features/builds/intro.ts (a test keeps them in step). createRoot replaces it on the first render.
+         Every other route Hosting serves from this file drops it at once (the script), and the link-preview
+         function strips the whole home block (share.ts stripHome) before putting a build or hub page in. -->
+    <div id="root">
+      <!--home--><style>
+        body {
+          margin: 0;
+          background: #0d0c0a;
+        }
+        noscript {
+          display: block;
+          padding: 8px 16px;
+          color: #a9a193;
+          font:
+            14px 'Inter Variable',
+            'Inter',
+            system-ui,
+            sans-serif;
+        }
+        .sb-plain {
+          box-sizing: border-box;
+          max-width: 760px;
+          margin: 0 auto;
+          padding: 32px 16px 64px;
+          color: #ede6d6;
+          font:
+            16px/1.6 'Inter Variable',
+            'Inter',
+            system-ui,
+            sans-serif;
+        }
+        .sb-plain h1,
+        .sb-plain h2 {
+          font-family: 'EB Garamond', Georgia, serif;
+          font-weight: 600;
+          line-height: 1.2;
+          margin: 1.4em 0 0.4em;
+        }
+        .sb-plain h1 {
+          font-size: 32px;
+          margin-top: 0;
+        }
+        .sb-plain h2 {
+          font-size: 22px;
+        }
+        .sb-plain a {
+          color: inherit;
+        }
+        .sb-plain p {
+          color: #a9a193;
+          margin: 0;
+        }
+      </style>
+      <main class="sb-plain" id="sb-home">
+        <h1>Plan, share and follow Elden Ring builds</h1>
+        <p>
+          A free build planner: put a build together with live stats, follow a step-by-step route to
+          every item in it, and share it with one link. No account needed to start.
+        </p>
+        <h2><a href="/build/new">Plan a build</a></h2>
+        <p>
+          Pick weapons, armor, talismans and spells. Stats, HP, equip load and poise update as you
+          choose.
+        </p>
+        <h2>
+          <a href="/build/IAumzY2DNj2NHObXD0QB/moonveil-early-game-spellblade/guide"
+            >Follow it in your run</a
+          >
+        </h2>
+        <p>
+          The Guide shows where every item is, in the order you’ll reach it. Check them off as you
+          go.
+        </p>
+        <h2><a href="/sitemap.xml">Share and discover</a></h2>
+        <p>
+          One link shows the whole build. Browse what other players run, and like the ones you’d
+          try.
+        </p>
+      </main>
+      <script>
+        if (location.pathname !== '/') document.getElementById('sb-home').remove();
+      </script>
+      <!--/home-->
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

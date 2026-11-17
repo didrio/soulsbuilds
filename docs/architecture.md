@@ -441,12 +441,12 @@ What's expensive here, and why (2026-11 measurements, Mac + Chrome):
 
 ## Usage counts (T38)
 
-GoatCounter (`abhpro.goatcounter.com`, free, cookie-free, no personal data) counts page views and four named
+GoatCounter (`abhpro.goatcounter.com`, free, cookie-free, no personal data) counts page views and a few named
 events so we can tell whether the route, tracking, sharing and (later) copies get used. `src/lib/usage.ts` loads its
 script **only on soulsbuilds.com** (never in dev, tests, emulators or PR previews) and sends counts itself
 (`no_onload`): `usePageViews` (one count per route change, path only, never the query or hash: filters and email
 codes live there) and `countEvent`: `tracking-started`, `item-collected`, `build-completed` (in
-`useBuildTracking`'s `persist`), `route-opened` (`GuideRoute` mounting), and the Share menu's `share-link`, `share-reddit`, `share-image`, `share-native` (T54, `ShareButton`). Add a name to `UsageEvent` for a new
+`useBuildTracking`'s `persist`), `route-opened` (`GuideRoute` mounting), the Share menu's `share-link`, `share-reddit`, `share-image`, `share-native` (T54, `ShareButton`), the signed-out planner's `planner-opened-signed-out` and `signed-in-to-save` (T68, `useBuildEditor`), and the home intro's `intro-plan`, `intro-example`, `intro-browse` (T69, `LandingIntro`). Add a name to `UsageEvent` for a new
 one (`copy-made` when T32 ships). Counts made before the script has loaded are queued. To keep your own visits
 out, run `localStorage.skipgc = 't'` in the browser console on the live site. Ad blockers hide some visitors,
 so counts run low. No consent banner is needed; the privacy page says what's counted.
@@ -466,7 +466,12 @@ fonts; `firebase.json` runs it as the predeploy step. Pages are cached 5 minutes
 function never fails a page (any error serves the plain `index.html`). The app itself is unchanged: it still
 renders in the browser. Production setup, cost and checks: `docs/firebase.md` "Link previews and crawlers".
 
-**Crawlers (T50).** The same function makes the site readable without JavaScript. A found build's page also
+**Crawlers (T50).** The same function makes the site readable without JavaScript. `/` itself is Hosting's own
+`index.html`, which carries the home intro as plain HTML (T69: the `<!--home-->…<!--/home-->` block in `#root`, the
+same words as `features/builds/intro.ts`, kept in step by `intro.test.ts`); its inline script drops it on any
+other path before it paints, and the function strips the block (`stripHome`) from the `index.html` it fetches, so
+its pages and 404s start from an empty root. Without JavaScript, other SPA routes (`/privacy`) still show it, as
+they already show the home meta tags. A found build's page also
 carries the build as plain HTML inside `#root` (`functions/src/page.ts`): it loads the build into a fresh editor
 store (`makeStore` + `loadBuild`) and reads the same selectors the page uses (`gearGroups`, the attributes and
 talisman bonuses; the write-up only when there is one), so it says what the app shows; the write-up goes

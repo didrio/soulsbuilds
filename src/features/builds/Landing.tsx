@@ -13,6 +13,7 @@ import SegmentedControl from '@/components/ui/SegmentedControl';
 import TextInput from '@/components/ui/TextInput';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { TextButton } from '@/components/ui/TextButton';
+import useAuth from '@/features/auth/useAuth';
 import { useUserProfiles } from '@/features/profile/queries';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import { errorMessage, type BuildSort } from '@/lib/firebase';
@@ -36,6 +37,8 @@ import {
   WEIGHT_DISPLAY,
 } from '@/theme';
 import BuildsList from './BuildsList';
+import { LIST_HEADING_ID } from './intro';
+import LandingIntro from './LandingIntro';
 import {
   clampLevel,
   filterBuilds,
@@ -67,6 +70,9 @@ const SORT_STATUS: Record<BuildSort, string> = {
  */
 function Landing() {
   const game = useCurrentGame();
+  const auth = useAuth();
+  // T69: signed-out visitors get the intro, which holds the page's h1; the list's title steps down to h2.
+  const intro = !auth.loading && !auth.uid;
   const [searchParams, setSearchParams] = useSearchParams();
   const filters = parseFilters(searchParams);
   const builds = useBuilds({
@@ -129,8 +135,11 @@ function Landing() {
   return (
     <>
       <PageHead {...homeMeta(game.name)} canonical={`${SITE_ORIGIN}/`} />
+      {intro ? <LandingIntro /> : null}
       <Heading>
-        <Title id="landing-title">{`${game.name} builds`}</Title>
+        <Title as={intro ? 'h2' : 'h1'} id={LIST_HEADING_ID} tabIndex={-1}>
+          {`${game.name} builds`}
+        </Title>
         {stats && stats.buildCount > 0 ? (
           <Community>
             <b>{stats.buildCount}</b> {stats.buildCount === 1 ? 'build' : 'builds'} by{' '}
@@ -290,6 +299,7 @@ const Heading = styled.div`
 
 const Title = styled.h1`
   color: ${COLOR_TEXT};
+  scroll-margin-top: ${SPACE_LG};
   font-family: ${FONT_DISPLAY};
   font-size: ${TEXT_XL};
   font-weight: ${WEIGHT_DISPLAY};

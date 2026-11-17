@@ -55,9 +55,10 @@ function Privacy() {
         <li>
           <strong>GoatCounter</strong> counts visits so we can see what people use. It sets no
           cookies and stores no personal data: it counts the pages opened (their path, never your
-          search or filters), the site that sent you, your country, browser and screen size, and
-          four actions (starting to track a build, checking off an item, finishing a build, opening
-          a build’s route). Counts are anonymous and can’t be tied to your account. See{' '}
+          search or filters), the site that sent you, your country, browser and screen size, and a
+          few actions (like starting to track a build, checking off an item, opening a build’s
+          route, sharing one, starting a build without an account, or which button on the home page
+          you used). Counts are anonymous and can’t be tied to your account. See{' '}
           <a href="https://www.goatcounter.com/help/privacy">GoatCounter’s privacy notes</a>.
         </li>
         <li>
