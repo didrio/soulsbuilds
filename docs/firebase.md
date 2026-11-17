@@ -288,7 +288,7 @@ is gitignored: keep a copy somewhere safe. Moving to Blaze would allow PITR (7 d
       preview domains the CI adds); remove `localhost` (local work uses the emulators).
 - [ ] Email templates (Authentication → Templates): sender name "Souls Builds", the verification and reset texts, and
       the action URL ("Sign-in setup" step 6, T43).
-- [ ] Analytics: none in the code; unlink Google Analytics in Project settings → Integrations if it's linked.
+- [ ] Analytics: no Google/Firebase Analytics (unlink it in Project settings → Integrations if it's linked). Usage counts are GoatCounter (T38, `docs/architecture.md` "Usage counts").
 - [ ] Billing: Spark can't bill, so no budget alert is needed. If the project ever moves to Blaze, add one first.
 - [ ] The owner has the admin claim (`admin.mjs grant`), and `admin.mjs reports --project soulsbuilds` works.
 

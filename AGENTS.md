@@ -163,7 +163,7 @@ src/
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
-                           relativeTime.ts ("3 days ago"), array.ts
+                           relativeTime.ts ("3 days ago"), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
                            GameSkinStyle

@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import Button from '@/components/ui/Button';
 import ItemTile from '@/components/ui/ItemTile';
@@ -12,6 +12,7 @@ import { iconUrl } from '@/data/core';
 import type { AcquisitionFile } from '@/data/core';
 import type { Equipment } from '@/lib/models';
 import { trackedItems } from '@/lib/tracking';
+import { countEvent } from '@/lib/usage';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
@@ -124,6 +125,8 @@ type StopState = 'todo' | 'done' | 'next';
  * acquisition data (`GuideSection`).
  */
 function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
+  // Usage counts (T38): this lazy component mounts when someone opens the route.
+  useEffect(() => countEvent('route-opened'), []);
   const { stops, own, progress, have, markArgs, keysOf } = routeProgress(equipment, tracking);
   // The Guide shows the build in the editor store (it's only on a build being viewed).
   const gear = gearByRef(useAppSelector(selectGearState));

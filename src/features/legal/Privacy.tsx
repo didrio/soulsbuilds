@@ -53,6 +53,14 @@ function Privacy() {
           your IP address.
         </li>
         <li>
+          <strong>GoatCounter</strong> counts visits so we can see what people use. It sets no
+          cookies and stores no personal data: it counts the pages opened (their path, never your
+          search or filters), the site that sent you, your country, browser and screen size, and
+          four actions (starting to track a build, checking off an item, finishing a build, opening
+          a build’s route). Counts are anonymous and can’t be tied to your account. See{' '}
+          <a href="https://www.goatcounter.com/help/privacy">GoatCounter’s privacy notes</a>.
+        </li>
+        <li>
           <strong>reCAPTCHA Enterprise</strong> (through Firebase App Check) checks that requests
           come from this site and not from abusive scripts. It collects information about your
           browser and device and sends it to Google. This site is protected by reCAPTCHA, and the
@@ -61,9 +69,9 @@ function Privacy() {
         </li>
       </ul>
       <p>
-        We don’t use analytics, ads or tracking cookies, and we don’t sell or share your data. Your
-        browser keeps your sign-in in local storage so you stay signed in; reCAPTCHA may set its own
-        Google cookies.
+        We don’t use ads or tracking cookies, and we don’t sell or share your data. Your browser
+        keeps your sign-in in local storage so you stay signed in; reCAPTCHA may set its own Google
+        cookies.
       </p>
 
       <h2>Keeping and deleting your data</h2>

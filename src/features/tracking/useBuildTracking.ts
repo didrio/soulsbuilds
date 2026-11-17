@@ -10,6 +10,7 @@ import { errorMessage, getTracking, tracksAnyBuild } from '@/lib/firebase';
 import type { StatKey } from '@/lib/buildMath';
 import type { Build } from '@/lib/models';
 import { queryKeys } from '@/lib/queryKeys';
+import { countEvent } from '@/lib/usage';
 import {
   applyChange,
   counterDelta,
@@ -93,6 +94,12 @@ export function useBuildTracking(build: Build | null) {
       );
     }
     queryClient.setQueryData(key, next);
+    // Usage counts (T38): only that it happened, never whose or which build.
+    if (next && !previous) countEvent('tracking-started');
+    if (next && previous && next.collected.length > previous.collected.length) {
+      countEvent('item-collected');
+    }
+    if (next?.completedAt && !previous?.completedAt) countEvent('build-completed');
     // The profile's Playing and Completed lists reload when they're next shown.
     void queryClient.invalidateQueries({ queryKey: queryKeys.trackedBuilds(owner) });
     setError('');

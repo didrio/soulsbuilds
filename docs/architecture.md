@@ -377,3 +377,15 @@ What's expensive here, and why (2026-11 measurements, Mac + Chrome):
 - **Caching**: hashed `/assets/*` files are immutable for a year, `/assets/icons/**` a week (names aren't
   hashed), everything else (HTML routes, favicon, manifest) `no-cache`, so a deploy shows up at once and an old
   `index.html` never asks for deleted chunks (`firebase.json` "headers"; `docs/firebase.md`).
+
+## Usage counts (T38)
+
+GoatCounter (`abhpro.goatcounter.com`, free, cookie-free, no personal data) counts page views and four named
+events so we can tell whether the route, tracking and (later) copies get used. `src/lib/usage.ts` loads its
+script **only on soulsbuilds.com** (never in dev, tests, emulators or PR previews) and sends counts itself
+(`no_onload`): `usePageViews` (one count per route change, path only, never the query or hash: filters and email
+codes live there) and `countEvent`: `tracking-started`, `item-collected`, `build-completed` (in
+`useBuildTracking`'s `persist`), `route-opened` (`GuideRoute` mounting). Add a name to `UsageEvent` for a new
+one (`copy-made` when T32 ships). Counts made before the script has loaded are queued. To keep your own visits
+out, run `localStorage.skipgc = 't'` in the browser console on the live site. Ad blockers hide some visitors,
+so counts run low. No consent banner is needed; the privacy page says what's counted.

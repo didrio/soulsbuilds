@@ -20,6 +20,7 @@ import { useAppSelector } from './hooks';
 import AppCheckNotice from './AppCheckNotice';
 import { AuthDialogContext, type OpenAuthDialog } from './authDialog';
 import AppRoutes from './routes';
+import { usePageViews } from './usePageViews';
 import { useScrollToTop } from './useScrollToTop';
 
 // The picker (its own Dialog) holds the full game data (~1 MB), so it loads when a slot is first opened.
@@ -45,6 +46,7 @@ function App() {
   const openDialog =
     dialog?.view === 'signup' ? 'signup' : dialog && dialog.view !== 'name' ? 'login' : null;
   useScrollToTop();
+  usePageViews();
 
   return (
     <AuthDialogContext value={openAuthDialog}>
