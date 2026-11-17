@@ -18,6 +18,7 @@ import { useCurrentGame } from './game';
 import Header from './Header';
 import { useAppSelector } from './hooks';
 import AppCheckNotice from './AppCheckNotice';
+import NewHereStrip from './NewHereStrip';
 import { AuthDialogContext, type OpenAuthDialog } from './authDialog';
 import AppRoutes from './routes';
 import { usePageViews } from './usePageViews';
@@ -60,6 +61,7 @@ function App() {
           onSignUp={() => openAuthDialog('signup')}
         />
         <Main id="main" tabIndex={-1}>
+          <NewHereStrip place="row" />
           <AppCheckNotice />
           <AppRoutes />
         </Main>

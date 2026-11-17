@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T71
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T70, a "new here?" strip on build pages (Sonnet · medium effort · plan mode off; Up next: newcomers, the owner's request of 2026-11-17). The remaining tickets (T65, T57–T61)
+**Next:** nothing in Up next; the owner picks. The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -89,27 +89,7 @@ read only the meta tags); the home title promises a "Build Planner" (the top sea
 "Seeding") but signed out, `/build/new` is a log-in wall and the header has no way to plan; build pages (where
 most people arrive) never say that the Guide is a step-by-step route to every item you can track. Not mainly
 SEO (T50–T56 did that): it's what people see once they arrive. Owner's calls: plan before signing up; an intro
-band above the home list; a slim dismissible strip on build pages. T68 (plan without an account) and T69 (the home
-intro) are done; left:
-
-#### T70 — Build pages: a slim "new here?" strip for signed-out visitors
-
-- **Status:** ready (T69's intro is on `/` signed out, so "How it works" → `/` lands on it)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Someone landing on a build from a shared link or search learns in one line what the site is and
-  what the Guide does, without the build losing its place above the fold.
-- **Done when:**
-  - One line under the header on build pages and weapon/tag pages (`features/hubs/`), signed out only: "Souls
-    Builds: Elden Ring builds with a step-by-step route to every item." + "How it works" (→ `/`) + "Plan your
-    own" (→ `/build/new`) + a close button. Dismissal in `localStorage` (try/catch; renders fine without it).
-    The component lives in `src/app/` (shell-level).
-  - `tests/e2e/fold.spec.ts` (a full build's Equipment tab fits 1440×820) still passes: keep the strip
-    ≤ ~40 px, check whether the spec runs signed out; if it breaks the fold, move the line into the header row.
-  - Tests: unit (shown signed out; hidden signed in and after dismiss); `npm run e2e`. Screenshots of a build
-    page signed out, `--width 1440 --height 820` and `--mobile`.
-  - Docs: AGENTS.md project map.
-- **Context:** `src/app/App.tsx` (shell), `features/editor/BuildEditorPage.tsx`, `features/hubs/`,
-  `tests/e2e/fold.spec.ts`.
+band above the home list; a slim dismissible strip on build pages. T68, T69 and T70 are done.
 
 ## Backlog
 
@@ -329,6 +309,8 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T70 — "New here?" strip — 2026-11-17 — `src/app/NewHereStrip.tsx`: signed out on build, weapon and tag pages, one line (what the site is, How it works → `/`, Plan your own → `/build/new`, close; dismissal in localStorage `sb-new-here-dismissed`). A separate 44 px row broke `fold.spec` (+35 px), so from 1200 px wide it sits in the header row (shorter text, no Plan link: the nav has Plan a build) and below that in a row under the header. Header nav items `nowrap`.
 
 - T69 — Home page intro — 2026-11-17 — signed out, `/` opens with `LandingIntro` (the page's h1, one sentence,
   three panels: Start planning, See an example route = the Moonveil seed's Guide, Browse builds; copy in

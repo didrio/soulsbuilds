@@ -111,6 +111,7 @@ src/
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId/*, /weapons/:slug, /tags/:slug, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
+                           NewHereStrip (T70: signed out, on build/weapon/tag pages: one line on what the site is + How it works → `/`; in the header row ≥ 1200px (the build's fold), else a row under it; dismissed in localStorage),
                            Header + AccountMenu (T31: the display name opens Profile, Account, Log out)
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
                            ForgotPassword, ChooseName = the display-name step for any account without a profile;

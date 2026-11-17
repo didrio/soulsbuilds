@@ -5,6 +5,7 @@ import Button, { ButtonLink } from '@/components/ui/Button';
 import FocusScope from '@/components/ui/FocusScope';
 import { CloseIcon, MenuIcon, PlusIcon } from '@/components/ui/icons';
 import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
+import NewHereStrip from './NewHereStrip';
 import useAuth from '@/features/auth/useAuth';
 import { signOut } from '@/lib/firebase';
 import {
@@ -69,6 +70,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
       <Inner>
         <Wordmark to="/">Souls Builds</Wordmark>
         <GameName>{game.name}</GameName>
+        <NewHereStrip place="header" />
         {loading ? null : (
           <>
             <Nav aria-label="Main">
@@ -242,6 +244,7 @@ const NavItem = styled(NavLink)<{ $section?: boolean }>`
   font-weight: 500;
   min-height: 44px;
   padding: 0 12px;
+  white-space: nowrap;
 
   &:hover,
   &[aria-current='page'] {
