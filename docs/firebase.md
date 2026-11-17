@@ -286,7 +286,8 @@ is gitignored: keep a copy somewhere safe. Moving to Blaze would allow PITR (7 d
       (Settings → User actions).
 - [ ] Authorized domains: `soulsbuilds.com`, `soulsbuilds.web.app`, `soulsbuilds.firebaseapp.com` (plus the
       preview domains the CI adds); remove `localhost` (local work uses the emulators).
-- [ ] Email templates (Authentication → Templates): sender name "Souls Builds", the verification and reset texts.
+- [ ] Email templates (Authentication → Templates): sender name "Souls Builds", the verification and reset texts, and
+      the action URL ("Sign-in setup" step 6, T43).
 - [ ] Analytics: none in the code; unlink Google Analytics in Project settings → Integrations if it's linked.
 - [ ] Billing: Spark can't bill, so no budget alert is needed. If the project ever moves to Blaze, add one first.
 - [ ] The owner has the admin claim (`admin.mjs grant`), and `admin.mjs reports --project soulsbuilds` works.
@@ -313,6 +314,16 @@ unaffected).
 5. Smoke test on soulsbuilds.com: Continue with Google → the popup says "continue to soulsbuilds.com" → choose a
    display name; then delete that test account from the Account page (the menu under your name; it
    re-authenticates with Google).
+
+6. **Email action URL (T43).** Authentication → Templates → Password reset (the same setting applies to Email
+   address verification and Email address change) → Customize action URL → `https://soulsbuilds.com/auth/action`.
+   The links in the emails then open the site's own page (`/auth/action?mode=…&oobCode=…`, `ActionPage`) instead of
+   Firebase's default one on soulsbuilds.firebaseapp.com. Smoke test on soulsbuilds.com: "Forgot password?" with a
+   real address → the email's link → a new password → log in; the link a second time says it has expired.
+   Locally the Auth emulator's emails are not sent: their codes are at
+   `http://127.0.0.1:9099/emulator/v1/projects/demo-soulsbuilds/oobCodes` (`tests/e2e/email-actions.spec.ts`
+   builds `/auth/action?mode=…&oobCode=…` from them). Mail scanners may open a link first and use it up, so an
+   "expired" page after a verification can still mean the email is verified (the page says so).
 
 Locally the Auth emulator fakes Google (a "Sign-in with Google.com" popup where you add an account), and it doesn't
 enforce the password policy or enumeration protection. Account linking: an email/password account and a Google

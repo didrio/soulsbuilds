@@ -2,6 +2,8 @@
 // error messages; the account settings' changes (T31: email, password, re-authentication). The public profile (users/{uid}) is created separately, in the "Choose a display name"
 // step (T30), so a Google account's real name is never used by default.
 import {
+  applyActionCode,
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   EmailAuthProvider,
   GoogleAuthProvider,
@@ -16,6 +18,7 @@ import {
   signOut as firebaseSignOut,
   updatePassword,
   verifyBeforeUpdateEmail,
+  verifyPasswordResetCode,
   type User,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
@@ -106,6 +109,35 @@ export async function sendPasswordReset(email: string): Promise<void> {
     if (error instanceof FirebaseError && error.code === 'auth/user-not-found') return;
     throw error;
   }
+}
+
+/**
+ * The email a password-reset link (`/auth/action?mode=resetPassword`, T43) is for. Rejects when the
+ * link is expired, used or invalid (`isDeadLink`).
+ */
+export function checkPasswordResetCode(code: string): Promise<string> {
+  return verifyPasswordResetCode(auth, code);
+}
+
+/** Sets the new password through a reset link; the link is used up. Doesn't sign anyone in. */
+export async function confirmNewPassword(code: string, password: string): Promise<void> {
+  await confirmPasswordReset(auth, code, password);
+}
+
+/**
+ * Applies a verify-email link, or the one `changeEmail` sends to the new address (T43). The link
+ * is used up, so call it once per link.
+ */
+export async function applyEmailLink(code: string): Promise<void> {
+  await applyActionCode(auth, code);
+}
+
+/** Whether an email link is expired, already used or not valid: asking for a new one is the fix. */
+export function isDeadLink(error: unknown): boolean {
+  return (
+    error instanceof FirebaseError &&
+    ['auth/expired-action-code', 'auth/invalid-action-code'].includes(error.code)
+  );
 }
 
 function currentUser(): AuthUser {
@@ -201,6 +233,8 @@ const AUTH_MESSAGES: Record<string, string> = {
   'auth/requires-recent-login': 'For your security, confirm it’s you again, then retry.',
   'auth/provider-already-linked': 'Your account already has a password.',
   'auth/credential-already-in-use': 'Another account already uses that sign-in.',
+  'auth/expired-action-code': 'This link has expired.',
+  'auth/invalid-action-code': 'This link isn’t valid, or it was already used.',
   'auth/network-request-failed': 'Network error. Check your connection and try again.',
 };
 

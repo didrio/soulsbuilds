@@ -8,6 +8,7 @@ import NotFound from './NotFound';
 const BuildEditorPage = lazy(() => import('@/features/editor/BuildEditorPage'));
 const Profile = lazy(() => import('@/features/profile/Profile'));
 const AccountPage = lazy(() => import('@/features/account/AccountPage'));
+const ActionPage = lazy(() => import('@/features/auth/action/ActionPage'));
 const Privacy = lazy(() => import('@/features/legal/Privacy'));
 const Terms = lazy(() => import('@/features/legal/Terms'));
 
@@ -20,6 +21,7 @@ function AppRoutes() {
         <Route path="/build/:buildId/:tab?" element={<BuildEditorPage />} />
         <Route path="/user/:userId" element={<Profile />} />
         <Route path="/account" element={<AccountPage />} />
+        <Route path="/auth/action" element={<ActionPage />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="*" element={<NotFound />} />

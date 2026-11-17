@@ -7,9 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T50
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T43 — Branded email action page (Sonnet · high · plan mode off). T38 (usage counts) and T37 (link
-previews) wait on owner decisions. Copies (T32, T33) are parked in the Backlog (owner, 2026-11-16: wanted, after
-the rest of Up next).
+**Next:** T32 — Make a copy (Opus · extra high · plan mode on). T38 (usage counts) and T37 (link previews) wait
+on owner decisions; T33 (variations) follows T32.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -17,6 +16,9 @@ and spacing, and the canvas notes say why.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
+- After T43's deploy is live: Console → Authentication → Templates → Customize action URL →
+  `https://soulsbuilds.com/auth/action` (`docs/firebase.md` "Sign-in setup" step 6), then smoke test a reset
+  email. Setting it before the deploy sends the links to a 404.
 - Approve the first CI production run (Actions → the run → Review deployments); it proves Workload Identity end to
   end. Open a throwaway PR once to see the preview comment.
 - In a day or two: App Check → APIs, check that nearly all requests are verified, then **Enforce** for Firestore
@@ -38,7 +40,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T48 (build page v3 on
-desktop) and T49 (phones).
+desktop), T49 (phones) and T43 (email action page).
 
 ## In progress
 
@@ -46,67 +48,10 @@ desktop) and T49 (phones).
 
 ## Up next
 
-### T43 — Branded email action page (reset password, verify email)
+### T32 — Make a copy: a build based on another
 
-- **Status:** ready (owner, 2026-11-16: later than T30)
-- **Session:** Sonnet · high effort · plan mode off
-- **Goal:** The links in password-reset and verification emails open a page on soulsbuilds.com in the site's
-  look, instead of Firebase's default page on soulsbuilds.firebaseapp.com.
-- **Done when:**
-  - A route `/auth/action` reads `mode` and `oobCode`: `resetPassword` → `verifyPasswordResetCode` (shows the
-    email), a new-password form (`PasswordInput`, `LIMITS.password`) → `confirmPasswordReset`, then "Log in";
-    `verifyEmail` → `applyActionCode`, then a confirmation; expired or used links get a clear message and a way
-    to ask again (the reset view, or Resend on the profile).
-  - The owner sets the action URL in the console (Authentication → Templates → Customize action URL →
-    `https://soulsbuilds.com/auth/action`); steps in `docs/firebase.md` "Sign-in setup".
-  - Unit tests for the page's states (Auth calls mocked); e2e with the Auth emulator's out-of-band codes
-    (`/emulator/v1/projects/demo-soulsbuilds/oobCodes`); `npm run check`, `npm run e2e`; screenshots desktop and
-    `--mobile`.
-- **Context:** `lib/firebase/auth.ts` (add the calls there), `features/auth/` (FormField, useFieldErrors,
-  styles), `app/routes.tsx`, decision "Email verification" (send-only). The emulator's links point at its own
-  handler, so e2e builds the `/auth/action?mode=…&oobCode=…` URL from the oobCodes endpoint.
-
-### T38 — Cookie-free usage counts
-
-- **Status:** blocked: the owner decides whether to revisit decision "Analytics" (dropped, so there's no consent
-  banner) and which service to use
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Know whether people use the route, tracking and copies, without cookies or a consent banner
-  (`docs/product.md` "Priorities": measure before tracking ships).
-- **Done when:**
-  - A cookie-free counter (e.g. Plausible or GoatCounter; the owner picks, it may cost money) counts page views and
-    a few named events: tracking started, item collected, build completed, route opened, copy made (the last ones
-    as their tickets land).
-  - The privacy page says what's counted, and that it's anonymous and cookie-free.
-  - `npm run perf` shows no regression; App Check is unaffected; `npm run check` passes.
-- **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
-  (performance notes).
-
-### T37 — Link previews: server-rendered build pages
-
-- **Status:** blocked: the owner decides whether to move from Spark to the Blaze plan (pay-as-you-go with a free
-  allowance) for Cloud Functions or Cloud Run
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** A build link pasted into Reddit, Discord or a chat shows a card with the build's name, author and gear,
-  and search engines see the page's content. Today the page renders in the browser, so both get an empty shell.
-- **Done when:**
-  - Per-build Open Graph and Twitter tags (title, description, image) and a generated preview image (the main
-    weapon, the name and level, in the game's skin), served through Hosting rewrites; the landing gets its own.
-  - Cached, with a cost estimate in `docs/firebase.md`.
-  - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
-- **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
-  replaces the backlog's "Per-build share previews".
-
-## Backlog
-
-### Parked tickets
-
-Written in full, set aside by the owner; move back to Up next when it's their turn.
-
-#### T32 — Make a copy: a build based on another
-
-- **Status:** parked (owner, 2026-11-16: wanted, after the rest of Up next). T42 made room for `basedOn`; the
-  button goes in the build's title section, shorter since T48; owner decisions first
+- **Status:** ready, owner decisions first (owner, 2026-11-16: wanted, after the rest of Up next, which now waits
+  on owner decisions). T42 made room for `basedOn`; the button goes in the build's title section, shorter since T48
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -142,9 +87,9 @@ Written in full, set aside by the owner; move back to Up next when it's their tu
   `features/editor/{useBuildEditor.ts,store/build.ts,BuildEditorPage.tsx}`, T28's hero, `scripts/admin.mjs`. This
   replaces the backlog's "copy this build".
 
-#### T33 — Variations: every copy of a build, on its page
+### T33 — Variations: every copy of a build, on its page
 
-- **Status:** parked with T32 (after it)
+- **Status:** ready after T32
 - **Session:** Opus · high effort · plan mode off
 - **Goal:** A build that's been copied shows everyone's versions of it and how each one differs, so a visitor sees
   the original next to the PVE take, the cheaper version, or the one that claims to be better.
@@ -165,6 +110,39 @@ Written in full, set aside by the owner; move back to Up next when it's their tu
 - **Context:** T32's `basedOn`; T28's tabs; `features/builds/BuildsList.tsx` rows;
   `features/editor/queries.ts` and `lib/queryKeys.ts`. A side-by-side compare view (Backlog) is the natural next
   step: each variation row could link to "Compare with the original".
+
+### T38 — Cookie-free usage counts
+
+- **Status:** blocked: the owner decides whether to revisit decision "Analytics" (dropped, so there's no consent
+  banner) and which service to use
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Know whether people use the route, tracking and copies, without cookies or a consent banner
+  (`docs/product.md` "Priorities": measure before tracking ships).
+- **Done when:**
+  - A cookie-free counter (e.g. Plausible or GoatCounter; the owner picks, it may cost money) counts page views and
+    a few named events: tracking started, item collected, build completed, route opened, copy made (the last ones
+    as their tickets land).
+  - The privacy page says what's counted, and that it's anonymous and cookie-free.
+  - `npm run perf` shows no regression; App Check is unaffected; `npm run check` passes.
+- **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
+  (performance notes).
+
+### T37 — Link previews: server-rendered build pages
+
+- **Status:** blocked: the owner decides whether to move from Spark to the Blaze plan (pay-as-you-go with a free
+  allowance) for Cloud Functions or Cloud Run
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** A build link pasted into Reddit, Discord or a chat shows a card with the build's name, author and gear,
+  and search engines see the page's content. Today the page renders in the browser, so both get an empty shell.
+- **Done when:**
+  - Per-build Open Graph and Twitter tags (title, description, image) and a generated preview image (the main
+    weapon, the name and level, in the game's skin), served through Hosting rewrites; the landing gets its own.
+  - Cached, with a cost estimate in `docs/firebase.md`.
+  - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
+- **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
+  replaces the backlog's "Per-build share previews".
+
+## Backlog
 
 ### Ideas
 
@@ -202,6 +180,10 @@ Written in full, set aside by the owner; move back to Up next when it's their tu
 
 Older entries: `docs/tickets-archive.md`.
 
+- T43 — Branded email action page — 2026-11-16 — `/auth/action` (`features/auth/action/`: ActionPage →
+  ResetPassword, VerifyEmail): reset-password form, verify and email-change links applied once (query hooks, no
+  refetch), expired or used links offer a new one; `auth.ts` `checkPasswordResetCode`, `confirmNewPassword`,
+  `applyEmailLink`, `isDeadLink`; e2e from the emulator's oobCodes. Owner sets the action URL after the deploy.
 - T45 — Item cards on hover — 2026-11-16 — `ItemCard` (in `Tooltip`, 264 px) on read-only sidebar tiles (hover,
   focus, tap; facts as `aria-describedby`; editing keeps the short tooltip) and the route's own items (mouse
   hover only, `gearByRef`); phone rows show `factsLines`. Pure `itemFacts.ts` per kind. Pipeline: weapon

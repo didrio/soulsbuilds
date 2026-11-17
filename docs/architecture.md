@@ -7,13 +7,14 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 
 `src/app/routes.tsx` defines the routes:
 
-| Route                   | Component         | What it does                                                                                                                                              |
-| ----------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                     | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                 |
-| `/build/:buildId/:tab?` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                      |
-| `/user/:userId`         | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31) |
-| `/account`              | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account             |
-| `*`                     | `NotFound`        | 404 page                                                                                                                                                  |
+| Route                   | Component         | What it does                                                                                                                                                                 |
+| ----------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                     | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                                    |
+| `/build/:buildId/:tab?` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                         |
+| `/user/:userId`         | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                    |
+| `/account`              | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                |
+| `/auth/action`          | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one |
+| `*`                     | `NotFound`        | 404 page                                                                                                                                                                     |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
 Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. Signed in, the

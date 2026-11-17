@@ -21,6 +21,9 @@ export const queryKeys = {
   latestComment: (buildId: string) => ['comments', buildId, 'latest'] as const,
   user: (id: string) => ['users', id] as const,
   stats: (game: GameId) => ['stats', game] as const,
+  /** One email link opened on `/auth/action` (T43): checked or applied once, then kept. */
+  actionLink: (kind: 'resetPassword' | 'verifyEmail', code: string) =>
+    ['actionLink', kind, code] as const,
   /** The signed-in player's progress on a build (T34). */
   tracking: (userId: string, buildId: string) => ['tracking', userId, buildId] as const,
   /** Every build the signed-in player tracks, with their progress (the profile, T36). */
