@@ -29,7 +29,7 @@ test('delete your account and everything you published', async ({ page }) => {
   const likesBefore = Number((await likeButton.textContent())?.match(/\d+/)?.[0]);
   await likeButton.click();
   await expect(likeButton).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('link', { name: /^Discussion/ }).click();
+  await page.getByRole('link', { name: /^Write-up & comments/ }).click();
   await page.getByLabel('Post a comment').fill(comment);
   await page.getByRole('button', { name: 'Post' }).click();
   await expect(page.getByText(comment)).toBeVisible();
@@ -58,7 +58,7 @@ test('delete your account and everything you published', async ({ page }) => {
   // Signed out, the like count is text, not a button.
   const likesLabel = `${likesBefore} Like${likesBefore === 1 ? '' : 's'}`;
   await expect(page.getByText(likesLabel, { exact: true })).toBeVisible();
-  await page.getByRole('link', { name: /^Discussion/ }).click();
+  await page.getByRole('link', { name: /^Write-up & comments/ }).click();
   await expect(page.getByText('Corpse Piler is absurd in PvE. Nice build!')).toBeVisible();
   await expect(page.getByText(comment)).toHaveCount(0);
 

@@ -28,6 +28,7 @@ import BuildHeader, { BuildActions } from './sections/BuildHeader';
 import BuildSections from './sections/BuildSections';
 import BuildSidebar from './sections/BuildSidebar';
 import BuildTabs from './sections/BuildTabs';
+import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
 import DiscussionSection from './sections/DiscussionSection';
 import EquipmentSection from './sections/EquipmentSection';
@@ -39,7 +40,15 @@ import { TrackingBar } from '@/features/tracking/TrackingBar';
 import { NewItemsNotice } from '@/features/tracking/TrackingCards';
 import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
-import { isCanonical, parseTab, splitBuildPath, tabPath, visibleTabs, type BuildTab } from './tabs';
+import {
+  hasWriteUp,
+  isCanonical,
+  parseTab,
+  splitBuildPath,
+  tabPath,
+  visibleTabs,
+  type BuildTab,
+} from './tabs';
 import { useBuildEditor } from './useBuildEditor';
 
 /**
@@ -54,7 +63,8 @@ function BuildEditorPage() {
 
 /**
  * View, create and edit a build (T22, T28, T48, T63, T66: the owner's design). The top section,
- * unframed: the title block, then one row with the tabs (Equipment, Guide, Discussion) and the
+ * unframed: the title block, then one row with the tabs (Equipment, Guide, and the discussion:
+ * "Write-up & comments", or "Comments" when the author wrote nothing, T71) and the
  * build's actions (Track, Like, Share). Under it, framed: the build sidebar (`BuildSidebar`) beside
  * the tab. A fully equipped build's Equipment tab fits a 1440×820 window (T66; e2e `fold.spec`). Equipment
  * (the build's own URL): the stats in the sidebar and the equipment as the main content, the two the
@@ -65,7 +75,7 @@ function BuildEditorPage() {
  * (T46): the progress bar, the player's stats and the new-items notice at the top, the route as the
  * checklist; the title section's "Track this build" (or "Tracking") opens it. Phones and tablets
  * (< 900 px, T49): one layout picked in JS, collapsible sections (`BuildSections`) instead of the tab
- * bar and the sidebar.
+ * bar and the sidebar, the write-up and the comments each their own section (T71).
  */
 function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string }) {
   const editor = useBuildEditor(buildId);
@@ -162,15 +172,27 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
         />
       </>
     ) : null,
-    discussion: build ? (
+    discussion: !build ? null : phone ? (
+      <CommentsSection buildId={build.id} ownerId={build.ownerId} bare />
+    ) : (
       <DiscussionSection
         buildId={build.id}
         ownerId={build.ownerId}
         description={build.description}
-        bare={phone}
       />
-    ) : null,
+    ),
   };
+
+  // Phones: the write-up is its own section, ahead of the Guide (T71).
+  const writeUp =
+    phone && build && !editable && hasWriteUp(build.description) ? (
+      <DescriptionSection
+        description={build.description}
+        editable={false}
+        onChange={() => {}}
+        bare
+      />
+    ) : null;
 
   return (
     <Page>
@@ -213,6 +235,7 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
           level={level}
           description={editor.description}
           descriptionEditor={descriptionEditor}
+          writeUp={writeUp}
           build={build}
           tracking={tracking}
           bodies={bodies}
@@ -225,6 +248,7 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
             current={tab}
             tabs={tabs}
             commentCount={editable ? undefined : build?.commentCount}
+            hasWriteUp={hasWriteUp(build?.description)}
             actions={editable ? undefined : actions}
           />
           <WithSidebar>

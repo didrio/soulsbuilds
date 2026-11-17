@@ -97,8 +97,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
     'true',
   );
 
-  // Comment, on the Discussion tab (T28, T63).
-  await page.getByRole('link', { name: 'Discussion 0' }).click();
+  // Comment, on the discussion tab (T28, T63; no write-up, so it reads Comments, T71).
+  await page.getByRole('link', { name: 'Comments 0', exact: true }).click();
   await expect(page).toHaveURL(/\/discussion$/);
   await page.getByLabel('Post a comment').fill('My own build, my own comment.');
   await page.getByRole('button', { name: 'Post' }).click();
@@ -115,7 +115,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByRole('heading', { name: `${buildName} v2` })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: /1 Like/ })).toBeVisible();
-  await page.getByRole('link', { name: 'Discussion 1' }).click();
+  await page.getByRole('link', { name: 'Comments 1', exact: true }).click();
   await expect(page.getByText('My own build, my own comment.')).toBeVisible();
 
   // Profile: own builds and liked builds.

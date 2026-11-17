@@ -32,7 +32,16 @@ describe('BuildTabs', () => {
     expect(within(bar).getByRole('link', { name: 'Equipment' })).not.toHaveAttribute(
       'aria-current',
     );
-    expect(within(bar).getByRole('link', { name: 'Discussion 3' })).toBeInTheDocument();
+    expect(within(bar).getByRole('link', { name: 'Comments 3' })).toBeInTheDocument();
+  });
+
+  it('names the write-up in the discussion tab when the build has one (T71)', () => {
+    renderTabs('/build/abc', { commentCount: 0, hasWriteUp: true });
+    const bar = screen.getByRole('navigation', { name: 'Build sections' });
+    expect(within(bar).getByRole('link', { name: 'Write-up & comments 0' })).toHaveAttribute(
+      'href',
+      '/build/abc/discussion',
+    );
   });
 
   it('shows only the tabs it is given', () => {

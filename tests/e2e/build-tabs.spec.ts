@@ -1,5 +1,5 @@
 // The build page's tabs (T28, T48, T63) on the seed data: Equipment at the build's own URL, old links
-// redirect to their tab, the Discussion's write-up and its "Jump to" row, tab switches keep the page
+// redirect to their tab, the write-up (named in its tab, T71) and its "Jump to" row, tab switches keep the page
 // (and Back goes to the previous tab), and a build without a write-up has none. Read-only. `npm run e2e`.
 import { expect, test } from '@playwright/test';
 
@@ -7,7 +7,7 @@ test('tabs: old links, jump to, switching and Back', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai$/);
   const tabs = page.getByRole('navigation', { name: 'Build sections' });
-  await expect(tabs.getByRole('link')).toHaveText(['Equipment', 'Guide', /^Discussion/]);
+  await expect(tabs.getByRole('link')).toHaveText(['Equipment', 'Guide', /^Write-up & comments/]);
   await expect(tabs.getByRole('link', { name: 'Equipment' })).toHaveAttribute(
     'aria-current',
     'page',
@@ -19,10 +19,10 @@ test('tabs: old links, jump to, switching and Back', async ({ page }) => {
   const [left, right] = [await stats.boundingBox(), await equipment.boundingBox()];
   expect(Math.abs((left?.height ?? 0) - (right?.height ?? 1))).toBeLessThan(2);
 
-  // A link from before T63: the write-up is now at the top of Discussion.
+  // A link from before T63: the write-up is at the top of the discussion tab.
   await page.goto('/build/SEEDBLEED001/description');
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/discussion$/);
-  await expect(page.getByRole('heading', { name: 'Description' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Write-up', exact: true })).toBeVisible();
   const sidebar = page.getByRole('complementary', { name: 'Stats and equipment' });
   await expect(sidebar.getByRole('button', { name: /^Uchigatana/ })).toBeVisible();
 
@@ -33,14 +33,14 @@ test('tabs: old links, jump to, switching and Back', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Playing it' })).toBeInViewport();
   await expect(tabs).toBeInViewport();
 
-  // Another tab (same sidebar), then Back to the Discussion.
+  // Another tab (same sidebar), then Back to the write-up and comments.
   await tabs.getByRole('link', { name: 'Guide' }).click();
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/guide$/);
   await expect(page.getByRole('heading', { name: 'How to get this build' })).toBeVisible();
   await expect(sidebar.getByRole('button', { name: /^Uchigatana/ })).toBeAttached();
   await page.goBack();
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/discussion(#.*)?$/);
-  await expect(page.getByRole('heading', { name: 'Description' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Write-up', exact: true })).toBeVisible();
 
   // A wrong or missing name slug is replaced with the build's own (T56); the ID alone decides.
   await page.goto('/build/SEEDBLEED001/an-old-name/guide');
@@ -56,6 +56,11 @@ test('tabs: old links, jump to, switching and Back', async ({ page }) => {
 test('a build without a write-up shows none: nothing is generated', async ({ page }) => {
   await page.goto('/build/SEEDNAKED001/discussion');
   await expect(page.getByRole('heading', { name: /^Comments/ })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Description' })).toHaveCount(0);
+  await expect(page.getByRole('heading', { name: 'Write-up', exact: true })).toHaveCount(0);
+  // The tab says what it holds: comments only (T71).
+  await expect(page.getByRole('link', { name: 'Comments 0', exact: true })).toHaveAttribute(
+    'aria-current',
+    'page',
+  );
   await expect(page.getByText(/automatically generated/)).toHaveCount(0);
 });

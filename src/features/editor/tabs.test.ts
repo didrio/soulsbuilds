@@ -2,13 +2,34 @@ import { describe, expect, it } from 'vitest';
 import { slugify } from '@/lib/slug';
 import {
   BUILD_TABS,
+  hasWriteUp,
   isCanonical,
   pageKey,
   parseTab,
   splitBuildPath,
+  tabLabel,
   tabPath,
   visibleTabs,
 } from './tabs';
+
+describe('tabLabel (T71)', () => {
+  it('names the write-up in the discussion tab when the build has one', () => {
+    expect(tabLabel('discussion', { hasWriteUp: true })).toBe('Write-up & comments');
+    expect(tabLabel('discussion', { hasWriteUp: false })).toBe('Comments');
+  });
+
+  it('leaves the other tabs alone', () => {
+    expect(tabLabel('equipment', { hasWriteUp: true })).toBe('Equipment');
+    expect(tabLabel('guide', { hasWriteUp: true })).toBe('Guide');
+  });
+
+  it('counts only text as a write-up', () => {
+    expect(hasWriteUp('How it plays')).toBe(true);
+    expect(hasWriteUp('  \n ')).toBe(false);
+    expect(hasWriteUp('')).toBe(false);
+    expect(hasWriteUp(undefined)).toBe(false);
+  });
+});
 
 describe('parseTab', () => {
   it('reads no segment as Equipment and known segments as their tab', () => {

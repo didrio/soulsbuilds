@@ -13,17 +13,22 @@ test('phone sections: glances, open and close, the URL', async ({ page }) => {
   // Closed headers say something; Weapons is open (Equipment, the build's own URL), items by name.
   await expect(header('Stats')).toContainText('RL 131');
   await expect(header('Guide')).toContainText('items to find');
-  await expect(header('Discussion')).toContainText('1 comment · “Corpse Piler');
+  await expect(header('Write-up')).toContainText('build around Rivers of Blood');
+  await expect(header('Comments')).toContainText('1 comment · “Corpse Piler');
   await expect(header('Weapons')).toHaveAttribute('aria-expanded', 'true');
   await expect(section('Weapons').getByText('Rivers of Blood', { exact: true })).toBeVisible();
   await header('Weapons').click();
   await expect(header('Weapons')).toHaveAttribute('aria-expanded', 'false');
 
-  // Discussion: its URL (replaced, not pushed), the write-up, then the comments.
-  await header('Discussion').click();
+  // The write-up: its own section (T71), opened where it is.
+  await header('Write-up').click();
+  await expect(section('Write-up').getByRole('heading', { name: 'Playing it' })).toBeVisible();
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai$/);
+
+  // Comments: its URL (replaced, not pushed).
+  await header('Comments').click();
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/discussion$/);
-  await expect(section('Discussion').getByText(/A .*build around Rivers of Blood/)).toBeVisible();
-  await expect(section('Discussion').getByText(/Corpse Piler is absurd/)).toBeVisible();
+  await expect(section('Comments').getByText(/Corpse Piler is absurd/)).toBeVisible();
 
   // A link to the Guide opens it.
   await page.goto('/build/SEEDBLEED001/guide');

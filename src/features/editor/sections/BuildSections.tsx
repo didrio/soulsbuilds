@@ -36,7 +36,8 @@ import {
 import PhoneSection from './PhoneSection';
 import StatsCard from './StatsCard';
 
-type SectionKey = 'stats' | PhoneGearKey | Exclude<BuildTab, 'equipment'> | 'description';
+type SectionKey =
+  'stats' | PhoneGearKey | Exclude<BuildTab, 'equipment'> | 'description' | 'writeup';
 
 /** The section a tab opens: Equipment is the gear sections, the weapons first. */
 const sectionFor = (tab: BuildTab): SectionKey => (tab === 'equipment' ? 'weapons' : tab);
@@ -59,6 +60,8 @@ interface BuildSectionsProps {
   description: string;
   /** Editing: the write-up's editor, its own section after the gear. */
   descriptionEditor: ReactNode;
+  /** Viewing: the author's write-up, its own section after the gear (T71); null when there's none. */
+  writeUp: ReactNode;
   build: Build | null;
   tracking: BuildTracking;
   /** The content sections' bodies, as the desktop tabs show them (bare). */
@@ -114,13 +117,16 @@ function GearBody({ section, editable }: { section: PhoneGearSection; editable: 
 /**
  * The build page on phones and tablets (T49, T63, the owner's design): instead of the tab bar and the
  * sidebar, one list of collapsible sections under the title section: Stats, the equipment (Weapons,
- * Armor, Talismans, Spells, Tears rune and ash, Items), then Guide and Discussion. Closed, each header
- * says something (the glance: the level and top attributes, the gear's icons, how many items the Guide
- * finds, the newest comment). The section the URL names starts open (Equipment, the default: Weapons);
- * several can be open. Opening Guide or Discussion replaces the URL with its own (no history entry per
- * tap); a URL change from elsewhere (Track → `/guide`, Back) opens that section and scrolls to it.
+ * Armor, Talismans, Spells, Tears rune and ash, Items), then Write-up (when the author wrote one, T71:
+ * under "Discussion · No comments yet" nobody found it), Guide and Comments. Closed, each header
+ * says something (the glance: the level and top attributes, the gear's icons, the write-up's first
+ * paragraph, how many items the Guide finds, the newest comment). The section the URL names starts
+ * open (Equipment, the default: Weapons; `/discussion`: the write-up and the comments, as the desktop
+ * tab shows both); several can be open. Opening Guide or Comments replaces the URL with its own (no
+ * history entry per tap); a URL change from elsewhere (Track → `/guide`, Back) opens that section and
+ * scrolls to it.
  * Editing: Stats, every gear section with its slots as rows that open the picker, the stats as
- * inputs, then Description (the write-up's editor).
+ * inputs, then Write-up (its editor).
  */
 function BuildSections({
   routeId,
@@ -130,6 +136,7 @@ function BuildSections({
   level,
   description,
   descriptionEditor,
+  writeUp,
   build,
   tracking,
   bodies,
@@ -140,7 +147,10 @@ function BuildSections({
   const commentCount = build?.commentCount ?? 0;
   const latest = useLatestComment(build?.id ?? '', Boolean(build) && !editable && commentCount > 0);
 
-  const [open, setOpen] = useState<ReadonlySet<SectionKey>>(() => new Set([sectionFor(tab)]));
+  // A link to the discussion (or an old `/description` one) opens the write-up with the comments.
+  const [open, setOpen] = useState<ReadonlySet<SectionKey>>(
+    () => new Set<SectionKey>(tab === 'discussion' ? ['writeup', 'discussion'] : [sectionFor(tab)]),
+  );
   // The URL names another section (a tap here, Track, Back): it opens. Adjusted while rendering.
   const [urlTab, setUrlTab] = useState(tab);
   if (urlTab !== tab) {
@@ -218,12 +228,22 @@ function BuildSections({
       ))}
       {editable ? (
         <PhoneSection
-          title="Description"
+          title="Write-up"
           glance={<span>{firstParagraph(description) || 'Not written yet'}</span>}
           open={open.has('description')}
           onToggle={() => toggle('description')}
           anchorId={sectionAnchor('description')}>
           {descriptionEditor}
+        </PhoneSection>
+      ) : null}
+      {writeUp ? (
+        <PhoneSection
+          title="Write-up"
+          glance={<span>{firstParagraph(description) || 'From the author'}</span>}
+          open={open.has('writeup')}
+          onToggle={() => toggle('writeup')}
+          anchorId={sectionAnchor('writeup')}>
+          {writeUp}
         </PhoneSection>
       ) : null}
       {contents.map((each) => (
@@ -244,7 +264,7 @@ function BuildSections({
 
 const TITLES: Record<Exclude<BuildTab, 'equipment'>, string> = {
   guide: 'Guide',
-  discussion: 'Discussion',
+  discussion: 'Comments',
 };
 
 // One surface, the sections divided by hairlines (owner, T49).

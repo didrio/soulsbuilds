@@ -122,7 +122,7 @@ describe('build pages', () => {
   it('leaves the description out of a build without a write-up', async () => {
     const body = html(await handle('/build/SEEDEMPTY001', deps()));
     expect(body).toContain('<h2>Attributes</h2>');
-    expect(body).not.toContain('<h2>Description</h2>');
+    expect(body).not.toContain('<h2>Write-up</h2>');
     expect(body).not.toContain('<article>');
   });
 

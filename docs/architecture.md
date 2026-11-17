@@ -322,7 +322,7 @@ below 900px every action in a row under the tags, `BuildActions` passed in as `a
 tags and "Build image": the current tile and "Change image", which opens `BuildImageDialog`, radio rows of the
 default and the build's gear), then (desktop, ≥ 900px) the **tab row** (`sections/BuildTabs`: `NavLink`s on the left, the first label in line
 with the page, and `BuildActions` (Track, Like, Share) on the right, over one hairline that ends the top section;
-64px tall, the accent line as wide as the current label, sticky at the window's top, see-through until it sticks; Discussion shows the stored comment count),
+64px tall, the accent line as wide as the current label, sticky at the window's top, see-through until it sticks; the discussion tab, labelled by `tabs.ts` `tabLabel` "Write-up & comments" when the build has a write-up and "Comments" when not (T71), shows the stored comment count),
 then, framed, the **build sidebar** beside the tab.
 Tabs are URLs (`/build/:buildId/*`, `tabs.ts`; T63): `/build/<id>/<slug>` Equipment, `/<slug>/guide`, `/<slug>/discussion`,
 where the slug is the name (`lib/slug.ts`, T56: `/build/x/bleed-samurai`). **The ID alone decides the build**: a missing
@@ -330,7 +330,7 @@ or stale slug (or a rename) is replaced in the URL (`<Navigate replace>`), and `
 segment (links from before T56, T48 and T63: `/build/x/guide`, `/route` → Guide, `/description` and `/comments` → Discussion) from a slug; `slugify` never
 returns a tab's segment ("Guide" → `guide-build`). Links built with `tabPath(id, tab, name)` carry the slug. An
 unknown tab, or one the build doesn't show (editing and `/build/new`: Equipment only), redirects to Equipment. Nothing
-is generated for a build without a write-up (T47's generated description was removed in T63): Discussion then has
+is generated for a build without a write-up (T47's generated description was removed in T63): the discussion tab then has
 the comments alone. Switching tabs keeps the editor (and an edit in
 progress) and the scroll position (`useScrollToTop` compares `pageKey`s; the bar scrolls itself back to the top
 when it was stuck).
@@ -366,8 +366,8 @@ warning) stays for rows (the Guide's items; the phone sections).
 `useMediaQuery(BELOW_TABLET)`; tests stub `matchMedia` in `src/test/viewport.ts`, desktop by default,
 `setViewportWidth(390)` for phones), never both with CSS (fixed ids). `sections/BuildSections` replaces the tab bar
 and the sidebar with one list (a panel, hairlines between) of `sections/PhoneSection`s: Stats, Weapons (with
-arrows), Armor, Talismans, Spells\*, Tears rune and ash, Items\* (\*viewing: only with some), Guide, Discussion
-(editing: Description, the write-up's editor, instead of the last two). A section is a region named by its title; its header (`<h2><button aria-expanded aria-controls>`) shows
+arrows), Armor, Talismans, Spells\*, Tears rune and ash, Items\* (\*viewing: only with some), Write-up (T71: only when the author wrote one; its glance the first paragraph), Guide, Comments
+(editing: Write-up, its editor, instead of the last three). A section is a region named by its title; its header (`<h2><button aria-expanded aria-controls>`) shows
 the title over a **glance** while closed (`sections/glances.ts`, pure: `statsGlance` rune level + top three
 attributes, the gear's icons (`phoneGearSections` over `gearGroups`; an empty always-listed gear section is a plain
 heading with "None"), `guideGlance` "14 items to find" / "3 of 14 items" while tracking, `commentsGlance` with the
@@ -375,7 +375,7 @@ newest comment: `useLatestComment`, one `limit(1)` read when `commentCount` > 0,
 title alone while open, sticky inside its section. Bodies render only while open (so Comments and the Guide's
 route load on open): `StatsCard bare`, `ItemRow`s (64px weapons, editable rows open the picker), and the tab bodies
 with `bare` (no Frame or heading). The URL's tab starts open (Equipment, the default, opens Weapons); several can
-be open; tapping Guide/Discussion open replaces the URL (no history entry); a URL change from elsewhere (Track →
+be open; a `/discussion` link opens the write-up and the comments; tapping Guide/Comments open replaces the URL (no history entry); a URL change from elsewhere (Track →
 `/guide`, Back) opens that section and scrolls its header (`#section-<key>`) into view; a load doesn't scroll.
 **Description** (`DescriptionSection`): the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
 `user-content-<slug>` on the highest heading level used twice); while editing, the markdown editor. **Guide**
@@ -383,8 +383,8 @@ be open; tapping Guide/Discussion open replaces the URL (no history entry); a UR
 label, place, what to do with a boss's reason, every item's icon, the build's lit and others dimmed, and why a key
 item is needed; tracking adds "N of M stops done", folds the finished stops and boxes the next one). **Discussion**
 (T63, `DiscussionSection`): like a post and its replies: the author's write-up (if any) at the top as its own
-"Description" panel, then the comments (`CommentsSection`, the thread at a readable 72ch); the tab's count is the
-comments only. On phones one body, a "Comments" label between the two.
+"Write-up" panel, then the comments (`CommentsSection`, the thread at a readable 72ch); the tab's count is the
+comments only, and its label names the write-up (T71). On phones they are two sections, Write-up and Comments.
 The **picker** is a tall
 `Dialog` (`ItemSelector`): search, weapon type / spell kind / base game–DLC filters (`picker.ts`), the current item
 marked (`aria-current`), "Show more" paging; picking a weapon with Ashes of War moves to its Ash of War and

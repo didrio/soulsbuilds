@@ -2,12 +2,13 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T71**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T78**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** nothing in Up next; the owner picks. The remaining tickets (T65, T57–T61)
+**Next:** T74 (home list: rows and the filter bar), then T72, T73, T76, T75, T77: the UI/UX pass's tickets in
+Up next. The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -90,6 +91,148 @@ read only the meta tags); the home title promises a "Build Planner" (the top sea
 most people arrive) never say that the Guide is a step-by-step route to every item you can track. Not mainly
 SEO (T50–T56 did that): it's what people see once they arrive. Owner's calls: plan before signing up; an intro
 band above the home list; a slim dismissible strip on build pages. T68, T69 and T70 are done.
+
+**UI/UX pass (owner, 2026-11-17):** a second eye on the whole UI, with **award-level design** as the bar: a
+newcomer sees what's going on and where to start, and it stays powerful for people who stay. Walked on the
+emulator at 1440×900 and 375×812, signed out and signed in, plus the live home page's numbers. Left alone on
+purpose (clear as they are): the home intro, the new-here strip, the tracking intro, the auth dialogs, the
+Guide while tracking, item cards, the Equipment layout, weapon and tag pages, the account page, the 404. T71
+(the write-up named in its tab) is done; the rest in this order.
+
+#### T74 — Home list: build rows and the filter bar
+
+- **Status:** ready (mock first; owner's ideas, 2026-11-17)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The home list reads like a ranked feed: a build's popularity shows at a glance and compares with
+  the rows around it (owner: "more like Reddit"), and search, sort and filters are one compact, expressive bar
+  instead of four rows of controls.
+- **Done when:** (ask the ★ items in one question at the start; mock the row and the bar on the redesign
+  canvas, desktop and phone, and get the owner's OK before building)
+  - **Row:** a left rail with the like count large; comments and "N playing" in the meta line; level smaller
+    on the right with the slot strip. **Zero is quiet**: an outline heart with no number, counts only when
+    there are some. Live data on 2026-11-17: the top build has 3 likes, nine builds have any, all 22 seeded
+    builds have 0, so a big number column would be a column of zeros.
+  - ★ **Default sort.** "Most liked" over mostly-zero likes puts 4-year-old builds with one like above
+    everything new. Recommended: likes, then newest among ties (a composite index, no model change). A decayed
+    "hot" score needs a stored field and rules (budget, T42): later, if at all.
+  - ★ **Liking from the list.** Recommended no: a like is a heart, not a vote, the row is one link, and a like
+    without opening the build says little.
+  - **Bar:** one search field, then one row of chips with popovers: Sort, Level (presets Any · to 50 · 51–100
+    · 125–150 · 200+ · Custom: the levels people build at, `docs/product.md`), Tags, Weapon; active filters as
+    removable chips with Clear and the result count; the "Most liked first" caption goes. Phones: search plus
+    one **Filters** button that opens a sheet (today the controls fill the first phone screen before any
+    build). Filters stay in the URL (`filters.ts`).
+  - ★ **Search finds what people type.** Today it matches only the start of a build's name (`searchBuilds`: a
+    prefix query on `nameLower`) and replaces the sort: "dark moon" doesn't find "Level 100 Dark Moon
+    Greatsword Build". Recommended: search in the browser over a compact index (id, name, tags, main weapon,
+    likes; under 100 builds today) written by the daily stats job next to `stats/<game>`, words anywhere in
+    the name, weapon and tag matches offered as links to their pages (`lib/hubs.ts`), the sort kept; the
+    prefix query stays as the fallback for builds newer than the index. No rules or model change. Split this
+    into its own ticket if the session runs long.
+  - Tests for the new filter logic and the row; e2e for a filtered, searched list; screenshots desktop and
+    `--mobile`; `docs/decisions.md` ("Landing", the sort, the search index).
+- **Context:** `features/builds/{Landing.tsx,BuildsList.tsx,filters.ts,tags.ts,queries.ts}`,
+  `lib/firebase/builds.ts` (`searchBuilds`, sorts), `firestore.indexes.json`, `scripts/admin.mjs stats` and
+  `lib/firebase/stats.ts` (the daily job), `lib/hubs.ts`, the hub pages' `HubBuilds` (same rows). The redesign
+  canvas: see the top of this file.
+
+#### T72 — Back to your run
+
+- **Status:** ready
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** A player tracking a build gets back to it in one tap. Today the signed-in home page shows nothing
+  about their run; the way back is name menu → Profile → Playing.
+- **Done when:** (owner's pick, 2026-11-17: home row + menu link)
+  - Home, signed in with a build in progress: a **Continue your run** row above the list: the build's image
+    and name, the progress bar, the next stop, opening the Guide. Several in progress: the most recently
+    tracked first, the rest behind "All N" to the profile's Playing tab. Nothing for accounts that track
+    nothing (no extra read for them beyond `tracksAnyBuild`, T41), nothing signed out.
+  - Account menu: **Playing** above Profile, to the profile's Playing tab.
+  - Phones, on a build you're tracking: the Guide section first and open, its glance "Next: <stop>".
+  - Tests (unit + e2e: track, go home, continue); screenshots desktop and `--mobile`; docs.
+- **Context:** `features/tracking/{queries.ts (useTrackedBuilds, splitTracked),TrackedBuilds.tsx,PlayingList.tsx,
+ProgressBar.tsx}`, `features/builds/Landing.tsx`, `app/AccountMenu.tsx`,
+  `features/editor/sections/{BuildSections.tsx,glances.ts}`, `features/editor/guide/progress.ts` (the next
+  stop). The rewards rule (`docs/product.md`): the row reports the run, it doesn't nag.
+
+#### T73 — The planner's first minute
+
+- **Status:** ready
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** Someone who pressed "Start planning" knows what to do without reading: the equipment is in view
+  and the empty slots invite a tap. Today `/build/new` opens on a form (name, tags, build image), the
+  equipment starts halfway down, and empty slots are faint squares with a dot.
+- **Done when:** (owner's pick, 2026-11-17: slots + compact title)
+  - Empty slots in edit mode show a **+** and what goes there (helm, chest, gauntlets, legs, crystal tear,
+    great rune, spirit ash: the labels exist as the buttons' accessible names).
+  - One line above the panel on an empty build: pick a starting class, then tap a slot. It goes once the
+    build has gear.
+  - The title block in edit mode fits one row on desktop (name, tags, image), so the equipment is in view at
+    1440×820.
+  - Save without a name: the message shows only in the bottom bar while the name field is off screen: focus
+    and scroll to the field, the error under it.
+  - One name for the action. Today "Plan a build" (signed out), "New build" (header, signed in), "Create a
+    build" (profile).
+  - Tests; e2e (`build-flow`, the signed-out planner); screenshots desktop and `--mobile`; docs.
+- **Context:** `features/editor/sections/{BuildDetailsForm.tsx,EquipmentSection.tsx,GearTiles.tsx}`,
+  `features/editor/useBuildEditor.ts` (the name check, line ~126), `features/auth/FormField` +
+  `useFieldErrors` (errors by field, focus the first), `app/Header.tsx`, `features/profile/Profile.tsx`,
+  `features/builds/intro.ts`.
+
+#### T76 — Small fixes from the UI/UX pass
+
+- **Status:** ready
+- **Session:** Sonnet · low effort · plan mode off
+- **Goal:** The rough edges the pass found, in one short session.
+- **Done when:**
+  - Phone build title: the tags' second row no longer touches the Track/Like/Share row, and "Report" doesn't
+    hang alone under them.
+  - The Guide's legend ("in this build / other items", "collected / still to get") stops looking like two
+    unchecked filter checkboxes: non-interactive swatches.
+  - Signed out, the comment box is a live-looking textarea ("Log in to comment") with a Post button: one "Log
+    in to comment" button that opens the dialog (check what it does today first).
+  - The stat rows' "+5" names its source on hover or focus (talisman, great rune), if it doesn't already.
+  - Screenshots of each, desktop and `--mobile`; `npm run check`, `npm run e2e`.
+- **Context:** `features/editor/sections/{BuildHeader.tsx,BuildActions,StatsCard.tsx,CommentForm}`,
+  `features/editor/guide/GuideSection.tsx`.
+
+#### T75 — Picker rows with facts
+
+- **Status:** ready
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Planners choose by numbers. Today the picker lists 214 helms and 487 weapons by name only: no
+  weight, poise or requirements, and nothing on hover.
+- **Done when:**
+  - Each row has one muted fact line from `itemFacts.ts`: armor weight · poise; weapons type · requirements
+    (marked when the build's stats don't meet them); spells FP · slots · requirement; talismans their effect
+    if the data has a short one.
+  - Armor sorts by name, weight or poise.
+  - Removing a weapon is one step: Remove on the Ash of War and affinity step (today: tile → Change weapon →
+    Remove).
+  - The list stays fast on a phone (487 rows; measure before and after). Tests; screenshots desktop and
+    `--mobile`.
+- **Context:** `features/editor/{ItemSelector.tsx,picker.ts,itemFacts.ts,itemDetails.ts}`, the weapon step
+  (`WeaponOptions`). Picker code loads `@/data` (the full data), which is fine there.
+
+#### T77 — Craft pass at full resolution
+
+- **Status:** after T74, T72, T73 (the structure settles first)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The details an award jury (and every user, without naming them) notices, which the UI/UX pass
+  couldn't judge through a downscaled browser pane.
+- **Done when:** findings fixed as the session goes; anything large becomes a ticket.
+  - **Full-resolution review** with `npm run screenshot` at 1440, 1000 and `--mobile` of every page and
+    dialog: alignment, spacing rhythm, type, truncation, the accent budget.
+  - **States:** loading (no blank panels or layout jumps while builds, the route or the picker's data load;
+    the picker's first open loads ~1 MB), empty, error and offline for each page.
+  - **Motion**, small and purposeful, honouring `prefers-reduced-motion`: tab changes, dialogs and popovers,
+    an item checking off, the progress bar moving, and the **Build complete** moment: the one place the site
+    should feel like the game (`docs/product.md`, the rewards rule).
+  - **Keyboard and screen reader:** every flow start to finish without a mouse (plan a build, pick items,
+    track, comment); focus order and visible focus; the page behind an open dialog out of reach.
+  - **Touch:** the phone editor end to end; targets ≥ 44 px; nothing that needs hover.
+- **Context:** `src/theme/` (motion, spacing, fonts), `components/ui/` (Dialog, FocusScope, Tooltip),
+  `docs/architecture.md` "Styling", the run-app skill for screenshots.
 
 ## Backlog
 
@@ -309,6 +452,15 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T71 — The write-up named in its tab — 2026-11-17 — from the UI/UX pass (owner's pick: name it in the tab, layout
+  and fold unchanged): the write-up sat under "Discussion 0" (phones: "Discussion · No comments yet"), so nobody
+  found it. `tabs.ts` `tabLabel` + `hasWriteUp`: the tab reads **Write-up & comments** with a write-up, **Comments**
+  without (URL still `/discussion`); phones: a **Write-up** section after the gear (glance: its first paragraph),
+  then Guide, then **Comments** (comments only); a `/discussion` link opens both. The heading is "Write-up"
+  everywhere (view, editor, crawler HTML; was "Description"). Tests: `tabs.test.ts`, `BuildTabs.test.tsx`,
+  `BuildSections.test.tsx`, `BuildEditorPage.test.tsx`, six e2e specs. Docs: decision row "Build page layout",
+  `docs/architecture.md`.
 
 - T70 — "New here?" strip — 2026-11-17 — `src/app/NewHereStrip.tsx`: signed out on build, weapon and tag pages, one line (what the site is, How it works → `/`, Plan your own → `/build/new`, close; dismissal in localStorage `sb-new-here-dismissed`). A separate 44 px row broke `fold.spec` (+35 px), so from 1200 px wide it sits in the header row (shorter text, no Plan link: the nav has Plan a build) and below that in a row under the header. Header nav items `nowrap`.
 

@@ -18,7 +18,7 @@ import {
   TEXT_XS,
 } from '@/theme';
 import { loadRoute } from '../guide/GuideSection';
-import { BUILD_TABS, tabPath, type BuildTab } from '../tabs';
+import { BUILD_TABS, tabLabel, tabPath, type BuildTab } from '../tabs';
 
 /** The tab row's height (44 px buttons with 10 px above and below); the sticky stats column sits under it. */
 export const TAB_BAR_HEIGHT = 64;
@@ -31,8 +31,10 @@ interface BuildTabsProps {
   buildName?: string;
   current: BuildTab;
   tabs: BuildTab[];
-  /** Shown on the Discussion tab: the build's stored comment count (the write-up isn't one). */
+  /** Shown on the discussion tab: the build's stored comment count (the write-up isn't one). */
   commentCount?: number;
+  /** The build has a write-up: the discussion tab says so ("Write-up & comments", T71). */
+  hasWriteUp?: boolean;
   /** The build's actions (`BuildActions`: Track, Like, Share), on the right of the row (T66). */
   actions?: ReactNode;
 }
@@ -46,7 +48,15 @@ interface BuildTabsProps {
  * right under it; otherwise the scroll position stays. Pointing at Guide fetches the route's code and
  * data ahead of the click.
  */
-function BuildTabs({ buildId, buildName, current, tabs, commentCount, actions }: BuildTabsProps) {
+function BuildTabs({
+  buildId,
+  buildName,
+  current,
+  tabs,
+  commentCount,
+  hasWriteUp = false,
+  actions,
+}: BuildTabsProps) {
   const sentinel = useRef<HTMLDivElement>(null);
   const previous = useRef(current);
   const stuck = useStuck(sentinel);
@@ -63,17 +73,17 @@ function BuildTabs({ buildId, buildName, current, tabs, commentCount, actions }:
       <Sentinel ref={sentinel} aria-hidden="true" />
       <Row $stuck={stuck}>
         <Bar aria-label="Build sections">
-          {BUILD_TABS.filter(({ tab }) => tabs.includes(tab)).map(({ tab, label }) => (
+          {BUILD_TABS.filter(({ tab }) => tabs.includes(tab)).map(({ tab }) => (
             <Tab
               key={tab}
               to={tabPath(buildId, tab, buildName)}
               end
               onFocus={tab === 'guide' ? () => void loadRoute() : undefined}
               onPointerEnter={tab === 'guide' ? () => void loadRoute() : undefined}>
-              {label}
+              {tabLabel(tab, { hasWriteUp })}
               {tab === 'discussion' && commentCount !== undefined ? (
                 <>
-                  {/* A space for the accessible name ("Discussion 3"); flex layout drops it visually. */}{' '}
+                  {/* A space for the accessible name ("Comments 3"); flex layout drops it visually. */}{' '}
                   <Count>{commentCount}</Count>
                 </>
               ) : null}

@@ -29,7 +29,7 @@ export function MarkdownEditor({
       onChange={(next?: string) => onChange(next ?? '')}
       preview="edit"
       previewOptions={{ rehypePlugins: [[rehypeSanitize]] }}
-      textareaProps={{ 'aria-label': 'Description (markdown)' }}
+      textareaProps={{ 'aria-label': 'Write-up (markdown)' }}
       value={value}
     />
   );

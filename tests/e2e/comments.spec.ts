@@ -4,7 +4,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { completeSignUp } from './helpers';
 
-/** The Discussion tab's comments panel. */
+/** The discussion tab's comments panel. */
 const comments = (page: Page) => page.getByRole('region', { name: /^Comments/ });
 /** Top-level threads (the replies are lists inside them). */
 const threads = (page: Page) => comments(page).locator(':scope > ol > li');
@@ -36,7 +36,7 @@ test('sort, post, reply and like comments', async ({ page }) => {
   await page.getByLabel('Build name').fill('Chatty build');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
-  await page.getByRole('link', { name: /^Discussion/ }).click();
+  await page.getByRole('link', { name: /^Comments/ }).click();
 
   await page.getByLabel('Post a comment').fill('Does it hold up in the DLC?');
   await page.getByRole('button', { name: 'Post' }).click();

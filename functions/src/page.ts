@@ -87,7 +87,7 @@ export function buildContentHtml(build: BuildDoc, author: PageAuthor): string {
     return `<h2>${escapeHtml(group.title)}</h2>\n<ul>\n${items.join('\n')}\n</ul>`;
   });
 
-  // The author's write-up, when there is one (the app shows it atop the Discussion tab).
+  // The author's write-up, when there is one (the app shows it atop the "Write-up & comments" tab).
   const writeUp = build.description.trim() ? markdownToHtml(build.description) : null;
 
   return join([
@@ -100,7 +100,7 @@ export function buildContentHtml(build: BuildDoc, author: PageAuthor): string {
     '<h2>Attributes</h2>',
     `<ul>\n${attributes.join('\n')}\n</ul>`,
     ...gear,
-    writeUp ? '<h2>Description</h2>' : null,
+    writeUp ? '<h2>Write-up</h2>' : null,
     writeUp ? `<article>\n${writeUp}\n</article>` : null,
     '<p><a href="/">More Elden Ring builds on Souls Builds</a></p>',
     '</main>',

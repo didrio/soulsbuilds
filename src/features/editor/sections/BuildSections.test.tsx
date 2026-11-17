@@ -66,14 +66,18 @@ describe('BuildSections (phones)', () => {
       'Armor',
       'Talismans',
       'Tears, rune and ash',
+      'Write-up',
       'Guide',
-      'Discussion',
+      'Comments',
     ]);
     expect(header('Weapons')).toHaveAttribute('aria-expanded', 'true');
     expect(header('Stats')).toHaveAttribute('aria-expanded', 'false');
     expect(header('Stats')).toHaveTextContent('RL 132 · Int 80 · Vig 40 · Mnd 30');
     expect(header('Guide')).toHaveTextContent('1 item to find');
-    expect(header('Discussion')).toHaveTextContent('No comments yet');
+    // The write-up says what it is before it's opened (T71).
+    expect(header('Write-up')).toHaveTextContent('Moonveil and full-moon sorceries.');
+    expect(header('Write-up')).toHaveAttribute('aria-expanded', 'false');
+    expect(header('Comments')).toHaveTextContent('No comments yet');
     // Nothing to open: a heading that says so, not a button.
     const armor = screen.getByRole('region', { name: 'Armor' });
     expect(within(armor).queryByRole('button')).not.toBeInTheDocument();
@@ -95,7 +99,7 @@ describe('BuildSections (phones)', () => {
     expect(within(weapons).getByText('Moonveil')).toBeVisible();
   });
 
-  it('shows the start of the newest comment; opening Discussion loads them and takes its URL', async () => {
+  it('shows the start of the newest comment; opening Comments loads them and takes its URL', async () => {
     firebase.getBuild.mockResolvedValue(makeBuild({ commentCount: 2 }));
     firebase.fetchLatestComment.mockResolvedValue(makeComment({ text: 'Moonveil all day' }));
     firebase.listComments.mockResolvedValue([makeComment({ text: 'Moonveil all day' })]);
@@ -104,29 +108,46 @@ describe('BuildSections (phones)', () => {
     expect(firebase.fetchLatestComment).toHaveBeenCalledTimes(1);
     expect(firebase.listComments).not.toHaveBeenCalled();
 
-    await user.click(header('Discussion'));
+    await user.click(header('Comments'));
     expect(location()).toBe('/build/SEEDMOON0001/carian-moon-knight/discussion');
-    const discussion = screen.getByRole('region', { name: 'Discussion' });
-    expect(await within(discussion).findByText('Moonveil all day')).toBeInTheDocument();
-    // The author's write-up first, then the comments under their own label.
-    expect(within(discussion).getByRole('heading', { name: 'Comments' })).toBeInTheDocument();
+    const comments = screen.getByRole('region', { name: 'Comments' });
+    expect(await within(comments).findByText('Moonveil all day')).toBeInTheDocument();
+    // The write-up is its own section: a tap on Comments leaves it closed.
+    expect(
+      within(comments).queryByText('Moonveil and full-moon sorceries.'),
+    ).not.toBeInTheDocument();
+    expect(header('Write-up')).toHaveAttribute('aria-expanded', 'false');
     // Several can be open: Weapons stayed open.
     expect(header('Weapons')).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('leaves the write-up out of Discussion when the author wrote none', async () => {
+  it('opens the write-up: its own section, the sanitized markdown (T71)', async () => {
+    firebase.getBuild.mockResolvedValue(makeBuild());
+    const { user } = renderPage('/build/SEEDMOON0001');
+    await screen.findByRole('region', { name: 'Stats' });
+    await user.click(header('Write-up'));
+    const writeUp = screen.getByRole('region', { name: 'Write-up' });
+    expect(await within(writeUp).findByText('Moonveil and full-moon sorceries.')).toBeVisible();
+    expect(header('Write-up')).toHaveAttribute('aria-expanded', 'true');
+    // Like a gear section, it keeps the page's URL.
+    expect(location()).toBe('/build/SEEDMOON0001/carian-moon-knight');
+  });
+
+  it('has no Write-up section when the author wrote none', async () => {
     firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
     renderPage('/build/SEEDMOON0001/carian-moon-knight/discussion');
-    const discussion = await screen.findByRole('region', { name: 'Discussion' });
-    expect(await within(discussion).findByText(/No comments yet/)).toBeInTheDocument();
-    expect(within(discussion).queryByRole('heading', { name: 'Comments' })).not.toBeInTheDocument();
+    const comments = await screen.findByRole('region', { name: 'Comments' });
+    expect(await within(comments).findByText(/No comments yet/)).toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'Write-up' })).not.toBeInTheDocument();
   });
 
   it('opens the section the URL names, and one a link elsewhere goes to', async () => {
     firebase.getBuild.mockResolvedValue(makeBuild());
     const { user } = renderPage('/build/SEEDMOON0001/carian-moon-knight/discussion');
-    await screen.findByRole('region', { name: 'Discussion' });
-    expect(header('Discussion')).toHaveAttribute('aria-expanded', 'true');
+    await screen.findByRole('region', { name: 'Comments' });
+    // A link to the discussion opens the write-up with the comments, as the desktop tab shows both.
+    expect(header('Comments')).toHaveAttribute('aria-expanded', 'true');
+    expect(header('Write-up')).toHaveAttribute('aria-expanded', 'true');
     expect(header('Weapons')).toHaveAttribute('aria-expanded', 'false');
     expect(header('Guide')).toHaveAttribute('aria-expanded', 'false');
 
@@ -138,8 +159,8 @@ describe('BuildSections (phones)', () => {
     expect(scrolled.mock.contexts).toEqual([document.getElementById('section-guide')]);
 
     // A tap opens a section where it is: no scrolling.
-    await user.click(header('Discussion'));
-    await user.click(header('Discussion'));
+    await user.click(header('Comments'));
+    await user.click(header('Comments'));
     expect(location()).toBe('/build/SEEDMOON0001/carian-moon-knight/discussion');
     expect(scrolled).toHaveBeenCalledTimes(1);
     delete (Element.prototype as Partial<Element>).scrollIntoView;
@@ -157,10 +178,10 @@ describe('BuildSections (phones)', () => {
       'Spells',
       'Tears, rune and ash',
       'Items',
-      'Description',
+      'Write-up',
     ]);
     expect(header('Armor')).toHaveTextContent('Nothing chosen');
-    expect(header('Description')).toHaveTextContent(/^Description/);
+    expect(header('Write-up')).toHaveTextContent(/^Write-up/);
     const weapons = screen.getByRole('region', { name: 'Weapons' });
     expect(within(weapons).getByRole('list', { name: 'Right hand' })).toBeInTheDocument();
     expect(within(weapons).getByRole('button', { name: /^Change Moonveil/ })).toBeInTheDocument();
