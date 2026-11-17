@@ -37,6 +37,7 @@ import {
   WEIGHT_DISPLAY,
 } from '@/theme';
 import { useHasLiked, useToggleLike } from '../queries';
+import ShareButton from './ShareButton';
 
 /** The build image's edge on desktop (T48: from 112), and below 900 px. */
 const TILE = 72;
@@ -125,6 +126,7 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
             {likesLabel(build.likeCount)}
           </LikeCount>
         )}
+        <ShareButton build={build} author={owner.data?.displayName} />
         <ReportButton
           target={{ buildId: build.id }}
           authorId={build.ownerId}

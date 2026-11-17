@@ -61,4 +61,12 @@ export function countEvent(name: UsageEvent) {
   send({ path: name, event: true });
 }
 
-export type UsageEvent = 'tracking-started' | 'item-collected' | 'build-completed' | 'route-opened';
+export type UsageEvent =
+  | 'tracking-started'
+  | 'item-collected'
+  | 'build-completed'
+  | 'route-opened'
+  | 'share-link'
+  | 'share-reddit'
+  | 'share-image'
+  | 'share-native';

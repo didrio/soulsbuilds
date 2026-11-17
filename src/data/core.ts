@@ -60,11 +60,11 @@ export const getCardArmor = (
 /** What a slot needs to show any item: its name and icon (every item in the data has both). */
 export type SlotDisplayItem = { id: number; name: string; icon: number };
 
-const getCardTalisman = lookup<CardItem>(cards.talismans);
-const getCardSpell = lookup<CardItem>(cards.spells);
-const getCardTear = lookup<CardItem>(cards.tears);
-const getCardGreatRune = lookup<CardItem>(cards.greatRunes);
-const getCardSpiritAsh = lookup<CardItem>(cards.spiritAshes);
+export const getCardTalisman = lookup<CardItem>(cards.talismans);
+export const getCardSpell = lookup<CardItem>(cards.spells);
+export const getCardTear = lookup<CardItem>(cards.tears);
+export const getCardGreatRune = lookup<CardItem>(cards.greatRunes);
+export const getCardSpiritAsh = lookup<CardItem>(cards.spiritAshes);
 
 /**
  * A build image's item as a card shows it (T40; `buildImage` in @/lib/equipment picks which), or

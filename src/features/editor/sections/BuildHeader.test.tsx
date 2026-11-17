@@ -77,7 +77,8 @@ describe('BuildHeader', () => {
   it('signed out: shows the count, not a button', async () => {
     renderWithProviders(<BuildHeader build={makeBuild({ likeCount: 3 })} />);
     expect(await screen.findByText('3 Likes')).toBeInTheDocument();
-    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Like/ })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Share/ })).toBeInTheDocument();
   });
 
   it('a failed like rolls back, shows why, and the button works again', async () => {

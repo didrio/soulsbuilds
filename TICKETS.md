@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T64
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T52 (seeded builds: needs the owner's "Souls Builds" account and five sources first) · Opus · high effort · plan mode on. Or T54 (Sonnet, ready). Then T53, T55 (discoverability), then
+**Next:** T52 (seeded builds: needs the owner's "Souls Builds" account and five sources first) · Opus · high effort · plan mode on. Then T53, T55 (discoverability), then
 T57–T61 (Dark Souls). Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -61,7 +61,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD) and T63 (Equipment and Discussion tabs).
+desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD), T63 (Equipment and Discussion tabs) and T54 (Share menu).
 
 ## In progress
 
@@ -71,7 +71,7 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 
 Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
 previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53), then sharing and hub pages
-(T54, T55), then T56. T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
+(T54 done, T55), then T56. T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
 
 #### T52 — Seeded builds: an import script and the first five, credited
 
@@ -123,26 +123,6 @@ previews. Order: crawlers can read the site (T50, T51 done), then content (T52, 
   Cover the main archetypes (strength, dexterity, quality, bleed, frost, int, faith, arcane, hybrid), a few
   levels (60, 125, 150, 200+), and DLC weapons.
 - **Context:** T52's script and `content/builds/er/`. Split into batches of five if it runs long.
-
-#### T54 — Share button: copy the link, copy for Reddit, download the card
-
-- **Status:** ready
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Builds spread on Reddit, Discord and YouTube descriptions; make posting one a single click, with a
-  link back every time (traffic and backlinks).
-- **Done when:**
-  - A Share button in the build's title section (next to like and report; on phones in the same place) opens a
-    small menu (`FocusScope`): **Copy link** (the canonical URL, "Copied" feedback), **Copy for Reddit**
-    (markdown: name and level, attributes, weapons with affinity and skill, armor, talismans, spells, then the
-    link), **Download image** (the T37 card, `/og/build/<id>.png`), and on phones **Share…** through
-    `navigator.share` when it exists.
-  - The Reddit text is a pure function in `src/lib/` (e.g. `shareText.ts`) with unit tests; item names from
-    `@/data`.
-  - A GoatCounter event per action (T38's `usage.ts`), so we learn which one gets used.
-  - Tests: the menu (renderWithProviders, clipboard stubbed); `npm run check`; screenshots desktop and
-    `--mobile` with the menu open (`--click "Share"`).
-- **Context:** `features/editor/sections/BuildHeader.tsx` (title section actions), TrackingBar's clipboard use
-  (`features/tracking/TrackingBar.tsx` ~line 167), `src/lib/usage.ts`, `features/editor/gear.ts` (gear groups).
 
 #### T55 — Weapon and tag pages: "Moonveil builds", "Bleed builds"
 
@@ -418,6 +398,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T54 — Share menu — 2026-11-17 — `ShareButton` in the build's title section: Copy link (canonical), Copy for Reddit (`lib/shareText.ts` `redditText`, ends with the link), Download image (the T37 card), Share… where `navigator.share` exists; GoatCounter events `share-link|reddit|image|native`. Arrows and consumables aren't in the Reddit text (no card names). Download image and Share… weren't tried in a real browser (the card function isn't in the emulators).
 - T63 — Equipment and Discussion tabs — 2026-11-17 — owner's request, no prior ticket. The build page's tabs are
   Equipment (default, `/build/<id>/<slug>`), Guide, Discussion (`/discussion`; old `/description` and `/comments`
   links redirect there). Equipment: `EquipmentSection` (game layout, each hand on its own, 104/80 px tiles, empty

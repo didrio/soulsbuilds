@@ -138,7 +138,7 @@ src/
                            useBuildEditor; tabs.ts (Equipment, Guide, Discussion (T63): URLs, old-link redirects, which
                            show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments, useLatestComment); gear.ts (T48: the
                            gear as groups of SlotEntry, view and edit; equipmentGroups = the Equipment panel's, T63; pure); sections/ (BuildHeader = title
-                           section: build image (T40), like/report/tags, OwnerActions, BuildTabs (sticky tab bar),
+                           section: build image (T40), like/Share (T54: ShareButton menu: copy link, copy for Reddit = lib/shareText.ts, download the card, Share…)/report/tags, OwnerActions, BuildTabs (sticky tab bar),
                            BuildDetailsForm (edit title block + BuildImageDialog), BuildSidebar (T48: StatsCard + (Guide,
                            Discussion) equipment tiles named on hover/focus/tap), EquipmentSection (T63: the Equipment
                            tab's panel, game layout; editable while editing), GearTiles (GearTile, GearRow: shared),
@@ -167,7 +167,7 @@ src/
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
-                           relativeTime.ts ("3 days ago"), slug.ts (T56: a name as a URL segment), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
+                           relativeTime.ts ("3 days ago"), slug.ts (T56: a name as a URL segment), shareText.ts (T54: a build as Reddit markdown), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
                            GameSkinStyle
