@@ -12,7 +12,6 @@ import {
 } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import GuideRoute from './GuideRoute';
-import NextStop from './NextStop';
 import type { RouteTracking } from './progress';
 
 const SPIRIT_CALLING_BELL_SHOP = /Buy from Twin Maiden Husks/;
@@ -25,23 +24,30 @@ const equipment: Equipment = {
   spiritAsh: 200000, // Black Knife Tiche: needs the Spirit Calling Bell
 };
 
-/** A tracking player's progress that marking changes, as the page's tracking hook does (T44). */
-function Tracked({
-  collected,
-  render,
-}: {
-  collected: string[];
-  render: (tracking: RouteTracking) => React.ReactNode;
-}) {
+/**
+ * A tracking player's progress that checking items off (T46) and marking stops (T44) change, as the
+ * page's tracking hook does.
+ */
+function Tracked({ equipment: gear }: { equipment: Equipment }) {
+  const [collected, setCollected] = useState<string[]>([]);
   const [marked, setMarked] = useState<string[]>([]);
+  const onToggle = (keys: string[]) =>
+    setCollected((now) =>
+      keys.some((key) => now.includes(key))
+        ? now.filter((key) => !keys.includes(key))
+        : [...now, ...keys],
+    );
   const onMark = (keys: string[], route: string[]) =>
     setMarked((now) => {
       const on = !keys.every((key) => now.includes(key));
       const next = on ? [...now, ...keys] : now.filter((key) => !keys.includes(key));
       return next.filter((key) => route.includes(key));
     });
-  return render({ collected, marked, onMark });
+  const tracking: RouteTracking = { collected, marked, onToggle, onMark };
+  return <GuideRoute equipment={gear} tracking={tracking} />;
 }
+
+const noop = () => {};
 
 const UCHIGATANA_KEY = `weapon4:${UCHIGATANA}`;
 
@@ -69,6 +75,7 @@ describe('GuideRoute', () => {
       stops.map((_, index) => String(index + 1)),
     );
     expect(screen.queryByText(/stops done/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(within(stops[0]!).getByText('Limgrave')).toBeInTheDocument();
 
     expect(within(section).getByText('Moonveil')).toBeInTheDocument();
@@ -96,7 +103,7 @@ describe('GuideRoute', () => {
     const { container } = renderWithProviders(
       <GuideRoute
         equipment={equipment}
-        tracking={{ collected: [UCHIGATANA_KEY], marked: [], onMark: () => {} }}
+        tracking={{ collected: [UCHIGATANA_KEY], marked: [], onToggle: noop, onMark: noop }}
       />,
     );
     // Only the Uchigatana's own stop is done: players go out of order, so the stops before it aren't.
@@ -118,17 +125,38 @@ describe('GuideRoute', () => {
     expect(stopsOf(container as HTMLElement)).toHaveLength(total - 1);
   });
 
+  it('checks the build’s items off, and folds a stop once its last one is (T46)', async () => {
+    const user = userEvent.setup();
+    const { container } = renderWithProviders(<Tracked equipment={equipment} />);
+    const total = stopsOf(container as HTMLElement).length;
+    // The build's tracked items are checkboxes; other items (the bell, the Ash of War: not tracked)
+    // aren't.
+    expect(screen.queryByRole('checkbox', { name: /Spirit Calling Bell/ })).toBeNull();
+    expect(screen.queryByRole('checkbox', { name: /Seppuku/ })).toBeNull();
+    const moonveil = screen.getByRole('checkbox', { name: /^Moonveil/ });
+    expect(moonveil).not.toBeChecked();
+
+    // The Uchigatana is alone at its stop: checked off, the stop is done and folds away.
+    await user.click(screen.getByRole('checkbox', { name: /^Uchigatana/ }));
+    expect(screen.getByText(/stops done/)).toHaveTextContent(`1 of ${total} stops done.`);
+    expect(screen.queryByRole('checkbox', { name: /^Uchigatana/ })).toBeNull();
+    expect(screen.getByText(/stops done/)).toHaveFocus();
+
+    // Shown again, it's checked; unchecking it brings the stop back.
+    await user.click(screen.getByRole('button', { name: 'Show the 1 finished stop' }));
+    const uchigatana = screen.getByRole('checkbox', { name: /^Uchigatana/ });
+    expect(uchigatana).toBeChecked();
+    await user.click(uchigatana);
+    expect(screen.getByText(/stops done/)).toHaveTextContent(`0 of ${total} stops done.`);
+    expect(screen.getByRole('checkbox', { name: /^Uchigatana/ })).not.toBeChecked();
+  });
+
   it('marks a stop without the build’s gear done, and undoes it (T44)', async () => {
     const user = userEvent.setup();
-    const { container } = renderWithProviders(
-      <Tracked
-        collected={[]}
-        render={(tracking) => <GuideRoute equipment={equipment} tracking={tracking} />}
-      />,
-    );
+    const { container } = renderWithProviders(<Tracked equipment={equipment} />);
     const stops = () => stopsOf(container as HTMLElement);
     const total = stops().length;
-    // Gear stops are checked off on the Loadout tab: no "Mark done" there.
+    // Gear stops are checked off item by item: no "Mark done" there.
     const gearStop = stops().find((stop) => within(stop).queryByText('Uchigatana'))!;
     expect(within(gearStop).queryByRole('button', { name: 'Mark done' })).toBeNull();
 
@@ -155,57 +183,5 @@ describe('GuideRoute', () => {
       'aria-pressed',
       'false',
     );
-  });
-});
-
-describe('NextStop', () => {
-  it('shows the next stop with a link to the whole route', () => {
-    renderWithProviders(
-      <NextStop
-        buildId="b1"
-        equipment={equipment}
-        tracking={{ collected: [UCHIGATANA_KEY], marked: [], onMark: () => {} }}
-      />,
-    );
-    const card = screen.getByRole('region', { name: /./ });
-    expect(within(card).getByText('Next stop')).toBeInTheDocument();
-    expect(within(card).getByRole('link', { name: 'See the whole route' })).toHaveAttribute(
-      'href',
-      '/build/b1/route',
-    );
-  });
-
-  it('shows nothing once every stop is done', () => {
-    const { container } = renderWithProviders(
-      <NextStop
-        buildId="b1"
-        equipment={{ ...emptyEquipment(), weapons: [UCHIGATANA, null, null, null, null, null] }}
-        tracking={{ collected: [`weapon1:${UCHIGATANA}`], marked: [], onMark: () => {} }}
-      />,
-    );
-    expect(container).toBeEmptyDOMElement();
-  });
-
-  it('marks a stop without the build’s gear done, and moves on (T44)', async () => {
-    const user = userEvent.setup();
-    renderWithProviders(
-      <Tracked
-        collected={[]}
-        render={(tracking) => <NextStop buildId="b1" equipment={equipment} tracking={tracking} />}
-      />,
-    );
-    const title = () => screen.getByRole('heading', { level: 2 }).textContent;
-    const first = title();
-    // Mark stops done until one with the build's gear is next: that one has no "Mark done".
-    let marks = 0;
-    while (screen.queryByRole('button', { name: 'Mark done' })) {
-      const before = title();
-      await user.click(screen.getByRole('button', { name: 'Mark done' }));
-      expect(title()).not.toBe(before);
-      marks++;
-    }
-    expect(marks).toBeGreaterThan(0);
-    expect(title()).not.toBe(first);
-    expect(screen.getByRole('heading', { level: 2 })).toHaveFocus();
   });
 });

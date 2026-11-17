@@ -63,7 +63,8 @@ Infinity`: the page is the only writer), read from `users/{uid}/tracking/{buildI
   cache at once and `saveQueue.ts` writes the whole doc after a 500 ms pause (flushed on `pagehide` and unmount),
   so rapid +/− taps are one write. The math is pure, in `src/lib/tracking.ts`. "Track this build" opens the
   intro (`TrackingIntro`, a `Dialog`) when signed out, or signed in while `tracksAnyBuild(uid)` (one `limit(1)`
-  read, `queryKeys.tracksAnyBuild`) says no build is tracked yet; otherwise it starts at once. Signed out, the
+  read, `queryKeys.tracksAnyBuild`) says no build is tracked yet; otherwise it starts at once; either way the How
+  to get tab opens (T46: tracking lives only there). Signed out, the
   intro opens sign-up or log-in through `useOpenAuthDialog(kind, onSignedIn)` (`src/app/authDialog.ts`): App
   calls `onSignedIn(uid)` after a successful sign-in, and `startAfterSignIn(uid)` starts tracking on that account
   unless it already tracks the build (the uid comes from the auth result, since `useAuth` may lag a render).
@@ -73,8 +74,13 @@ Infinity`: the page is the only writer), read from `users/{uid}/tracking/{buildI
   inferred from later stops: players go out of order (owner's call). A mark is stored as the stop's things
   (`stopMarkKeys`: `gate:<gateId>`, `<file>:<id>` for its items), not its number, so it survives the author
   reshuffling the route; `applyChange`'s `mark` keeps marks to the route's current keys. Marks don't count
-  toward the percentage. How to get folds done stops, marks the next and has "Mark done" toggles; the Loadout
-  tab shows a Next stop card (`guide/NextStop`) with the same toggle.
+  toward the percentage. **Tracking lives in How to get (T46)**: `TrackingBar` at the top (progress, "Your
+  stats" opening `TrackedAttributes` in place, Stop tracking; at 100% the Build complete moment), the new-items
+  notice, then the route as the checklist: a checkbox on each of the build's tracked items (`itemTrackKeys`
+  gives an item's keys, one per slot for a weapon held twice; `applyChange`'s `toggle` takes them all), done
+  stops folded, the next marked, "Mark done" on stops without the build's gear. Items with no known source sit
+  in the last ("elsewhere") stop, so every item has a checkbox. The rest of the page (hero, Loadout, stats) is
+  the same whether or not you track; the hero's button becomes a "Tracking" link to the tab.
   **Playing and Completed (T36)**: the build's public `playerCount`/`finishedCount` move in the same batch as
   the tracking doc whenever its status changes (`trackingStatus`, `counterDelta` in `src/lib/tracking.ts`;
   `saveTracking(…, from)` / `deleteTracking(…, counted)`). `saveQueue.ts` keeps each record's status in the
@@ -305,8 +311,7 @@ the tile button's accessible name.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited; the guide's route and its ~400 KB
 acquisition data (`guide/GuideRoute`) only when the How to get tab opens (fetched early on hover/focus of the
-Loadout tab's "See the route" card), or on the Loadout tab while tracking, for the Next stop card
-(`guide/NextStop`, a 1 KB chunk that pulls in the route chunk: ~52 KB gzipped).
+Loadout tab's "See the route" card).
 
 ## Performance (T21)
 

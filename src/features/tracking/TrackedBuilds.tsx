@@ -11,6 +11,7 @@ import SectionHeading from '@/components/ui/SectionHeading';
 import { LockIcon } from '@/components/ui/icons';
 import { TextButton, TextLink } from '@/components/ui/TextButton';
 import { getCardItem, iconUrl } from '@/data/core';
+import { tabPath } from '@/features/editor/tabs';
 import { errorMessage } from '@/lib/firebase';
 import { buildImage } from '@/lib/equipment';
 import { formatMonthYear } from '@/lib/relativeTime';
@@ -116,7 +117,7 @@ function Shelf({ items }: { items: TrackedBuild[] }) {
         const image = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
-            <Trophy to={`/build/${build.id}`}>
+            <Trophy to={tabPath(build.id, 'route')}>
               <TrophyTile src={image ? iconUrl(image.icon) : null} size={76} />
               <TrophyName>{build.name}</TrophyName>
               {state.completedAt ? (

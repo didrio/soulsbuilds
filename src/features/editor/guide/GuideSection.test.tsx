@@ -27,10 +27,11 @@ describe('GuideSection', () => {
     renderWithProviders(
       <GuideSection
         equipment={withMoonveil()}
-        tracking={{ collected: [], marked: [], onMark: () => {} }}
+        tracking={{ collected: [], marked: [], onToggle: () => {}, onMark: () => {} }}
       />,
     );
     expect(await screen.findByText(/stops done/)).toBeInTheDocument();
     expect(screen.getByText(/still to get/)).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /^Moonveil/ })).not.toBeChecked();
   });
 });

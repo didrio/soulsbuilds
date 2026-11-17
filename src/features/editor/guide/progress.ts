@@ -42,7 +42,19 @@ export function isCollected(ref: ItemRef, collected: ReadonlySet<string>): boole
   return (KEY_SLOTS[ref.file] ?? []).some((slot) => collected.has(`${slot}:${ref.id}`));
 }
 
-/** The build's items on a stop that tracking checks off (collected on the Loadout tab). */
+/**
+ * An item's tracking keys on this build (`items`: `trackedItems(equipment)`): one, or one per slot for
+ * a weapon held twice. Checking the item off on the route collects all of them (T46).
+ */
+export function itemTrackKeys(ref: ItemRef, items: readonly string[]): string[] {
+  const slots = KEY_SLOTS[ref.file] ?? [];
+  return items.filter((key) => {
+    const [slot, id] = key.split(':');
+    return slots.includes(slot ?? '') && Number(id) === ref.id;
+  });
+}
+
+/** The build's items on a stop that tracking checks off (on the route, T46). */
 const trackedOn = (stop: RouteStop, own: ReadonlySet<string>) =>
   stop.step.actions
     .flatMap((action) => action.items)
@@ -68,10 +80,15 @@ export const routeMarkKeys = (stops: RouteStop[], own: ReadonlySet<string>) => [
   ...new Set(stops.flatMap((stop) => stopMarkKeys(stop, own))),
 ];
 
-/** A tracking player's progress, as the route reads it, and how they mark a stop done (T44). */
+/**
+ * A tracking player's progress, as the route reads it, and how they check items off (T46) and mark a
+ * stop done (T44).
+ */
 export interface RouteTracking {
   collected: string[];
   marked: string[];
+  /** Checks an item off, or undoes it: its tracking keys (`itemTrackKeys`). */
+  onToggle: (keys: string[]) => void;
   /** Marks a stop done, or undoes it: its mark keys, and every mark key on the route. */
   onMark: (keys: string[], route: string[]) => void;
 }

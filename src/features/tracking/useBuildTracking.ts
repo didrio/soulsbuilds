@@ -149,7 +149,8 @@ export function useBuildTracking(build: Build | null) {
     stop: () => {
       if (uid) persist(uid, null);
     },
-    toggle: (itemKey: string) => change({ type: 'toggle', key: itemKey }),
+    /** Checks an item off on the route, or undoes it (T46): its tracking keys. */
+    toggle: (keys: string[]) => change({ type: 'toggle', keys }),
     setStat: (stat: StatKey, value: number) => change({ type: 'stat', key: stat, value }),
     acknowledge: () => change({ type: 'acknowledge' }),
     /** Marks a route stop done, or undoes it (T44): its mark keys, and every mark key on the route. */

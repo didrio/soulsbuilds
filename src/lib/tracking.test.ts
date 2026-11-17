@@ -163,10 +163,21 @@ describe('startTracking and applyChange', () => {
   });
 
   it('toggles items and ignores keys that aren’t on the build', () => {
-    const on = applyChange(start(), { type: 'toggle', key: 'helm:3' }, ctx, NOW);
+    const on = applyChange(start(), { type: 'toggle', keys: ['helm:3'] }, ctx, NOW);
     expect(on.collected).toEqual(['helm:3']);
-    expect(applyChange(on, { type: 'toggle', key: 'helm:3' }, ctx, NOW).collected).toEqual([]);
-    expect(applyChange(on, { type: 'toggle', key: 'nope:1' }, ctx, NOW)).toBe(on);
+    expect(applyChange(on, { type: 'toggle', keys: ['helm:3'] }, ctx, NOW).collected).toEqual([]);
+    expect(applyChange(on, { type: 'toggle', keys: ['nope:1'] }, ctx, NOW)).toBe(on);
+  });
+
+  it('toggles every key of an item at once: a weapon held in two slots (T46)', () => {
+    const twice = context({ items: ['weapon1:1', 'weapon4:1', 'helm:3'] });
+    const keys = ['weapon1:1', 'weapon4:1'];
+    const on = applyChange(startTracking(twice, NOW), { type: 'toggle', keys }, twice, NOW);
+    expect(on.collected).toEqual(keys);
+    // One already collected (from the old Loadout checkboxes): the item counts as collected, so
+    // toggling it clears both.
+    const half = { ...on, collected: ['weapon4:1'] };
+    expect(applyChange(half, { type: 'toggle', keys }, twice, NOW).collected).toEqual([]);
   });
 
   it('clamps stats to the baseline and 99', () => {
@@ -178,20 +189,22 @@ describe('startTracking and applyChange', () => {
 
   it('sets completedAt on reaching 100%, keeps it, and clears it when the player goes back', () => {
     let state = start();
-    for (const key of ctx.items) state = applyChange(state, { type: 'toggle', key }, ctx, NOW);
+    for (const key of ctx.items)
+      state = applyChange(state, { type: 'toggle', keys: [key] }, ctx, NOW);
     expect(state.completedAt).toBeNull();
     state = applyChange(state, { type: 'stat', key: 'vigor', value: 20 }, ctx, NOW);
     expect(state.completedAt).toEqual(NOW);
     const later = new Date('2026-11-20T12:00:00Z');
     state = applyChange(state, { type: 'stat', key: 'mind', value: 11 }, ctx, later);
     expect(state.completedAt).toEqual(NOW);
-    state = applyChange(state, { type: 'toggle', key: 'helm:3' }, ctx, later);
+    state = applyChange(state, { type: 'toggle', keys: ['helm:3'] }, ctx, later);
     expect(state.completedAt).toBeNull();
   });
 
   it('keeps a finished build finished when the author adds an item, until the player acts', () => {
     let state = start();
-    for (const key of ctx.items) state = applyChange(state, { type: 'toggle', key }, ctx, NOW);
+    for (const key of ctx.items)
+      state = applyChange(state, { type: 'toggle', keys: [key] }, ctx, NOW);
     state = applyChange(state, { type: 'stat', key: 'vigor', value: 20 }, ctx, NOW);
     const edited = context({ items: [...ctx.items, 'talisman:8'] });
     expect(newItems(state, edited.items)).toEqual(['talisman:8']);
@@ -229,9 +242,9 @@ describe('startTracking and applyChange', () => {
   });
 
   it('drops keys the author removed', () => {
-    let state = applyChange(start(), { type: 'toggle', key: 'helm:3' }, ctx, NOW);
+    let state = applyChange(start(), { type: 'toggle', keys: ['helm:3'] }, ctx, NOW);
     const edited = context({ items: ['weapon1:1'] });
-    state = applyChange(state, { type: 'toggle', key: 'weapon1:1' }, edited, NOW);
+    state = applyChange(state, { type: 'toggle', keys: ['weapon1:1'] }, edited, NOW);
     expect(state).toMatchObject({ collected: ['weapon1:1'], seen: ['weapon1:1'] });
   });
 });

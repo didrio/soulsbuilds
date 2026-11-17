@@ -37,7 +37,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   await completeSignUp(page, 'playing');
   await expect(page.getByRole('region', { name: 'Your progress', exact: true })).toBeVisible();
   await expectCounts(page, [playing + 1, finished]);
-  await page.getByRole('button', { name: /^Club/ }).click();
+  await page.getByRole('checkbox', { name: /^Club/ }).click();
 
   // The profile's Playing tab: the build with its progress and next stop. Private.
   await accountMenu(page, 'Profile');
@@ -47,10 +47,12 @@ test('Playing and Completed on the profile, with the counts on the build', async
   await expect(card).toContainText('Gear 1 of 3');
   await expect(card).toContainText('Next stop');
 
-  // Finish it: the hero says so, the counts move, and it's a trophy on the profile.
+  // The card opens How to get (T46). Finish it: Build complete there, the counts move, and it's a
+  // trophy on the profile.
   await card.click();
+  await expect(page).toHaveURL(new RegExp(`${BUILD}/route$`));
   for (const weapon of WEAPONS.slice(1)) {
-    await page.getByRole('button', { name: new RegExp(`^${weapon}`) }).click();
+    await page.getByRole('checkbox', { name: new RegExp(`^${weapon}`) }).click();
   }
   await expect(page.getByText('Build complete')).toBeVisible();
   await expectCounts(page, [playing, finished + 1]);
@@ -66,7 +68,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   ).toBeVisible();
 
   // Removing it from Completed deletes the progress and the counts drop back.
-  await page.goto(BUILD);
+  await page.goto(`${BUILD}/route`);
   await page.getByRole('button', { name: 'Remove from Completed' }).click();
   await page.getByRole('button', { name: 'Yes, remove' }).click();
   await expect(page.getByRole('button', { name: 'Track this build' })).toBeVisible();

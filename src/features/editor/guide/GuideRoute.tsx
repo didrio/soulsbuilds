@@ -8,12 +8,13 @@ import { CheckIcon } from '@/components/ui/icons';
 import { acquisition } from '@/data/acquisition';
 import { iconUrl } from '@/data/core';
 import type { Equipment } from '@/lib/models';
+import { trackedItems } from '@/lib/tracking';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
-  COLOR_ACCENT_DEEP,
   COLOR_ACCENT_LINE,
   COLOR_LINE,
+  COLOR_INSET,
   COLOR_LINE_STRONG,
   COLOR_ON_ACCENT,
   COLOR_SURFACE_RAISED,
@@ -39,6 +40,7 @@ import {
 import {
   isCollected,
   isTrackable,
+  itemTrackKeys,
   refKey,
   routeMarkKeys,
   routeStops,
@@ -47,7 +49,7 @@ import {
   type RouteStop,
   type RouteTracking,
 } from './progress';
-import { equipmentItems, planRoute, type RouteAction } from './route';
+import { equipmentItems, planRoute, type ItemRef, type RouteAction } from './route';
 
 /** The route with its stops, and the player's progress along it when they track the build. */
 export function routeProgress(
@@ -58,6 +60,7 @@ export function routeProgress(
   const own = new Set(equipmentItems(equipment).map(refKey));
   const stops = routeStops(route);
   const progress = tracking ? stopProgress(stops, tracking.collected, own, tracking.marked) : null;
+  const items = trackedItems(equipment);
   return {
     stops,
     own,
@@ -66,6 +69,8 @@ export function routeProgress(
     /** Marks stop `index` done, or undoes it (T44). */
     markArgs: (index: number) =>
       [stopMarkKeys(stops[index]!, own), routeMarkKeys(stops, own)] as const,
+    /** An item's tracking keys, to check it off (T46). */
+    keysOf: (ref: ItemRef) => itemTrackKeys(ref, items),
   };
 }
 
@@ -74,13 +79,16 @@ type StopState = 'todo' | 'done' | 'next';
 /**
  * The route of "How to get this build" (T15, T28, T35): numbered stops from a fresh save to every item
  * of the build. Each stop has its area, its place, what to do there and the items, with why the ones
- * that aren't the build's are needed. Tracking the build: "N of M stops done", finished stops folded
- * away, the next stop highlighted, and "Mark done" on stops without the build's gear (T44). Lazy-loaded
- * with the ~400 KB acquisition data (`GuideSection`).
+ * that aren't the build's are needed. Tracking the build, the route is the checklist (T46): a checkbox
+ * on each of the build's items, "N of M stops done", finished stops folded away, the next stop
+ * highlighted, and "Mark done" on stops without the build's gear (T44). Lazy-loaded with the ~400 KB
+ * acquisition data (`GuideSection`).
  */
 function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
-  const { stops, own, progress, have, markArgs } = routeProgress(equipment, tracking);
+  const { stops, own, progress, have, markArgs, keysOf } = routeProgress(equipment, tracking);
   const [showDone, setShowDone] = useState(false);
+  // The item just checked off glows once.
+  const [justCollected, setJustCollected] = useState<string | null>(null);
   const progressLine = useRef<HTMLParagraphElement>(null);
   if (stops.length === 0) return <Hint>None of these items has a known source yet.</Hint>;
 
@@ -94,6 +102,19 @@ function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: 
     tracking?.onMark(...markArgs(index));
     // Marked done, the stop folds away: focus goes to the count it joins.
     if (!done && !showDone) progressLine.current?.focus();
+  };
+  const toggle = (index: number, ref: ItemRef) => {
+    if (!tracking) return;
+    const keys = keysOf(ref);
+    const on = !isCollected(ref, have);
+    tracking.onToggle(keys);
+    setJustCollected(on ? refKey(ref) : null);
+    // The stop's last item checked off folds it away, like "Mark done".
+    const collected = on
+      ? [...tracking.collected, ...keys]
+      : tracking.collected.filter((key) => !keys.includes(key));
+    const after = stopProgress(stops, collected, own, tracking.marked);
+    if (on && after.done[index] && !showDone) progressLine.current?.focus();
   };
 
   return (
@@ -113,9 +134,6 @@ function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: 
               </Button>
             ) : null}
           </ProgressLine>
-          <Bar aria-hidden="true">
-            <Fill style={{ width: `${(doneCount / stops.length) * 100}%` }} />
-          </Bar>
         </Progress>
       ) : null}
       {shown.length > 0 ? (
@@ -132,6 +150,11 @@ function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: 
                   done={state === 'done'}
                   own={own}
                   have={progress ? have : null}
+                  check={
+                    tracking
+                      ? { onToggle: (ref) => toggle(index, ref), glow: justCollected }
+                      : undefined
+                  }
                 />
                 {progress?.markable[index] ? (
                   <MarkRow>
@@ -156,7 +179,7 @@ function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: 
  * "Mark done" on a stop without the build's gear (T44): a toggle. Its name stays "Mark done"; pressed,
  * it shows "Done" with a check, and pressing it again undoes it.
  */
-export function MarkDone({ done, onClick }: { done: boolean; onClick: () => void }) {
+function MarkDone({ done, onClick }: { done: boolean; onClick: () => void }) {
   return (
     <MarkButton
       variant="secondary"
@@ -174,17 +197,26 @@ export function MarkDone({ done, onClick }: { done: boolean; onClick: () => void
   );
 }
 
-/** A stop's area, place, actions and items (the route's rows; `NextStop` shows the same items). */
+/** Checking the build's items off on the route (T46). */
+interface ItemCheck {
+  onToggle: (ref: ItemRef) => void;
+  /** The item just checked off (`refKey`): its tile glows once. */
+  glow: string | null;
+}
+
+/** A stop's area, place, actions and items (the route's rows). */
 function StopBody({
   stop,
   done,
   own,
   have,
+  check,
 }: {
   stop: RouteStop;
   done: boolean;
   own: Set<string>;
   have: Set<string> | null;
+  check?: ItemCheck;
 }) {
   const title = stopTitle(stop.leg, stop.step);
   return (
@@ -203,7 +235,14 @@ function StopBody({
               {note && note !== title ? ` (${note})` : null}
             </Lead>
             {action.reason ? <Reason>{action.reason}</Reason> : null}
-            <RouteItems action={action} own={own} have={have} stopDone={done} size={36} />
+            <RouteItems
+              action={action}
+              own={own}
+              have={have}
+              stopDone={done}
+              size={36}
+              check={check}
+            />
           </div>
         );
       })}
@@ -213,14 +252,16 @@ function StopBody({
 
 /**
  * An action's items: tile, name, price or trade, and why it's needed. The build's own items are lit,
- * others dimmed; while tracking, an item lights up once it's collected (or its stop is done).
+ * others dimmed; while tracking, an item lights up once it's collected (or its stop is done), and the
+ * build's items are checkboxes (T46): the whole row is the label, so it's a 44 px target.
  */
-export function RouteItems({
+function RouteItems({
   action,
   own,
   have,
   stopDone,
   size,
+  check,
 }: {
   action: RouteAction;
   own: Set<string>;
@@ -228,6 +269,7 @@ export function RouteItems({
   have: Set<string> | null;
   stopDone: boolean;
   size: number;
+  check?: ItemCheck;
 }) {
   if (action.items.length === 0) return null;
   return (
@@ -236,16 +278,19 @@ export function RouteItems({
         const { name, icon } = itemInfo(item.ref);
         const notes = itemNotes(action, item);
         const reason = itemReason(item);
-        const mine = own.has(refKey(item.ref));
-        const lit = !have
-          ? mine
-          : mine && isTrackable(item.ref)
-            ? isCollected(item.ref, have)
-            : stopDone;
-        return (
-          <Item key={refKey(item.ref)}>
+        const key = refKey(item.ref);
+        const mine = own.has(key);
+        const checkable = mine && isTrackable(item.ref);
+        const lit = !have ? mine : checkable ? isCollected(item.ref, have) : stopDone;
+        const content = (
+          <>
             {icon !== null ? (
-              <ItemTile src={iconUrl(icon)} size={size} track={lit ? undefined : 'missing'} />
+              <ItemTile
+                src={iconUrl(icon)}
+                size={size}
+                track={lit ? undefined : 'missing'}
+                celebrate={lit && check?.glow === key}
+              />
             ) : (
               <DashedTile $size={size} />
             )}
@@ -254,6 +299,18 @@ export function RouteItems({
               {notes.length > 0 ? <Note>{` · ${notes.join(', ')}`}</Note> : null}
               {reason ? <ItemReason>{reason}</ItemReason> : null}
             </span>
+          </>
+        );
+        return (
+          <Item key={key}>
+            {check && have && checkable ? (
+              <CheckRow>
+                <Checkbox type="checkbox" checked={lit} onChange={() => check.onToggle(item.ref)} />
+                {content}
+              </CheckRow>
+            ) : (
+              content
+            )}
           </Item>
         );
       })}
@@ -304,21 +361,6 @@ const Count = styled.span`
   color: ${COLOR_TEXT};
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-`;
-
-const Bar = styled.span`
-  background: ${COLOR_LINE};
-  border-radius: 3px;
-  display: block;
-  height: 6px;
-  margin-top: ${SPACE_SM};
-  overflow: hidden;
-`;
-
-const Fill = styled.span`
-  background: linear-gradient(90deg, ${COLOR_ACCENT_DEEP}, ${COLOR_ACCENT});
-  display: block;
-  height: 100%;
 `;
 
 const Stops = styled.ol`
@@ -438,6 +480,47 @@ const Item = styled.li`
   font-size: ${TEXT_MD};
   gap: 10px;
   min-width: 0;
+`;
+
+// A build's item while tracking: the checkbox, tile and name are one label.
+const CheckRow = styled.label`
+  align-items: center;
+  cursor: pointer;
+  display: inline-flex;
+  gap: 10px;
+  min-height: 44px;
+  min-width: 0;
+`;
+
+// The site's own box (inset, like the inputs); checked: the accent with a tick drawn in CSS.
+const Checkbox = styled.input`
+  appearance: none;
+  background: ${COLOR_INSET};
+  border: 1px solid ${COLOR_LINE_STRONG};
+  border-radius: 3px;
+  cursor: pointer;
+  flex: none;
+  height: 20px;
+  margin: 0;
+  position: relative;
+  width: 20px;
+
+  &:checked {
+    background: ${COLOR_ACCENT};
+    border-color: ${COLOR_ACCENT};
+  }
+
+  &:checked::after {
+    border: solid ${COLOR_ON_ACCENT};
+    border-width: 0 2px 2px 0;
+    content: '';
+    height: 10px;
+    left: 6px;
+    position: absolute;
+    top: 2px;
+    transform: rotate(45deg);
+    width: 5px;
+  }
 `;
 
 const ItemName = styled.span<{ $mine: boolean }>`

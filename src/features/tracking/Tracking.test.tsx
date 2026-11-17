@@ -1,5 +1,6 @@
 // Tracking a build (T34) on the build page, with the data layer mocked. Tracking needs an account
 // (T41): signed out, and signed in before the first tracked build, "Track this build" opens the intro.
+// It lives on the How to get tab (T46): the progress bar, Your stats and the route's checkboxes.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BuildEditorPage from '@/features/editor/BuildEditorPage';
@@ -64,7 +65,11 @@ const renderPage = (uid: string | null = null, route = '/build/SEEDMOON0001') =>
     { route, path: '/build/:buildId/:tab?', uid },
   );
 
-const item = (name: string) => screen.getByRole('button', { name: new RegExp(`^${name}`) });
+const GUIDE = '/build/SEEDMOON0001/route';
+/** A build item's checkbox on the route (loaded lazily with its data). */
+const item = (name: string) =>
+  screen.findByRole('checkbox', { name: new RegExp(`^${name}`) }, { timeout: 5000 });
+const progress = () => screen.getByRole('region', { name: 'Your progress' });
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -114,8 +119,11 @@ describe('tracking signed out', () => {
         'none',
       ),
     );
-    // The hero counts the new player at once (T36).
+    // The hero counts the new player at once (T36), and the How to get tab opens (T46).
     expect(screen.getByRole('region', { name: build.name })).toHaveTextContent('1 playing');
+    expect(
+      await screen.findByRole('heading', { name: 'How to get this build' }),
+    ).toBeInTheDocument();
   });
 
   it('keeps the progress of an account that already tracks the build', async () => {
@@ -150,40 +158,61 @@ describe('tracking signed in, the first time', () => {
 
     await user.click(screen.getByRole('button', { name: 'Track this build' }));
     await user.click(screen.getByRole('button', { name: 'Start tracking' }));
-    expect(screen.getByRole('region', { name: 'Your progress' })).toHaveTextContent('0% complete');
+    expect(progress()).toHaveTextContent('Your progress0%');
+    expect(screen.getByRole('heading', { name: 'How to get this build' })).toBeInTheDocument();
     await waitFor(() => expect(firebase.saveTracking).toHaveBeenCalledTimes(1));
   });
 
-  it('starts at once once the player tracks another build', async () => {
+  it('starts at once once the player tracks another build, on How to get', async () => {
     const { user } = renderPage('alice');
     await user.click(await screen.findByRole('button', { name: 'Track this build' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Your progress' })).toHaveTextContent('Gear0 of 3');
+    expect(progress()).toHaveTextContent('0 of 3 items · Level');
+    // The hero's button becomes a quiet link back to the tab, with no percentage.
     expect(screen.queryByRole('button', { name: 'Track this build' })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Tracking' })).toHaveAttribute('href', GUIDE);
 
-    // Items are toggles; empty slots (placeholders) aren't buttons and don't count.
-    const mask = item('White Mask');
-    expect(mask).toHaveAttribute('aria-pressed', 'false');
+    // The build's items are checkboxes on the route. The White Mask is alone at its stop: checked
+    // off, the stop is done and folds away.
+    const mask = await item('White Mask');
+    expect(mask).not.toBeChecked();
     await user.click(mask);
-    expect(item('White Mask')).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByRole('heading', { name: 'Armor' }).parentElement).toHaveTextContent(
-      'Armor1/1 collected',
-    );
-    expect(within(screen.getByRole('list', { name: 'Armor' })).getAllByRole('button')).toHaveLength(
-      1,
-    );
-    expect(screen.getByRole('region', { name: 'Your progress' })).toHaveTextContent('Gear1 of 3');
+    expect(progress()).toHaveTextContent('1 of 3 items');
+    expect(screen.getByText(/stops done/)).toHaveTextContent(/^1 of \d+ stops done/);
+    await user.click(screen.getByRole('button', { name: 'Show the 1 finished stop' }));
+    expect(await item('White Mask')).toBeChecked();
   });
 });
 
 describe('tracking signed in', () => {
+  it('leaves the rest of the page as a visitor sees it', async () => {
+    firebase.getTracking.mockResolvedValue(tracking({ seen: ITEMS.slice(0, 2) }));
+    renderPage('alice');
+    expect(await screen.findByRole('link', { name: 'Tracking' })).toBeInTheDocument();
+    // The Loadout tab: no progress, no checkboxes or toggles, no stats to step, no notice.
+    expect(screen.queryByRole('region', { name: 'Your progress' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /^Moonveil/ })).not.toBeInTheDocument();
+    expect(screen.getByText('Moonveil')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Raise Vigor' })).not.toBeInTheDocument();
+    expect(screen.queryByText(/yours \/ target/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/new item since you started/)).not.toBeInTheDocument();
+    expect(screen.queryByText('Next stop')).not.toBeInTheDocument();
+  });
+
   it('saves changes to the account once the player pauses', async () => {
     firebase.getTracking.mockResolvedValue(tracking());
-    const { user } = renderPage('alice');
+    const { user } = renderPage('alice', GUIDE);
     expect(await screen.findByRole('region', { name: 'Your progress' })).toBeInTheDocument();
     expect(firebase.getTracking).toHaveBeenCalledWith('alice', 'SEEDMOON0001');
 
-    await user.click(item('Moonveil'));
+    await user.click(await item('Moonveil'));
+    // Your stats opens the attributes in place, under the bar.
+    const yourStats = screen.getByRole('button', { name: 'Your stats' });
+    expect(yourStats).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByRole('button', { name: 'Raise Vigor' })).not.toBeInTheDocument();
+    await user.click(yourStats);
+    expect(yourStats).toHaveAttribute('aria-expanded', 'true');
     await user.click(screen.getByRole('button', { name: 'Raise Vigor' }));
     await user.click(screen.getByRole('button', { name: 'Raise Vigor' }));
     await waitFor(() => expect(firebase.saveTracking).toHaveBeenCalledTimes(1));
@@ -200,8 +229,9 @@ describe('tracking signed in', () => {
 
   it('steps stats between the starting point and 99, ticking reached targets', async () => {
     firebase.getTracking.mockResolvedValue(tracking({ stats: { ...BASELINE, int: 79 } }));
-    const { user } = renderPage('alice');
-    const lower = await screen.findByRole('button', { name: 'Lower Vigor' });
+    const { user } = renderPage('alice', GUIDE);
+    await user.click(await screen.findByRole('button', { name: 'Your stats' }));
+    const lower = screen.getByRole('button', { name: 'Lower Vigor' });
     expect(lower).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Lower Faith' })).toBeDisabled();
     // Faith (7) and Arcane (9) start at their targets.
@@ -215,7 +245,8 @@ describe('tracking signed in', () => {
   it('asks before it stops tracking, then deletes the progress', async () => {
     firebase.getTracking.mockResolvedValue(tracking());
     firebase.getBuild.mockResolvedValue({ ...build, playerCount: 3, finishedCount: 1 });
-    const { user } = renderPage('alice');
+    const { user } = renderPage('alice', GUIDE);
+    await item('Moonveil');
     await user.click(await screen.findByRole('button', { name: 'Stop tracking' }));
     expect(screen.getByText(/Your progress on this build is deleted/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Keep tracking' }));
@@ -229,8 +260,9 @@ describe('tracking signed in', () => {
     expect(screen.getByRole('region', { name: build.name })).toHaveTextContent(
       '1 playing · 1 finished',
     );
-    // Back to the plain Loadout: items are text again.
-    expect(screen.queryByRole('button', { name: /^Moonveil/ })).not.toBeInTheDocument();
+    // Back to the plain route: no bar, items are text again.
+    expect(screen.queryByRole('region', { name: 'Your progress' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
     expect(screen.getByText('Moonveil')).toBeInTheDocument();
   });
 
@@ -242,7 +274,7 @@ describe('tracking signed in', () => {
         completedAt: new Date('2026-11-16T12:00:00Z'),
       }),
     );
-    renderPage('alice');
+    renderPage('alice', GUIDE);
     const complete = await screen.findByRole('region', { name: 'Build complete' });
     expect(complete).toHaveTextContent('Tracked since 4 November: 12 days.');
     expect(within(complete).getByRole('button', { name: 'Share your finish' })).toBeEnabled();
@@ -254,7 +286,7 @@ describe('tracking signed in', () => {
 
   it('flags items the author added since the player started', async () => {
     firebase.getTracking.mockResolvedValue(tracking({ seen: ITEMS.slice(0, 2) }));
-    const { user } = renderPage('alice');
+    const { user } = renderPage('alice', GUIDE);
     expect(await screen.findByRole('status')).toHaveTextContent('1 new item since you started.');
     await user.click(screen.getByRole('button', { name: 'Got it' }));
     expect(screen.queryByText(/new item since you started/)).not.toBeInTheDocument();

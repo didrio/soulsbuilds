@@ -7,11 +7,11 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T49
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T46 — Tracking lives in the Guide · Opus · high · plan mode off, then T47 (auto-generated
-description) and T48 (build page v3: the build in a sidebar, Description · Guide · Comments), the owner's
-design of 2026-11-16. Then T32 — Make a copy (then T33, variations); T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on
-the owner), link previews (T37, blocked on the Blaze decision), the branded email action page (T43), and item
-hover cards (T45, no rush).
+**Next:** T47 — Auto-generated description · Sonnet · medium · plan mode off, then T48 (build page v3: the
+build in a sidebar, Description · Guide · Comments), the owner's design of 2026-11-16. Then T32 — Make a copy
+(then T33, variations); T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage
+counts (T38, blocked on the owner), link previews (T37, blocked on the Blaze decision), the branded email
+action page (T43), and item hover cards (T45, no rush).
 T32, T33 and T45 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -39,55 +39,14 @@ and spacing, and the canvas notes say why.
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
-T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done)
-and T42 (rules budget).
+T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
+T42 (rules budget) and T46 (tracking in How to get).
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T46 — Tracking lives in the Guide
-
-- **Status:** ready (owner, 2026-11-16: the first of the build page v3 tickets, T46–T48)
-- **Session:** Opus · high effort · plan mode off
-- **Goal:** Tracking happens in one place: the How to get tab (renamed Guide in T48). The rest of the build
-  page looks the same whether or not you track, so the build reads the same for everyone, and the route
-  becomes the checklist (owner's design, 2026-11-16).
-- **Done when:**
-  - The How to get tab, while tracking:
-    - A compact bar at the top: the progress bar, "3 of 14 items · Level 62 of 131", Stop tracking (asks
-      first, as today), and a "Your stats" button (`aria-expanded`, closed by default) that opens the eight
-      attributes with − + (`TrackedAttributes`) in place under the bar.
-    - The new-items notice (`NewItemsNotice`) under the bar.
-    - A checkbox on each of the build's items at its stop (`tracking.toggle`, the same state the Loadout
-      checkboxes write today); items that aren't the build's (Whetstone Knife…) get none. Every build item has
-      a stop: items with no known source sit in the last ("elsewhere") stop. "Mark done" stays on stops
-      without the build's gear (T44); the next stop highlighted and finished stops folded, as today.
-    - At 100%: the Build complete moment (today in `TrackingHero`, with its share) at the top of the tab,
-      instead of the bar.
-  - One guide, no toggle (owner): not tracking, the tab is exactly today's route.
-  - Tracking leaves the rest of the page: the hero's progress block (`TrackingHero`'s in-progress and
-    complete states), the Next stop card on the Loadout tab (`NextStop`), the yours/target rows in
-    `StatsCard`, the checkboxes in `Loadout`, the new-items notice above the tabs. While tracking, those show
-    exactly what a visitor sees.
-  - "Track this build" stays in the hero: it starts tracking as today (the intro first, T41), then opens the How
-    to get tab. While tracking it's a secondary "Tracking" link to that tab, with no percentage.
-  - The profile's Playing list and Completed trophies (`PlayingList`, `TrackedBuilds`) link to the build's How
-    to get tab.
-  - Tests: `Tracking.test.tsx`; `GuideSection.test.tsx`/`GuideRoute.test.tsx` (a checkbox collects the item,
-    Your stats opens, Build complete); `StatsCard.test.tsx`/`Loadout.test.tsx` (no tracking UI left); e2e
-    `tracking`, `guide`, `playing` updated. `npm run check` and `npm run e2e` pass. Screenshots of How to get
-    tracking and not, and of the hero while tracking, desktop and `--mobile`.
-  - Docs: decision "Build page layout" (tracking only in How to get), AGENTS.md "Where things stand" and the
-    map's `features/tracking` line.
-- **Context:** `BuildEditorPage.tsx` wires tracking into the hero (`TrackButton`, `TrackingHero`),
-  `NewItemsNotice`, `NextStop` and `LoadoutPanel`'s tracking props; `tracking/useBuildTracking.ts` (state,
-  progress, baseline, toggle, mark, setStat, newItems, acknowledge); `guide/{GuideSection,GuideRoute,
-progress}.tsx` (`RouteItems` already lights collected items; `routeProgress`);
-  `tracking/{TrackingHero,TrackedAttributes,TrackingCards,PlayingList,TrackedBuilds}.tsx`. No data or rules
-  change: the same tracking doc. T48 renames the tab Guide (`/guide`) and puts the build's stats in a sidebar.
 
 ### T47 — Auto-generated description
 
@@ -369,6 +328,11 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T46 — Tracking lives in the Guide — 2026-11-16 — tracking only on How to get: `TrackingBar` (progress,
+  Your stats, Stop; Build complete), the new-items notice, a checkbox on each build item in the route
+  (`itemTrackKeys`; `toggle` takes an item's keys); hero's Track → the tab, "Tracking" link while tracking;
+  profile cards → `/route`. Gone: `TrackingHero`, `NextStop`, Loadout/StatsCard/ItemRow tracking, ItemTile's
+  `collected` badge, the route's second bar.
 - T42 — Free up rules budget on builds — 2026-11-16 — headroom 0 → 93 paddings (create), 17 → 99 (edit); a
   level-1 build with every slot filled couldn't be saved before. Builds rules rewritten for fewer evaluated
   expressions (stats in one regex, one level sum, key sets by size, args over `incoming()`/`let`, no redundant
@@ -386,10 +350,3 @@ Older entries: `docs/tickets-archive.md`.
   here); `reauthenticate` in `lib/firebase/auth.ts` before every change (set password = `updatePassword`:
   `linkWithCredential` fails for the account's own email); `useAuth()` snapshots email/verified/providers +
   `refreshUser()`; `app/AccountMenu`; e2e `settings.spec.ts` + `helpers.ts` `accountMenu`/`headerLogIn`.
-- T30 — Sign up and log in — 2026-11-16 — owner: Google + email, display name in its own step, 8 characters,
-  action page later (T43), no canvas mock. `features/auth/AuthDialog` (views Login, SignUp, ForgotPassword,
-  ChooseName; any signed-in account without `users/{uid}` gets the name step, closing it logs out), GoogleButton
-  (popup; emulator fakes it), `PasswordInput`, FormField + `useFieldErrors` (errors by field, focus the first);
-  `signUp` no longer writes the profile; reset answers the same for unknown emails (was a leak); Google-only
-  deletion re-auths with a popup; production `authDomain` → soulsbuilds.com. Console steps: docs/firebase.md
-  "Sign-in setup" (owner, before the deploy). Dialog focus starts on "Continue with Google".

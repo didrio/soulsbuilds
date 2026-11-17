@@ -138,3 +138,10 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   shape, optional on create), `buildImage` / `imageChoices` in `lib/equipment.ts` (read-time fallback to the main
   weapon; the editor saves a gone pick as null), `getCardItem` + 5 new card kinds (cards.json +7 KB gzipped);
   hero, landing rows, profile panels; e2e `build-image.spec.ts`. Rules budget nearly exhausted → T42.
+- T30 — Sign up and log in — 2026-11-16 — owner: Google + email, display name in its own step, 8 characters,
+  action page later (T43), no canvas mock. `features/auth/AuthDialog` (views Login, SignUp, ForgotPassword,
+  ChooseName; any signed-in account without `users/{uid}` gets the name step, closing it logs out), GoogleButton
+  (popup; emulator fakes it), `PasswordInput`, FormField + `useFieldErrors` (errors by field, focus the first);
+  `signUp` no longer writes the profile; reset answers the same for unknown emails (was a leak); Google-only
+  deletion re-auths with a popup; production `authDomain` → soulsbuilds.com. Console steps: docs/firebase.md
+  "Sign-in setup" (owner, before the deploy). Dialog focus starts on "Continue with Google".

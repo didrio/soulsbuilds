@@ -146,7 +146,11 @@ export function startTracking(context: TrackingContext, now: Date): TrackingStat
 }
 
 export type TrackingChange =
-  | { type: 'toggle'; key: string }
+  /**
+   * Checking an item off on the route, or undoing it (T46): its keys (a weapon the build holds in two
+   * slots has two). None collected: all of them are; otherwise none is.
+   */
+  | { type: 'toggle'; keys: string[] }
   | { type: 'stat'; key: StatKey; value: number }
   /** "Got it" on the new-items notice. */
   | { type: 'acknowledge' }
@@ -183,11 +187,13 @@ export function applyChange(
   }
 
   if (change.type === 'toggle') {
-    if (!current.has(change.key)) return state;
-    collected = collected.includes(change.key)
-      ? collected.filter((key) => key !== change.key)
-      : [...collected, change.key];
-    seen = seen.includes(change.key) ? seen : [...seen, change.key];
+    const keys = change.keys.filter((key) => current.has(key));
+    if (!keys.length) return state;
+    const on = !keys.some((key) => collected.includes(key));
+    collected = on
+      ? [...collected, ...keys.filter((key) => !collected.includes(key))]
+      : collected.filter((key) => !keys.includes(key));
+    seen = [...seen, ...keys.filter((key) => !seen.includes(key))];
   } else if (change.type === 'stat') {
     const min = context.baseline[change.key];
     const value = Math.min(MAX_STAT, Math.max(min, Math.round(change.value)));

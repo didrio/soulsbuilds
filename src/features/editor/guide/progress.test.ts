@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   isCollected,
   isTrackable,
+  itemTrackKeys,
   routeMarkKeys,
   routeStops,
   stopMarkKeys,
@@ -41,6 +42,19 @@ describe('isCollected', () => {
       expect(isTrackable(ref(file, 7))).toBe(false);
       expect(isCollected(ref(file, 7), new Set([`weapon1:7`]))).toBe(false);
     }
+  });
+});
+
+describe('itemTrackKeys', () => {
+  const items = ['weapon1:7', 'weapon4:7', 'helm:8', 'talisman:7', 'spell:9'];
+
+  it('finds the item’s keys on the build: a weapon in each slot it’s held in (T46)', () => {
+    expect(itemTrackKeys(ref('weapons', 7), items)).toEqual(['weapon1:7', 'weapon4:7']);
+    expect(itemTrackKeys(ref('armor', 8), items)).toEqual(['helm:8']);
+    expect(itemTrackKeys(ref('talismans', 7), items)).toEqual(['talisman:7']);
+    // Not on the build, or not tracked: none.
+    expect(itemTrackKeys(ref('spells', 7), items)).toEqual([]);
+    expect(itemTrackKeys(ref('ashesOfWar', 7), items)).toEqual([]);
   });
 });
 

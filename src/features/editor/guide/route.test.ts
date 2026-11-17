@@ -341,6 +341,12 @@ describe('planRoute', () => {
     ]);
     expect(route.legs.map((leg) => leg.kind)).toEqual(['start', 'elsewhere']);
   });
+
+  it('puts an item with no known source in the last stop, so every item can be checked off (T46)', () => {
+    const route = planRoute(build({ consumables: [91], talismans: [99999] }), data);
+    expect(route.legs.map((leg) => leg.kind)).toEqual(['start', 'elsewhere']);
+    expect(lines(route).at(-1)).toMatch(/^elsewhere: unknown .*99999$/);
+  });
 });
 
 describe('planRoute with the real data', () => {

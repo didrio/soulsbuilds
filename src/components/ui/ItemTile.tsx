@@ -1,13 +1,8 @@
 import styled, { css, keyframes } from 'styled-components';
-import { CheckIcon } from './icons';
 import {
-  COLOR_ACCENT,
-  COLOR_ACCENT_LINE,
   COLOR_BLACK,
   COLOR_CELEBRATE,
   COLOR_INSET,
-  COLOR_ON_ACCENT,
-  COLOR_SURFACE,
   COLOR_TILE_BORDER,
   COLOR_TILE_BOTTOM,
   COLOR_TILE_EMPTY_BORDER,
@@ -31,11 +26,8 @@ interface ItemTileProps {
    * tile, with no diamond.
    */
   placeholder?: boolean;
-  /**
-   * Tracking a build (T34): `missing` is greyed out with a dashed border, `collected` has the accent
-   * border and a check badge.
-   */
-  track?: 'missing' | 'collected';
+  /** Tracking a build (T34): `missing` is greyed out with a dashed border, until it's collected. */
+  track?: 'missing';
   /** A short glow, as an item is collected (off with reduced motion, GlobalStyle). */
   celebrate?: boolean;
   className?: string;
@@ -67,11 +59,6 @@ function ItemTile({
       $celebrate={celebrate}>
       {src ? <img src={src} alt="" loading="lazy" decoding="async" /> : null}
       {!src && emptyMark ? <Mark aria-hidden="true">{emptyMark}</Mark> : null}
-      {src && track === 'collected' ? (
-        <Badge aria-hidden="true">
-          <CheckIcon size={10} strokeWidth={3.5} />
-        </Badge>
-      ) : null}
     </Tile>
   );
 }
@@ -93,9 +80,6 @@ const tracked = {
       opacity: 0.6;
     }
   `,
-  collected: css`
-    border-color: ${COLOR_ACCENT_LINE};
-  `,
 };
 
 const Tile = styled.span<{
@@ -103,7 +87,7 @@ const Tile = styled.span<{
   $mark: boolean;
   $placeholder: boolean;
   $size: number;
-  $track?: 'missing' | 'collected';
+  $track?: 'missing';
   $celebrate: boolean;
 }>`
   align-items: center;
@@ -151,22 +135,6 @@ const Tile = styled.span<{
     transform: rotate(45deg);
     width: 6px;
   }
-`;
-
-// The check on a collected item, over the tile's corner.
-const Badge = styled.span`
-  align-items: center;
-  background: ${COLOR_ACCENT};
-  border: 2px solid ${COLOR_SURFACE};
-  border-radius: 50%;
-  bottom: -6px;
-  color: ${COLOR_ON_ACCENT};
-  display: flex;
-  height: 18px;
-  justify-content: center;
-  position: absolute;
-  right: -6px;
-  width: 18px;
 `;
 
 const Mark = styled.span`

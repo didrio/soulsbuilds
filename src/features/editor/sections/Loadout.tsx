@@ -1,8 +1,7 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import styled, { css } from 'styled-components';
 import Frame from '@/components/ui/Frame';
 import SectionHeading from '@/components/ui/SectionHeading';
-import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { useAppSelector } from '@/app/hooks';
 import {
   BELOW_MOBILE,
@@ -18,16 +17,8 @@ import {
   SPACE_REGION,
   SPACE_SM,
   TEXT_SM,
-  TEXT_XS,
 } from '@/theme';
-import { trackKey } from '@/lib/tracking';
-import ItemRow, {
-  filledAndNext,
-  GroupHeading,
-  type RowTracking,
-  type SlotEntry,
-  type TileSize,
-} from '../ItemRow';
+import ItemRow, { filledAndNext, GroupHeading, type SlotEntry, type TileSize } from '../ItemRow';
 import { itemWarning } from '../itemDetails';
 import {
   ARMOR_SLOTS,
@@ -80,23 +71,6 @@ const memoryCost = ({ item }: SlotEntry) =>
 
 const plural = (count: number, word: string) => `${count} ${word}${count === 1 ? '' : 's'}`;
 
-/** The player's collected items while they track the build (T34), and how to toggle one. */
-export interface LoadoutTracking {
-  collected: string[];
-  onToggle: (key: string) => void;
-}
-
-/** "3/4" after a group's heading while tracking: its tracked items collected, out of all of them. */
-function TrackCount({ count }: { count?: { done: number; total: number } }) {
-  if (!count) return null;
-  return (
-    <Count>
-      {`${count.done}/${count.total}`}
-      <VisuallyHidden> collected</VisuallyHidden>
-    </Count>
-  );
-}
-
 /** A group of slots under a small heading ("Talismans"), as a list. */
 function Group({
   title,
@@ -104,8 +78,6 @@ function Group({
   editable,
   size = 44,
   wide = false,
-  rowTracking,
-  count,
 }: {
   title: string;
   entries: SlotEntry[];
@@ -113,25 +85,15 @@ function Group({
   size?: TileSize;
   /** Two columns wide, its rows in two columns (consumables). */
   wide?: boolean;
-  rowTracking?: (entry: SlotEntry) => RowTracking | undefined;
-  count?: { done: number; total: number };
 }) {
   const id = useId();
   return (
     <GroupBox $wide={wide}>
-      <GroupHead>
-        <GroupHeading id={id}>{title}</GroupHeading>
-        <TrackCount count={count} />
-      </GroupHead>
+      <GroupHeading id={id}>{title}</GroupHeading>
       <Rows aria-labelledby={id} $wide={wide}>
         {entries.map((entry) => (
           <li key={entry.id}>
-            <ItemRow
-              entry={entry}
-              editable={editable}
-              size={size}
-              tracking={rowTracking?.(entry)}
-            />
+            <ItemRow entry={entry} editable={editable} size={size} />
           </li>
         ))}
       </Rows>
@@ -149,10 +111,10 @@ function Group({
  *
  * Read-only: empty slots are faint placeholders. Editable: every slot is a button that opens the
  * picker ("Choose helm" when empty); consumables and spells, saved without slot positions, show the
- * filled ones and one "Choose" slot. Tracking (T34, read-only): every tracked item (not arrows or
- * consumables) is a toggle, and each group shows how many are collected; placeholders don't count.
+ * filled ones and one "Choose" slot. The same whether or not the visitor tracks the build: items are
+ * checked off on How to get (T46).
  */
-function Loadout({ editable, tracking }: { editable: boolean; tracking?: LoadoutTracking }) {
+function Loadout({ editable }: { editable: boolean }) {
   const equipment = useAppSelector(selectEquipment);
   const tears = useAppSelector(selectTearSlots);
   const spells = useAppSelector(selectSpellSlots);
@@ -160,30 +122,6 @@ function Loadout({ editable, tracking }: { editable: boolean; tracking?: Loadout
   const over = useAppSelector(selectSpellsOverSlots);
   const available = useAppSelector(selectMemorySlots);
   const used = useAppSelector(selectMemoryUsed);
-  // The item just collected glows once.
-  const [justCollected, setJustCollected] = useState<string | null>(null);
-  const tracked = tracking && !editable ? tracking : null;
-  const keyOf = (entry: SlotEntry) => (entry.item ? trackKey(entry.id, entry.item.id) : null);
-  const rowTracking = (entry: SlotEntry): RowTracking | undefined => {
-    const key = tracked ? keyOf(entry) : null;
-    if (!tracked || !key) return undefined;
-    const collected = tracked.collected.includes(key);
-    return {
-      collected,
-      celebrate: justCollected === key,
-      onToggle: () => {
-        setJustCollected(collected ? null : key);
-        tracked.onToggle(key);
-      },
-    };
-  };
-  const countOf = (entries: SlotEntry[]) => {
-    if (!tracked) return undefined;
-    const keys = [...new Set(entries.map(keyOf).filter((key): key is string => key !== null))];
-    if (!keys.length) return undefined;
-    const done = keys.filter((key) => tracked.collected.includes(key)).length;
-    return { done, total: keys.length };
-  };
 
   const weaponEntry = (index: number): SlotEntry => {
     const id = WEAPON_SLOTS[index]!;
@@ -270,9 +208,8 @@ function Loadout({ editable, tracking }: { editable: boolean; tracking?: Loadout
   );
   const showSpells = editable || filledSpells.length > 0;
 
-  const summary = tracked
-    ? 'Mark items as you get them'
-    : itemCount + filledSpells.length > 0
+  const summary =
+    itemCount + filledSpells.length > 0
       ? `${plural(itemCount, 'item')} · ${plural(filledSpells.length, 'spell')}`
       : editable
         ? ''
@@ -286,54 +223,16 @@ function Loadout({ editable, tracking }: { editable: boolean; tracking?: Loadout
       </Head>
       {shownLeft.length > 0 ? (
         <Hands>
-          <Group
-            title="Left hand"
-            entries={shownLeft}
-            editable={editable}
-            size={64}
-            rowTracking={rowTracking}
-            count={countOf(shownLeft)}
-          />
-          <Group
-            title="Right hand"
-            entries={shownRight}
-            editable={editable}
-            size={64}
-            rowTracking={rowTracking}
-            count={countOf(shownRight)}
-          />
+          <Group title="Left hand" entries={shownLeft} editable={editable} size={64} />
+          <Group title="Right hand" entries={shownRight} editable={editable} size={64} />
         </Hands>
       ) : null}
       <Columns>
-        <Group
-          title="Armor"
-          entries={armor}
-          editable={editable}
-          rowTracking={rowTracking}
-          count={countOf(armor)}
-        />
-        <Group
-          title="Talismans"
-          entries={talismans}
-          editable={editable}
-          rowTracking={rowTracking}
-          count={countOf(talismans)}
-        />
+        <Group title="Armor" entries={armor} editable={editable} />
+        <Group title="Talismans" entries={talismans} editable={editable} />
         <Stack>
-          <Group
-            title="Flask of Wondrous Physick"
-            entries={flask}
-            editable={editable}
-            rowTracking={rowTracking}
-            count={countOf(flask)}
-          />
-          <Group
-            title="Great rune and spirit ash"
-            entries={runeAndAsh}
-            editable={editable}
-            rowTracking={rowTracking}
-            count={countOf(runeAndAsh)}
-          />
+          <Group title="Flask of Wondrous Physick" entries={flask} editable={editable} />
+          <Group title="Great rune and spirit ash" entries={runeAndAsh} editable={editable} />
         </Stack>
       </Columns>
       {showArrows || showConsumables ? (
@@ -350,7 +249,6 @@ function Loadout({ editable, tracking }: { editable: boolean; tracking?: Loadout
         <Spells aria-labelledby="spells-title">
           <SpellsHead>
             <GroupHeading id="spells-title">Spells</GroupHeading>
-            <TrackCount count={countOf(filledSpells)} />
             <SlotCount $over={used > available}>
               <strong>{used}</strong>
               {` of ${available} memory slots`}
@@ -359,7 +257,7 @@ function Loadout({ editable, tracking }: { editable: boolean; tracking?: Loadout
           <SpellGrid aria-labelledby="spells-title">
             {spellCells.map((entry) => (
               <SpellCell key={entry.id} $span={memoryCost(entry)}>
-                <ItemRow entry={entry} editable={editable} tracking={rowTracking(entry)} />
+                <ItemRow entry={entry} editable={editable} />
               </SpellCell>
             ))}
             {freeCells.map((index) => (
@@ -441,18 +339,6 @@ const GroupBox = styled.div<{ $wide: boolean }>`
   @media ${BELOW_MOBILE} {
     grid-column: auto;
   }
-`;
-
-const GroupHead = styled.div`
-  align-items: baseline;
-  display: flex;
-  gap: 10px;
-`;
-
-const Count = styled.span`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_XS};
-  font-variant-numeric: tabular-nums;
 `;
 
 const Rows = styled.ul<{ $wide: boolean }>`

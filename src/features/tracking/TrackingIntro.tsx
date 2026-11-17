@@ -49,14 +49,17 @@ const POINTS: { icon: ReactNode; title: string; text: string }[] = [
 export function TrackingIntro({
   tracking,
   onClose,
+  onStarted,
 }: {
   tracking: BuildTracking;
   onClose: () => void;
+  /** Once tracking has started (or the account already tracked the build): opens the How to get tab. */
+  onStarted: () => void;
 }) {
   const openAuthDialog = useOpenAuthDialog();
   const signIn = (kind: AuthDialogKind) => {
     onClose();
-    openAuthDialog(kind, (uid) => void tracking.startAfterSignIn(uid));
+    openAuthDialog(kind, (uid) => void tracking.startAfterSignIn(uid).then(onStarted));
   };
 
   return (
@@ -81,6 +84,7 @@ export function TrackingIntro({
                 onClick={() => {
                   onClose();
                   tracking.start();
+                  onStarted();
                 }}>
                 <CheckIcon />
                 Start tracking

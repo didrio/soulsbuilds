@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
@@ -33,9 +32,10 @@ import LoadoutPanel from './sections/LoadoutPanel';
 import MoreByAuthor from './sections/MoreByAuthor';
 import { STATS_COLUMN_WIDTH } from './sections/StatsCard';
 import TabLinkCard from './sections/TabLinkCard';
-import GuideSection, { hasItems, loadRoute, NextStop } from './guide/GuideSection';
+import GuideSection, { hasItems, loadRoute } from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
-import { TrackButton, TrackingHero } from '@/features/tracking/TrackingHero';
+import { TrackButton } from '@/features/tracking/TrackButton';
+import { TrackingBar } from '@/features/tracking/TrackingBar';
 import { NewItemsNotice } from '@/features/tracking/TrackingCards';
 import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
@@ -57,9 +57,9 @@ function BuildEditorPage() {
  * get, Comments), then the tab. Desktop: the stats in a fixed left column on every tab: on Loadout
  * one panel with the gear, elsewhere a condensed summary. Tablets and phones: one column, the stats
  * on the Loadout tab only. Editing (and new builds): Loadout and Description only, and a sticky
- * Save/Cancel bar. Tracking (T34, view mode): "Track this build" in the hero, the progress there on
- * every tab, the Loadout tab as a checklist under the route's next stop (T35), and progress along
- * the route on How to get.
+ * Save/Cancel bar. Tracking (T34, view mode) lives on How to get only (T46): the progress bar, the
+ * player's stats and the new-items notice at the top, the route as the checklist. Every other tab
+ * looks the same whether or not you track; the hero's "Track this build" (or "Tracking") opens it.
  */
 function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
   const editor = useBuildEditor(buildId);
@@ -130,10 +130,7 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
       ) : build ? (
         <BuildHeader
           build={build}
-          trackAction={<TrackButton tracking={tracking} />}
-          progress={
-            tracking.state ? <TrackingHero tracking={tracking} buildName={build.name} /> : null
-          }
+          trackAction={<TrackButton tracking={tracking} guidePath={tabPath(build.id, 'route')} />}
           ownerActions={
             editor.isOwner ? (
               <OwnerActions
@@ -148,7 +145,6 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
           }
         />
       ) : null}
-      {!editable && tracking.state ? <NewItemsNotice tracking={tracking} /> : null}
       <div>
         <BuildTabs
           buildId={routeId}
@@ -158,35 +154,7 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
         />
         {tab === 'loadout' ? (
           <Content>
-            {!editable && build && tracking.state && hasItems(build.equipment) ? (
-              <Suspense fallback={null}>
-                <NextStop
-                  buildId={build.id}
-                  equipment={build.equipment}
-                  tracking={{
-                    collected: tracking.state.collected,
-                    marked: tracking.state.marked,
-                    onMark: tracking.mark,
-                  }}
-                />
-              </Suspense>
-            ) : null}
-            <LoadoutPanel
-              editable={editable}
-              level={level}
-              tracking={
-                !editable && tracking.state && tracking.baseline
-                  ? {
-                      stats: {
-                        stats: tracking.state.stats,
-                        baseline: tracking.baseline,
-                        onChange: tracking.setStat,
-                      },
-                      loadout: { collected: tracking.state.collected, onToggle: tracking.toggle },
-                    }
-                  : undefined
-              }
-            />
+            <LoadoutPanel editable={editable} level={level} />
             {!editable && build ? (
               <>
                 {preview || hasItems(build.equipment) ? (
@@ -229,18 +197,23 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
                 />
               ) : null}
               {tab === 'route' && build ? (
-                <GuideSection
-                  equipment={build.equipment}
-                  tracking={
-                    tracking.state
-                      ? {
-                          collected: tracking.state.collected,
-                          marked: tracking.state.marked,
-                          onMark: tracking.mark,
-                        }
-                      : undefined
-                  }
-                />
+                <>
+                  <TrackingBar tracking={tracking} buildName={build.name} target={build.stats} />
+                  <NewItemsNotice tracking={tracking} />
+                  <GuideSection
+                    equipment={build.equipment}
+                    tracking={
+                      tracking.state
+                        ? {
+                            collected: tracking.state.collected,
+                            marked: tracking.state.marked,
+                            onToggle: tracking.toggle,
+                            onMark: tracking.mark,
+                          }
+                        : undefined
+                    }
+                  />
+                </>
               ) : null}
               {tab === 'comments' && build ? (
                 <CommentsSection buildId={build.id} ownerId={build.ownerId} />

@@ -12,8 +12,6 @@ import type { RouteTracking } from './progress';
 // reader points at a link to it: `loadRoute` is the prefetch).
 export const loadRoute = () => import('./GuideRoute');
 const GuideRoute = lazy(loadRoute);
-/** The Loadout tab's Next stop card while tracking (T35): same data, its own small chunk. */
-export const NextStop = lazy(() => import('./NextStop'));
 
 /** Whether the build has any item to find (no route otherwise). */
 export const hasItems = (equipment: Equipment) =>
@@ -24,7 +22,7 @@ export const hasItems = (equipment: Equipment) =>
 /**
  * The How to get tab (T28): what the route is, a legend for its tiles, and the route itself
  * (`GuideRoute`, loaded with its data on the tab's first open). `tracking`: the player's progress
- * (T35), for progress along the route, and marking stops done (T44).
+ * (T35): the route becomes the checklist, items checked off (T46) and stops marked done (T44).
  */
 function GuideSection({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
   const items = hasItems(equipment);

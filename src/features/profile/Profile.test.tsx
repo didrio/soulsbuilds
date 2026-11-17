@@ -113,7 +113,7 @@ describe('Playing and Completed (T36)', () => {
     const panel = screen.getByRole('tabpanel');
     expect(within(panel).getByText('Only you can see what you’re playing.')).toBeInTheDocument();
     const card = await within(panel).findByRole('link', { name: /Moon Knight/ });
-    expect(card).toHaveAttribute('href', '/build/PLAY');
+    expect(card).toHaveAttribute('href', '/build/PLAY/route');
     expect(card).toHaveTextContent('started 4 November');
     expect(card).toHaveTextContent(/\d+%/);
     expect(card).toHaveTextContent('Gear 0 of 1');
@@ -135,7 +135,7 @@ describe('Playing and Completed (T36)', () => {
     const { user } = renderProfile('seed-ranni');
     await user.click(await screen.findByRole('tab', { name: 'Completed 1' }));
     const trophy = await screen.findByRole('link', { name: /Hammer Prince/ });
-    expect(trophy).toHaveAttribute('href', '/build/DONE');
+    expect(trophy).toHaveAttribute('href', '/build/DONE/route');
     expect(trophy).toHaveTextContent('Oct 2026');
     expect(screen.queryByText('Moon Knight')).not.toBeInTheDocument();
   });
