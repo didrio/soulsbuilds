@@ -430,9 +430,35 @@ describe('builds/{id}: create', () => {
     ['a stat below 1', { vigor: 0 }],
     ['a stat stored as text', { vigor: '50' }],
     ['a fractional stat', { vigor: 50.5 }],
+    ['a stat stored as a bool', { vigor: true }],
+    ['a stat stored as null', { vigor: null }],
   ])('rejects %s', async (_label, statOverrides) => {
     const stats = { ...content().stats, ...statOverrides };
     await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { stats })));
+  });
+
+  // T42: one regex checks the 8 stats, and the level path sums them once.
+  const statsSumming = (sum: number) => {
+    const stats = { vigor: 10, mind: 10, end: 10, str: 10, dex: 10, int: 10, fai: 10, arc: 10 };
+    return { ...stats, vigor: 10 + sum - 80 };
+  };
+  it.each([
+    ['99 in a stat, level 180', { ...content().stats, vigor: 99 }, 180, true],
+    ['stats summing to 80 at level 1', statsSumming(80), 1, true],
+    ['stats summing to 81 at level 2', statsSumming(81), 2, true],
+    ['stats summing to 81 at level 1', statsSumming(81), 1, false],
+    ['stats summing to 80 at level 2', statsSumming(80), 2, false],
+    ['stats summing to 80 at level 0', statsSumming(80), 0, false],
+    ['level 1 as text', statsSumming(80), '1', false],
+    [
+      'every stat as text',
+      { vigor: '10', mind: '10', end: '10', str: '10', dex: '10', int: '10', fai: '10', arc: '10' },
+      1,
+      false,
+    ],
+  ])('level and stats: %s', async (_label, stats, level, ok) => {
+    const write = setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { stats, level }));
+    await (ok ? assertSucceeds(write) : assertFails(write));
   });
 
   it('rejects missing stats and malformed equipment', async () => {
@@ -459,14 +485,12 @@ describe('builds/{id}: create', () => {
     await assertFails(setDoc(doc(db, 'builds/N1'), newBuild('alice', { equipment: noGreatRune })));
   });
 
-  // Items are game IDs. Positional lists and single slots are type-checked; the other lists only
-  // by size (the rules' expression budget, see validEquipment).
+  // Items are game IDs. Weapons and single slots are type-checked, affinities against their keys;
+  // the other lists only by length (the rules' expression budget, see validEquipment).
   it.each([
     ['an item name instead of an ID', { helm: 'White Mask' }],
     ['a fractional ID', { greatRune: 191.5 }],
     ['a weapon name', { weapons: ['Uchigatana', null, null, null, null, null] }],
-    ['an Ash of War name', { weaponSkills: ['Seppuku', null, null, null, null, null] }],
-    ['an ID as text in an arrow slot', { arrows: ['50000000', null, null, null] }],
     ['the 2022 affinity name', { weaponAffinities: ['Blood', null, null, null, null, null] }],
     [
       'Standard as a key (stored as null)',
@@ -476,6 +500,75 @@ describe('builds/{id}: create', () => {
   ])('rejects equipment with %s', async (_label, equipmentOverrides) => {
     const equipment = { ...content().equipment, ...equipmentOverrides };
     await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { equipment })));
+  });
+
+  // T42: Ashes of War and arrows are checked by length only, like talismans (the expression
+  // budget); the app ignores IDs it doesn't know.
+  it('checks Ash of War and arrow slots by length only', async () => {
+    const equipment = content().equipment;
+    let n = 0;
+    const create = (overrides: Record<string, unknown>) =>
+      setDoc(
+        doc(as('alice'), `builds/N${(n += 1)}`),
+        newBuild('alice', { equipment: { ...equipment, ...overrides } }),
+      );
+    await assertSucceeds(create({ weaponSkills: ['Seppuku', null, null, null, null, null] }));
+    await assertSucceeds(create({ arrows: ['50000000', null, null, null] }));
+    await assertFails(create({ weaponSkills: [null, null, null, null, null] }));
+    await assertFails(create({ arrows: [null, null, null, null, null] }));
+    await assertFails(create({ weaponSkills: 'abcdef' }));
+    await assertFails(create({ arrows: { a: 1, b: 2, c: 3, d: 4 } }));
+  });
+
+  // T42: the rules find missing keys by reading every one (an error denies), not with hasAll.
+  const equipmentKeys = Object.keys(content().equipment);
+  it.each(equipmentKeys)('rejects equipment without %s', async (key) => {
+    const { [key]: _missing, ...equipment } = content().equipment as Record<string, unknown>;
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { equipment })));
+  });
+
+  it.each(Object.keys(content().stats))('rejects stats without %s', async (key) => {
+    const { [key]: _missing, ...stats } = content().stats as Record<string, unknown>;
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { stats })));
+  });
+
+  it.each(Object.keys(newBuild('alice')).filter((key) => key !== 'image'))(
+    'rejects a new build without %s',
+    async (key) => {
+      const { [key]: _missing, ...build } = newBuild('alice') as Record<string, unknown>;
+      await assertFails(setDoc(doc(as('alice'), 'builds/N1'), build));
+    },
+  );
+
+  it('rejects an extra key in the stats or the image', async () => {
+    const db = as('alice');
+    await assertFails(
+      setDoc(doc(db, 'builds/N1'), newBuild('alice', { stats: { ...content().stats, luck: 10 } })),
+    );
+    await assertFails(
+      setDoc(doc(db, 'builds/N1'), newBuild('alice', { image: { kind: 'talisman', slot: 2160 } })),
+    );
+  });
+
+  // T42: lists, text and maps are recognized by the calls made on them, not by `is` checks.
+  it.each([
+    ['a weapon list as text', { equipment: { ...content().equipment, weapons: 'abcdef' } }],
+    [
+      'a weapon list as a map',
+      { equipment: { ...content().equipment, weapons: { a: 1, b: 2, c: 3, d: 4, e: 5, f: 6 } } },
+    ],
+    ['affinities as text', { equipment: { ...content().equipment, weaponAffinities: 'heavy!' } }],
+    ['talismans as text', { equipment: { ...content().equipment, talismans: 'ab' } }],
+    ['tears as a map', { equipment: { ...content().equipment, tears: { a: 11011 } } }],
+    ['tags as text', { tags: 'Malenia' }],
+    ['a name that is a number', { name: 42, nameLower: 42 }],
+    ['a name that is a list', { name: ['Samurai'], nameLower: ['samurai'] }],
+    ['an image as text', { image: 'talisman' }],
+    ['an image as a list', { image: ['talisman', 2160] }],
+    ['equipment as text', { equipment: 'a'.repeat(14) }],
+    ['stats as a list', { stats: [50, 15, 25, 18, 40, 9, 8, 45] }],
+  ])('rejects %s', async (_label, overrides) => {
+    await assertFails(setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', overrides)));
   });
 
   // Worst case for the rules' expression budget (see validEquipment): every slot filled.

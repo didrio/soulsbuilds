@@ -7,8 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T46
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T42 — Free up rules budget on builds before the next field · Opus · extra high · plan mode on (it
-unblocks copies and variations, T32 → T33). Also from `docs/product.md` "Priorities": usage counts (T38, blocked on
+**Next:** T32 — Make a copy: a build based on another · Opus · extra high · plan mode on (then T33,
+variations). T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on
 the owner), link previews (T37, blocked on the Blaze decision), the branded email action page (T43), and item
 hover cards (T45, no rush).
 T32, T33 and T45 start with owner questions (★ in each ticket).
@@ -38,7 +38,8 @@ and spacing, and the canvas notes say why.
 (T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
-T40 (the build image), T30 (sign up and log in), T31 (profile and account settings) and T44 (route stops done).
+T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done)
+and T42 (rules budget).
 
 ## In progress
 
@@ -77,32 +78,9 @@ T40 (the build image), T30 (sign up and log in), T31 (profile and account settin
 - **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
   replaces the backlog's "Per-build share previews".
 
-### T42 — Free up rules budget on builds before the next field
-
-- **Status:** ready (must land before T32, whose `basedOn` adds a field and a `get`)
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** Room in `builds/{id}`'s rules for new fields. After T40 (the build image) the full-equipment test
-  (`tests/rules/firestore.rules.test.ts`, "accepts a build with every slot filled…") fails if `validContent`
-  gains about five more comparisons: Firestore's ~1,000-expression limit, denied with a bare `PERMISSION_DENIED`.
-- **Done when:**
-  - The worst-case create and owner edit (every slot filled, an image set) have measured headroom, recorded in
-    the `firestore.rules` budget comment and `docs/firebase.md`: e.g. at least 100 padding comparisons still
-    pass.
-  - The same writes are accepted and rejected as before: every existing rules test passes unchanged, plus tests
-    for anything newly checked or no longer checked.
-  - `npm run test:rules`, `npm run check`, `npm run e2e` pass; a decision row if what's validated changes.
-- **Context:** budget comment above `isItemIdOrNull` in `firestore.rules`. What T40 learned: each use of a
-  function argument re-walks `request.resource.data…`. `let` bindings are **not** memoized (binding the
-  equipment lists in `validEquipment` made it worse). `d.get('image', null)` with no `hasAll` was cheaper than
-  `'image' in d` + `hasExactly`. Literal key lists instead of `contentKeys().concat(…)` on create gained
-  nothing. Ideas to measure: drop the per-entry type checks of `weaponSkills` (size only, like talismans: the
-  app ignores unknown IDs); check `slots6` entries with fewer re-walks; skip `validContent` parts whose fields
-  aren't in `changedKeys()` on update. How to measure: temporarily prepend `(1 == 1 && … ×N) &&` to a check in
-  `validContent` and run `npm run test:rules`; T40 found N = 5 already fails.
-
 ### T32 — Make a copy: a build based on another
 
-- **Status:** ready after T42 (rules budget for `basedOn`; the button goes in T28's build hero); owner decisions first
+- **Status:** ready (T42 made room for `basedOn`; the button goes in T28's build hero); owner decisions first
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -111,8 +89,12 @@ T40 (the build image), T30 (sign up and log in), T31 (profile and account settin
   credit line on the redesign canvas first)
   - Model: an optional `basedOn: { buildId, ownerId }` on a build, set only when it's created and never changed or
     removed, so credit can't be stripped later. Rules: on create, `basedOn.ownerId` must equal the parent's
-    `ownerId` (one `get`); on update, `basedOn` is unchanged. Existing builds don't have it: no migration. Mind
-    the rules' expression budget (Gotchas). Rules tests: a valid copy, a wrong `ownerId`, a missing parent,
+    `ownerId` (one `get`); on update, `basedOn` is unchanged. Existing builds don't have it: no migration. Rules
+    budget (T42): creates have 93 paddings of headroom and `tests/rules/budget.test.ts` guards 90. Put the check
+    in `validNewBuild` (create only; on update it's free: `basedOn` isn't in `ownerEdit`'s key list, so it can't
+    change), take a `basedOn` argument rather than re-reading `d.basedOn` (docs/firebase.md "Rules budget"),
+    add `basedOn` to the create case in the budget test, measure with `RULES_BUDGET=measure npm run test:rules`
+    and lower `HEADROOM` by what it spends. Rules tests: a valid copy, a wrong `ownerId`, a missing parent,
     changing or removing `basedOn`.
   - ★ "Make a copy" in the build hero for any signed-in visitor, the build's own author included (a PVE version
     of their own PVP build); signed out, it opens the log-in dialog and then continues. It opens
@@ -236,6 +218,12 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T42 — Free up rules budget on builds — 2026-11-16 — headroom 0 → 93 paddings (create), 17 → 99 (edit); a
+  level-1 build with every slot filled couldn't be saved before. Builds rules rewritten for fewer evaluated
+  expressions (stats in one regex, one level sum, key sets by size, args over `incoming()`/`let`, no redundant
+  `is` checks); owner: Ash of War and arrow slots by length only (decision "Items in builds"). Guard
+  `tests/rules/budget.test.ts` (`HEADROOM` 90; `RULES_BUDGET=measure`); cost model in docs/firebase.md "Rules
+  budget".
 - T44 — Check off route stops that aren't gear — 2026-11-16 — owner: one "Mark done" per stop (How to get and
   the Next stop card), not in the percentage, and no inference (a later stop done says nothing about earlier
   ones, gear or marks). `guide/progress.ts` `stopMarkKeys` (a stop's gate and item keys, not its number) +
@@ -254,8 +242,3 @@ Older entries: `docs/tickets-archive.md`.
   `signUp` no longer writes the profile; reset answers the same for unknown emails (was a leak); Google-only
   deletion re-auths with a popup; production `authDomain` → soulsbuilds.com. Console steps: docs/firebase.md
   "Sign-in setup" (owner, before the deploy). Dialog focus starts on "Continue with Google".
-- T40 — Choose the build's main image — 2026-11-16 — owner: picker in edit mode's title block ("Change image" →
-  `BuildImageDialog`, radio rows), gear only (no arrows/consumables); `image: { kind, id } | null` (rules check the
-  shape, optional on create), `buildImage` / `imageChoices` in `lib/equipment.ts` (read-time fallback to the main
-  weapon; the editor saves a gone pick as null), `getCardItem` + 5 new card kinds (cards.json +7 KB gzipped);
-  hero, landing rows, profile panels; e2e `build-image.spec.ts`. Rules budget nearly exhausted → T42.

@@ -17,5 +17,8 @@ export default defineConfig({
     fileParallelism: false,
     testTimeout: 15000,
     hookTimeout: 30000,
+    // `RULES_BUDGET=measure` prints the rules budget table (tests/rules/budget.test.ts) from a
+    // passing test, whose console output Vitest hides otherwise.
+    ...(process.env.RULES_BUDGET === 'measure' ? { silent: false } : {}),
   },
 });

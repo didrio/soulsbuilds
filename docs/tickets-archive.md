@@ -133,3 +133,8 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   doc's batch, rules check both sides; `saveQueue` tracks the stored status), hero "N playing · M finished",
   profile Playing cards (progress + next stop, lazy) and Completed trophies, `admin.mjs counts` backfill, e2e
   `playing.spec.ts`
+- T40 — Choose the build's main image — 2026-11-16 — owner: picker in edit mode's title block ("Change image" →
+  `BuildImageDialog`, radio rows), gear only (no arrows/consumables); `image: { kind, id } | null` (rules check the
+  shape, optional on create), `buildImage` / `imageChoices` in `lib/equipment.ts` (read-time fallback to the main
+  weapon; the editor saves a gone pick as null), `getCardItem` + 5 new card kinds (cards.json +7 KB gzipped);
+  hero, landing rows, profile panels; e2e `build-image.spec.ts`. Rules budget nearly exhausted → T42.

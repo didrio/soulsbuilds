@@ -40,6 +40,34 @@ public by design; security rules protect the data.
 - Production also holds an unused 2022 doc, `app/tags` (the old boss-tag list). No rule matches it, so clients
   can't read it; it's in the T12 backup.
 
+## Rules budget
+
+Firestore evaluates at most **1,000 expressions per request**. Past that, a write fails with a bare
+`PERMISSION_DENIED` (only the emulator's log says "maximum of 1000 expressions"). Build writes are the only ones
+near it, so T42 measured them and rewrote the checks (the techniques are in the comment above the builds section
+of `firestore.rules`).
+
+- **The guard**: `tests/rules/budget.test.ts` runs the costliest builds (create and owner edit, every slot
+  filled, an image, at level 131 and level 1) with N padding comparisons (`1 == 1`, ~4 expressions each) added to
+  `validContent`, and asserts they pass with `HEADROOM` padding (90). A ticket that adds a check measures what it
+  spends and lowers `HEADROOM` by that much.
+- **Measure**: `RULES_BUDGET=measure npm run test:rules` prints the largest N per case. Add `RULES_FILE=<path>` to
+  measure a variant of the rules without editing `firestore.rules`. Measuring the cost of one check: replace it
+  with `true` in a variant and compare.
+- **Headroom** (paddings): before T42, 0 for a create (a level-1 build with every slot filled and a spirit-ash
+  image couldn't be saved at all) and 17 for an edit; after, **93 for a create, 99 for an edit**.
+- **Where it goes** (create at level 131, in paddings, before → after T42): equipment 85 → 49 (weapons 19,
+  affinities 4, the other lists and single slots the rest); stats and level 43 → 21; starting class and image
+  15 → 10; name, description and tags 10 → 10; the create-only checks (keys, owner, counters, times) about 20.
+- **Cost model** (measured in the emulator): each operator, literal, field access and function call counts about
+  1. A function argument is evaluated once, then costs 1 per use; `incoming()` or a full
+     `request.resource.data.x.y` path re-walks every time, and a `let` re-evaluates its expression at every use
+     (worse than an argument). A list literal costs 1 per element; a split string or a regex costs 1.
+- **Doesn't help**: skipping unchanged fields on an edit (the worst-case edit changes everything); `string()` of a
+  list or map (unsupported). A flat `&&` chain past ~100 terms fails to compile ("Expression is too complex"),
+  which is why the padding is a balanced tree.
+- The numbers come from the emulator; production uses the same evaluator, but isn't measured.
+
 ## Migrating production (T12, owner-approved)
 
 `scripts/migrate-v1-to-v2.mjs` converts v1 documents (2022) to v2. It is dry-run by default, idempotent (v2 docs
