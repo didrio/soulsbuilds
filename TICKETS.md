@@ -7,8 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T50
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T32 — Make a copy (Opus · extra high · plan mode on). T38 (usage counts) and T37 (link previews) wait
-on owner decisions; T33 (variations) follows T32.
+**Next:** T38 (usage counts) and T37 (link previews) both wait on owner decisions; nothing else is ready, so ask
+the owner what's next. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -49,10 +49,49 @@ desktop), T49 (phones) and T43 (email action page).
 
 ## Up next
 
-### T32 — Make a copy: a build based on another
+### T38 — Cookie-free usage counts
 
-- **Status:** ready, owner decisions first (owner, 2026-11-16: wanted, after the rest of Up next, which now waits
-  on owner decisions). T42 made room for `basedOn`; the button goes in the build's title section, shorter since T48
+- **Status:** blocked: the owner decides whether to revisit decision "Analytics" (dropped, so there's no consent
+  banner) and which service to use
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Know whether people use the route, tracking and copies, without cookies or a consent banner
+  (`docs/product.md` "Priorities": measure before tracking ships).
+- **Done when:**
+  - A cookie-free counter (e.g. Plausible or GoatCounter; the owner picks, it may cost money) counts page views and
+    a few named events: tracking started, item collected, build completed, route opened, copy made (the last ones
+    as their tickets land).
+  - The privacy page says what's counted, and that it's anonymous and cookie-free.
+  - `npm run perf` shows no regression; App Check is unaffected; `npm run check` passes.
+- **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
+  (performance notes).
+
+### T37 — Link previews: server-rendered build pages
+
+- **Status:** blocked: the owner decides whether to move from Spark to the Blaze plan (pay-as-you-go with a free
+  allowance) for Cloud Functions or Cloud Run
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** A build link pasted into Reddit, Discord or a chat shows a card with the build's name, author and gear,
+  and search engines see the page's content. Today the page renders in the browser, so both get an empty shell.
+- **Done when:**
+  - Per-build Open Graph and Twitter tags (title, description, image) and a generated preview image (the main
+    weapon, the name and level, in the game's skin), served through Hosting rewrites; the landing gets its own.
+  - Cached, with a cost estimate in `docs/firebase.md`.
+  - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
+- **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
+  replaces the backlog's "Per-build share previews".
+
+## Backlog
+
+### Parked tickets
+
+Written in full and **set aside by the owner indefinitely**. Never move one to Up next, pick it as the next
+ticket, or put it in the **Next:** line unless the owner asks for it by number. Wrapping and starting skip them.
+
+#### T32 — Make a copy: a build based on another
+
+- **Status:** parked indefinitely (owner, 2026-11-16 and again 2026-11-17: wanted, but only when the owner asks
+  for it). T42 made room for `basedOn`; the button goes in the build's title section, shorter since T48; owner
+  decisions first
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -88,9 +127,9 @@ desktop), T49 (phones) and T43 (email action page).
   `features/editor/{useBuildEditor.ts,store/build.ts,BuildEditorPage.tsx}`, T28's hero, `scripts/admin.mjs`. This
   replaces the backlog's "copy this build".
 
-### T33 — Variations: every copy of a build, on its page
+#### T33 — Variations: every copy of a build, on its page
 
-- **Status:** ready after T32
+- **Status:** parked with T32 (after it)
 - **Session:** Opus · high effort · plan mode off
 - **Goal:** A build that's been copied shows everyone's versions of it and how each one differs, so a visitor sees
   the original next to the PVE take, the cheaper version, or the one that claims to be better.
@@ -111,39 +150,6 @@ desktop), T49 (phones) and T43 (email action page).
 - **Context:** T32's `basedOn`; T28's tabs; `features/builds/BuildsList.tsx` rows;
   `features/editor/queries.ts` and `lib/queryKeys.ts`. A side-by-side compare view (Backlog) is the natural next
   step: each variation row could link to "Compare with the original".
-
-### T38 — Cookie-free usage counts
-
-- **Status:** blocked: the owner decides whether to revisit decision "Analytics" (dropped, so there's no consent
-  banner) and which service to use
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Know whether people use the route, tracking and copies, without cookies or a consent banner
-  (`docs/product.md` "Priorities": measure before tracking ships).
-- **Done when:**
-  - A cookie-free counter (e.g. Plausible or GoatCounter; the owner picks, it may cost money) counts page views and
-    a few named events: tracking started, item collected, build completed, route opened, copy made (the last ones
-    as their tickets land).
-  - The privacy page says what's counted, and that it's anonymous and cookie-free.
-  - `npm run perf` shows no regression; App Check is unaffected; `npm run check` passes.
-- **Context:** decision "Analytics" (to update), `features/legal/Privacy.tsx`, `index.html`, `docs/architecture.md`
-  (performance notes).
-
-### T37 — Link previews: server-rendered build pages
-
-- **Status:** blocked: the owner decides whether to move from Spark to the Blaze plan (pay-as-you-go with a free
-  allowance) for Cloud Functions or Cloud Run
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** A build link pasted into Reddit, Discord or a chat shows a card with the build's name, author and gear,
-  and search engines see the page's content. Today the page renders in the browser, so both get an empty shell.
-- **Done when:**
-  - Per-build Open Graph and Twitter tags (title, description, image) and a generated preview image (the main
-    weapon, the name and level, in the game's skin), served through Hosting rewrites; the landing gets its own.
-  - Cached, with a cost estimate in `docs/firebase.md`.
-  - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
-- **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
-  replaces the backlog's "Per-build share previews".
-
-## Backlog
 
 ### Ideas
 

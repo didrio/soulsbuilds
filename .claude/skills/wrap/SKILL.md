@@ -27,6 +27,9 @@ The next session starts with only `AGENTS.md`, `TICKETS.md`, `docs/` and git his
 - **New work discovered** → new tickets with the next unused number (never reuse numbers). Write them so a fresh
   agent can start without re-investigating: goal, done-when checklist, the files and decisions involved, pitfalls,
   how to test. Vague ideas go to **Backlog** instead.
+- **Parked tickets** (Backlog > Parked tickets, e.g. T32, T33) stay there until the owner asks for one by number.
+  Never move one to **Up next**, recommend it, or name it in the **Next:** line, even if it looks like the obvious
+  next piece of work. If nothing else is ready, say so and ask.
 - Re-read **Up next** top to bottom: reorder by what should happen next; merge, split or rewrite stale tickets.
 - Set the **Next:** line at the top to the recommended ticket and its session settings (table below). Every ticket
   in **Up next** has a **Session** line.

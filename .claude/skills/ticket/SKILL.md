@@ -18,6 +18,8 @@ bookkeeping, not a new task.
 - **Edit / split / merge**: keep each ticket a session-sized piece of work, roughly one coherent change a
   reviewer could take in at once.
 - **Reorder**: **Up next** is in the order to do them. If the top changes, update the **Next:** line too.
+- **Park**: when the owner sets work aside indefinitely, move the full ticket to **Backlog > Parked tickets** with
+  `Status: parked`; only the owner brings it back (by asking for it), never `/wrap` or `/start`.
 - **Block**: `Status: blocked — <what it's waiting on>`.
 
 Confirm in one line what changed (e.g. "Added T13 — Build comparison view, after T9").

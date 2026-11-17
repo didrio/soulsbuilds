@@ -68,7 +68,8 @@ shareable page, the acquisition route and credited variations.
 3. **Tracking** (T34–T36): serves most users and works alone.
 4. **Link previews** (T37): a pasted link shows the build. Needs server rendering (Blaze plan).
 5. **Sign-in and account polish** (T30–T31).
-6. **Copies and variations** (T32–T33): better once there's a crowd.
+6. **Copies and variations** (T32–T33): better once there's a crowd. Parked indefinitely in `TICKETS.md` until the
+   owner asks for them.
 
 ## Validate cheaply
 
