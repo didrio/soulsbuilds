@@ -186,8 +186,8 @@ Things to know (T23, from the SDK source and measurements):
 - **Cache headers** (`firebase.json` "headers", T21; globs match the request path, before the rewrite, and
   don't overlap because the docs don't say which rule wins): hashed Vite files `/assets/*.@(js|css|woff…)` →
   `public, max-age=31536000, immutable`; `/assets/icons/**` → one week (names aren't hashed; `npm run data` can
-  change an icon); everything else (`!/{assets,build,og}/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
-  by ETag; the function sets its own `Cache-Control` on `/build/**` and `/og/**` (it must not match `no-cache`). Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
+  change an icon); everything else (`!/@(assets|build|og)/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
+  by ETag; the function sets its own `Cache-Control` on `/build/**` and `/og/**` (it must not match `no-cache`). Use `@(a|b)`, not braces, in a negated pattern: production expanded `!/{assets,build,og}/**` into three OR'd negations, so everything matched and the function's own cache headers were overridden (the emulator didn't, so it can't catch this). After changing these rules, check production with `curl -sI https://soulsbuilds.com/build/<id>` (expect `s-maxage=300`). Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
 demo-soulsbuilds --only hosting "curl -sI http://127.0.0.1:5190/"` (Hosting emulator port 5190).
 - `index.html` sends `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` to `soulsbuilds.com` (same path).
   Preview channels and Firebase's `/__/auth/*` pages (email verification and password reset links) are unaffected.
