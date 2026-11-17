@@ -199,12 +199,26 @@ describe('BuildEditorPage', () => {
       expect(screen.getByRole('link', { name: 'Loadout' })).toHaveAttribute('aria-current', 'page');
     });
 
-    it('has no Description tab without a description, even for the owner', async () => {
+    it('generates a description from the build when the author wrote none (T47)', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
-      renderPage('/build/SEEDMOON0001/description', 'seed-ranni');
+      renderPage('/build/SEEDMOON0001/description');
+      expect(await screen.findByText(/^A level \d+ .*build/)).toBeInTheDocument();
+      expect(screen.getByText('This description was automatically generated.')).toBeInTheDocument();
+      expect(tabNames()).toEqual(['Loadout', 'Description', 'How to get', 'Comments 0']);
+    });
+
+    it('has no write-up preview on Loadout without a description', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
+      renderPage('/build/SEEDMOON0001');
       expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
-      expect(tabNames()).toEqual(['Loadout', 'How to get', 'Comments 0']);
       expect(screen.queryByRole('link', { name: /Read the description/ })).not.toBeInTheDocument();
+    });
+
+    it("shows the author's write-up without the generated note", async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      renderPage('/build/SEEDMOON0001/description');
+      expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
+      expect(screen.queryByText(/automatically generated/)).not.toBeInTheDocument();
     });
 
     it('edits on Loadout and Description only', async () => {

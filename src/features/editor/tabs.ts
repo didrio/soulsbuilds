@@ -24,20 +24,12 @@ export function tabPath(buildId: string, tab: BuildTab): string {
 }
 
 /**
- * The tabs shown. Editing (and `/build/new`): Loadout and Description only. Viewing: Description only
- * when the build has one (owner, 2026-11-16: the owner adds one through Edit).
+ * The tabs shown. Editing (and `/build/new`): Loadout and Description only. Viewing: all of them;
+ * Description always has something (the author's write-up or a generated one, T47).
  */
-export function visibleTabs({
-  editable,
-  hasDescription,
-}: {
-  editable: boolean;
-  hasDescription: boolean;
-}): BuildTab[] {
+export function visibleTabs({ editable }: { editable: boolean }): BuildTab[] {
   if (editable) return ['loadout', 'description'];
-  return BUILD_TABS.map((entry) => entry.tab).filter(
-    (tab) => tab !== 'description' || hasDescription,
-  );
+  return BUILD_TABS.map((entry) => entry.tab);
 }
 
 /**

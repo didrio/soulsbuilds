@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T49
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T47 — Auto-generated description · Sonnet · medium · plan mode off, then T48 (build page v3: the
+**Next:** T48 (build page v3: the
 build in a sidebar, Description · Guide · Comments), the owner's design of 2026-11-16. Then T32 — Make a copy
 (then T33, variations); T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage
 counts (T38, blocked on the owner), link previews (T37, blocked on the Blaze decision), the branded email
@@ -48,48 +48,9 @@ T42 (rules budget) and T46 (tracking in How to get).
 
 ## Up next
 
-### T47 — Auto-generated description
-
-- **Status:** ready (owner, 2026-11-16; build page v3, T46–T48)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Every build has something on its Description tab, which becomes the page a build opens to in T48:
-  the author's write-up, or a short one generated from the build, "just the basics and anything to note"
-  (owner).
-- **Done when:**
-  - A pure `describeBuild(facts)` (e.g. `features/editor/describe.ts`) turns a facts object into short
-    markdown; a selector (e.g. `selectDescriptionFacts` in `store/derived.ts`) gathers the facts from the
-    editor state the page already loads. Names from `@/data/core` (light data; check what the view can import
-    without the full data, docs/data.md).
-  - The content, in plain sentences, a few lines at most, e.g. "A level 131 Samurai build around Rivers of
-    Blood (Corpse Piler) and an Uchigatana (Blood, Seppuku). Its highest attributes are Vigor 50, Arcane 45
-    and Dexterity 40. Medium load (39.8 of 72.0), 42 poise. Talismans: Lord of Blood's Exultation, Rotten
-    Winged Sword Insignia, Millicent's Prosthesis and Shard of Alexander. Spirit Ash: Mimic Tear Ashes."
-    - The main weapon first (`mainWeaponId`, `lib/equipment.ts`), then the other hand's; affinity and skill
-      from `weaponDetails`.
-    - The three highest effective attributes (with talisman bonuses).
-    - Spells when there are any: count by kind and memory slots used ("3 incantations, 5 of 10 memory slots").
-    - Then a short "Worth knowing" list, only for what applies: unmet requirements and two-handed-only weapons
-      (from `itemWarning`), spells over the memory slots, DLC items ("Needs Shadow of the Erdtree: …").
-    - Nothing empty is mentioned; a build with no gear gets one line ("A level 9 build with no gear chosen
-      yet.").
-  - Rendered at view time through `MarkdownView` (never stored, so it follows edits), ending with a muted "This
-    description was automatically generated."
-  - The Description tab shows for every build (`tabs.ts` `visibleTabs`: drop the `hasDescription` rule).
-    Editing is unchanged: Loadout and Description, the editor starting empty (not prefilled).
-  - Tests: `describe.test.ts` (each sentence and note, an empty build, ties in the top attributes),
-    `tabs.test.ts`, a `BuildEditorPage` test for the generated text and its note; e2e `build-tabs`
-    (SEEDNAKED001 now has a Description tab). `npm run check` passes; screenshots of a build without a
-    write-up, desktop and `--mobile`.
-  - Docs: decision "Build page layout" (Description always shown), docs/architecture.md if it lists the tabs.
-- **Context:** `store/derived.ts` (`selectEffectiveStats`, `selectVitals`, `selectEquipWeight`,
-  `selectRollType`, `selectPoise`, `selectMemorySlots`, `selectMemoryUsed`, `selectSpellsOverSlots`,
-  `selectRequirementChecks`), `store/selectors.ts`, `itemDetails.ts` (`weaponDetails`, `itemSubline`,
-  `itemWarning`), `src/data/schema.ts` (the `dlc` flag on items), `data/startingClasses` (class names),
-  `sections/{DescriptionSection,MarkdownView}.tsx`.
-
 ### T48 — Build page v3: the build in a sidebar, Description · Guide · Comments
 
-- **Status:** ready after T46 and T47 (owner's design, 2026-11-16)
+- **Status:** ready (T46 and T47 done; owner's design, 2026-11-16)
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** The build's stats and gear live in one sidebar that's the same on every tab and for every visitor,
   and the page's tabs are Description (the default), Guide and Comments. The build reads at a glance, the page
@@ -328,6 +289,9 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T47 — Auto-generated description — 2026-11-16 — Description tab always shown: the write-up, or `describe.ts`
+  `describeBuild(selectDescriptionFacts)` made at view time (weapons, top attributes, load, poise, talismans,
+  spells, "Worth knowing"), with an "automatically generated" note; `visibleTabs` lost `hasDescription`.
 - T46 — Tracking lives in the Guide — 2026-11-16 — tracking only on How to get: `TrackingBar` (progress,
   Your stats, Stop; Build complete), the new-items notice, a checkbox on each build item in the route
   (`itemTrackKeys`; `toggle` takes an item's keys); hero's Track → the tab, "Tracking" link while tracking;

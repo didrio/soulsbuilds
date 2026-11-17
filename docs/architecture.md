@@ -278,9 +278,11 @@ tablets and phones a 76px tile and the actions in a row under the tags; in edit 
 place, with the name, tags and "Build image": the current tile and "Change image", which opens
 `BuildImageDialog`, radio rows of the default and the build's gear), then a **tab bar** (`sections/BuildTabs`: `NavLink`s, sticky at the window's top, sideways-scrolling on
 phones; Comments shows the stored count), then the tab. Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`):
-`/build/x` Loadout, `/description`, `/route`, `/comments`; an unknown tab, or one the build doesn't show (no
-write-up: no Description tab, for the owner too; editing and `/build/new`: Loadout and Description only), redirects
-to Loadout. Switching tabs keeps the editor (and an edit in progress) and the scroll position
+`/build/x` Loadout, `/description`, `/route`, `/comments`; an unknown tab, or one the build doesn't show (editing
+and `/build/new`: Loadout and Description only), redirects to Loadout. Description always shows (T47): the write-up,
+or `describe.ts`'s `describeBuild(selectDescriptionFacts)`, markdown made at view time from the build (main weapon
+and the other hand's, top three attributes, load and poise, talismans, spells, a "Worth knowing" list) with a
+muted "automatically generated" note. Switching tabs keeps the editor (and an edit in progress) and the scroll position
 (`useScrollToTop` compares `pageKey`s; the bar scrolls itself back to the top when it was stuck). Desktop: the
 stats sit in a fixed 340px left column on every tab: on **Loadout** one panel with the gear (`LoadoutPanel` =
 `StatsCard` | `Loadout`), then "Read the description" and "See the route" cards (`TabLinkCard`; the first

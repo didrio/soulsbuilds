@@ -24,28 +24,17 @@ describe('tabPath', () => {
 });
 
 describe('visibleTabs', () => {
-  it('shows every tab for a build with a description', () => {
-    expect(visibleTabs({ editable: false, hasDescription: true })).toEqual([
+  it('shows every tab to a viewer: Description always has something (T47)', () => {
+    expect(visibleTabs({ editable: false })).toEqual([
       'loadout',
       'description',
-      'route',
-      'comments',
-    ]);
-  });
-
-  it('leaves out Description when there is none', () => {
-    expect(visibleTabs({ editable: false, hasDescription: false })).toEqual([
-      'loadout',
       'route',
       'comments',
     ]);
   });
 
   it('shows only Loadout and Description while editing', () => {
-    expect(visibleTabs({ editable: true, hasDescription: false })).toEqual([
-      'loadout',
-      'description',
-    ]);
+    expect(visibleTabs({ editable: true })).toEqual(['loadout', 'description']);
   });
 });
 

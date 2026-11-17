@@ -105,8 +105,8 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
     }
   }
 
-  // An unknown tab, or one this build doesn't show (no description, or editing): Loadout.
-  const tabs = visibleTabs({ editable, hasDescription: Boolean(build?.description) });
+  // An unknown tab, or one this build doesn't show (editing): Loadout.
+  const tabs = visibleTabs({ editable });
   const tab = parseTab(tabParam);
   if (!tab || !tabs.includes(tab)) return <Navigate to={tabPath(routeId, 'loadout')} replace />;
 

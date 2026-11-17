@@ -33,9 +33,15 @@ test('tabs: deep link, jump to, switching and Back', async ({ page }) => {
   await expect(page.getByRole('region', { name: 'Loadout' })).toBeVisible();
 });
 
-test('a build without a write-up has no Description tab', async ({ page }) => {
+test('a build without a write-up has a generated description', async ({ page }) => {
   await page.goto('/build/SEEDNAKED001/description');
-  await expect(page).toHaveURL(/\/build\/SEEDNAKED001$/);
   const tabs = page.getByRole('navigation', { name: 'Build sections' });
-  await expect(tabs.getByRole('link')).toHaveText(['Loadout', 'How to get', /^Comments/]);
+  await expect(tabs.getByRole('link')).toHaveText([
+    'Loadout',
+    'Description',
+    'How to get',
+    /^Comments/,
+  ]);
+  await expect(page.getByText(/^A level \d+ .*build/)).toBeVisible();
+  await expect(page.getByText('This description was automatically generated.')).toBeVisible();
 });
