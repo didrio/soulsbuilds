@@ -6,7 +6,8 @@
 //
 // Test accounts (emulator only, password for all: see SEED_PASSWORD):
 //   tarnished@example.test  "Tarnished"   owns 2 builds
-//   ranni@example.test      "Ranni Fan"   owns 2 builds, liked one of Tarnished's
+//   ranni@example.test      "Ranni Fan"   owns 2 builds, liked one of Tarnished's; the comments on
+//                                         her Carian Moon Knight are a thread with replies (T62)
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -113,7 +114,45 @@ const BUILDS = [
     tags: ['Rennala', 'Rykard'],
     image: { kind: 'spell', name: "Rennala's Full Moon" }, // T40: a non-weapon build image
     likedBy: [],
-    comments: [],
+    // T62: a thread with the build's author replying, likes, and the replies of a deleted comment
+    // (seedmoon05 is gone), so the Discussion tab shows every case.
+    comments: [
+      {
+        id: 'seedmoon01',
+        authorId: 'seed-tarnished',
+        text: "Does this work without Moonveil? I'm stuck before Raya Lucaria.",
+        createdAt: at(10, 20),
+        likedBy: ['seed-ranni'],
+      },
+      {
+        id: 'seedmoon02',
+        authorId: 'seed-ranni',
+        text: 'Yes: any katana with Glintblade Phalanx carries you until you find it.',
+        createdAt: at(10, 21),
+        parentId: 'seedmoon01',
+      },
+      {
+        id: 'seedmoon03',
+        authorId: 'seed-tarnished',
+        text: '@Ranni Fan Thanks, that got me through Rennala.',
+        createdAt: at(10, 22),
+        parentId: 'seedmoon01',
+        likedBy: ['seed-ranni'],
+      },
+      {
+        id: 'seedmoon04',
+        authorId: 'seed-tarnished',
+        text: "Rennala's Full Moon one-shots most of Caelid. Great pick.",
+        createdAt: at(10, 25),
+      },
+      {
+        id: 'seedmoon06',
+        authorId: 'seed-ranni',
+        text: 'Glad it worked. And yes, Rykard is the place to farm runes for it.',
+        createdAt: at(10, 28),
+        parentId: 'seedmoon05',
+      },
+    ],
     stats: stats(40, 30, 15, 12, 18, 80, 7, 9),
     startingClass: 'Astrologer',
     equipment: {
@@ -233,8 +272,19 @@ async function main() {
     for (const uid of build.likedBy) {
       batch.set(ref.collection('likes').doc(uid), { userId: uid, createdAt: build.createdAt });
     }
-    for (const { id, ...comment } of build.comments) {
-      batch.set(ref.collection('comments').doc(id), comment);
+    for (const { id, likedBy = [], parentId = null, ...comment } of build.comments) {
+      batch.set(ref.collection('comments').doc(id), {
+        ...comment,
+        parentId,
+        likeCount: likedBy.length,
+      });
+      for (const uid of likedBy) {
+        batch.set(ref.collection('commentLikes').doc(`${id}_${uid}`), {
+          userId: uid,
+          commentId: id,
+          createdAt: comment.createdAt,
+        });
+      }
     }
     await batch.commit();
   }

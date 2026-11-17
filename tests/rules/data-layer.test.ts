@@ -35,8 +35,15 @@ const {
 } = await import('@/lib/firebase/builds');
 const { hasLiked, likeBuild, listLikedBuildIds, unlikeBuild } =
   await import('@/lib/firebase/likes');
-const { addComment, deleteComment, fetchLatestComment, listComments } =
-  await import('@/lib/firebase/comments');
+const {
+  addComment,
+  deleteComment,
+  fetchLatestComment,
+  likeComment,
+  listCommentLikes,
+  listComments,
+  unlikeComment,
+} = await import('@/lib/firebase/comments');
 const { reportContent } = await import('@/lib/firebase/reports');
 const { deleteAccountData, findAccountData } = await import('@/lib/firebase/account');
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
@@ -268,7 +275,33 @@ describe('data layer against the rules', () => {
     await deleteBuild(offHand);
   });
 
-  it('delete: only the owner, and the likes and comments go with it', async () => {
+  it('replies and comment likes (T62)', async () => {
+    actAs('bob');
+    const top = await addComment(buildId, 'bob', 'Does it work at level 60?');
+    expect(top).toMatchObject({ parentId: null, likeCount: 0 });
+    actAs('alice');
+    const reply = await addComment(buildId, 'alice', 'Yes, with the Uchigatana', top.id);
+    expect(reply.parentId).toBe(top.id);
+    // One level: a reply to a reply is refused.
+    await expect(addComment(buildId, 'alice', 'deeper', reply.id)).rejects.toThrow();
+
+    await likeComment(buildId, top.id, 'alice');
+    await likeComment(buildId, reply.id, 'alice');
+    await expect(likeComment(buildId, top.id, 'alice')).rejects.toThrow();
+    await expect(likeComment(buildId, top.id, 'bob')).rejects.toThrow();
+    expect(await listCommentLikes(buildId, 'alice')).toEqual(new Set([top.id, reply.id]));
+    await unlikeComment(buildId, reply.id, 'alice');
+    expect(await listCommentLikes(buildId, 'alice')).toEqual(new Set([top.id]));
+    actAs(null);
+    const comments = await listComments(buildId);
+    expect(comments.find((c) => c.id === top.id)?.likeCount).toBe(1);
+    expect(comments.find((c) => c.id === reply.id)).toMatchObject({
+      likeCount: 0,
+      parentId: top.id,
+    });
+  });
+
+  it('delete: only the owner, and the likes, comments and comment likes go with it', async () => {
     actAs('bob');
     await expect(deleteBuild(buildId)).rejects.toThrow();
     actAs('alice');
@@ -276,6 +309,7 @@ describe('data layer against the rules', () => {
     actAs(null);
     expect(await getBuild(buildId)).toBeNull();
     expect(await listComments(buildId)).toEqual([]);
+    expect(await listCommentLikes(buildId, 'alice')).toEqual(new Set());
     expect(await listLikedBuildIds('bob')).toEqual([]);
   });
 });
@@ -382,6 +416,13 @@ describe('account deletion (T18)', () => {
     await likeBuild(orphaned, 'dana');
     await addComment(orphaned, 'dana', 'Old');
     await reportContent('dana', { buildId: erins, commentId: erinsComment.id }, 'spam');
+    // Comment likes (T62): on Erin's comment, on her own reply there, and on Erin's comment on
+    // Dana's own build (which goes with that build).
+    const danasReply = await addComment(erins, 'dana', 'Agreed', erinsComment.id);
+    await likeComment(erins, erinsComment.id, 'dana');
+    await likeComment(erins, danasReply.id, 'dana');
+    const onOwn = (await listComments(own))[0]!;
+    await likeComment(own, onOwn.id, 'dana');
     const progress0 = {
       collected: [],
       seen: [],
@@ -407,7 +448,8 @@ describe('account deletion (T18)', () => {
     const found = await findAccountData('dana');
     expect(found.buildIds).toEqual([own]);
     expect(found.likes.map((l) => l.buildExists).sort()).toEqual([false, true]);
-    expect(found.comments).toHaveLength(3);
+    expect(found.comments).toHaveLength(4);
+    expect(found.commentLikes.map((l) => l.comment !== null)).toEqual([true, true]);
     expect(found.reports).toHaveLength(1);
     expect(
       found.tracking.sort((a, b) => (a.buildId === erins ? -1 : b.buildId === erins ? 1 : 0)),
@@ -419,8 +461,8 @@ describe('account deletion (T18)', () => {
 
     const progress = vi.fn();
     await deleteAccountData('dana', progress);
-    // 1 build, 2 likes, 3 comments, 1 report, 3 tracked builds, profile
-    expect(progress).toHaveBeenLastCalledWith(11, 11);
+    // 1 build, 2 likes, 4 comments, 2 comment likes, 1 report, 3 tracked builds, profile
+    expect(progress).toHaveBeenLastCalledWith(14, 14);
 
     actAs(null);
     expect(await getUserProfile('dana')).toBeNull();
@@ -431,7 +473,10 @@ describe('account deletion (T18)', () => {
     expect(after?.likeCount).toBe(1);
     expect(after?.commentCount).toBe(1);
     expect([after?.playerCount, after?.finishedCount]).toEqual([0, 0]);
-    expect((await listComments(erins)).map((c) => c.authorId)).toEqual(['erin']);
+    expect((await listComments(erins)).map((c) => [c.authorId, c.likeCount])).toEqual([
+      ['erin', 0],
+    ]);
+    expect(await listCommentLikes(erins, 'dana')).toEqual(new Set());
     expect(await listLikedBuildIds('erin')).toEqual([erins]);
     expect(await getUserProfile('erin')).not.toBeNull();
 
@@ -440,6 +485,7 @@ describe('account deletion (T18)', () => {
       buildIds: [],
       likes: [],
       comments: [],
+      commentLikes: [],
       reports: [],
       tracking: [],
     });

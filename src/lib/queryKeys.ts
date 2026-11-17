@@ -21,6 +21,11 @@ export const queryKeys = {
   comments: (buildId: string) => ['comments', buildId] as const,
   /** A build's newest comment (the phone's Comments header, T49); under the comments prefix. */
   latestComment: (buildId: string) => ['comments', buildId, 'latest'] as const,
+  /**
+   * The comments on a build the user likes (T62). Not under the comments prefix: posting a comment
+   * doesn't change it.
+   */
+  commentLikes: (buildId: string, userId: string) => ['commentLikes', buildId, userId] as const,
   user: (id: string) => ['users', id] as const,
   stats: (game: GameId) => ['stats', game] as const,
   /** One email link opened on `/auth/action` (T43): checked or applied once, then kept. */

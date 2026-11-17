@@ -50,9 +50,12 @@ Function and UX are the same for every game; only the skin (accent colors) chang
 - **Server data** (builds, profiles, likes, comments) goes through **TanStack Query** hooks in
   `src/features/<feature>/queries.ts` (`useBuild`, `useBuilds`, `useUserBuilds`, `useUserProfile(s)`,
   `useLikedBuilds`, `useHasLiked`/`useToggleLike`, `useComments`/`useAddComment`/`useDeleteComment`,
+  `useCommentLikes`/`useToggleCommentLike` (T62),
   `useSaveBuild`, `useDeleteBuild`), which call the functions in `src/lib/firebase/`. Keys are in
   `src/lib/queryKeys.ts`; invalidating `['builds']` refreshes every list and detail. Likes and comment deletes
-  are optimistic and roll back on error. Never copy server data into Redux.
+  are optimistic and roll back on error. Never copy server data into Redux. Comment threads (T62) are
+  derived at render by `threadComments` in `src/lib/comments.ts` (Top ranks without the viewer's own like, so
+  liking never moves a comment under the cursor).
 - **The signed-in user**: `AuthProvider` (`src/features/auth/`) listens to Firebase Auth once; components call
   `useAuth()` → `{ loading, user, uid }`. The public profile is `useUserProfile(uid)`.
 - **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited:
@@ -169,6 +172,11 @@ builds/{id}/likes/{uid}           one like per user (doc id = liker's uid)
   userId: uid, createdAt: timestamp
 builds/{id}/comments/{autoId}
   authorId: uid, text: string (trimmed, 1–1000), createdAt: timestamp
+  parentId: string|null           T62: the top-level comment a reply answers (one level: never a reply);
+                                  absent on comments from before T62 (read as null)
+  likeCount: int                  T62: 0 on create; ±1 with a commentLikes doc; absent before T62 (= 0)
+builds/{id}/commentLikes/{commentId}_{uid}   T62: one like per user per comment
+  userId: uid, commentId: string, createdAt: timestamp
 
 reports/{targetId}_{uid}          one report per user per build/comment (T10); clients create, and delete
                                   their own (account deletion, T18)
@@ -187,7 +195,11 @@ stats/{game}                      community numbers per game (T20; doc id = Game
 - **Counters without Cloud Functions** (they need the paid Blaze plan): a like is one batched write that creates
   `likes/{uid}` and does `likeCount: increment(1)`; the rules only allow the counter to move by exactly 1 when the
   caller's like doc appears/disappears in the same batch (`exists`/`existsAfter`). Comments work the same way;
-  the batch also sets `lastCommentId` so the build rule knows which comment to check. Tracking (T36): the
+  the batch also sets `lastCommentId` so the build rule knows which comment to check (replies count too).
+  Comment likes (T62) are the same pattern one level down: `commentLikes/{commentId}_{uid}` and the comment's
+  `likeCount` in one batch; the viewer's hearts are one query per build page (`where userId == uid`). A
+  deleted comment's replies stay (no cascade), shown under "Comment deleted"; its likes become unreachable
+  orphans, which their likers may still delete. Tracking (T36): the
   tracking doc's status (none / playing / finished, from `completedAt`) before and after the batch decides how
   `playerCount` and `finishedCount` move (`countersMoved` in the rules, checked from both docs); a write that
   keeps the status touches no counter, and a tracking doc whose build is gone can be deleted alone.
@@ -199,9 +211,10 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   (a reporter may read and list their own). Moderation runs from `scripts/admin.mjs` (`docs/firebase.md`).
 - **Account deletion (T18)**, client-side (`src/lib/firebase/account.ts`, "Delete account" on `/account`, T31):
   re-authenticate (`reauthenticate` in `auth.ts`: the password, or Google for a Google-only account), then **find everything first** (own builds; likes and comments on other
-  builds by collection-group queries; reports by `reporterId`), so a failing query deletes nothing; then delete
-  own builds (`deleteBuild`, which takes every like and comment on them), each like/comment elsewhere in its
-  own batch with the counter (plain delete if that build is gone), the reports, the tracking docs (T34; each
+  builds by collection-group queries; comment likes too, T62; reports by `reporterId`), so a failing query deletes nothing; then delete
+  own builds (`deleteBuild`, which takes every like, comment and comment like on them), each like/comment
+  elsewhere in its own batch with the counter (plain delete if that build is gone; comment likes before
+  comments, with the comment's `likeCount` while it exists), the reports, the tracking docs (T34; each
   with its build's counters, T36, unless that build is gone or their own),
   `users/{uid}`, and last the
   Auth user (`deleteUser`). Every step is idempotent: re-running finishes a half-done deletion (the owner's own
@@ -222,7 +235,7 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   with a tag), each optionally with a `level` range (`>=`/`<=` next to an `orderBy` on another field, which Firestore's
   multi-field range support allows; the index lists equality fields, the order field, then `level`), by
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab).
-  Account deletion's equality-only collection-group queries (likes by `userId`, comments by `authorId`) use
+  Account deletion's equality-only collection-group queries (likes and commentLikes by `userId`, comments by `authorId`) use
   single-field `fieldOverrides` with a `COLLECTION_GROUP` scope. The emulator doesn't need indexes; production does (deployed in T12).
 - **Community stats (T20)** are counted once a day, not live: a `count()` per tag would cost ~100 reads per
   visitor (Spark: 50k/day) and client-written counters can't be cheaply verified by rules. The landing reads

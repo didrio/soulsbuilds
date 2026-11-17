@@ -11,8 +11,9 @@
 //   node scripts/admin.mjs dismiss <buildId> [commentId]  resolve its open reports as "dismissed"
 //   node scripts/admin.mjs rename <uid> <name>            change a display name (moderation, T18)
 //   node scripts/admin.mjs delete-user <uid|email>        delete an account and everything it published:
-//                                                         builds (with their likes and comments), likes
-//                                                         and comments elsewhere (with the counters),
+//                                                         builds (with their likes and comments), likes,
+//                                                         comments and comment likes elsewhere (with the
+//                                                         counters),
 //                                                         reports filed, profile (with its tracking,
 //                                                         moving those builds' counters), Auth user;
 //                                                         resolves reports about that
@@ -147,7 +148,7 @@ export async function exportAll(db, { dir = join(root, '.admin-backups'), projec
 
 /**
  * Deletes a build (with its likes and comments) or a single comment (and moves the build's
- * commentCount), and resolves the matching open reports as "removed". Writes only with `write`;
+ * commentCount; its likes go too, T62), and resolves the matching open reports as "removed". Writes only with `write`;
  * then saves a JSON backup in `backupDir` first. Resolves to what it found / did.
  */
 export async function removeContent(
@@ -165,6 +166,10 @@ export async function removeContent(
 
   if (snapshot.exists) {
     const backup = { path: ref.path, data: snapshot.data(), removedAt: new Date().toISOString() };
+    const commentLikes = commentId
+      ? await buildRef.collection('commentLikes').where('commentId', '==', commentId).get()
+      : null;
+    if (commentLikes) backup.likes = commentLikes.docs.map((d) => ({ id: d.id, ...d.data() }));
     if (!commentId) {
       const [comments, likes] = await Promise.all([
         buildRef.collection('comments').get(),
@@ -183,6 +188,11 @@ export async function removeContent(
       if ((await buildRef.get()).exists)
         batch.update(buildRef, { commentCount: FieldValue.increment(-1) });
       await batch.commit();
+      // Its likes (T62) would only be unreachable orphans; the backup keeps them.
+      await commitInBatches(
+        db,
+        commentLikes.docs.map((like) => (likeBatch) => likeBatch.delete(like.ref)),
+      );
     } else {
       await db.recursiveDelete(buildRef);
     }
@@ -237,7 +247,7 @@ async function commitInBatches(db, ops, size = 200) {
 /**
  * Deletes an account and everything it published, like the in-app "Delete account"
  * (src/lib/firebase/account.ts) but with the Admin SDK: their builds (with every like and comment
- * on them), their likes and comments on other builds (moving those counters), the reports they
+ * on them), their likes, comments and comment likes (T62) on other builds (moving those counters), the reports they
  * filed, their profile with its tracking progress (T34; moving the tracked builds' playerCount and
  * finishedCount, T36) and their Auth user. Open reports about their builds and comments are
  * resolved as "removed". `who` is a uid or an email. Writes only with `write`; then saves a JSON
@@ -254,11 +264,12 @@ export async function deleteUserData(
     : await auth.getUser(who).catch(ignoreUserNotFound);
   const uid = authUser?.uid ?? who;
   const profileRef = db.doc(`users/${uid}`);
-  const [profile, builds, likes, comments, filed, tracking] = await Promise.all([
+  const [profile, builds, likes, comments, commentLikes, filed, tracking] = await Promise.all([
     profileRef.get(),
     db.collection('builds').where('ownerId', '==', uid).get(),
     db.collectionGroup('likes').where('userId', '==', uid).get(),
     db.collectionGroup('comments').where('authorId', '==', uid).get(),
+    db.collectionGroup('commentLikes').where('userId', '==', uid).get(),
     db.collection('reports').where('reporterId', '==', uid).get(),
     profileRef.collection('tracking').get(),
   ]);
@@ -266,6 +277,7 @@ export async function deleteUserData(
   const elsewhere = (snapshot) => snapshot.docs.filter((d) => !ownIds.has(d.ref.parent.parent.id));
   const likesElsewhere = elsewhere(likes);
   const commentsElsewhere = elsewhere(comments);
+  const commentLikesElsewhere = elsewhere(commentLikes);
 
   const about = new Map();
   const addReports = (reports) =>
@@ -288,6 +300,7 @@ export async function deleteUserData(
     builds: ownIds.size,
     likes: likesElsewhere.length,
     comments: commentsElsewhere.length,
+    commentLikes: commentLikesElsewhere.length,
     reportsFiled: filed.size,
     reportsResolved: about.size,
     tracking: tracking.size,
@@ -316,6 +329,7 @@ export async function deleteUserData(
     ),
     likes: likesElsewhere.map(docData),
     comments: commentsElsewhere.map(docData),
+    commentLikes: commentLikesElsewhere.map(docData),
     reports: filed.docs.map(docData),
     tracking: tracking.docs.map(docData),
   };
@@ -347,6 +361,26 @@ export async function deleteUserData(
   await commitInBatches(
     db,
     likesElsewhere.map((d) => counter(d, 'likeCount')),
+  );
+  // Comment likes (T62) before their comments (they may have liked their own), each with the
+  // comment's likeCount while the comment exists.
+  const likedComments = commentLikesElsewhere.map((d) =>
+    d.ref.parent.parent.collection('comments').doc(d.get('commentId')),
+  );
+  const existingComments = new Set(
+    likedComments.length
+      ? (await db.getAll(...likedComments)).filter((s) => s.exists).map((s) => s.ref.path)
+      : [],
+  );
+  await commitInBatches(
+    db,
+    commentLikesElsewhere.map((d, i) => (batch) => {
+      batch.delete(d.ref);
+      const comment = likedComments[i];
+      if (existingComments.has(comment.path)) {
+        batch.update(comment, { likeCount: FieldValue.increment(-1) });
+      }
+    }),
   );
   await commitInBatches(
     db,
@@ -593,6 +627,7 @@ async function main() {
     console.log(`  Builds (with their likes and comments): ${result.builds}`);
     console.log(`  Likes on other builds: ${result.likes}`);
     console.log(`  Comments on other builds: ${result.comments}`);
+    console.log(`  Comment likes on other builds: ${result.commentLikes}`);
     console.log(`  Reports they filed: ${result.reportsFiled}`);
     console.log(`  Builds they track (private progress): ${result.tracking}`);
     console.log(

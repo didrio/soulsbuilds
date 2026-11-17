@@ -57,6 +57,8 @@ export const makeComment = (overrides: Partial<Comment> = {}): Comment => ({
   id: 'c1',
   authorId: 'seed-tarnished',
   text: 'Nice build!',
+  parentId: null,
+  likeCount: 0,
   createdAt: new Date(Date.UTC(2026, 10, 1)),
   ...overrides,
 });

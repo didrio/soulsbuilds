@@ -10,8 +10,11 @@ import {
   getBuild,
   hasLiked,
   likeBuild,
+  likeComment,
+  listCommentLikes,
   listComments,
   unlikeBuild,
+  unlikeComment,
   updateBuild,
   type BuildInput,
 } from '@/lib/firebase';
@@ -138,13 +141,14 @@ export function useLatestComment(buildId: string, enabled: boolean) {
   });
 }
 
+/** Posts a comment, or a reply when `parentId` names a top-level comment (T62). */
 export function useAddComment(buildId: string, userId: string | null) {
   const queryClient = useQueryClient();
   const key = queryKeys.comments(buildId);
   return useMutation({
-    mutationFn: (text: string) => {
+    mutationFn: ({ text, parentId = null }: { text: string; parentId?: string | null }) => {
       if (!userId) throw new Error('Log in to comment.');
-      return addComment(buildId, userId, text);
+      return addComment(buildId, userId, text, parentId);
     },
     onSuccess: (comment) => {
       queryClient.setQueryData<Comment[]>(key, (comments = []) => [comment, ...comments]);
@@ -181,6 +185,63 @@ export function useDeleteComment(buildId: string) {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: key });
       void queryClient.invalidateQueries({ queryKey: queryKeys.builds });
+    },
+  });
+}
+
+/** Ids of the build's comments the signed-in user likes (T62; empty when signed out). */
+export function useCommentLikes(buildId: string, userId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.commentLikes(buildId, userId ?? ''),
+    queryFn: () => listCommentLikes(buildId, userId!),
+    enabled: Boolean(userId),
+  });
+}
+
+/**
+ * Likes or unlikes a comment (`liked` = the new state), updating its heart and count at once and
+ * rolling back on error, like useToggleLike.
+ */
+export function useToggleCommentLike(buildId: string, userId: string | null) {
+  const queryClient = useQueryClient();
+  const likesKey = queryKeys.commentLikes(buildId, userId ?? '');
+  const listKey = queryKeys.comments(buildId);
+  return useMutation({
+    mutationFn: async ({ commentId, liked }: { commentId: string; liked: boolean }) => {
+      if (!userId) throw new Error('Log in to like comments.');
+      await (liked
+        ? likeComment(buildId, commentId, userId)
+        : unlikeComment(buildId, commentId, userId));
+    },
+    onMutate: async ({ commentId, liked }) => {
+      await queryClient.cancelQueries({ queryKey: likesKey });
+      await queryClient.cancelQueries({ queryKey: listKey, exact: true });
+      const previous = {
+        likes: queryClient.getQueryData<Set<string>>(likesKey),
+        list: queryClient.getQueryData<Comment[]>(listKey),
+      };
+      queryClient.setQueryData<Set<string>>(likesKey, (likes = new Set()) => {
+        const next = new Set(likes);
+        if (liked) next.add(commentId);
+        else next.delete(commentId);
+        return next;
+      });
+      queryClient.setQueryData<Comment[]>(listKey, (comments) =>
+        comments?.map((comment) =>
+          comment.id === commentId
+            ? { ...comment, likeCount: Math.max(0, comment.likeCount + (liked ? 1 : -1)) }
+            : comment,
+        ),
+      );
+      return previous;
+    },
+    onError: (_error, _variables, previous) => {
+      queryClient.setQueryData(likesKey, previous?.likes);
+      queryClient.setQueryData(listKey, previous?.list);
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: likesKey });
+      void queryClient.invalidateQueries({ queryKey: listKey, exact: true });
     },
   });
 }

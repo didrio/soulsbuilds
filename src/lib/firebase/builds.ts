@@ -228,13 +228,13 @@ export async function updateBuild(id: string, input: BuildInput): Promise<void> 
 const BATCH_LIMIT = 450;
 
 /**
- * Deletes a build (owner or admin), then its likes and comments. The rules let anyone signed in
+ * Deletes a build (owner or admin), then its likes, comments and comment likes (T62). The rules let anyone signed in
  * delete likes/comments of a build that no longer exists, so a cleanup cut short leaves only
  * unreachable orphans.
  */
 export async function deleteBuild(id: string): Promise<void> {
   await deleteDoc(buildRef(id));
-  for (const sub of ['likes', 'comments']) {
+  for (const sub of ['likes', 'comments', 'commentLikes']) {
     const snapshot = await getDocs(collection(firestore, 'builds', id, sub));
     for (let i = 0; i < snapshot.docs.length; i += BATCH_LIMIT) {
       const batch = writeBatch(firestore);

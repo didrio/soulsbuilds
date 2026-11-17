@@ -54,6 +54,10 @@ service cloud.firestore {
       return /databases/$(database)/documents/builds/$(buildId);
     }
 
+    function commentPath(buildId, commentId) {
+      return /databases/$(database)/documents/builds/$(buildId)/comments/$(commentId);
+    }
+
     // ---- users/{uid}: public profile -----------------------------------------------------------
     // Email stays in Firebase Auth only; nothing private is stored in Firestore.
 
@@ -324,11 +328,22 @@ service cloud.firestore {
         allow update: if false;
       }
 
-      // builds/{id}/comments/{id}: signed-in users comment; authors (and admins) delete.
+      // builds/{id}/comments/{id}: signed-in users comment; authors (and admins) delete. A reply
+      // (T62) names its top-level comment in parentId: one level, so the parent can't be a reply.
+      // The pre-T62 shape (no parentId, no likeCount) is still accepted, for a tab open across a deploy.
+      function validCommentShape(c, buildId, commentId) {
+        return hasExactly(c, ['authorId', 'text', 'createdAt'])
+          || (hasExactly(c, ['authorId', 'text', 'parentId', 'likeCount', 'createdAt'])
+            && c.likeCount == 0
+            && (c.parentId == null
+              || (isId(c.parentId) && c.parentId != commentId
+                && get(commentPath(buildId, c.parentId)).data.get('parentId', null) == null)));
+      }
+
       match /comments/{commentId} {
         allow read: if true;
         allow create: if signedIn()
-          && hasExactly(incoming(), ['authorId', 'text', 'createdAt'])
+          && validCommentShape(incoming(), buildId, commentId)
           && incoming().authorId == request.auth.uid
           && isText(incoming().text, 1000)
           && incoming().createdAt == request.time
@@ -342,8 +357,48 @@ service cloud.firestore {
             && getAfter(buildPath(buildId)).data.commentCount
               == get(buildPath(buildId)).data.commentCount - 1
             && getAfter(buildPath(buildId)).data.lastCommentId == commentId));
+        // likeCount moves by exactly 1, with the caller's commentLikes doc (T62). Pre-T62 comments
+        // have no likeCount: it reads as 0.
+        allow update: if signedIn()
+          && changedKeys().hasOnly(['likeCount'])
+          && commentLikeChange(buildId, commentId);
+      }
+
+      function commentLikeChange(buildId, commentId) {
+        let likeId = commentId + '_' + request.auth.uid;
+        let like = /databases/$(database)/documents/builds/$(buildId)/commentLikes/$(likeId);
+        let delta = incoming().likeCount - resource.data.get('likeCount', 0);
+        return (delta == 1 && !exists(like) && existsAfter(like))
+          || (delta == -1 && exists(like) && !existsAfter(like));
+      }
+
+      // builds/{id}/commentLikes/{commentId}_{uid} (T62): one like per user per comment, with the
+      // comment's likeCount moving in the same batch. Public, like build likes.
+      match /commentLikes/{likeId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && hasExactly(incoming(), ['userId', 'commentId', 'createdAt'])
+          && incoming().userId == request.auth.uid
+          && isId(incoming().commentId)
+          && likeId == incoming().commentId + '_' + request.auth.uid
+          && incoming().createdAt == request.time
+          && getAfter(commentPath(buildId, incoming().commentId)).data.likeCount
+            == get(commentPath(buildId, incoming().commentId)).data.get('likeCount', 0) + 1;
+        // Unlike (with the decrement); the liker's own like once its comment is gone; or clean up
+        // after the build was deleted.
+        allow delete: if signedIn() && (
+          !existsAfter(buildPath(buildId))
+          || (resource.data.userId == request.auth.uid
+            && (!existsAfter(commentPath(buildId, resource.data.commentId))
+              || getAfter(commentPath(buildId, resource.data.commentId)).data.likeCount
+                == get(commentPath(buildId, resource.data.commentId)).data.get('likeCount', 0) - 1)));
         allow update: if false;
       }
+    }
+
+    // Account deletion finds a user's comment likes on every build (by userId, T62).
+    match /{path=**}/commentLikes/{likeId} {
+      allow read: if true;
     }
 
     // "Builds this user liked" is a collection-group query over likes (by userId).

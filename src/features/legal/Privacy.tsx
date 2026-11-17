@@ -28,9 +28,9 @@ function Privacy() {
           Google name or picture. You choose your display name yourself.
         </li>
         <li>
-          <strong>What you publish:</strong> your display name, your builds, your comments and which
-          builds you like. These are public: anyone can see them, and your profile lists your builds
-          and the builds you liked.
+          <strong>What you publish:</strong> your display name, your builds, your comments and
+          replies, and which builds and comments you like. These are public: anyone can see them,
+          and your profile lists your builds and the builds you liked.
         </li>
         <li>
           <strong>Builds you track:</strong> when you track a build, which of its items you’ve
@@ -77,7 +77,8 @@ function Privacy() {
       <h2>Keeping and deleting your data</h2>
       <p>
         We keep your data until you delete it or ask us to. You can delete your own builds and
-        comments at any time from their page.
+        comments at any time from their page. Replies other people wrote to a comment you delete
+        stay, under “Comment deleted”.
       </p>
       <p>
         To delete your account, open <strong>Account</strong> from the menu under your name, choose{' '}

@@ -81,7 +81,9 @@ describe('admin script', () => {
     expect(await status('B1_carol')).toBe('open');
   });
 
-  it('removes a comment with the counter, backs it up, resolves only its reports', async () => {
+  it('removes a comment with the counter and its likes, backs it up, resolves only its reports', async () => {
+    await db.doc('builds/B1/commentLikes/c1_dave').set({ userId: 'dave', commentId: 'c1' });
+    await db.doc('builds/B1/commentLikes/c2_dave').set({ userId: 'dave', commentId: 'c2' });
     const result = await removeContent(
       db,
       { buildId: 'B1', commentId: 'c1' },
@@ -96,7 +98,12 @@ describe('admin script', () => {
     expect(backup).toMatchObject({
       path: 'builds/B1/comments/c1',
       data: { authorId: 'bob', text: 'buy gold' },
+      likes: [{ id: 'c1_dave', userId: 'dave' }],
     });
+    // T62: the comment's likes go with it; other comments' stay.
+    expect((await db.collection('builds/B1/commentLikes').get()).docs.map((d) => d.id)).toEqual([
+      'c2_dave',
+    ]);
   });
 
   it('removes a build with its likes and comments; all its reports resolve', async () => {
@@ -174,6 +181,14 @@ describe('rename and delete-user (T18)', () => {
     await db.doc('builds/B3').set({ ownerId: 'bob', name: 'Bob build', commentCount: 1 });
     await db.doc('builds/B3/comments/c3').set({ authorId: 'carol', text: 'cool' });
     await db.doc('builds/B3/likes/carol').set({ userId: 'carol', createdAt: at(2) });
+    // T62: Bob likes Carol's comment on B1 and his own (deleted with him); a like on his own build
+    // goes with it; a like whose comment is already gone just goes.
+    await db.doc('builds/B1/comments/c2').update({ likeCount: 1 });
+    await db.doc('builds/B1/commentLikes/c2_bob').set({ userId: 'bob', commentId: 'c2' });
+    await db.doc('builds/B1/comments/c1').update({ likeCount: 1 });
+    await db.doc('builds/B1/commentLikes/c1_bob').set({ userId: 'bob', commentId: 'c1' });
+    await db.doc('builds/B1/commentLikes/gone_bob').set({ userId: 'bob', commentId: 'gone' });
+    await db.doc('builds/B3/commentLikes/c3_bob').set({ userId: 'bob', commentId: 'c3' });
     await report('bob', 'B2', null, 4);
     await db
       .doc('users/bob/tracking/B1')
@@ -193,6 +208,7 @@ describe('rename and delete-user (T18)', () => {
       builds: 1,
       likes: 1,
       comments: 1,
+      commentLikes: 3,
       reportsFiled: 1,
       reportsResolved: 1, // dave's report on c1
       tracking: 3,
@@ -209,7 +225,8 @@ describe('rename and delete-user (T18)', () => {
     expect([b1?.likeCount, b1?.commentCount]).toEqual([0, 1]);
     expect([b1?.playerCount, b1?.finishedCount]).toEqual([2, 0]);
     expect((await db.doc('builds/B2').get()).get('playerCount')).toBe(0);
-    expect((await db.doc('builds/B1/comments/c2').get()).exists).toBe(true);
+    expect((await db.doc('builds/B1/comments/c2').get()).get('likeCount')).toBe(0);
+    expect((await db.collection('builds/B1/commentLikes').get()).size).toBe(0);
     expect((await db.doc('reports/B2_bob').get()).exists).toBe(false);
     expect(await status('c1_dave')).toBe('removed');
     expect(await status('B1_carol')).toBe('open');
@@ -220,6 +237,7 @@ describe('rename and delete-user (T18)', () => {
     expect(backup.tracking[0]).toMatchObject({ path: 'users/bob/tracking/B1' });
     expect(backup.tracking).toHaveLength(3);
     expect(backup.comments[0]).toMatchObject({ path: 'builds/B1/comments/c1', text: 'buy gold' });
+    expect(backup.commentLikes).toHaveLength(3);
 
     // Re-running finds nothing and changes nothing.
     expect(await deleteUserData(db, auth, 'bob', { write: true, backupDir })).toMatchObject({
@@ -228,6 +246,7 @@ describe('rename and delete-user (T18)', () => {
       builds: 0,
       likes: 0,
       comments: 0,
+      commentLikes: 0,
     });
     expect((await db.doc('builds/B1').get()).get('commentCount')).toBe(1);
     expect((await db.doc('builds/B1').get()).get('playerCount')).toBe(2);

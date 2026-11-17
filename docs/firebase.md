@@ -21,7 +21,8 @@ public by design; security rules protect the data.
   **4005** (http://127.0.0.1:4005), hub 4405, logging 4505. Vite: **5180**.
 - **Java 21+** is required by firebase-tools. `scripts/firebase.mjs` finds one (JAVA_HOME, PATH, macOS
   `java_home`, Homebrew `openjdk` kegs) and puts it on PATH for the CLI. `npm run doctor` shows which.
-- Seed accounts and builds: `scripts/seed.mjs` (two users, four builds, a like and a comment, in data model
+- Seed accounts and builds: `scripts/seed.mjs` (two users, four builds, a like, a comment, and a thread with
+  replies, comment likes and a deleted comment's reply on Carian Moon Knight, T62, in data model
   v2; it validates every item name). It wipes the emulator's Firestore first, so `npm run seed` resets data.
 - `npm run test:rules` runs `tests/rules/` (rules + the real data-layer functions as different users) and
   `tests/migration/` against a **separate** Firestore emulator (`firebase.test.json`: port 8185, project
@@ -36,7 +37,7 @@ public by design; security rules protect the data.
   It now ships with every approved production deploy from CI.
 - `firestore.indexes.json` has the composite indexes the queries need (builds by game + likes/date, by tag, by
   owner; likes by user) and, under `fieldOverrides`, collection-group single-field indexes for account
-  deletion (likes by `userId`, comments by `authorId`). A new index takes minutes to build in production; queries that need it fail until then.
+  deletion (likes and commentLikes (T62) by `userId`, comments by `authorId`). A new index takes minutes to build in production; queries that need it fail until then.
 - Production also holds an unused 2022 doc, `app/tags` (the old boss-tag list). No rule matches it, so clients
   can't read it; it's in the T12 backup.
 
@@ -115,9 +116,9 @@ node scripts/admin.mjs export [--project soulsbuilds]            # JSON backup o
 ```
 
 - **Delete, not hide** (`docs/decisions.md`). `remove` first saves what it deletes (the build with its comments
-  and likes, or the comment) as JSON in `.admin-backups/` (gitignored), so a mistake can be restored by hand.
+  and likes, or the comment with its likes, T62; its replies stay, under "Comment deleted") as JSON in `.admin-backups/` (gitignored), so a mistake can be restored by hand.
   `delete-user` (T18) does the same for an account: the in-app "Delete account" scope (builds with their likes
-  and comments, likes and comments elsewhere with the counters, reports filed, profile, Auth user), backed up
+  and comments, likes, comments and comment likes elsewhere with the counters, reports filed, profile, Auth user), backed up
   first, and it resolves open reports about that user's content as `removed`. Use it when someone asks by
   GitHub issue (they can't sign in) or an in-app deletion stopped halfway.
   Resolved reports keep their doc with `status: 'removed' | 'dismissed'` and `resolvedAt`.

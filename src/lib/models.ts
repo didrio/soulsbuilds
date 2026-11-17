@@ -159,6 +159,13 @@ export interface TrackingDoc {
 export interface CommentDoc {
   authorId: string;
   text: string;
+  /**
+   * The top-level comment this replies to, or null (T62: one reply level, so never a reply's id).
+   * Absent on comments posted before T62.
+   */
+  parentId?: string | null;
+  /** Moved by exactly 1 with a commentLikes doc (firestore.rules). Absent before T62 (= 0). */
+  likeCount?: number;
   createdAt: Timestamp;
 }
 
@@ -166,7 +173,16 @@ export interface Comment {
   id: string;
   authorId: string;
   text: string;
+  parentId: string | null;
+  likeCount: number;
   createdAt: Date;
+}
+
+/** builds/{buildId}/commentLikes/{commentId}_{uid} as stored (T62). */
+export interface CommentLikeDoc {
+  userId: string;
+  commentId: string;
+  createdAt: Timestamp;
 }
 
 /** builds/{buildId}/likes/{uid} as stored (the doc id is the liker's uid). */

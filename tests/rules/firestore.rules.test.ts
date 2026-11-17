@@ -24,7 +24,7 @@ import {
   writeBatch,
   type Firestore,
 } from 'firebase/firestore';
-import { afterAll, beforeAll, beforeEach, describe, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 let env: RulesTestEnvironment;
 
@@ -883,6 +883,153 @@ describe('builds/{id}/comments/{id}', () => {
     await assertFails(deleteComment(as('alice'), 'c1'));
     await assertSucceeds(deleteComment(as('bob'), 'c1'));
     await assertSucceeds(deleteComment(as('root', { admin: true }), 'c2'));
+  });
+});
+
+// T62: the current shape carries parentId and likeCount; the pre-T62 shape (above) still posts.
+const post = (db: Firestore, id: string, author: string, parentId: string | null = null) =>
+  comment(db, id, { authorId: author, text: 'hi', parentId, likeCount: 0 });
+
+const likeComment = (db: Firestore, uid: string, commentId: string, delta = 1) => {
+  const batch = writeBatch(db);
+  batch.set(doc(db, `builds/B1/commentLikes/${commentId}_${uid}`), {
+    userId: uid,
+    commentId,
+    createdAt: serverTimestamp(),
+  });
+  batch.update(doc(db, `builds/B1/comments/${commentId}`), { likeCount: increment(delta) });
+  return batch.commit();
+};
+
+const unlikeComment = (db: Firestore, uid: string, commentId: string, delta = -1) => {
+  const batch = writeBatch(db);
+  batch.delete(doc(db, `builds/B1/commentLikes/${commentId}_${uid}`));
+  batch.update(doc(db, `builds/B1/comments/${commentId}`), { likeCount: increment(delta) });
+  return batch.commit();
+};
+
+const likeCountOf = async (commentId: string) => {
+  let count: unknown;
+  await seed(async (db) => {
+    count = (await getDoc(doc(db, `builds/B1/comments/${commentId}`))).get('likeCount');
+  });
+  return count;
+};
+
+describe('replies (T62)', () => {
+  beforeEach(() => seedBuild());
+
+  it('a comment carries parentId (null) and likeCount 0', async () => {
+    await assertSucceeds(post(as('bob'), 'c1', 'bob'));
+    await assertFails(
+      comment(as('bob'), 'c2', { authorId: 'bob', text: 'hi', parentId: null, likeCount: 3 }),
+    );
+    await assertFails(comment(as('bob'), 'c2', { authorId: 'bob', text: 'hi', likeCount: 0 }));
+  });
+
+  it('a reply names an existing top-level comment of the build', async () => {
+    await post(as('bob'), 'c1', 'bob');
+    await assertSucceeds(post(as('carol'), 'r1', 'carol', 'c1'));
+    // A reply to a reply, a missing comment, itself, or a malformed id is refused.
+    await assertFails(post(as('bob'), 'r2', 'bob', 'r1'));
+    await assertFails(post(as('bob'), 'r2', 'bob', 'c9'));
+    await assertFails(post(as('bob'), 'r2', 'bob', 'r2'));
+    await assertFails(post(as('bob'), 'r2', 'bob', 'not/an id'));
+  });
+
+  it('a reply to a pre-T62 comment (no parentId field) is fine', async () => {
+    await comment(as('bob'), 'old', { authorId: 'bob', text: 'from 2022' });
+    await assertSucceeds(post(as('carol'), 'r1', 'carol', 'old'));
+  });
+
+  it('deleting a top-level comment leaves its replies; nobody can reply to it any more', async () => {
+    await post(as('bob'), 'c1', 'bob');
+    await post(as('carol'), 'r1', 'carol', 'c1');
+    await assertSucceeds(deleteComment(as('bob'), 'c1'));
+    await assertSucceeds(getDoc(doc(as(), 'builds/B1/comments/r1')));
+    await assertFails(post(as('carol'), 'r2', 'carol', 'c1'));
+  });
+});
+
+describe('builds/{id}/commentLikes/{commentId}_{uid} (T62)', () => {
+  beforeEach(async () => {
+    await seedBuild();
+    await post(as('bob'), 'c1', 'bob');
+  });
+
+  it('a signed-in user likes a comment with its counter, once, and unlikes it', async () => {
+    await assertSucceeds(likeComment(as('carol'), 'carol', 'c1'));
+    expect(await likeCountOf('c1')).toBe(1);
+    await assertFails(likeComment(as('carol'), 'carol', 'c1'));
+    await assertSucceeds(likeComment(as('bob'), 'bob', 'c1'));
+    await assertSucceeds(unlikeComment(as('carol'), 'carol', 'c1'));
+    expect(await likeCountOf('c1')).toBe(1);
+    await assertFails(unlikeComment(as('carol'), 'carol', 'c1'));
+  });
+
+  it('the like and the counter move together, by exactly 1', async () => {
+    const db = as('carol');
+    await assertFails(
+      setDoc(doc(db, 'builds/B1/commentLikes/c1_carol'), {
+        userId: 'carol',
+        commentId: 'c1',
+        createdAt: serverTimestamp(),
+      }),
+    );
+    await assertFails(updateDoc(doc(db, 'builds/B1/comments/c1'), { likeCount: increment(1) }));
+    await assertFails(likeComment(db, 'carol', 'c1', 2));
+    await assertFails(likeComment(as(), 'carol', 'c1'));
+  });
+
+  it('only your own like, under its own id, and nothing else on the comment changes', async () => {
+    await assertFails(likeComment(as('carol'), 'dave', 'c1'));
+    const db = as('carol');
+    const batch = writeBatch(db);
+    batch.set(doc(db, 'builds/B1/commentLikes/c2_carol'), {
+      userId: 'carol',
+      commentId: 'c1',
+      createdAt: serverTimestamp(),
+    });
+    batch.update(doc(db, 'builds/B1/comments/c1'), { likeCount: increment(1) });
+    await assertFails(batch.commit());
+    const edit = writeBatch(db);
+    edit.set(doc(db, 'builds/B1/commentLikes/c1_carol'), {
+      userId: 'carol',
+      commentId: 'c1',
+      createdAt: serverTimestamp(),
+    });
+    edit.update(doc(db, 'builds/B1/comments/c1'), { likeCount: increment(1), text: 'edited' });
+    await assertFails(edit.commit());
+    await assertFails(likeComment(as('carol'), 'carol', 'c9'));
+  });
+
+  it('a pre-T62 comment (no likeCount) can be liked', async () => {
+    await comment(as('bob'), 'old', { authorId: 'bob', text: 'from 2022' });
+    await assertSucceeds(likeComment(as('carol'), 'carol', 'old'));
+    expect(await likeCountOf('old')).toBe(1);
+  });
+
+  it('anyone reads likes; a user lists theirs, on a build and across builds', async () => {
+    await likeComment(as('carol'), 'carol', 'c1');
+    await assertSucceeds(
+      getDocs(query(collection(as(), 'builds/B1/commentLikes'), where('userId', '==', 'carol'))),
+    );
+    await assertSucceeds(
+      getDocs(query(collectionGroup(as(), 'commentLikes'), where('userId', '==', 'carol'))),
+    );
+  });
+
+  it('once its comment is gone, the liker (only) deletes their like', async () => {
+    await likeComment(as('carol'), 'carol', 'c1');
+    await deleteComment(as('bob'), 'c1');
+    await assertFails(deleteDoc(doc(as('bob'), 'builds/B1/commentLikes/c1_carol')));
+    await assertSucceeds(deleteDoc(doc(as('carol'), 'builds/B1/commentLikes/c1_carol')));
+  });
+
+  it('after the build is deleted, anyone signed in cleans them up', async () => {
+    await likeComment(as('carol'), 'carol', 'c1');
+    await deleteDoc(doc(as('alice'), 'builds/B1'));
+    await assertSucceeds(deleteDoc(doc(as('dave'), 'builds/B1/commentLikes/c1_carol')));
   });
 });
 
