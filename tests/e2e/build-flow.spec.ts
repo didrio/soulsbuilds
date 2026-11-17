@@ -78,10 +78,15 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
 
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
-  // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune.
-  await expect(page.getByText('Blood · Seppuku')).toBeVisible();
-  // Every item is shown by name (T27).
-  await expect(page.getByText("Radahn's Great Rune")).toBeVisible();
+  // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune. The
+  // sidebar's tiles carry the names (T48), and one shows them on tap.
+  const sidebar = page.getByRole('complementary', { name: 'Stats and gear' });
+  const weapon = sidebar.getByRole('button', {
+    name: /^Uchigatana \(Blood affinity, Seppuku skill/,
+  });
+  await weapon.click();
+  await expect(weapon.getByText('Blood · Seppuku')).toBeVisible();
+  await expect(sidebar.getByRole('button', { name: "Radahn's Great Rune" })).toBeVisible();
   await expect(page.getByText('Starting class: Samurai')).toBeVisible();
   await expect(page.getByRole('link', { name: displayName })).toBeVisible();
 
@@ -101,8 +106,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByLabel('Post a comment')).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Delete your comment' })).toBeVisible();
 
-  // Edit keeps likes and comments (2022 bug: saving reset them). Editing opens the Loadout tab (the
-  // Comments tab isn't there while editing, T28).
+  // Edit keeps likes and comments (2022 bug: saving reset them). Editing opens Description, the only
+  // tab while editing (T48): the build itself is edited in the sidebar.
   await page.getByRole('button', { name: 'Edit' }).click();
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
   await page.getByLabel('Build name').fill(`${buildName} v2`);
@@ -208,7 +213,9 @@ test('password reset and consumables', async ({ page }) => {
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
   await page.reload();
-  await expect(page.getByText('Consumables')).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Items' }).getByRole('button')).toHaveAccessibleName(
+    'Acid Spraymist',
+  );
 
   // Password reset from the login dialog.
   await accountMenu(page, 'Log out');

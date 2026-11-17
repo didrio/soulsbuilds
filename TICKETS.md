@@ -2,16 +2,16 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T49**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T50**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T48 (build page v3: the
-build in a sidebar, Description · Guide · Comments), the owner's design of 2026-11-16. Then T32 — Make a copy
-(then T33, variations); T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage
-counts (T38, blocked on the owner), link previews (T37, blocked on the Blaze decision), the branded email
-action page (T43), and item hover cards (T45, no rush).
+**Next:** T49 (build page v3, part 2: collapsible sections on phones; owner's design of 2026-11-16, its two
+glance decisions in the ticket). Then T32 — Make a copy (then T33, variations); T42 freed the rules budget it
+needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
+blocked on the Blaze decision), the branded email action page (T43), and item hover cards (T45, no rush; T48's
+sidebar tiles are where they'd show).
 T32, T33 and T45 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -40,7 +40,8 @@ and spacing, and the canvas notes say why.
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
-T42 (rules budget) and T46 (tracking in How to get).
+T42 (rules budget), T46 (tracking in How to get), T47 (generated descriptions) and T48 (build page v3 on
+desktop).
 
 ## In progress
 
@@ -48,72 +49,50 @@ T42 (rules budget) and T46 (tracking in How to get).
 
 ## Up next
 
-### T48 — Build page v3: the build in a sidebar, Description · Guide · Comments
+### T49 — Build page v3, part 2: collapsible sections on phones
 
-- **Status:** ready (T46 and T47 done; owner's design, 2026-11-16)
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** The build's stats and gear live in one sidebar that's the same on every tab and for every visitor,
-  and the page's tabs are Description (the default), Guide and Comments. The build reads at a glance, the page
-  doesn't reshape itself, and the cards that pointed at other tabs are gone. On phones: collapsible sections
-  whose closed headers already say something.
+- **Status:** ready (T48 done 2026-11-16: desktop sidebar, tabs, gear.ts)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** On phones and tablets (< 900 px, `BELOW_TABLET`) the build page is collapsible sections whose
+  closed headers already say something, instead of T48's interim (the tab bar with the sidebar stacked above
+  each tab).
 - **Done when:**
-  - **Title section** (`BuildHeader`), shorter: a ~72 px tile (from 112), name, meta and tags packed tighter,
-    the actions on the right (Track / Tracking from T46, Like, Report, the owner's Edit and Delete).
-  - **Tab bar** across the full width, labels centered: Description · Guide · Comments (count). URLs:
-    `/build/:id` = Description, `/build/:id/guide`, `/build/:id/comments`; `/route` → `/guide` and
-    `/description` → `/build/:id` redirect (`replace`). `tabs.ts` (`BuildTab`, `BUILD_TABS`, `parseTab`,
-    `tabPath`, `pageKey`) and T46's links (Track, profile lists) follow.
-  - **Sidebar** (desktop ≥ 900 px, `STATS_COLUMN_WIDTH` 340), one component from `BuildSummary` + `StatsCard`:
-    - Stats: rune level, starting class, the eight attributes as rows with bars and talisman bonuses (StatsCard's
-      desktop look; shrink as needed, owner: "your call"), HP / FP / stamina, equip load bar with the roll,
-      poise.
-    - Gear as icon tiles by group: armaments (+ arrows), armor, talismans, spells (memory slots), tears, Great
-      Rune, spirit ash, items. **No names on the page** (owner): hover, keyboard focus or tap shows the name, a
-      subline (`itemSubline`: affinity · skill for weapons) and the requirement warning (`itemWarning`, also a
-      small mark on the tile). `BuildSummary`'s `GearTile` + `Tooltip` are the start; T45 makes them full cards.
-    - Sticky under the tab bar when it fits the window, else it scrolls with the page.
-    - Identical on all three tabs, signed in or out, tracking or not.
-  - **Description**: the write-up or T47's generated one. **Guide**: T46's How to get tab, renamed.
-    **Comments**: as today.
-  - **Removed:** the Loadout tab and `LoadoutPanel`; `Loadout`'s view mode (its edit rows may live on in the
-    phone sections); `TabLinkCard`; `MoreByAuthor` with its test and e2e step; the condensed summary as a
-    separate thing (it becomes the sidebar).
-  - **Editing** keeps "edit mode is the view layout": the sidebar becomes editable (StatsCard's class picker
-    and inputs; tiles are buttons that open the picker, empty slots as placeholder tiles named on hover,
-    warnings on the tiles). While editing, the only tab is Description (the markdown editor), with the sticky
-    Save bar as today. New builds the same.
-  - **Phones and tablets** (< 900 px, `BELOW_TABLET`): no tab bar; collapsible sections under the title
-    section, in this order: Stats · Weapons (with arrows) · Armor · Talismans · Spells\* · Tears, rune and ash ·
-    Items\* · Description · Guide · Comments (\*only when the build has some).
-    - A closed header is a glance: Stats → the rune level and the three highest attributes; gear sections →
-      their icons; Guide → "21 stops", or "3 of 14 items" while tracking; Comments → the count and the start of
-      the latest.
-    - Opening a gear section lists its items as rows with icon, name and subline (like `ItemRow`), so phones
-      get names without hover. Stats opens to the compact sheet (4×2 attributes, vitals, equip load, poise).
-    - On load, the section the URL names is open (Description by default; `/guide`, `/comments`), the rest
-      closed. Several can be open at once. Opening a content section replaces the URL (no history entry per
-      tap). An open section's header sticks to the top while you scroll through it, so it closes from anywhere.
-    - Headers are `<button aria-expanded aria-controls>` ≥ 44 px; each section is a region named by its header.
-    - Editing on phones: the build sections open as edit rows (picker buttons, stat inputs), Description as
-      the editor.
-  - Tests: `tabs.test.ts`, `BuildTabs.test.tsx`, `BuildEditorPage.test.tsx`, `BuildHeader.test.tsx`, the
-    sidebar (from `BuildSummary.test.tsx`/`StatsCard.test.tsx`), the phone sections (open and close, the URL's
-    section open, the glances), what remains of `Loadout.test.tsx`, `test/editor.tsx` if the editor's entry
-    points move; e2e `build-tabs`, `community` (no More by), `build-flow` (editing in the sidebar),
-    `build-image`, `guide`, `tracking`, `playing`. `npm run check` and `npm run e2e` pass.
-  - Screenshots: each tab desktop and `--mobile` (sections closed and opened), tracking and not, edit mode, and
-    a build with no gear (SEEDNAKED001).
-  - Docs: decisions "Build page layout", "Redesign v2" and "Build page and editor" revised (owner's design,
-    2026-11-16); AGENTS.md map (`features/editor/sections`) and "Where things stand"; docs/architecture.md;
-    the `run-app` skill if it names the Loadout tab; docs/product.md "Priorities".
-- **Context:** the design came from a review on 2026-11-16 (inline mockups, not saved): the owner chose a
-  fixed build sidebar over an Overview/Guide split and over one long page, so the build reads the same
-  everywhere and only the Guide changes while tracking. Files: `BuildEditorPage.tsx` (layout: `WithSummary`,
-  `Summary`, `Cards`), `sections/{BuildHeader,BuildTabs,BuildSummary,StatsCard,Loadout,LoadoutPanel,
-TabLinkCard,MoreByAuthor}.tsx`, `ItemRow.tsx`, `itemDetails.ts`, `slots.ts`, `tabs.ts`, `app/routes.tsx`,
-  `components/ui/{Tooltip,ItemTile,Frame}.tsx`, `theme/media.ts`. The Gotcha on `@/data/core` vs `@/data`: the
-  sidebar renders on every build view, so its tooltips use light data. Big: the plan may split it (e.g. desktop,
-  then phones) as long as each part ships with the whole build still visible on phones.
+  - No tab bar below 900 px; collapsible sections under the title section, in this order: Stats · Weapons (with
+    arrows) · Armor · Talismans · Spells\* · Tears, rune and ash · Items\* · Description · Guide · Comments (\*only
+    when the build has some).
+  - A closed header is a glance: Stats → the rune level and the three highest attributes; gear sections → their
+    icons; Guide → "14 items to find" (counted from the build: `trackedItems(equipment).length`, no route chunk;
+    owner, 2026-11-16), or "3 of 14 items" while tracking (`tracking.progress.gear`); Comments → the count and
+    the start of the newest comment.
+  - Newest comment (owner, 2026-11-16): a `limit(1)` query (`fetchLatestComment` in
+    `src/lib/firebase/comments.ts` + a query hook), only on phones and only when `commentCount` isn't 0: 1 read
+    per phone visit; the full list loads when the section opens. Data-layer test in `tests/rules/`.
+  - Opening a gear section lists its items as rows with icon, name and subline (`ItemRow`), so phones get names
+    without hover. Stats opens to the compact sheet (4×2 attributes, vitals, equip load, poise).
+  - On load, the section the URL names is open (Description by default; `/guide`, `/comments`), the rest
+    closed; navigating to one (the hero's Track → `/guide`) opens it and scrolls to it. Several can be open at
+    once. Opening a content section replaces the URL (no history entry per tap). An open section's header
+    sticks to the top while you scroll through it, so it closes from anywhere.
+  - Headers are `<button aria-expanded aria-controls>` ≥ 44 px; each section is a region named by its header.
+  - Editing on phones: the build sections open as edit rows (picker buttons, stat inputs), Description as the
+    editor.
+  - Tests: the phone sections (open and close, the URL's section open, the glances), the newest-comment query;
+    e2e at a phone viewport for one journey. `npm run check` and `npm run e2e` pass.
+  - Screenshots `--mobile`: sections closed and opened, tracking and not, edit mode, SEEDNAKED001.
+  - Docs: decisions "Build page layout" (phones), AGENTS.md map, docs/architecture.md.
+- **Context:** T48 built the shared parts: `src/features/editor/gear.ts` (the gear groups, view and edit; reuse
+  it for the gear sections), `sections/BuildSidebar.tsx` (stats + gear tiles), `tabs.ts`. Pick one layout per
+  width in JS (a `matchMedia` hook; jsdom needs a stub) rather than rendering both and hiding one with CSS
+  (duplicate ids and headings). `BuildEditorPage.tsx` is where the layout switches.
+  - **Handoff from T48:** below 900 px today the page is the tab bar with `BuildSidebar` stacked above the tab.
+    `StatsCard` already has the compact phone sheet (4×2 attributes, HP/FP/stamina/poise row, load) under
+    `BELOW_TABLET` media queries; reuse it as the Stats section's body. Gear rows: `ItemRow` with
+    `gearGroups(selectGearState, editable)` entries (`slotWeaponDetails`, `itemSubline`, `changeLabel` are
+    there). StatsCard and BuildSidebar use fixed ids (`stats-title`, `gear-title`): render one of them per
+    page. Comments are publicly readable (`allow read: if true` in `firestore.rules`), so the `limit(1)` query
+    needs no rule change, only a data-layer test. `BuildTabs` scrolls the page on tab change; the sections
+    replace it on phones, so the URL ↔ open-section sync lives in the sections. Track → `/guide` must open and
+    scroll to the Guide section. e2e at a phone viewport: Playwright `test.use({ viewport })` in one spec.
 
 ### T38 — Cookie-free usage counts
 
@@ -289,6 +268,11 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T48 — Build page v3, desktop — 2026-11-16 — split (owner): desktop + shared now, phones → T49. Tabs
+  Description (`/build/:id`) · Guide · Comments, old `/description` `/route` redirect (`isCanonical`); one
+  `BuildSidebar` (StatsCard + gear tiles named on hover/focus/tap, warning dots; editable while editing,
+  Description the only tab) from `gear.ts` `gearGroups(selectGearState)`; 72px title tile. Gone: Loadout tab,
+  `LoadoutPanel`, `Loadout`, `TabLinkCard`, `MoreByAuthor`, `BuildSummary`, `BELOW_WIDE`, `SHORT_SCREEN`.
 - T47 — Auto-generated description — 2026-11-16 — Description tab always shown: the write-up, or `describe.ts`
   `describeBuild(selectDescriptionFacts)` made at view time (weapons, top attributes, load, poise, talismans,
   spells, "Worth knowing"), with an "automatically generated" note; `visibleTabs` lost `hasDescription`.
@@ -308,9 +292,3 @@ Older entries: `docs/tickets-archive.md`.
   ones, gear or marks). `guide/progress.ts` `stopMarkKeys` (a stop's gate and item keys, not its number) +
   `stopProgress(…, marked)`; `RouteAction.gate`; `applyChange` `mark` (pruned to the route); optional
   `marked` on the tracking doc (`validTracking`: list ≤ 64); e2e `guide.spec.ts`; decision "Route stops done".
-- T31 — Profile and account settings — 2026-11-16 — owner: no canvas mock, name menu in the header, Google-only
-  accounts set a password (no email change), framed profile hero. `/account` (`features/account/`: display name,
-  email + verify notice + change by link, sign-in methods + change/set password, Log out, DeleteAccount moved
-  here); `reauthenticate` in `lib/firebase/auth.ts` before every change (set password = `updatePassword`:
-  `linkWithCredential` fails for the account's own email); `useAuth()` snapshots email/verified/providers +
-  `refreshUser()`; `app/AccountMenu`; e2e `settings.spec.ts` + `helpers.ts` `accountMenu`/`headerLogIn`.

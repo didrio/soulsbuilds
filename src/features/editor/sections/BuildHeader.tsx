@@ -25,15 +25,20 @@ import {
   COLOR_TINT,
   FONT_DISPLAY,
   SPACE_LG,
+  SPACE_PANEL,
   SPACE_MD,
   SPACE_SM,
   SPACE_XS,
-  TEXT_DISPLAY,
+  TEXT_XXL,
   TEXT_MD,
   TEXT_SM,
   WEIGHT_DISPLAY,
 } from '@/theme';
 import { useHasLiked, useToggleLike } from '../queries';
+
+/** The build image's edge on desktop (T48: from 112), and below 900 px. */
+const TILE = 72;
+const TILE_SMALL = 56;
 
 export const likesLabel = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
 
@@ -46,11 +51,12 @@ interface BuildHeaderProps {
 }
 
 /**
- * View mode's hero (T22, T28): the build image (T40: the author's pick, else the main weapon) as a large tile with the skin's glow, the build's name
- * (the page's `<h1>`), "by <author> · Level N · 3 days ago", the tags (each links to the builds with
- * it), and the actions: Track this build (T34), Like (a count when signed out), Report and the
- * owner's controls. Desktop: actions on the right; tablets and phones: a smaller tile, the actions in
- * a row under the tags. Tracking shows no progress here (T46: it lives on How to get).
+ * View mode's title section (T22, T28; shorter since T48): the build image (T40: the author's pick,
+ * else the main weapon) as a 72 px tile with the skin's glow, the build's name (the page's `<h1>`),
+ * "by <author> · Level N · 3 days ago", the tags (each links to the builds with it), and the actions:
+ * Track this build (T34), Like (a count when signed out), Report and the owner's controls. Desktop:
+ * actions on the right; tablets and phones: a smaller tile, the actions in a row under the tags.
+ * Tracking shows no progress here (T46: it lives in the Guide).
  */
 function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
   const { uid } = useAuth();
@@ -62,7 +68,7 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
 
   return (
     <Pane $hero $tile={Boolean(image)} aria-labelledby="build-title">
-      {image ? <Portrait src={iconUrl(image.icon)} title={image.name} size={112} /> : null}
+      {image ? <Portrait src={iconUrl(image.icon)} title={image.name} size={TILE} /> : null}
       <Title id="build-title">{build.name}</Title>
       <Meta>
         {owner.data ? (
@@ -161,9 +167,9 @@ const Pane = styled(Frame)<{ $tile: boolean }>`
   display: grid;
   grid-template-areas: ${({ $tile }) => desktopAreas($tile)};
   grid-template-columns: ${({ $tile }) =>
-    $tile ? '112px minmax(0, 1fr) auto' : 'minmax(0, 1fr) auto'};
+    $tile ? `${TILE}px minmax(0, 1fr) auto` : 'minmax(0, 1fr) auto'};
   grid-template-rows: auto auto 1fr;
-  padding: 24px;
+  padding: ${SPACE_PANEL} ${SPACE_LG};
 
   @media ${BELOW_TABLET} {
     column-gap: ${SPACE_MD};
@@ -171,7 +177,8 @@ const Pane = styled(Frame)<{ $tile: boolean }>`
       $tile
         ? `'tile title' 'tile meta' 'tags tags' 'actions actions' 'error error'`
         : `'title' 'meta' 'tags' 'actions' 'error'`};
-    grid-template-columns: ${({ $tile }) => ($tile ? '76px minmax(0, 1fr)' : 'minmax(0, 1fr)')};
+    grid-template-columns: ${({ $tile }) =>
+      $tile ? `${TILE_SMALL}px minmax(0, 1fr)` : 'minmax(0, 1fr)'};
     grid-template-rows: none;
     padding: ${SPACE_MD};
   }
@@ -184,8 +191,8 @@ const Portrait = styled(ItemTile)`
   grid-area: tile;
 
   @media ${BELOW_TABLET} {
-    height: 76px;
-    width: 76px;
+    height: ${TILE_SMALL}px;
+    width: ${TILE_SMALL}px;
   }
 `;
 
@@ -193,7 +200,7 @@ const Title = styled.h1`
   align-self: end;
   color: ${COLOR_TEXT};
   font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_DISPLAY};
+  font-size: ${TEXT_XXL};
   font-weight: ${WEIGHT_DISPLAY};
   grid-area: title;
   line-height: 1.15;
@@ -202,7 +209,7 @@ const Title = styled.h1`
   text-wrap: balance;
 
   @media ${BELOW_MOBILE} {
-    font-size: 27px;
+    font-size: 26px;
   }
 `;
 
@@ -214,7 +221,7 @@ const Meta = styled.p`
   font-size: ${TEXT_MD};
   gap: ${SPACE_XS} 14px;
   grid-area: meta;
-  margin: ${SPACE_XS} 0 0;
+  margin: 2px 0 0;
 `;
 
 const AuthorLink = styled(Link)`
@@ -274,7 +281,7 @@ const Tags = styled.ul`
   gap: 0 6px;
   grid-area: tags;
   list-style: none;
-  margin: 2px 0 0;
+  margin: -${SPACE_XS} 0 -${SPACE_SM};
   padding: 0;
 `;
 

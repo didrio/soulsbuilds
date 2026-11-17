@@ -29,7 +29,7 @@ import TrackedAttributes from './TrackedAttributes';
 import type { BuildTracking } from './useBuildTracking';
 
 /**
- * The top of the How to get tab while the player tracks the build (T46; tracking lives only there):
+ * The top of the Guide tab while the player tracks the build (T46; tracking lives only there):
  * a compact bar with the progress ("3 of 14 items · Level 62 of 131"), "Your stats" (the attributes
  * with − and +, opened in place under the bar) and "Stop tracking" (asks first: it deletes the
  * progress). At 100%, the "Build complete" moment instead. Nothing when the player doesn't track it.

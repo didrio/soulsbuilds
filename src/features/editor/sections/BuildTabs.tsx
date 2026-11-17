@@ -14,6 +14,7 @@ import {
   SPACE_GUTTER,
   TEXT_XS,
 } from '@/theme';
+import { loadRoute } from '../guide/GuideSection';
 import { BUILD_TABS, tabPath, type BuildTab } from '../tabs';
 
 /** The tab bar's height; the sticky stats column sits under it. */
@@ -28,10 +29,11 @@ interface BuildTabsProps {
 }
 
 /**
- * The build page's tab bar (T28): links, so each tab has a URL and Back works. It sticks to the top
- * of the window while the page scrolls; on phones it scrolls sideways. When the tab changes while the
- * bar is stuck, the page scrolls so the bar sits at the top and the new tab starts right under it;
- * otherwise the scroll position stays.
+ * The build page's tab bar (T28, T48): links, so each tab has a URL and Back works, across the page
+ * with the labels centered. It sticks to the top of the window while the page scrolls. When the tab
+ * changes while the bar is stuck, the page scrolls so the bar sits at the top and the new tab starts
+ * right under it; otherwise the scroll position stays. Pointing at Guide fetches the route's code and
+ * data ahead of the click.
  */
 function BuildTabs({ buildId, current, tabs, commentCount }: BuildTabsProps) {
   const sentinel = useRef<HTMLDivElement>(null);
@@ -49,7 +51,12 @@ function BuildTabs({ buildId, current, tabs, commentCount }: BuildTabsProps) {
       <Sentinel ref={sentinel} aria-hidden="true" />
       <Bar aria-label="Build sections">
         {BUILD_TABS.filter(({ tab }) => tabs.includes(tab)).map(({ tab, label }) => (
-          <Tab key={tab} to={tabPath(buildId, tab)} end>
+          <Tab
+            key={tab}
+            to={tabPath(buildId, tab)}
+            end
+            onFocus={tab === 'guide' ? () => void loadRoute() : undefined}
+            onPointerEnter={tab === 'guide' ? () => void loadRoute() : undefined}>
             {label}
             {tab === 'comments' && commentCount !== undefined ? (
               <>
@@ -74,6 +81,7 @@ const Bar = styled.nav`
   border-bottom: 1px solid ${COLOR_LINE};
   display: flex;
   gap: 4px;
+  justify-content: center;
   overflow-x: auto;
   position: sticky;
   scrollbar-width: none;

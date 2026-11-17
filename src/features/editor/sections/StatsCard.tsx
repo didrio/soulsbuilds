@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import styled, { css } from 'styled-components';
 import DropDown from '@/components/ui/DropDown';
-import Frame from '@/components/ui/Frame';
 import Label from '@/components/ui/Label';
 import SectionHeading from '@/components/ui/SectionHeading';
 import TextInput from '@/components/ui/TextInput';
@@ -60,7 +59,7 @@ const ROLLS: { roll: Exclude<RollType, 'overloaded'>; name: string }[] = [
   { roll: 'heavy', name: 'Heavy' },
 ];
 
-/** The stats column's width on desktop (T28): the Loadout tab's left part and the other tabs' summary. */
+/** The build sidebar's width on desktop (T28, T48). */
 export const STATS_COLUMN_WIDTH = 340;
 
 export const formatNumber = (value: number) => value.toLocaleString('en-US');
@@ -103,13 +102,13 @@ function StatInput({
 }
 
 /**
- * The Stats card (T27: the attributes and character panels in one): the rune level, the starting class
+ * The stats (T27; since T48 the top of the build sidebar, which is the panel): the rune level, the starting class
  * (a picker when editable: choosing one raises the stats to its base, and no stat can go below it),
  * each attribute as a row with a bar and its value (an input when editable) and what talismans add
  * ("+5"), then what it all adds up to: HP, FP and stamina, the equip load on a bar marked where the
  * rolls change, and poise. Talisman effects count (store/derived.ts). Phones and tablets: the
  * attributes in a 4×2 grid with short names, HP, FP, stamina and poise in one row. The player's own
- * levels, while tracking, are on How to get (T46).
+ * levels, while tracking, are in the Guide (T46).
  */
 function StatsCard({ editable, level }: { editable: boolean; level: number }) {
   const dispatch = useAppDispatch();
@@ -123,7 +122,7 @@ function StatsCard({ editable, level }: { editable: boolean; level: number }) {
   const percent = equipLoad > 0 ? Math.round((weight / equipLoad) * 1000) / 10 : 0;
 
   return (
-    <Frame aria-labelledby="stats-title">
+    <section aria-labelledby="stats-title">
       <Head>
         <div>
           <SectionHeading id="stats-title">Stats</SectionHeading>
@@ -253,7 +252,7 @@ function StatsCard({ editable, level }: { editable: boolean; level: number }) {
           </Poise>
         </Vitals>
       </Block>
-    </Frame>
+    </section>
   );
 }
 

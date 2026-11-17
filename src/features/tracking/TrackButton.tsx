@@ -7,7 +7,7 @@ import type { BuildTracking } from './useBuildTracking';
 
 /**
  * "Track this build": the build page's primary action (T34). Signed out, or signed in with no build
- * tracked yet, it opens the intro first (T41); otherwise it starts at once. Either way the How to get
+ * tracked yet, it opens the intro first (T41); otherwise it starts at once. Either way the Guide
  * tab opens once tracking starts, since that's where tracking lives (T46). While tracking, a quiet
  * "Tracking" link to that tab.
  */

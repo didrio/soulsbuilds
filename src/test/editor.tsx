@@ -1,9 +1,9 @@
-// Editor test helpers: the loadout panel with the item picker, as App renders them.
+// Editor test helpers: the build sidebar (editable) with the item picker, as the page and App render them.
 import { screen } from '@testing-library/react';
 import type { UserEvent } from '@testing-library/user-event';
 import { useAppSelector } from '@/app/hooks';
 import ItemSelector from '@/features/editor/ItemSelector';
-import Loadout from '@/features/editor/sections/Loadout';
+import BuildSidebar from '@/features/editor/sections/BuildSidebar';
 import { selectSlotType } from '@/features/editor/store/selectors';
 
 /** The editor plus the picker modal (open while a slot type is set). */
@@ -11,7 +11,7 @@ export function EditorWithPicker() {
   const open = useAppSelector(selectSlotType) !== null;
   return (
     <>
-      <Loadout editable />
+      <BuildSidebar editable level={1} />
       {open ? <ItemSelector /> : null}
     </>
   );

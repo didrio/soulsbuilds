@@ -3,33 +3,25 @@ import ItemTile from '@/components/ui/ItemTile';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { selectionBar } from '@/components/ui/inWorld';
 import { useAppDispatch } from '@/app/hooks';
-import {
-  iconUrl,
-  type AffinityKey,
-  type AshOfWar,
-  type SlotDisplayItem,
-  type Weapon,
-} from '@/data/core';
+import { iconUrl } from '@/data/core';
 import {
   COLOR_DANGER,
   COLOR_GLOW,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  SPACE_XS,
   TEXT_MD,
   TEXT_SM,
   TEXT_XS,
 } from '@/theme';
+import { slotWeaponDetails, type SlotEntry } from './gear';
 import {
   itemSubline,
   weaponDetailLabels,
-  weaponDetails,
   type ItemWarning,
   type WeaponDetails,
 } from './itemDetails';
-import type { ItemSlot, SlotType, WeaponAffinitySlot, WeaponSkillSlot } from './slots';
+import type { SlotType } from './slots';
 import { openPicker } from './store/app';
-import { labelText } from '@/components/ui/typography';
 
 /** What each slot type holds, for the empty rows and screen-reader labels ("Choose talisman"). */
 export const SLOT_LABELS: Record<SlotType, string> = {
@@ -47,34 +39,9 @@ export const SLOT_LABELS: Record<SlotType, string> = {
   SLOT_TYPE_WEAPON: 'weapon',
 };
 
-/** One slot of a build, as the panels list it. */
-export interface SlotEntry {
-  /** Editor slot the picker writes to. */
-  id: ItemSlot;
-  type: SlotType;
-  item: SlotDisplayItem | null;
-  /** Weapon slots: the slots that hold its affinity and Ash of War, and their values. */
-  affinityId?: WeaponAffinitySlot;
-  subId?: WeaponSkillSlot;
-  affinity?: AffinityKey | null;
-  ash?: AshOfWar | null;
-  /** Unmet requirements or no room in the memory slots (T8). */
-  warning?: ItemWarning | null;
-}
+export type { SlotEntry } from './gear';
 
-const isWeaponType = (type: SlotType) => type === 'SLOT_TYPE_WEAPON';
-
-/**
- * The filled slots plus the first empty one, for groups a build saves compacted (spells,
- * consumables): their slot positions aren't kept, so ten "Choose" rows would add nothing.
- */
-export const filledAndNext = (entries: SlotEntry[]) => {
-  const filled = entries.filter((entry) => entry.item);
-  const next = entries.find((entry) => !entry.item);
-  return next ? [...filled, next] : filled;
-};
-
-/** Tile sizes in the Loadout panel (T27): weapons, and every other slot. */
+/** Tile sizes in item rows: weapons, and every other slot. */
 export type TileSize = 64 | 44;
 
 /**
@@ -94,7 +61,7 @@ function ItemRow({
   size?: TileSize;
 }) {
   const dispatch = useAppDispatch();
-  const { type, item, affinity = null, ash = null, warning = null } = entry;
+  const { type, item, warning = null } = entry;
 
   if (!item && !editable) {
     return (
@@ -105,8 +72,7 @@ function ItemRow({
     );
   }
 
-  // A weapon slot holds a weapon (the editor state's items are full data objects).
-  const weapon = item && isWeaponType(type) ? weaponDetails(item as Weapon, ash, affinity) : null;
+  const weapon = slotWeaponDetails(entry);
   const subline = item ? itemSubline(item, weapon) : '';
 
   const content = (
@@ -134,17 +100,26 @@ function ItemRow({
 }
 
 /**
- * An editable slot's accessible name: "Choose talisman" when empty, "Change Uchigatana (Blood
- * affinity, Seppuku skill)" when filled, with any warning.
+ * A filled slot's name with what's worth knowing: "Uchigatana (Blood affinity, Seppuku skill, Needs
+ * 11 Str)". `''` for an empty slot.
  */
-export function changeLabel(entry: SlotEntry, weapon: WeaponDetails | null = null) {
-  const { item, type, warning } = entry;
-  if (!item) return `Choose ${SLOT_LABELS[type]}`;
+export function itemLabel(entry: SlotEntry, weapon: WeaponDetails | null = null) {
+  const { item, warning } = entry;
+  if (!item) return '';
   const details = [
     ...(weapon ? weaponDetailLabels(weapon) : []),
     ...(warning ? [warning.text] : []),
   ];
-  return `Change ${item.name}${details.length ? ` (${details.join(', ')})` : ''}`;
+  return `${item.name}${details.length ? ` (${details.join(', ')})` : ''}`;
+}
+
+/**
+ * An editable slot's accessible name: "Choose talisman" when empty, "Change Uchigatana (Blood
+ * affinity, Seppuku skill)" when filled, with any warning.
+ */
+export function changeLabel(entry: SlotEntry, weapon: WeaponDetails | null = null) {
+  if (!entry.item) return `Choose ${SLOT_LABELS[entry.type]}`;
+  return `Change ${itemLabel(entry, weapon)}`;
 }
 
 /** The action that opens the item picker for a slot. */
@@ -155,12 +130,6 @@ export const openPickerFor = ({ id, type, affinityId, subId }: SlotEntry) =>
     editAffinitySlot: affinityId ?? null,
     editSubSlot: subId ?? null,
   });
-
-/** A heading over a group of rows ("Talismans"): small muted capitals. */
-export const GroupHeading = styled.h3`
-  ${labelText}
-  margin: 0 0 ${SPACE_XS};
-`;
 
 const rowStyles = css<{ $size: TileSize }>`
   align-items: center;

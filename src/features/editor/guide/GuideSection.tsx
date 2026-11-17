@@ -20,7 +20,7 @@ export const hasItems = (equipment: Equipment) =>
   );
 
 /**
- * The How to get tab (T28): what the route is, a legend for its tiles, and the route itself
+ * The Guide tab (T28; "How to get" until T48): what the route is, a legend for its tiles, and the route itself
  * (`GuideRoute`, loaded with its data on the tab's first open). `tracking`: the player's progress
  * (T35): the route becomes the checklist, items checked off (T46) and stops marked done (T44).
  */

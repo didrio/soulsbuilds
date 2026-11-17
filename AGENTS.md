@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T31, T34–T36, T39–T42, T44, T46, T47 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T31, T34–T36, T39–T42, T44, T46–T48 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
-`stats/{game}`. Build page (T28): hero + tabs (Loadout, Description, How to get, Comments), build math (T8), the
+`stats/{game}`. Build page (T48): title section, tabs (Description, Guide, Comments) beside one build sidebar (stats + gear tiles; phones: sections next, T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); since T46 it lives only in How to get (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step. Account page (T31) apart from the public profile. Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step. Account page (T31) apart from the public profile. Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -121,30 +121,32 @@ src/
   features/account/        AccountPage (`/account`, T31): DisplayNameSection, EmailSection (verify notice, change
                            by link), SignInSection (change / set a password), DeleteAccount (T18); errors.ts
                            (changeErrors), queries.ts (useDeleteAccount)
-  features/tracking/       Tracking a build (T34; account only, T41; only on How to get, T46): useBuildTracking (query
+  features/tracking/       Tracking a build (T34; account only, T41; only in the Guide, T46): useBuildTracking (query
                            cache + saveQueue.ts debounced Firestore saves; startAfterSignIn), TrackingIntro (the
                            modal before the first track: sign up / log in, or Start tracking), TrackButton (hero:
-                           Track this build → How to get; "Tracking" link), TrackingBar (How to get's top: progress,
+                           Track this build → the Guide; "Tracking" link), TrackingBar (the Guide's top: progress,
                            Your stats, Stop; Build complete), TrackingCards (new items), TrackedAttributes (yours /
                            target with − +);
                            T36: queries.ts (useTrackedBuilds), TrackedBuilds (profile panels: Playing, Completed
                            trophies) → PlayingList (lazy: progress + next stop), ProgressBar
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
-  features/editor/         BuildEditorPage (view/create/edit/delete; hero + tabs, T28) + useBuildEditor; tabs.ts (tab
-                           list, URLs, which show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments);
-                           sections/ (BuildHeader = hero: build image (T40), like/report/tags, OwnerActions, BuildTabs
-                           (sticky tab bar), BuildDetailsForm (edit title block + BuildImageDialog), LoadoutPanel (StatsCard | Loadout in
-                           one panel on desktop), Loadout (every slot, fixed layout, T27), StatsCard (attributes + HP,
-                           load, poise, T27), BuildSummary (the other tabs' condensed stats + gear column), TabLinkCard,
-                           DescriptionSection, MarkdownView + rehypeJumpTo ("Jump to"), CommentsSection, MoreByAuthor); ItemRow (any slot as tile + name; button in
-                           edit mode; placeholder when empty; warnings for unmet requirements) + itemDetails.ts; ItemSelector (picker Dialog: filters in picker.ts, weapon step
-                           with WeaponOptions), slots.ts; guide/ ("How to get this build": route.ts solver,
-                           phrases.ts (+ reasons, stop titles), progress.ts (T35: numbered stops, done/next from
-                           tracking; itemTrackKeys), GuideSection (the How to get tab) → GuideRoute (lazy: numbered
-                           stops; while tracking, the checklist, T46)); store/ = Redux slices for the build being edited +
-                           selectors + derived.ts (build math selectors) + build.ts (loadBuild /
-                           selectBuildFields: build ⇄ editor state)
+  features/editor/         BuildEditorPage (view/create/edit/delete; title section + tabs + sidebar, T48) +
+                           useBuildEditor; tabs.ts (Description, Guide, Comments: URLs, old-link redirects, which
+                           show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments); gear.ts (T48: the
+                           gear as groups of SlotEntry, view and edit; pure); sections/ (BuildHeader = title
+                           section: build image (T40), like/report/tags, OwnerActions, BuildTabs (sticky tab bar),
+                           BuildDetailsForm (edit title block + BuildImageDialog), BuildSidebar (T48: StatsCard +
+                           gear tiles named on hover/focus/tap, the same on every tab; editable while editing),
+                           StatsCard (attributes + HP, load, poise, T27), DescriptionSection, MarkdownView +
+                           rehypeJumpTo ("Jump to"), CommentsSection); ItemRow (any slot as tile + name; button in
+                           edit mode; itemLabel/changeLabel) + itemDetails.ts; ItemSelector (picker Dialog: filters
+                           in picker.ts, weapon step with WeaponOptions), slots.ts; guide/ ("How to get this
+                           build": route.ts solver, phrases.ts (+ reasons, stop titles), progress.ts (T35: numbered
+                           stops, done/next from tracking; itemTrackKeys), GuideSection (the Guide tab) →
+                           GuideRoute (lazy: numbered stops; while tracking, the checklist, T46)); store/ = Redux
+                           slices for the build being edited + selectors + derived.ts (build math selectors,
+                           selectGearState) + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            PasswordInput (Show/Hide), DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
                            ErrorMessage, FocusScope, icons, Label + typography.ts (type tiers); Frame (panel,
@@ -159,7 +161,7 @@ src/
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
                            relativeTime.ts ("3 days ago"), array.ts
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
-                           TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET/WIDE, SHORT_SCREEN), GlobalStyle,
+                           TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
                            GameSkinStyle
   data/                    er/*.json game data (T7: base + DLC, game IDs; written by `npm run data`), schema.ts
                            (zod; types only in the app), index.ts accessors by ID (getWeapon(id),

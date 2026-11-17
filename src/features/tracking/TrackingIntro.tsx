@@ -53,7 +53,7 @@ export function TrackingIntro({
 }: {
   tracking: BuildTracking;
   onClose: () => void;
-  /** Once tracking has started (or the account already tracked the build): opens the How to get tab. */
+  /** Once tracking has started (or the account already tracked the build): opens the Guide tab. */
   onStarted: () => void;
 }) {
   const openAuthDialog = useOpenAuthDialog();

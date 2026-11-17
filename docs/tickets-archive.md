@@ -145,3 +145,9 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   `signUp` no longer writes the profile; reset answers the same for unknown emails (was a leak); Google-only
   deletion re-auths with a popup; production `authDomain` → soulsbuilds.com. Console steps: docs/firebase.md
   "Sign-in setup" (owner, before the deploy). Dialog focus starts on "Continue with Google".
+- T31 — Profile and account settings — 2026-11-16 — owner: no canvas mock, name menu in the header, Google-only
+  accounts set a password (no email change), framed profile hero. `/account` (`features/account/`: display name,
+  email + verify notice + change by link, sign-in methods + change/set password, Log out, DeleteAccount moved
+  here); `reauthenticate` in `lib/firebase/auth.ts` before every change (set password = `updatePassword`:
+  `linkWithCredential` fails for the account's own email); `useAuth()` snapshots email/verified/providers +
+  `refreshUser()`; `app/AccountMenu`; e2e `settings.spec.ts` + `helpers.ts` `accountMenu`/`headerLogIn`.

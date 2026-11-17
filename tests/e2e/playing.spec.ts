@@ -47,10 +47,10 @@ test('Playing and Completed on the profile, with the counts on the build', async
   await expect(card).toContainText('Gear 1 of 3');
   await expect(card).toContainText('Next stop');
 
-  // The card opens How to get (T46). Finish it: Build complete there, the counts move, and it's a
+  // The card opens the Guide (T46). Finish it: Build complete there, the counts move, and it's a
   // trophy on the profile.
   await card.click();
-  await expect(page).toHaveURL(new RegExp(`${BUILD}/route$`));
+  await expect(page).toHaveURL(new RegExp(`${BUILD}/guide$`));
   for (const weapon of WEAPONS.slice(1)) {
     await page.getByRole('checkbox', { name: new RegExp(`^${weapon}`) }).click();
   }
@@ -68,7 +68,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   ).toBeVisible();
 
   // Removing it from Completed deletes the progress and the counts drop back.
-  await page.goto(`${BUILD}/route`);
+  await page.goto(`${BUILD}/guide`);
   await page.getByRole('button', { name: 'Remove from Completed' }).click();
   await page.getByRole('button', { name: 'Yes, remove' }).click();
   await expect(page.getByRole('button', { name: 'Track this build' })).toBeVisible();

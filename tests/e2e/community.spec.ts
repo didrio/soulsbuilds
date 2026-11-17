@@ -1,8 +1,8 @@
-// Community touches on the seed data (T20): top tags filter the landing, the Comments tab shows its
-// count and the comments (T28), and "More by" opens the author's other build at the top. Read-only. `npm run e2e`.
+// Community touches on the seed data (T20): top tags filter the landing, and the Comments tab shows its
+// count and the comments (T28), or asks for one. Read-only. `npm run e2e`.
 import { expect, test } from '@playwright/test';
 
-test('top tags, community line, comment link and More by', async ({ page }) => {
+test('top tags, community line and the Comments tab', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByText(/\d+ builds? by \d+ players?/)).toBeVisible();
   const mohg = page.getByRole('group', { name: 'Top tags' }).getByRole('button', { name: /^Mohg/ });
@@ -18,11 +18,9 @@ test('top tags, community line, comment link and More by', async ({ page }) => {
   await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/comments$/);
   await expect(page.getByRole('heading', { name: 'Comments · 1' })).toBeInViewport();
 
-  // "More by" sits at the bottom of the Loadout tab.
-  await page.getByRole('link', { name: 'Loadout' }).click();
-  await page.getByRole('heading', { name: 'More by Tarnished' }).scrollIntoViewIfNeeded();
-  await page.getByRole('link', { name: /Wretch Speedrun/ }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Wretch Speedrun' })).toBeInViewport();
+  // A build nobody commented on asks for one.
+  await page.goto('/build/SEEDNAKED001');
+  await expect(page.getByRole('heading', { level: 1, name: 'Wretch Speedrun' })).toBeVisible();
   await page.getByRole('link', { name: 'Comments 0' }).click();
   await expect(
     page.getByText('No comments yet. Tried it? Tell Tarnished how it went.'),

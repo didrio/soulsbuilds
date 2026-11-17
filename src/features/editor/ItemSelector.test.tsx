@@ -4,7 +4,6 @@ import { screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { EditorWithPicker, searchItems } from '@/test/editor';
 import { renderWithProviders } from '@/test/render';
-import Loadout from './sections/Loadout';
 
 const optionLabels = (name: string) =>
   within(screen.getByRole('combobox', { name }))
@@ -76,13 +75,8 @@ describe('ItemSelector', () => {
   });
 
   it('filters spells by kind', async () => {
-    const { user } = renderWithProviders(
-      <>
-        <Loadout editable />
-        <EditorWithPicker />
-      </>,
-    );
-    await user.click(screen.getAllByRole('button', { name: 'Choose spell' })[0]!);
+    const { user } = renderWithProviders(<EditorWithPicker />);
+    await user.click(screen.getByRole('button', { name: 'Choose spell' }));
     await searchItems(user, 'Comet Azur');
     await user.click(screen.getByRole('button', { name: 'Incantations' }));
     expect(screen.getByText('Nothing matches. Try another search.')).toBeInTheDocument();
@@ -116,7 +110,7 @@ describe('ItemSelector', () => {
     const { user } = renderWithProviders(<EditorWithPicker />);
     await chooseWeapon(user, 'Moonveil');
     expect(screen.getByText("Transient Moonlight (can't be changed)")).toBeInTheDocument();
-    expect(screen.queryByRole('combobox')).not.toBeInTheDocument();
+    expect(within(screen.getByRole('dialog')).queryByRole('combobox')).not.toBeInTheDocument();
   });
 
   it("disables talismans that can't be worn with one already worn", async () => {

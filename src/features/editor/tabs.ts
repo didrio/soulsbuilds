@@ -1,40 +1,49 @@
-// The build page's tabs (T28): which exist, their URLs, and which a visitor sees. Pure, so the route
-// table, the tab bar and the page agree on one list.
+// The build page's tabs (T28, T48): which exist, their URLs, and which a visitor sees. Pure, so the
+// route table, the tab bar and the page agree on one list.
 
-export type BuildTab = 'loadout' | 'description' | 'route' | 'comments';
+export type BuildTab = 'description' | 'guide' | 'comments';
 
-/** In tab-bar order, with the URL segment after `/build/:buildId` (Loadout has none). */
+/** In tab-bar order, with the URL segment after `/build/:buildId` (Description has none). */
 export const BUILD_TABS: { tab: BuildTab; segment: string; label: string }[] = [
-  { tab: 'loadout', segment: '', label: 'Loadout' },
-  { tab: 'description', segment: 'description', label: 'Description' },
-  { tab: 'route', segment: 'route', label: 'How to get' },
+  { tab: 'description', segment: '', label: 'Description' },
+  { tab: 'guide', segment: 'guide', label: 'Guide' },
   { tab: 'comments', segment: 'comments', label: 'Comments' },
 ];
 
-/** The tab a `:tab?` URL segment names: none is Loadout; an unknown one is null. */
+/** Segments links used before T48, still opened (the page redirects to the tab's own URL). */
+const OLD_SEGMENTS: Record<string, BuildTab> = { description: 'description', route: 'guide' };
+
+/** The tab a `:tab?` URL segment names: none is Description; an old one its tab; an unknown one null. */
 export function parseTab(segment: string | undefined): BuildTab | null {
-  if (!segment) return 'loadout';
-  return BUILD_TABS.find((entry) => entry.segment === segment)?.tab ?? null;
+  if (!segment) return 'description';
+  return (
+    BUILD_TABS.find((entry) => entry.segment === segment)?.tab ?? OLD_SEGMENTS[segment] ?? null
+  );
 }
 
-/** `/build/x`, `/build/x/description`, `/build/x/route`, `/build/x/comments`. */
+/** Whether `segment` is the tab's own URL segment (not an old one): otherwise the page redirects. */
+export const isCanonical = (segment: string | undefined, tab: BuildTab) =>
+  (segment ?? '') === BUILD_TABS.find((entry) => entry.tab === tab)?.segment;
+
+/** `/build/x`, `/build/x/guide`, `/build/x/comments`. */
 export function tabPath(buildId: string, tab: BuildTab): string {
   const segment = BUILD_TABS.find((entry) => entry.tab === tab)?.segment ?? '';
   return segment ? `/build/${buildId}/${segment}` : `/build/${buildId}`;
 }
 
 /**
- * The tabs shown. Editing (and `/build/new`): Loadout and Description only. Viewing: all of them;
- * Description always has something (the author's write-up or a generated one, T47).
+ * The tabs shown. Editing (and `/build/new`): Description only (the build itself is edited in the
+ * sidebar). Viewing: all of them; Description always has something (the author's write-up or a
+ * generated one, T47).
  */
 export function visibleTabs({ editable }: { editable: boolean }): BuildTab[] {
-  if (editable) return ['loadout', 'description'];
+  if (editable) return ['description'];
   return BUILD_TABS.map((entry) => entry.tab);
 }
 
 /**
  * The page a pathname belongs to, for scroll-to-top: a build's tabs are one page
- * (`/build/x/route` → `/build/x`), so switching tabs keeps the scroll position.
+ * (`/build/x/guide` → `/build/x`), so switching tabs keeps the scroll position.
  */
 export function pageKey(pathname: string): string {
   const match = /^\/build\/([^/]+)\/([^/]+)\/?$/.exec(pathname);

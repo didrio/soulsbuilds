@@ -7,14 +7,12 @@ import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
 import { useOpenAuthDialog } from '@/app/authDialog';
 import { errorMessage } from '@/lib/firebase';
-import { firstParagraph } from '@/lib/markdown';
 import {
   BELOW_MOBILE,
   BELOW_TABLET,
   COLOR_BG,
   COLOR_LINE_STRONG,
   SHADOW_OVERLAY,
-  SHORT_SCREEN,
   SPACE_GUTTER,
   SPACE_LG,
   SPACE_MD,
@@ -24,22 +22,19 @@ import {
 } from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildHeader from './sections/BuildHeader';
-import BuildSummary from './sections/BuildSummary';
-import BuildTabs, { TAB_BAR_HEIGHT } from './sections/BuildTabs';
+import BuildSidebar from './sections/BuildSidebar';
+import BuildTabs from './sections/BuildTabs';
 import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
-import LoadoutPanel from './sections/LoadoutPanel';
-import MoreByAuthor from './sections/MoreByAuthor';
 import { STATS_COLUMN_WIDTH } from './sections/StatsCard';
-import TabLinkCard from './sections/TabLinkCard';
-import GuideSection, { hasItems, loadRoute } from './guide/GuideSection';
+import GuideSection from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
 import { TrackButton } from '@/features/tracking/TrackButton';
 import { TrackingBar } from '@/features/tracking/TrackingBar';
 import { NewItemsNotice } from '@/features/tracking/TrackingCards';
 import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
-import { parseTab, tabPath, visibleTabs } from './tabs';
+import { isCanonical, parseTab, tabPath, visibleTabs } from './tabs';
 import { useBuildEditor } from './useBuildEditor';
 
 /**
@@ -53,13 +48,14 @@ function BuildEditorPage() {
 }
 
 /**
- * View, create and edit a build (T22, T27, T28): the hero, a tab bar (Loadout, Description, How to
- * get, Comments), then the tab. Desktop: the stats in a fixed left column on every tab: on Loadout
- * one panel with the gear, elsewhere a condensed summary. Tablets and phones: one column, the stats
- * on the Loadout tab only. Editing (and new builds): Loadout and Description only, and a sticky
- * Save/Cancel bar. Tracking (T34, view mode) lives on How to get only (T46): the progress bar, the
- * player's stats and the new-items notice at the top, the route as the checklist. Every other tab
- * looks the same whether or not you track; the hero's "Track this build" (or "Tracking") opens it.
+ * View, create and edit a build (T22, T28, T48: the owner's design): the title section, a tab bar
+ * (Description, Guide, Comments), then the build sidebar (stats and gear, `BuildSidebar`) beside the
+ * tab, the same on every tab, signed in or out, tracking or not. Below 900 px the sidebar sits above
+ * the tab (until T49's collapsible sections). Editing (and new builds): "edit mode is the view
+ * layout": the sidebar takes the stats and gear, Description is the only tab (the write-up), and a
+ * sticky Save/Cancel bar. Tracking (T34, view mode) lives in the Guide only (T46): the progress bar,
+ * the player's stats and the new-items notice at the top, the route as the checklist; the title
+ * section's "Track this build" (or "Tracking") opens it.
  */
 function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
   const editor = useBuildEditor(buildId);
@@ -105,12 +101,12 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
     }
   }
 
-  // An unknown tab, or one this build doesn't show (editing): Loadout.
+  // An unknown tab, or one this build doesn't show (editing): Description. An old link (`/route`,
+  // `/description`, before T48): its tab's own URL.
   const tabs = visibleTabs({ editable });
   const tab = parseTab(tabParam);
-  if (!tab || !tabs.includes(tab)) return <Navigate to={tabPath(routeId, 'loadout')} replace />;
-
-  const preview = build ? firstParagraph(build.description) : '';
+  if (!tab || !tabs.includes(tab)) return <Navigate to={tabPath(routeId, 'description')} replace />;
+  if (!isCanonical(tabParam, tab)) return <Navigate to={tabPath(routeId, tab)} replace />;
 
   return (
     <Page>
@@ -130,7 +126,7 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
       ) : build ? (
         <BuildHeader
           build={build}
-          trackAction={<TrackButton tracking={tracking} guidePath={tabPath(build.id, 'route')} />}
+          trackAction={<TrackButton tracking={tracking} guidePath={tabPath(build.id, 'guide')} />}
           ownerActions={
             editor.isOwner ? (
               <OwnerActions
@@ -152,75 +148,40 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
           tabs={tabs}
           commentCount={editable ? undefined : build?.commentCount}
         />
-        {tab === 'loadout' ? (
+        <WithSidebar>
+          <BuildSidebar editable={editable} level={level} />
           <Content>
-            <LoadoutPanel editable={editable} level={level} />
-            {!editable && build ? (
+            {tab === 'description' ? (
+              <DescriptionSection
+                description={editor.description}
+                editable={editable}
+                onChange={editor.setDescription}
+              />
+            ) : null}
+            {tab === 'guide' && build ? (
               <>
-                {preview || hasItems(build.equipment) ? (
-                  <Cards>
-                    {preview ? (
-                      <TabLinkCard
-                        to={tabPath(build.id, 'description')}
-                        label="Description"
-                        action="Read the description">
-                        {preview}
-                      </TabLinkCard>
-                    ) : null}
-                    {hasItems(build.equipment) ? (
-                      <TabLinkCard
-                        to={tabPath(build.id, 'route')}
-                        label="How to get this build"
-                        action="See the route"
-                        onPrefetch={() => void loadRoute()}>
-                        Every item, in a sensible order through the usual progression from a fresh
-                        save.
-                      </TabLinkCard>
-                    ) : null}
-                  </Cards>
-                ) : null}
-                <MoreByAuthor buildId={build.id} ownerId={build.ownerId} />
+                <TrackingBar tracking={tracking} buildName={build.name} target={build.stats} />
+                <NewItemsNotice tracking={tracking} />
+                <GuideSection
+                  equipment={build.equipment}
+                  tracking={
+                    tracking.state
+                      ? {
+                          collected: tracking.state.collected,
+                          marked: tracking.state.marked,
+                          onToggle: tracking.toggle,
+                          onMark: tracking.mark,
+                        }
+                      : undefined
+                  }
+                />
               </>
             ) : null}
+            {tab === 'comments' && build ? (
+              <CommentsSection buildId={build.id} ownerId={build.ownerId} />
+            ) : null}
           </Content>
-        ) : (
-          <WithSummary>
-            <Summary>
-              <BuildSummary level={level} />
-            </Summary>
-            <Content>
-              {tab === 'description' ? (
-                <DescriptionSection
-                  description={editor.description}
-                  editable={editable}
-                  onChange={editor.setDescription}
-                />
-              ) : null}
-              {tab === 'route' && build ? (
-                <>
-                  <TrackingBar tracking={tracking} buildName={build.name} target={build.stats} />
-                  <NewItemsNotice tracking={tracking} />
-                  <GuideSection
-                    equipment={build.equipment}
-                    tracking={
-                      tracking.state
-                        ? {
-                            collected: tracking.state.collected,
-                            marked: tracking.state.marked,
-                            onToggle: tracking.toggle,
-                            onMark: tracking.mark,
-                          }
-                        : undefined
-                    }
-                  />
-                </>
-              ) : null}
-              {tab === 'comments' && build ? (
-                <CommentsSection buildId={build.id} ownerId={build.ownerId} />
-              ) : null}
-            </Content>
-          </WithSummary>
-        )}
+        </WithSidebar>
       </div>
       {editable ? (
         <EditBar aria-label="Save changes">
@@ -251,50 +212,24 @@ const Back = styled(TextLink)`
   margin: ${SPACE_MD} 0 -${SPACE_SM};
 `;
 
-// A tab's panels, stacked under the tab bar.
+// The tab's panels, stacked.
 const Content = styled.div`
   display: grid;
   gap: ${SPACE_LG};
-  margin-top: ${SPACE_REGION};
   min-width: 0;
 `;
 
-// The other tabs: the summary column on the left, sticky under the tab bar; the tab beside it. Tablets
-// and phones: the tab alone.
-const WithSummary = styled.div`
+// The sidebar on the left (it sticks under the tab bar itself when it fits), the tab beside it.
+// Tablets and phones: one column, the sidebar first.
+const WithSidebar = styled.div`
   align-items: start;
-  column-gap: ${SPACE_REGION};
   display: grid;
+  gap: ${SPACE_REGION};
   grid-template-columns: ${STATS_COLUMN_WIDTH}px minmax(0, 1fr);
+  margin-top: ${SPACE_REGION};
 
   @media ${BELOW_TABLET} {
     grid-template-columns: minmax(0, 1fr);
-  }
-`;
-
-const Summary = styled.div`
-  margin-top: ${SPACE_REGION};
-  position: sticky;
-  top: ${TAB_BAR_HEIGHT + 16}px;
-
-  @media ${SHORT_SCREEN} {
-    position: static;
-  }
-
-  @media ${BELOW_TABLET} {
-    display: none;
-  }
-`;
-
-// "Read the description" and "See the route", side by side; stacked on phones.
-const Cards = styled.div`
-  display: grid;
-  gap: ${SPACE_LG};
-  grid-auto-columns: minmax(0, 1fr);
-  grid-auto-flow: column;
-
-  @media ${BELOW_MOBILE} {
-    grid-auto-flow: row;
   }
 `;
 

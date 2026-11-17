@@ -18,6 +18,7 @@ import {
   type RequirementCheck,
 } from '@/lib/buildMath';
 import type { DescriptionFacts, WeaponFact } from '../describe';
+import type { GearState } from '../gear';
 import { itemWarning, weaponDetails } from '../itemDetails';
 import {
   ARMOR_SLOTS,
@@ -108,6 +109,27 @@ export const selectRequirementChecks = createSelector(
     }
     return checks;
   },
+);
+
+/** What the gear groups (T48, features/editor/gear.ts) are made from. */
+export const selectGearState = createSelector(
+  [
+    selectEquipment,
+    selectTearSlots,
+    selectSpellSlots,
+    selectRequirementChecks,
+    selectSpellsOverSlots,
+    selectMemoryUsed,
+    selectMemorySlots,
+  ],
+  (equipment, tears, spells, checks, over, used, available): GearState => ({
+    equipment,
+    tears,
+    spells,
+    checks,
+    over,
+    memory: { used, available },
+  }),
 );
 
 /** What the generated description (T47, features/editor/describe.ts) says about the build. */

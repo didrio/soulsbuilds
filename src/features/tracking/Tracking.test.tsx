@@ -1,6 +1,6 @@
 // Tracking a build (T34) on the build page, with the data layer mocked. Tracking needs an account
 // (T41): signed out, and signed in before the first tracked build, "Track this build" opens the intro.
-// It lives on the How to get tab (T46): the progress bar, Your stats and the route's checkboxes.
+// It lives in the Guide tab (T46, renamed in T48): the progress bar, Your stats and the route's checkboxes.
 import { act, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import BuildEditorPage from '@/features/editor/BuildEditorPage';
@@ -65,7 +65,7 @@ const renderPage = (uid: string | null = null, route = '/build/SEEDMOON0001') =>
     { route, path: '/build/:buildId/:tab?', uid },
   );
 
-const GUIDE = '/build/SEEDMOON0001/route';
+const GUIDE = '/build/SEEDMOON0001/guide';
 /** A build item's checkbox on the route (loaded lazily with its data). */
 const item = (name: string) =>
   screen.findByRole('checkbox', { name: new RegExp(`^${name}`) }, { timeout: 5000 });
@@ -119,7 +119,7 @@ describe('tracking signed out', () => {
         'none',
       ),
     );
-    // The hero counts the new player at once (T36), and the How to get tab opens (T46).
+    // The hero counts the new player at once (T36), and the Guide tab opens (T46).
     expect(screen.getByRole('region', { name: build.name })).toHaveTextContent('1 playing');
     expect(
       await screen.findByRole('heading', { name: 'How to get this build' }),
@@ -163,7 +163,7 @@ describe('tracking signed in, the first time', () => {
     await waitFor(() => expect(firebase.saveTracking).toHaveBeenCalledTimes(1));
   });
 
-  it('starts at once once the player tracks another build, on How to get', async () => {
+  it('starts at once once the player tracks another build, in the Guide', async () => {
     const { user } = renderPage('alice');
     await user.click(await screen.findByRole('button', { name: 'Track this build' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -189,11 +189,11 @@ describe('tracking signed in', () => {
     firebase.getTracking.mockResolvedValue(tracking({ seen: ITEMS.slice(0, 2) }));
     renderPage('alice');
     expect(await screen.findByRole('link', { name: 'Tracking' })).toBeInTheDocument();
-    // The Loadout tab: no progress, no checkboxes or toggles, no stats to step, no notice.
+    // The Description tab and the sidebar: no progress, no checkboxes or toggles, no stats to step,
+    // no notice; the gear as any visitor sees it.
     expect(screen.queryByRole('region', { name: 'Your progress' })).not.toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /^Moonveil/ })).not.toBeInTheDocument();
-    expect(screen.getByText('Moonveil')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /^Moonveil/ })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Raise Vigor' })).not.toBeInTheDocument();
     expect(screen.queryByText(/yours \/ target/)).not.toBeInTheDocument();
     expect(screen.queryByText(/new item since you started/)).not.toBeInTheDocument();

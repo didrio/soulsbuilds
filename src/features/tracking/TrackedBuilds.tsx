@@ -117,7 +117,7 @@ function Shelf({ items }: { items: TrackedBuild[] }) {
         const image = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
-            <Trophy to={tabPath(build.id, 'route')}>
+            <Trophy to={tabPath(build.id, 'guide')}>
               <TrophyTile src={image ? iconUrl(image.icon) : null} size={76} />
               <TrophyName>{build.name}</TrophyName>
               {state.completedAt ? (

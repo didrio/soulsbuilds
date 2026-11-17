@@ -74,13 +74,13 @@ Infinity`: the page is the only writer), read from `users/{uid}/tracking/{buildI
   inferred from later stops: players go out of order (owner's call). A mark is stored as the stop's things
   (`stopMarkKeys`: `gate:<gateId>`, `<file>:<id>` for its items), not its number, so it survives the author
   reshuffling the route; `applyChange`'s `mark` keeps marks to the route's current keys. Marks don't count
-  toward the percentage. **Tracking lives in How to get (T46)**: `TrackingBar` at the top (progress, "Your
+  toward the percentage. **Tracking lives in the Guide tab (T46)**: `TrackingBar` at the top (progress, "Your
   stats" opening `TrackedAttributes` in place, Stop tracking; at 100% the Build complete moment), the new-items
   notice, then the route as the checklist: a checkbox on each of the build's tracked items (`itemTrackKeys`
   gives an item's keys, one per slot for a weapon held twice; `applyChange`'s `toggle` takes them all), done
   stops folded, the next marked, "Mark done" on stops without the build's gear. Items with no known source sit
-  in the last ("elsewhere") stop, so every item has a checkbox. The rest of the page (hero, Loadout, stats) is
-  the same whether or not you track; the hero's button becomes a "Tracking" link to the tab.
+  in the last ("elsewhere") stop, so every item has a checkbox. The rest of the page (title section, the build
+  sidebar) is the same whether or not you track; the title section's button becomes a "Tracking" link to the tab.
   **Playing and Completed (T36)**: the build's public `playerCount`/`finishedCount` move in the same batch as
   the tracking doc whenever its status changes (`trackingStatus`, `counterDelta` in `src/lib/tracking.ts`;
   `saveTracking(…, from)` / `deleteTracking(…, counted)`). `saveQueue.ts` keeps each record's status in the
@@ -270,40 +270,44 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   build (or Sign up) as the primary button; on phones a labelled "+" (New build) or Sign up, and a Menu button
   that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
-**Build page** (T17, reshaped in T22, T27 and T28, `features/editor/`): view and edit share one layout. The
-**hero** (`BuildHeader`, the hero frame: the build image (T40: `lib/equipment.ts` `buildImage`, the author's pick
-else the main weapon; `getCardItem` in `@/data/core` shows any kind) as a 112px tile with
-the skin's tint glow, name as `<h1>`, author, level and age, tags, then Like/Report/owner actions on the right; on
-tablets and phones a 76px tile and the actions in a row under the tags; in edit mode `BuildDetailsForm` takes its
-place, with the name, tags and "Build image": the current tile and "Change image", which opens
-`BuildImageDialog`, radio rows of the default and the build's gear), then a **tab bar** (`sections/BuildTabs`: `NavLink`s, sticky at the window's top, sideways-scrolling on
-phones; Comments shows the stored count), then the tab. Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`):
-`/build/x` Loadout, `/description`, `/route`, `/comments`; an unknown tab, or one the build doesn't show (editing
-and `/build/new`: Loadout and Description only), redirects to Loadout. Description always shows (T47): the write-up,
-or `describe.ts`'s `describeBuild(selectDescriptionFacts)`, markdown made at view time from the build (main weapon
-and the other hand's, top three attributes, load and poise, talismans, spells, a "Worth knowing" list) with a
-muted "automatically generated" note. Switching tabs keeps the editor (and an edit in progress) and the scroll position
-(`useScrollToTop` compares `pageKey`s; the bar scrolls itself back to the top when it was stuck). Desktop: the
-stats sit in a fixed 340px left column on every tab: on **Loadout** one panel with the gear (`LoadoutPanel` =
-`StatsCard` | `Loadout`), then "Read the description" and "See the route" cards (`TabLinkCard`; the first
-paragraph via `lib/markdown.ts`) and "More by"; on the other tabs `BuildSummary`, a sticky condensed column (level,
-attributes, HP/FP/stamina, the gear as icon buttons that name themselves on hover, focus or tap; not sticky on
-short windows). Tablets and phones: one column, the stats card then the loadout on the Loadout tab only.
+**Build page** (T17, reshaped in T22, T27, T28 and T48, `features/editor/`): view and edit share one layout. The
+**title section** (`BuildHeader`, the hero frame: the build image (T40: `lib/equipment.ts` `buildImage`, the
+author's pick else the main weapon; `getCardItem` in `@/data/core` shows any kind) as a 72px tile (T48; 56px below
+900px) with the skin's tint glow, name as `<h1>`, author, level and age, tags, then Track/Like/Report/owner actions
+on the right (in a row under the tags below 900px); in edit mode `BuildDetailsForm` takes its place, with the name,
+tags and "Build image": the current tile and "Change image", which opens `BuildImageDialog`, radio rows of the
+default and the build's gear), then a **tab bar** (`sections/BuildTabs`: `NavLink`s across the page, labels
+centered, sticky at the window's top; Comments shows the stored count), then the **build sidebar** beside the tab.
+Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`): `/build/x` Description, `/guide`, `/comments`; the links used
+before T48 (`/description`, `/route`) redirect to their tab's URL (`isCanonical`), and an unknown tab, or one the
+build doesn't show (editing and `/build/new`: Description only), redirects to Description. Description always
+shows (T47): the write-up, or `describe.ts`'s `describeBuild(selectDescriptionFacts)`, markdown made at view time
+from the build (main weapon and the other hand's, top three attributes, load and poise, talismans, spells, a "Worth
+knowing" list) with a muted "automatically generated" note. Switching tabs keeps the editor (and an edit in
+progress) and the scroll position (`useScrollToTop` compares `pageKey`s; the bar scrolls itself back to the top
+when it was stuck).
+The **build sidebar** (T48, `sections/BuildSidebar`): one 340px column on every tab, the same signed in or out and
+tracking or not; it sticks under the tab bar only when it fits the window (measured with a `ResizeObserver`), else
+it scrolls with the page; below 900px it sits above the tab (T49 turns phones into collapsible sections). Top:
+`sections/StatsCard` (T27): rune level, starting class, the 8 attributes as rows with bars and talisman bonuses (a
+4×2 grid with short names below 900px; inputs in the same place when editing, plus the starting-class picker),
+HP/FP/stamina, the equip load bar marked at 30% and 70% with the roll, poise. Then **Gear**: `gear.ts`
+`gearGroups(selectGearState)` (pure, shared with T49) groups the slots as `SlotEntry`s, and each is a 44px tile,
+**no names on the page**. Read-only: the filled slots only (Armaments = right hand, left hand, arrows; Armor;
+Talismans; Spells with "N of M memory slots"; Tears, rune and ash; Items), empty groups left out, "No items yet."
+with none; a tile is a button named like "Uchigatana (Blood affinity, Seppuku skill, Needs 11 Str)"
+(`ItemRow.tsx` `itemLabel`) whose `Tooltip` shows the name, the subline (`itemSubline`) and the warning
+(`itemWarning`, also a dot on the tile's corner) on mouse hover, keyboard focus or tap (Escape closes). Editable:
+every slot (each hand and the arrows as their own rows; spells and items, saved without positions, as the filled
+ones plus one "Choose"), each tile the button that opens the picker ("Choose talisman", "Change Uchigatana (Blood
+affinity, Seppuku skill)", `changeLabel`), named on hover or focus. `ItemRow` (tile + name + detail line +
+warning) stays for rows (the Guide's items; T49's phone sections).
 **Description**: the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
-`user-content-<slug>` on the highest heading level used twice). **How to get** (`GuideSection`): the route shown
-at once as numbered stops (T35, `GuideRoute`: area label, place, what to do with a boss's reason, every item's
-icon, the build's lit and others dimmed, and why a key item is needed; tracking adds "N of M stops done", folds
-the finished stops and boxes the next one). **Comments**: the thread at a readable 72ch. `sections/Loadout` (T27) is a fixed layout: every slot always shows, so it takes the same space on
-every build: left hand | right hand (3 weapons each, 64px tiles; stacked on phones, left hand first), then armor,
-talismans, and the flask's tears with the great rune and spirit ash in three columns (44px), arrows and bolts and
-consumables only when the build has some (always while editing), then spells as one cell per memory slot (a
-2-slot spell spans two; free slots are placeholders). Every slot is an `ItemRow`: `ItemTile` + name + a muted
-detail line (affinity and skill, memory slots) + any warning (T8); an empty read-only slot is a faint placeholder
-tile (`ItemTile placeholder`, "No helm" for screen readers). In edit mode each row is a button that opens the
-picker ("Choose talisman", "Change Uchigatana (Blood affinity, Seppuku skill)"), and spells and consumables
-(saved without positions) show the filled slots plus one "Choose". `sections/StatsCard` (T27): rune level,
-starting class, the 8 attributes as rows (a 4×2 grid with short names on tablets and phones; inputs in the same
-place when editing), HP/FP/stamina, the equip load bar marked at 30% and 70% with the roll, poise.
+`user-content-<slug>` on the highest heading level used twice); while editing, the markdown editor. **Guide**
+(`GuideSection`, "How to get this build"): the route shown at once as numbered stops (T35, `GuideRoute`: area
+label, place, what to do with a boss's reason, every item's icon, the build's lit and others dimmed, and why a key
+item is needed; tracking adds "N of M stops done", folds the finished stops and boxes the next one). **Comments**:
+the thread at a readable 72ch.
 The **picker** is a tall
 `Dialog` (`ItemSelector`): search, weapon type / spell kind / base game–DLC filters (`picker.ts`), the current item
 marked (`aria-current`), "Show more" paging; picking a weapon with Ashes of War moves to its Ash of War and
@@ -312,8 +316,8 @@ in, Escape, focus back to the opener). Item icons are decorative (`alt=""`): the
 the tile button's accessible name.
 Code splitting: `/build/*` and `/user/*` are lazy routes; the markdown editor (`sections/Markdown.tsx`, the
 largest dependency) loads only when a description is shown or edited; the guide's route and its ~400 KB
-acquisition data (`guide/GuideRoute`) only when the How to get tab opens (fetched early on hover/focus of the
-Loadout tab's "See the route" card).
+acquisition data (`guide/GuideRoute`) only when the Guide tab opens (fetched early on hover/focus of its tab
+link).
 
 ## Performance (T21)
 

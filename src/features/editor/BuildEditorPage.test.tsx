@@ -157,32 +157,37 @@ describe('BuildEditorPage', () => {
         .getAllByRole('link')
         .map((link) => link.textContent);
 
-    it('opens on Loadout, with every tab and the comment count', async () => {
+    it('opens on Description, with every tab, the comment count and the sidebar', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild({ commentCount: 2 }));
       renderPage('/build/SEEDMOON0001');
-      expect(await screen.findByRole('link', { name: 'Loadout' })).toHaveAttribute(
+      expect(await screen.findByRole('link', { name: 'Description' })).toHaveAttribute(
         'aria-current',
         'page',
       );
-      expect(tabNames()).toEqual(['Loadout', 'Description', 'How to get', 'Comments 2']);
-      expect(screen.getByRole('region', { name: 'Loadout' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: /Read the description/ })).toHaveAttribute(
-        'href',
-        '/build/SEEDMOON0001/description',
-      );
+      expect(tabNames()).toEqual(['Description', 'Guide', 'Comments 2']);
+      expect(screen.getByRole('heading', { name: 'About this build' })).toBeInTheDocument();
+      expect(screen.getByRole('complementary', { name: 'Stats and gear' })).toBeInTheDocument();
+      // T48: no cards leading to other tabs, no "More by".
+      expect(screen.queryByRole('link', { name: /Read the description/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: /^More by/ })).not.toBeInTheDocument();
     });
 
-    it('opens the tab a link names, with the summary column', async () => {
+    it('shows the same sidebar on every tab', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      renderPage('/build/SEEDMOON0001/comments');
+      const { user } = renderPage('/build/SEEDMOON0001/comments');
       expect(await screen.findByRole('heading', { name: 'Comments' })).toBeInTheDocument();
-      expect(screen.queryByRole('region', { name: 'Loadout' })).not.toBeInTheDocument();
-      expect(screen.getByRole('complementary', { name: 'Stats' })).toBeInTheDocument();
+      const sidebar = () => screen.getByRole('complementary', { name: 'Stats and gear' });
+      expect(within(sidebar()).getByRole('button', { name: /^Moonveil/ })).toBeInTheDocument();
+      await user.click(screen.getByRole('link', { name: 'Guide' }));
+      expect(
+        await screen.findByRole('heading', { name: 'How to get this build' }),
+      ).toBeInTheDocument();
+      expect(within(sidebar()).getByRole('button', { name: /^Moonveil/ })).toBeInTheDocument();
     });
 
     it('switches tabs without losing the page', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      const { user } = renderPage('/build/SEEDMOON0001');
+      const { user } = renderPage('/build/SEEDMOON0001/comments');
       await user.click(await screen.findByRole('link', { name: 'Description' }));
       expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
       expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
@@ -192,44 +197,50 @@ describe('BuildEditorPage', () => {
       expect(firebase.getBuild).toHaveBeenCalledTimes(1);
     });
 
-    it('shows Loadout for an unknown tab', async () => {
+    it('opens the links used before T48 on their new tab', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      renderPage('/build/SEEDMOON0001/nope');
-      expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Loadout' })).toHaveAttribute('aria-current', 'page');
+      renderPage('/build/SEEDMOON0001/route');
+      expect(await screen.findByRole('link', { name: 'Guide' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    });
+
+    it('shows Description for an unknown tab', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      renderPage('/build/SEEDMOON0001/loadout');
+      expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
     });
 
     it('generates a description from the build when the author wrote none (T47)', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
-      renderPage('/build/SEEDMOON0001/description');
+      renderPage('/build/SEEDMOON0001');
       expect(await screen.findByText(/^A level \d+ .*build/)).toBeInTheDocument();
       expect(screen.getByText('This description was automatically generated.')).toBeInTheDocument();
-      expect(tabNames()).toEqual(['Loadout', 'Description', 'How to get', 'Comments 0']);
-    });
-
-    it('has no write-up preview on Loadout without a description', async () => {
-      firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
-      renderPage('/build/SEEDMOON0001');
-      expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
-      expect(screen.queryByRole('link', { name: /Read the description/ })).not.toBeInTheDocument();
+      expect(tabNames()).toEqual(['Description', 'Guide', 'Comments 0']);
     });
 
     it("shows the author's write-up without the generated note", async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      renderPage('/build/SEEDMOON0001/description');
+      renderPage('/build/SEEDMOON0001');
       expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
       expect(screen.queryByText(/automatically generated/)).not.toBeInTheDocument();
     });
 
-    it('edits on Loadout and Description only', async () => {
+    it('edits the build in the sidebar and the write-up on Description, the only tab', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      const { user } = renderPage('/build/SEEDMOON0001/route', 'seed-ranni');
+      const { user } = renderPage('/build/SEEDMOON0001/guide', 'seed-ranni');
       await user.click(await screen.findByRole('button', { name: 'Edit' }));
-      expect(await screen.findByRole('region', { name: 'Loadout' })).toBeInTheDocument();
-      expect(tabNames()).toEqual(['Loadout', 'Description']);
-      await user.click(screen.getByRole('link', { name: 'Description' }));
       expect(await screen.findByText(/Markdown works/)).toBeInTheDocument();
-      // The draft survives the tab switch.
+      expect(tabNames()).toEqual(['Description']);
+      const sidebar = screen.getByRole('complementary', { name: 'Stats and gear' });
+      expect(within(sidebar).getByLabelText('Intelligence')).toHaveValue('80');
+      expect(within(sidebar).getByRole('button', { name: 'Choose helm' })).toBeInTheDocument();
+      expect(within(sidebar).getByRole('button', { name: /^Change Moonveil/ })).toBeInTheDocument();
       expect(screen.getByLabelText('Build name')).toHaveValue('Carian Moon Knight');
     });
   });

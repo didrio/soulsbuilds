@@ -1,5 +1,4 @@
-// "How to get this build" (T15) on a seeded build: its own tab (T28), opened from the Loadout tab's
-// card; the route shows numbered stops with their items and why each is needed (T35). Tracking the
+// "How to get this build" (T15) on a seeded build: the Guide tab (T28, T48); the route shows numbered stops with their items and why each is needed (T35). Tracking the
 // build (signed in, T41): the route is the checklist (T46), progress along it, and marking
 // stops without gear done (T44). `npm run e2e`.
 import { expect, test } from '@playwright/test';
@@ -7,13 +6,9 @@ import { completeSignUp } from './helpers';
 
 test('a build shows how to get it', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
-  await page.getByRole('link', { name: /See the route/ }).click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/route$/);
-  // Exact: for a moment the Loadout's "How to get this build" card is still there too.
-  await expect(page.getByRole('link', { name: 'How to get', exact: true })).toHaveAttribute(
-    'aria-current',
-    'page',
-  );
+  await page.getByRole('link', { name: 'Guide' }).click();
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/guide$/);
+  await expect(page.getByRole('link', { name: 'Guide' })).toHaveAttribute('aria-current', 'page');
   const guide = page.getByRole('region', { name: 'How to get this build' });
   await expect(guide.getByText('Limgrave').first()).toBeVisible();
   await expect(guide.getByText('Defeat Margit, the Fell Omen')).toBeVisible();
@@ -28,10 +23,10 @@ test('tracking a build makes the route the checklist', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
   await page.getByRole('button', { name: 'Sign up' }).click();
   await completeSignUp(page, 'route');
-  // A new account tracks no build yet: the intro first, then the How to get tab (T46).
+  // A new account tracks no build yet: the intro first, then the Guide tab (T46).
   await page.getByRole('button', { name: 'Track this build' }).click();
   await page.getByRole('button', { name: 'Start tracking' }).click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/route$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/guide$/);
   const guide = page.getByRole('region', { name: 'How to get this build' });
   const next = guide.locator('ol > li', { hasText: 'Next stop' });
 

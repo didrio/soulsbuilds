@@ -1,5 +1,5 @@
 // The profile's in-progress builds as cards (T36): the portrait, the name, how far the player is (the
-// same numbers as the How to get tab's bar) and the route's next stop; each opens that tab (T46). Lazy (`TrackedBuilds`): it needs the
+// same numbers as the Guide tab's bar) and the route's next stop; each opens that tab (T46). Lazy (`TrackedBuilds`): it needs the
 // full game data (starting classes) and the route's acquisition data.
 import { Link } from 'react-router';
 import styled from 'styled-components';
@@ -72,7 +72,7 @@ function PlayingCard({
   const next = nextStopTitle(build, state);
   const { gear, level } = progress;
   return (
-    <Card to={tabPath(build.id, 'route')}>
+    <Card to={tabPath(build.id, 'guide')}>
       <Top>
         <ItemTile src={image ? iconUrl(image.icon) : null} size={56} />
         <Names>
