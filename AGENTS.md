@@ -15,7 +15,7 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T51 done; T50/T51's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T51, T56 done; T50/T51/T56's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
@@ -107,7 +107,7 @@ src/
   app/                     App (shell: global styles + game skin, header (phone menu, T26), auth dialog state (pages open
                            it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; useMediaQuery (T49); AppCheckNotice =
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
-                           routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
+                           routes.tsx (/, /build/:buildId/*, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header + AccountMenu (T31: the display name opens Profile, Account, Log out)
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
@@ -165,7 +165,7 @@ src/
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
-                           relativeTime.ts ("3 days ago"), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
+                           relativeTime.ts ("3 days ago"), slug.ts (T56: a name as a URL segment), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
                            GameSkinStyle

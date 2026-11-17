@@ -22,6 +22,8 @@ export const TAB_BAR_HEIGHT = 48;
 
 interface BuildTabsProps {
   buildId: string;
+  /** The build's name, for the slug in each tab's URL (T56). */
+  buildName?: string;
   current: BuildTab;
   tabs: BuildTab[];
   /** Shown on the Comments tab (the build's stored count). */
@@ -35,7 +37,7 @@ interface BuildTabsProps {
  * right under it; otherwise the scroll position stays. Pointing at Guide fetches the route's code and
  * data ahead of the click.
  */
-function BuildTabs({ buildId, current, tabs, commentCount }: BuildTabsProps) {
+function BuildTabs({ buildId, buildName, current, tabs, commentCount }: BuildTabsProps) {
   const sentinel = useRef<HTMLDivElement>(null);
   const previous = useRef(current);
 
@@ -53,7 +55,7 @@ function BuildTabs({ buildId, current, tabs, commentCount }: BuildTabsProps) {
         {BUILD_TABS.filter(({ tab }) => tabs.includes(tab)).map(({ tab, label }) => (
           <Tab
             key={tab}
-            to={tabPath(buildId, tab)}
+            to={tabPath(buildId, tab, buildName)}
             end
             onFocus={tab === 'guide' ? () => void loadRoute() : undefined}
             onPointerEnter={tab === 'guide' ? () => void loadRoute() : undefined}>

@@ -15,7 +15,7 @@ test('top tags, community line and the Comments tab', async ({ page }) => {
 
   // The Comments tab shows its count and opens the comments (T28).
   await page.getByRole('link', { name: 'Comments 1' }).click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/comments$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/comments$/);
   await expect(page.getByRole('heading', { name: 'Comments · 1' })).toBeInViewport();
 
   // A build nobody commented on asks for one.

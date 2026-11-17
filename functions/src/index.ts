@@ -49,11 +49,12 @@ export const site = onRequest(
         const snap = await db.doc(`users/${uid}`).get();
         return (snap.get('displayName') as string | undefined) ?? '';
       },
-      // Only the field the sitemap needs (a field mask; each document is still one read).
+      // Only the fields the sitemap needs (a field mask; each document is still one read).
       listBuilds: async () => {
-        const snap = await db.collection('builds').select('updatedAt').get();
+        const snap = await db.collection('builds').select('name', 'updatedAt').get();
         return snap.docs.map((doc) => ({
           id: doc.id,
+          name: (doc.get('name') as string | undefined) ?? '',
           updatedAt: (doc.get('updatedAt') as Timestamp | undefined)?.toDate(),
         }));
       },

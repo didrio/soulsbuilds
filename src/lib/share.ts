@@ -1,9 +1,13 @@
 // What a pasted build link shows (T37): the card's title, description and image, as pure functions so the
 // Cloud Function (functions/, which bundles this file) and the tests share them. Framework-free.
 import { firstParagraph } from './markdown';
+import { slugify } from './slug';
 
 /** The canonical origin: crawlers need absolute URLs, and every other domain redirects here (index.html). */
 export const SITE_ORIGIN = 'https://soulsbuilds.com';
+
+/** A build's own page, the canonical URL: `/build/<id>/<slug of the name>` (T56). Absolute. */
+export const buildUrl = (id: string, name: string) => `${SITE_ORIGIN}/build/${id}/${slugify(name)}`;
 
 const DESCRIPTION_MAX = 200;
 
@@ -98,6 +102,11 @@ export function injectMeta(html: string, meta: PageMeta): string {
  */
 export function injectRoot(html: string, inner: string): string {
   return html.replace('<div id="root"></div>', () => `<div id="root">${inner}</div>`);
+}
+
+/** `snippet` at the end of the page's head (T56: structured data). */
+export function injectHead(html: string, snippet: string): string {
+  return html.replace('</head>', () => `${snippet}\n  </head>`);
 }
 
 /** Keeps a page out of search results (T50: builds that don't exist). */

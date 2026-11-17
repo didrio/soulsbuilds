@@ -76,7 +76,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByRole('region', { name: 'Character' })).toContainText('HP1,450');
   await page.getByRole('button', { name: 'Save' }).click();
 
-  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
+  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
   // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune. The
   // sidebar's tiles carry the names (T48), and one shows them on tap.
@@ -109,7 +109,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   // Edit keeps likes and comments (2022 bug: saving reset them). Editing opens Description, the only
   // tab while editing (T48): the build itself is edited in the sidebar.
   await page.getByRole('button', { name: 'Edit' }).click();
-  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
+  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
   await page.getByLabel('Build name').fill(`${buildName} v2`);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('heading', { name: `${buildName} v2` })).toBeVisible();
@@ -211,7 +211,7 @@ test('password reset and consumables', async ({ page }) => {
   await page.getByRole('button', { name: /^Acid Spraymist/ }).click();
   await expect(page.getByRole('button', { name: 'Change Acid Spraymist' })).toBeVisible();
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
+  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
   await page.reload();
   await expect(page.getByRole('list', { name: 'Items' }).getByRole('button')).toHaveAccessibleName(
     'Acid Spraymist',

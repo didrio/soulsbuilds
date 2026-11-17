@@ -1,16 +1,18 @@
 // The routes of the link-preview function (T37) and what crawlers read (T50), apart from Firebase so
 // they can be tested:
-//   /build/:id[/tab]     the SPA's index.html with this build's title, description and card image, and the
+//   /build/:id[/slug][/tab]  the SPA's index.html with this build's title, description and card image, and the
 //                        build as plain HTML inside #root (page.ts); a build that doesn't exist is a 404
 //                        with noindex (the app still shows its own message)
 //   /og/build/:id.png    the card image
-//   /sitemap.xml         the home page and every build
+//   /sitemap.xml         the home page and every build (at its named URL, T56)
 // Anything else that goes wrong (a read fails, the content can't be made) serves the plain index.html with
 // status 200: the page must never break because a preview couldn't be made.
 import { getCardItem, getCardWeapon, iconUrl } from '@/data/core';
 import { buildImage } from '@/lib/equipment';
 import type { BuildDoc } from '@/lib/models';
 import {
+  buildUrl,
+  injectHead,
   injectMeta,
   injectNoindex,
   injectRoot,
@@ -19,6 +21,7 @@ import {
   sitemapXml,
 } from '@/lib/share';
 import type { CardData } from './card';
+import { buildJsonLd } from './jsonld';
 import { buildContentHtml } from './page';
 
 export interface Deps {
@@ -26,7 +29,7 @@ export interface Deps {
   /** The author's display name, or '' when they have no profile. */
   loadAuthor(uid: string): Promise<string>;
   /** Every build's ID and last edit, for the sitemap. */
-  listBuilds(): Promise<{ id: string; updatedAt?: Date }[]>;
+  listBuilds(): Promise<{ id: string; name: string; updatedAt?: Date }[]>;
   /** A file Hosting serves (index.html, an icon), or null. */
   fetchStatic(path: string): Promise<Uint8Array | null>;
   renderCard(card: CardData): Promise<Uint8Array>;
@@ -39,7 +42,8 @@ export interface Reply {
 }
 
 const BUILD_ID = '[A-Za-z0-9]{1,40}';
-const PAGE = new RegExp(`^/build/(${BUILD_ID})(?:/(?:description|guide|comments))?/?$`);
+// `/build/<id>`, then an optional name slug and tab, in any mix (T56): the ID alone decides the build.
+const PAGE = new RegExp(`^/build/(${BUILD_ID})(?:/[^/]+){0,2}/?$`);
 const IMAGE = new RegExp(`^/og/build/(${BUILD_ID})\\.png$`);
 
 /** Pages change when the author edits and when a deploy replaces the app's files: keep both short. */
@@ -105,10 +109,11 @@ export async function handle(path: string, deps: Deps): Promise<Reply> {
     });
     const withMeta = injectMeta(html, {
       ...meta,
-      url: `${SITE_ORIGIN}/build/${id}`,
+      url: buildUrl(id, found.build.name),
       image: `${SITE_ORIGIN}/og/build/${id}.png`,
     });
-    return reply(200, withContent(withMeta, found.build, found.author, id), PAGE_CACHE);
+    const withData = injectHead(withMeta, buildJsonLd(found.build, found.author, id));
+    return reply(200, withContent(withData, found.build, found.author, id), PAGE_CACHE);
   } catch (cause) {
     console.error('preview failed', id, cause);
     return reply(200, html, SHORT_CACHE);
@@ -130,8 +135,8 @@ async function sitemap(deps: Deps): Promise<Reply> {
     const builds = await deps.listBuilds();
     const body = sitemapXml([
       { loc: `${SITE_ORIGIN}/` },
-      ...builds.map(({ id, updatedAt }) => ({
-        loc: `${SITE_ORIGIN}/build/${id}`,
+      ...builds.map(({ id, name, updatedAt }) => ({
+        loc: buildUrl(id, name),
         lastmod: updatedAt,
       })),
     ]);

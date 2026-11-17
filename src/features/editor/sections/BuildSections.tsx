@@ -166,7 +166,7 @@ function BuildSections({
       const content = tabs.find((each) => each === key);
       if (content && content !== tab) {
         tapped.current = content;
-        void navigate(tabPath(routeId, content), { replace: true });
+        void navigate(tabPath(routeId, content, build?.name), { replace: true });
       }
     }
     setOpen(next);

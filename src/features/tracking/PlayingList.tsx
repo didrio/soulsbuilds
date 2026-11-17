@@ -72,7 +72,7 @@ function PlayingCard({
   const next = nextStopTitle(build, state);
   const { gear, level } = progress;
   return (
-    <Card to={tabPath(build.id, 'guide')}>
+    <Card to={tabPath(build.id, 'guide', build.name)}>
       <Top>
         <ItemTile src={image ? iconUrl(image.icon) : null} size={56} />
         <Names>

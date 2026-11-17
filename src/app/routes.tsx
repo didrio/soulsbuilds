@@ -20,7 +20,7 @@ function AppRoutes() {
     <Suspense fallback={<PageMessage loading />}>
       <Routes>
         <Route path="/" element={<Landing />} />
-        <Route path="/build/:buildId/:tab?" element={<BuildEditorPage />} />
+        <Route path="/build/:buildId/*" element={<BuildEditorPage />} />
         <Route path="/user/:userId" element={<Profile />} />
         <Route
           path="/account"

@@ -20,7 +20,7 @@ test('delete your account and everything you published', async ({ page }) => {
   await page.getByRole('link', { name: 'New build' }).click();
   await page.getByLabel('Build name').fill(buildName);
   await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}$/);
+  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
   const ownBuild = new URL(page.url()).pathname;
 
   // A like and a comment on someone else's build.

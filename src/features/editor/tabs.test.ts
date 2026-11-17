@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { isCanonical, pageKey, parseTab, tabPath, visibleTabs } from './tabs';
+import { slugify } from '@/lib/slug';
+import {
+  BUILD_TABS,
+  isCanonical,
+  pageKey,
+  parseTab,
+  splitBuildPath,
+  tabPath,
+  visibleTabs,
+} from './tabs';
 
 describe('parseTab', () => {
   it('reads no segment as Description and known segments as their tab', () => {
@@ -34,6 +43,44 @@ describe('tabPath', () => {
     expect(tabPath('abc', 'guide')).toBe('/build/abc/guide');
     expect(tabPath('new', 'comments')).toBe('/build/new/comments');
   });
+
+  it('puts the name slug between the ID and the tab (T56)', () => {
+    expect(tabPath('abc', 'description', 'Bleed Samurai')).toBe('/build/abc/bleed-samurai');
+    expect(tabPath('abc', 'guide', 'Bleed Samurai')).toBe('/build/abc/bleed-samurai/guide');
+  });
+
+  it('no name slug can be mistaken for a tab', () => {
+    for (const { segment } of BUILD_TABS) {
+      if (segment) expect(slugify(segment)).not.toBe(segment);
+    }
+    expect(parseTab(slugify('Guide'))).toBeNull();
+  });
+});
+
+describe('splitBuildPath', () => {
+  it('reads nothing as no slug and no tab', () => {
+    expect(splitBuildPath(undefined)).toEqual({ slug: null, tabSegment: undefined });
+    expect(splitBuildPath('')).toEqual({ slug: null, tabSegment: undefined });
+  });
+
+  it('reads a lone tab segment (old links) as the tab, not a slug', () => {
+    expect(splitBuildPath('guide')).toEqual({ slug: null, tabSegment: 'guide' });
+    expect(splitBuildPath('route')).toEqual({ slug: null, tabSegment: 'route' });
+  });
+
+  it('reads a lone other segment as the slug', () => {
+    expect(splitBuildPath('bleed-samurai')).toEqual({
+      slug: 'bleed-samurai',
+      tabSegment: undefined,
+    });
+  });
+
+  it('reads slug then tab, ignoring a trailing slash', () => {
+    expect(splitBuildPath('bleed-samurai/guide/')).toEqual({
+      slug: 'bleed-samurai',
+      tabSegment: 'guide',
+    });
+  });
 });
 
 describe('visibleTabs', () => {
@@ -51,6 +98,8 @@ describe('pageKey', () => {
     expect(pageKey('/build/abc')).toBe('/build/abc');
     expect(pageKey('/build/abc/comments')).toBe('/build/abc');
     expect(pageKey('/build/abc/guide/')).toBe('/build/abc');
+    expect(pageKey('/build/abc/bleed-samurai')).toBe('/build/abc');
+    expect(pageKey('/build/abc/bleed-samurai/guide')).toBe('/build/abc');
   });
 
   it('leaves other paths alone', () => {

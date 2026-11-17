@@ -6,6 +6,7 @@ import { selectionBar } from '@/components/ui/inWorld';
 import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
+import { tabPath } from '@/features/editor/tabs';
 import { buildImage } from '@/lib/equipment';
 import { getCardArmor, getCardItem, getCardWeapon, iconUrl } from '@/data/core';
 import type { Build, UserProfile } from '@/lib/models';
@@ -68,7 +69,7 @@ function BuildsList({ builds, authors }: BuildsListProps) {
         const main = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
-            <Row to={`/build/${build.id}`}>
+            <Row to={tabPath(build.id, 'description', build.name)}>
               <Portrait
                 src={main ? iconUrl(main.icon) : null}
                 title={main?.name}

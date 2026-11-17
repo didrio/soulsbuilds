@@ -18,7 +18,7 @@ test('track a build: sign up from the intro, check items off, reload, stop', asy
   await completeSignUp(page, 'track');
 
   // Signed up: tracking started on the new account, in the Guide tab.
-  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}/guide$`));
+  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}/bloodhound-samurai/guide$`));
   const progress = page.getByRole('region', { name: 'Your progress', exact: true });
   await expect(progress).toContainText('0%');
 
@@ -46,13 +46,13 @@ test('track a build: sign up from the intro, check items off, reload, stop', asy
   await expect(page.getByRole('region', { name: 'Your progress', exact: true })).toHaveCount(0);
   await expect(page.getByRole('checkbox')).toHaveCount(0);
   await page.getByRole('link', { name: 'Tracking', exact: true }).click();
-  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}/guide$`));
+  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}/bloodhound-samurai/guide$`));
 
   // Another build: no intro now, tracking starts at once.
   await page.goto('/build/SEEDMOON0001');
   await page.getByRole('button', { name: 'Track this build' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page).toHaveURL(/\/build\/SEEDMOON0001\/guide$/);
+  await expect(page).toHaveURL(/\/build\/SEEDMOON0001\/carian-moon-knight\/guide$/);
   await expect(page.getByRole('region', { name: 'Your progress', exact: true })).toContainText(
     '0%',
   );

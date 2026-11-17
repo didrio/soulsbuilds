@@ -7,14 +7,14 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 
 `src/app/routes.tsx` defines the routes:
 
-| Route                   | Component         | What it does                                                                                                                                                                 |
-| ----------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                     | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                                    |
-| `/build/:buildId/:tab?` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                         |
-| `/user/:userId`         | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                    |
-| `/account`              | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                |
-| `/auth/action`          | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one |
-| `*`                     | `NotFound`        | 404 page                                                                                                                                                                     |
+| Route               | Component         | What it does                                                                                                                                                                 |
+| ------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                 | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                                    |
+| `/build/:buildId/*` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                         |
+| `/user/:userId`     | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                    |
+| `/account`          | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                |
+| `/auth/action`      | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one |
+| `*`                 | `NotFound`        | 404 page                                                                                                                                                                     |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
 Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. Signed in, the
@@ -279,9 +279,12 @@ on the right (in a row under the tags below 900px); in edit mode `BuildDetailsFo
 tags and "Build image": the current tile and "Change image", which opens `BuildImageDialog`, radio rows of the
 default and the build's gear), then (desktop, ≥ 900px) a **tab bar** (`sections/BuildTabs`: `NavLink`s across the page, labels
 centered, sticky at the window's top; Comments shows the stored count), then the **build sidebar** beside the tab.
-Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`): `/build/x` Description, `/guide`, `/comments`; the links used
-before T48 (`/description`, `/route`) redirect to their tab's URL (`isCanonical`), and an unknown tab, or one the
-build doesn't show (editing and `/build/new`: Description only), redirects to Description. Description always
+Tabs are URLs (`/build/:buildId/*`, `tabs.ts`): `/build/<id>/<slug>` Description, `/<slug>/guide`, `/<slug>/comments`,
+where the slug is the name (`lib/slug.ts`, T56: `/build/x/bleed-samurai`). **The ID alone decides the build**: a missing
+or stale slug (or a rename) is replaced in the URL (`<Navigate replace>`), and `splitBuildPath` tells a lone tab
+segment (links from before T56 and T48: `/build/x/guide`, `/description`, `/route`) from a slug; `slugify` never
+returns a tab's segment ("Guide" → `guide-build`). Links built with `tabPath(id, tab, name)` carry the slug. An
+unknown tab, or one the build doesn't show (editing and `/build/new`: Description only), redirects to Description. Description always
 shows (T47): the write-up, or `describe.ts`'s `describeBuild(selectDescriptionFacts)`, markdown made at view time
 from the build (main weapon and the other hand's, top three attributes, load and poise, talismans, spells, a "Worth
 knowing" list) with a muted "automatically generated" note. Switching tabs keeps the editor (and an edit in
@@ -413,8 +416,10 @@ through the app's markdown pipeline as HTML (`functions/src/markdown.ts`: GFM, r
 links `rel="nofollow ugc"`). A `<style>` in that block paints it in the site's colors, since visitors see it until
 the bundle runs; `createRoot` replaces it on the first render (not hydration: it's the same content, not
 cloaking). A build that doesn't exist is a **404** with `noindex` (`/build/new`, the editor's create page, is
-not); read failures stay 200 with the plain page. `/sitemap.xml` lists `/` and every build with its `updatedAt`
-(one field-masked query). `scripts/build-functions.mjs` now writes `functions/lib/` as a directory: the card
+not); read failures stay 200 with the plain page. `/sitemap.xml` lists `/` and every build at its slugged URL with its `updatedAt`
+(one field-masked query: `name`, `updatedAt`). The head also carries JSON-LD (T56, `functions/src/jsonld.ts`): a `CreativeWork`
+(author, dates, `about` the game, likes and comments as `interactionStatistic`) and a `BreadcrumbList`; the canonical and
+`og:url` are the slugged URL whichever tab or slug was asked for. `scripts/build-functions.mjs` now writes `functions/lib/` as a directory: the card
 renderer (satori, resvg, sharp) is its own chunk, loaded on the first image request, so pages and the sitemap
 start faster; the bundle is minified (~0.9 MB, mostly game data). Pages only ever import framework-free editor
 code (the store, selectors, `gear.ts`, `describe.ts`); keep it that way, or React ends up in the function.

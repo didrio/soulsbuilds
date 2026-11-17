@@ -104,7 +104,7 @@ describe('BuildsList', () => {
   it('each row links to its build page', async () => {
     const { user } = renderWithProviders(<BuildsList builds={[makeBuild()]} />);
     const link = screen.getByRole('link', { name: /Carian Moon Knight/ });
-    expect(link).toHaveAttribute('href', '/build/SEEDMOON0001');
+    expect(link).toHaveAttribute('href', '/build/SEEDMOON0001/carian-moon-knight');
     await user.click(link);
     expect(screen.getByText('build page')).toBeInTheDocument();
   });

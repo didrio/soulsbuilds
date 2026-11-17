@@ -63,7 +63,7 @@ export function renderWithProviders(
             <Routes>
               <Route path={path} element={ui} />
               {path === '*' ? (
-                <Route path="/build/:buildId" element={<p>build page</p>} />
+                <Route path="/build/:buildId/*" element={<p>build page</p>} />
               ) : (
                 <Route path="*" element={<p>other page</p>} />
               )}

@@ -2,12 +2,12 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T62**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T63**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T52 (seeded builds: needs the owner's "Souls Builds" account and five sources first) · Opus · high effort · plan mode on. Or T54 / T56 (Sonnet, ready). Then T53, T55 (discoverability), then
+**Next:** T52 (seeded builds: needs the owner's "Souls Builds" account and five sources first) · Opus · high effort · plan mode on. Or T54 (Sonnet, ready). Then T53, T55 (discoverability), then
 T57–T61 (Dark Souls). Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -30,6 +30,7 @@ and spacing, and the canvas notes say why.
   which Smithbox version and game patch each came from, like the Elden Ring export's `VERSION.txt`.
 - Before T52: sign up a "Souls Builds" account on the live site (it posts the seeded builds), and pick the first
   five community builds to recreate (links).
+- After T56 deploys: paste a build URL into https://search.google.com/test/rich-results (breadcrumbs should pass; `CreativeWork` has no rich result, only a schema check), and resubmit the sitemap in Search Console (its URLs now carry the slugs).
 - T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
   is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
   again later, set up the custom email domain, or ask Firebase support; details in `docs/firebase.md` "Sign-in
@@ -60,7 +61,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages) and T51 (head tags).
+desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags) and T56 (named URLs, JSON-LD).
 
 ## In progress
 
@@ -70,7 +71,7 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages) and
 
 Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
 previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53), then sharing and hub pages
-(T54, T55), then T56. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
+(T54, T55), then T56. T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
 
 #### T52 — Seeded builds: an import script and the first five, credited
 
@@ -169,23 +170,62 @@ previews. Order: crawlers can read the site (T50, T51 done), then content (T52, 
   `features/builds/{filters.ts,queries.ts,BuildsList.tsx}`, `firestore.rules` + `tests/rules/budget.test.ts`,
   T50's function routes. Licensing: only the owner's game export (golden rule 5).
 
-#### T56 — Build URLs with names, and structured data
+#### T62 — Comments worth reading: full width, likes, sorting, one level of replies
 
-- **Status:** ready
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** `/build/ABC123/bleed-samurai-katana`: keywords in the URL and a readable link; plus JSON-LD so
-  search engines know what a build page is.
+- **Status:** ready (independent of T52–T61; touches rules, so it needs the owner's deploy)
+- **Session:** Opus · high effort · plan mode on (rules, data model and UI in one go)
+- **Goal:** Make the Comments tab a place where people talk about the build, without going full Reddit.
+  Owner's asks (2026-11-16): comments should fill the width they sit in; upvoting (or a simple like);
+  sorting; and threaded replies, or at least one sub-level for very basic conversations.
+- **Recommended design** (confirm the first two with the owner in plan mode):
+  - **Likes only, no downvotes.** On a small community a downvote mostly discourages people; a like says
+    "this helped" and matches builds' likes. One heart per user per comment, toggle off allowed.
+  - **One reply level.** A reply to a reply attaches to the same top-level comment (optionally prefixed with
+    "@name"). Replies show oldest first under their parent, collapsed behind "N replies" when more than 2-3.
+    This is enough for "did this work for you?" exchanges and avoids deep-nesting layout trouble on phones.
+  - **Sort: Top (default) and Newest**, a `SegmentedControl` above the list. Top = likes desc, ties newest
+    first; the author's pinned or "Author" badge on comments by the build's owner is a cheap extra. Sorting
+    applies to top-level comments only; replies stay chronological.
+  - **Width:** drop the `READABLE` (72ch) `max-width` in `CommentsSection.tsx` (comments, form, reply forms)
+    so they fill the tab column like the Description does. Keep a readable line length inside text only if
+    it looks bad when wide; look at it on desktop at 1000/1440 px and on phones.
 - **Done when:**
-  - Build URLs carry a slug of the name after the ID; the ID alone decides the build, any or no slug works,
-    and the app replaces a stale or missing slug in the URL (`replace`, no extra history entry). Tabs still
-    work (`/build/<id>/<slug>/guide`, or the session picks a shape that keeps T48's tab URLs and old links
-    working: check `features/editor/tabs.ts`). The function's `PAGE` regex and the canonical (T50/T51) use the
-    slugged URL; old links keep working.
-  - JSON-LD in the function's HTML: `CreativeWork` (name, author, dates, `about` Elden Ring as a `VideoGame`,
-    likes and comments as `interactionStatistic`) and a `BreadcrumbList` (Souls Builds › Elden Ring builds ›
-    the build). Checked with Google's Rich Results Test after deploy (owner).
-  - Tests: slug function (accents, emoji, empty names), routes, `handler.test.ts`. `npm run check`, e2e.
-- **Context:** `src/app/routes.tsx`, `features/editor/tabs.ts`, `functions/src/handler.ts`, `src/lib/share.ts`.
+  - Comments fill the available width on every tab layout and phone section (screenshots, desktop and mobile).
+  - Like button with count on each comment (44 px target, `aria-pressed`, signed-out → opens the auth dialog
+    through `useOpenAuthDialog`); optimistic update like build likes.
+  - Sort control; Reply button opening an inline form under the comment; replies nested one level.
+  - Deleting a top-level comment that has replies leaves the replies visible under a "Comment deleted"
+    placeholder (no cascade: rules can't cheaply delete a subtree, and no tombstone update is needed).
+  - Rules and tests in `tests/rules/`: a reply's `parentId` must name an existing comment of that build that
+    has no `parentId` itself; comment likes are one doc per user with the comment's `likeCount` changing by
+    exactly 1 in the same batch (the pattern of `likeChange()` and the build likes rules); `commentCount`
+    still counts replies. `RULES_BUDGET` test stays green (comment writes are separate from the build write
+    budget but check it, T42).
+  - Unit tests for sorting/grouping (pure, in `src/lib/` or `comments.ts`), a component test for like and
+    reply, and an e2e journey (post, reply, like, sort) in `tests/e2e/`.
+  - Docs: `docs/firebase.md` (data model, rules), AGENTS.md map line for comments, `docs/architecture.md` if a
+    pattern is new; Privacy page if it mentions what's stored (comment likes are the user's uid).
+- **Context:**
+  - Code: `src/features/editor/sections/CommentsSection.tsx` (list + form today, newest first, `Delete` and
+    `ReportButton`), `src/features/editor/queries.ts` (`useComments`, `useAddComment`, `useDeleteComment`,
+    `useLatestComment`), `src/lib/firebase/comments.ts`, `src/lib/firebase/likes.ts` (the pattern to copy),
+    `src/lib/models.ts` (`CommentDoc`/`Comment`, `LIMITS.comment` = 1000), `firestore.rules` (comments block at
+    about line 327; `likeChange()` for the counter pattern; comments are create/delete only today, so the
+    comment `likeCount` needs an `update` rule limited to that field, by exactly 1).
+  - Model: add `parentId: string | null` and `likeCount: number` to `CommentDoc`. **Existing comments lack both**:
+    read them as `null`/`0` in `toComment`, and make the rules accept a create without `parentId` only if
+    that's simpler than a migration (no backfill needed that way).
+  - Likes storage: the viewer's own likes are needed to paint hearts. Per-comment `likes/{uid}` subdocs would
+    need a read per comment; prefer **one `builds/{id}/commentLikes/{commentId}_{uid}` collection** and a
+    single query `where userId == uid` per build page (rules: public read like `likes`, create/delete by the
+    owner of the doc id, plus the comment's counter in the same batch).
+  - Also touch: account deletion (T18, `src/lib/firebase/account.ts` and `scripts/admin.mjs delete-user`:
+    delete the user's comment likes and fix counters or accept the drift, decide in plan mode), reports of
+    replies (`ReportButton` already takes a comment id), `admin.mjs remove <buildId> <commentId>`, the seed
+    script (`scripts/seed.mjs` should include a few replies and likes so the screenshot has something),
+    `functions/src/page.tsx` if the crawler HTML lists comments (check; keep it to top comments).
+  - Out of scope: notifications, editing comments, markdown in comments, mentions, collapsing threads,
+    downvotes. Note them in the Backlog Ideas if the owner wants them later.
 
 #### T57 — More games: the foundation (still only Elden Ring)
 
@@ -378,6 +418,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T56 — Build URLs with names, and structured data — 2026-11-17 — `/build/<id>/<name slug>[/<tab>]` (`lib/slug.ts`, `tabs.ts` `splitBuildPath`, `tabPath(id, tab, name)`): the ID alone decides, a missing or stale slug is replaced, old tab links still work; the function's `PAGE` takes any slug, canonical, `og:url` and sitemap are slugged (the sitemap reads `name`), JSON-LD `CreativeWork` + `BreadcrumbList` (`functions/src/jsonld.ts`). **Owner:** after the deploy, run a build page through Google's Rich Results Test.
 - T51 — Head tags per page — 2026-11-17 — `PageHead` (`components/ui/`) edits the head's own title, description, canonical and `noindex` (effects, not hoisted tags, so the function's tags aren't doubled); home, build (`shareMeta`), profile (noindex with no builds), legal pages, 404, account, `/auth/action`. Formats in `lib/share.ts` (`buildTitle`, `homeMeta`, `pageTitle`) shared with the function; `index.html` has the keyword title and no static canonical.
 - T50 — Crawlable build pages — 2026-11-17 — the `site` function serves `/sitemap.xml` (home + every build,
   `updatedAt`), each build as plain HTML in `#root` (`functions/src/page.ts` via the editor store; write-up as

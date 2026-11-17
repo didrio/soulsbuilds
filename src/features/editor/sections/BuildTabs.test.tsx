@@ -11,7 +11,7 @@ const renderTabs = (route: string, props: Partial<Parameters<typeof BuildTabs>[0
       tabs={['description', 'guide', 'comments']}
       {...props}
     />,
-    { route, path: '/build/:buildId/:tab?' },
+    { route, path: '/build/:buildId/*' },
   );
 
 describe('BuildTabs', () => {

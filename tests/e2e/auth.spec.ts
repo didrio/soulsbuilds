@@ -37,7 +37,7 @@ test('sign up, choose a name, log out, log in where you were, reset request', as
 
   // The account exists; the name comes next. Still on the build afterwards.
   await chooseName(page, name);
-  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}$`));
+  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}/bloodhound-samurai$`));
   await accountMenu(page, 'Profile');
   await expect(page.getByRole('heading', { name })).toBeVisible();
 
@@ -55,7 +55,7 @@ test('sign up, choose a name, log out, log in where you were, reset request', as
   await login.getByRole('button', { name: 'Log in' }).click();
   await expect(accountButton(page)).toBeVisible();
   await expect(page.getByRole('dialog')).toHaveCount(0);
-  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}$`));
+  await expect(page).toHaveURL(new RegExp(`${SEED_BUILD}/bloodhound-samurai$`));
 
   // "Forgot password?": its own view, the email carried over, the same answer for any email.
   await accountMenu(page, 'Log out');

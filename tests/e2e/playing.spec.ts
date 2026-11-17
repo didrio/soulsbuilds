@@ -50,7 +50,7 @@ test('Playing and Completed on the profile, with the counts on the build', async
   // The card opens the Guide (T46). Finish it: Build complete there, the counts move, and it's a
   // trophy on the profile.
   await card.click();
-  await expect(page).toHaveURL(new RegExp(`${BUILD}/guide$`));
+  await expect(page).toHaveURL(new RegExp(`${BUILD}/wretch-speedrun/guide$`));
   for (const weapon of WEAPONS.slice(1)) {
     await page.getByRole('checkbox', { name: new RegExp(`^${weapon}`) }).click();
   }

@@ -29,9 +29,9 @@ const renderPage = (route: string, uid: string | null = null) => {
     <>
       <BuildEditorPage />
       <Where />
-      <Link to="/build/SEEDMOON0001/guide">Elsewhere to the Guide</Link>
+      <Link to="/build/SEEDMOON0001/carian-moon-knight/guide">Elsewhere to the Guide</Link>
     </>,
-    { route, path: '/build/:buildId/:tab?', uid },
+    { route, path: '/build/:buildId/*', uid },
   );
 };
 
@@ -108,7 +108,7 @@ describe('BuildSections (phones)', () => {
     expect(firebase.listComments).not.toHaveBeenCalled();
 
     await user.click(header('Comments'));
-    expect(location()).toBe('/build/SEEDMOON0001/comments');
+    expect(location()).toBe('/build/SEEDMOON0001/carian-moon-knight/comments');
     const comments = screen.getByRole('region', { name: 'Comments' });
     expect(await within(comments).findByText('Moonveil all day')).toBeInTheDocument();
     expect(header('Description')).toHaveAttribute('aria-expanded', 'true');
@@ -116,7 +116,7 @@ describe('BuildSections (phones)', () => {
 
   it('opens the section the URL names, and one a link elsewhere goes to', async () => {
     firebase.getBuild.mockResolvedValue(makeBuild());
-    const { user } = renderPage('/build/SEEDMOON0001/comments');
+    const { user } = renderPage('/build/SEEDMOON0001/carian-moon-knight/comments');
     await screen.findByRole('region', { name: 'Comments' });
     expect(header('Comments')).toHaveAttribute('aria-expanded', 'true');
     expect(header('Description')).toHaveAttribute('aria-expanded', 'false');
@@ -131,7 +131,7 @@ describe('BuildSections (phones)', () => {
 
     // A tap opens a section where it is: no scrolling.
     await user.click(header('Description'));
-    expect(location()).toBe('/build/SEEDMOON0001');
+    expect(location()).toBe('/build/SEEDMOON0001/carian-moon-knight');
     expect(scrolled).toHaveBeenCalledTimes(1);
     delete (Element.prototype as Partial<Element>).scrollIntoView;
   });

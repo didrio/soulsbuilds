@@ -62,10 +62,10 @@ const renderPage = (uid: string | null = null, route = '/build/SEEDMOON0001') =>
     <AuthDialogContext value={openAuthDialog}>
       <BuildEditorPage />
     </AuthDialogContext>,
-    { route, path: '/build/:buildId/:tab?', uid },
+    { route, path: '/build/:buildId/*', uid },
   );
 
-const GUIDE = '/build/SEEDMOON0001/guide';
+const GUIDE = '/build/SEEDMOON0001/carian-moon-knight/guide';
 /** A build item's checkbox on the route (loaded lazily with its data). */
 const item = (name: string) =>
   screen.findByRole('checkbox', { name: new RegExp(`^${name}`) }, { timeout: 5000 });

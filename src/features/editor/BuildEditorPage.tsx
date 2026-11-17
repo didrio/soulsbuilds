@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
+import { slugify } from '@/lib/slug';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
@@ -37,17 +38,17 @@ import { TrackingBar } from '@/features/tracking/TrackingBar';
 import { NewItemsNotice } from '@/features/tracking/TrackingCards';
 import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
-import { isCanonical, parseTab, tabPath, visibleTabs, type BuildTab } from './tabs';
+import { isCanonical, parseTab, splitBuildPath, tabPath, visibleTabs, type BuildTab } from './tabs';
 import { useBuildEditor } from './useBuildEditor';
 
 /**
- * `/build/:buildId/:tab?` (or `/build/new`): one editor per build, so state never leaks between
+ * `/build/:buildId/<slug>/<tab>` (slug and tab optional, T56; or `/build/new`): one editor per build, so state never leaks between
  * builds; switching tabs keeps it (and an edit in progress).
  */
 function BuildEditorPage() {
-  const { buildId = 'new', tab } = useParams();
+  const { buildId = 'new', '*': rest } = useParams();
   const id = buildId === 'new' ? null : buildId;
-  return <BuildEditor key={buildId} buildId={id} tabParam={tab} />;
+  return <BuildEditor key={buildId} buildId={id} rest={rest} />;
 }
 
 /**
@@ -61,7 +62,7 @@ function BuildEditorPage() {
  * section's "Track this build" (or "Tracking") opens it. Phones and tablets (< 900 px, T49): one layout
  picked in JS, collapsible sections (`BuildSections`) instead of the tab bar and the sidebar.
  */
-function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
+function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string }) {
   const editor = useBuildEditor(buildId);
   const level = useAppSelector(selectLevel);
   const { auth, build, buildQuery, editable, isNew } = editor;
@@ -106,12 +107,19 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
     }
   }
 
-  // An unknown tab, or one this build doesn't show (editing): Description. An old link (`/route`,
-  // `/description`, before T48): its tab's own URL.
+  // The URL's one shape (T56): `/build/<id>/<slug of the name>/<tab>`. A missing or stale slug (the
+  // build was renamed), an old link (`/route`, `/description`, before T48) or a tab this build doesn't
+  // show (editing) is replaced, with no extra history entry.
   const tabs = visibleTabs({ editable });
-  const tab = parseTab(tabParam);
-  if (!tab || !tabs.includes(tab)) return <Navigate to={tabPath(routeId, 'description')} replace />;
-  if (!isCanonical(tabParam, tab)) return <Navigate to={tabPath(routeId, tab)} replace />;
+  const { slug, tabSegment } = splitBuildPath(rest);
+  const tab = parseTab(tabSegment);
+  const name = build?.name;
+  if (!tab || !tabs.includes(tab)) {
+    return <Navigate to={tabPath(routeId, 'description', name)} replace />;
+  }
+  if (!isCanonical(tabSegment, tab) || slug !== (name === undefined ? null : slugify(name))) {
+    return <Navigate to={tabPath(routeId, tab, name)} replace />;
+  }
 
   // Each tab's content: beside the sidebar on desktop, in its section on phones (bare: the section
   // is the panel and has the heading).
@@ -167,7 +175,9 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
       ) : build ? (
         <BuildHeader
           build={build}
-          trackAction={<TrackButton tracking={tracking} guidePath={tabPath(build.id, 'guide')} />}
+          trackAction={
+            <TrackButton tracking={tracking} guidePath={tabPath(build.id, 'guide', build.name)} />
+          }
           ownerActions={
             editor.isOwner ? (
               <OwnerActions
@@ -198,6 +208,7 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
         <div>
           <BuildTabs
             buildId={routeId}
+            buildName={build?.name}
             current={tab}
             tabs={tabs}
             commentCount={editable ? undefined : build?.commentCount}

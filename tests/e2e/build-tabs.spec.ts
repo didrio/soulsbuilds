@@ -6,7 +6,7 @@ import { expect, test } from '@playwright/test';
 test('tabs: old links, jump to, switching and Back', async ({ page }) => {
   // A link from before T48: Description is now the build's own URL.
   await page.goto('/build/SEEDBLEED001/description');
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai$/);
   const tabs = page.getByRole('navigation', { name: 'Build sections' });
   await expect(tabs.getByRole('link')).toHaveText(['Description', 'Guide', /^Comments/]);
   await expect(tabs.getByRole('link', { name: 'Description' })).toHaveAttribute(
@@ -26,16 +26,23 @@ test('tabs: old links, jump to, switching and Back', async ({ page }) => {
 
   // Another tab (same sidebar), then Back to the write-up.
   await tabs.getByRole('link', { name: 'Guide' }).click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/guide$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/guide$/);
   await expect(page.getByRole('heading', { name: 'How to get this build' })).toBeVisible();
   await expect(sidebar.getByRole('button', { name: /^Uchigatana/ })).toBeAttached();
   await page.goBack();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001(#.*)?$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai(#.*)?$/);
   await expect(page.getByRole('heading', { name: 'About this build' })).toBeVisible();
+
+  // A wrong or missing name slug is replaced with the build's own (T56); the ID alone decides.
+  await page.goto('/build/SEEDBLEED001/an-old-name/guide');
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/guide$/);
+  await page.goto('/build/SEEDBLEED001');
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai$/);
+  await expect(page.getByRole('heading', { name: 'Bloodhound Samurai' })).toBeVisible();
 
   // The old route link opens the Guide.
   await page.goto('/build/SEEDBLEED001/route');
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/guide$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/guide$/);
 });
 
 test('a build without a write-up has a generated description', async ({ page }) => {

@@ -39,8 +39,12 @@ function deps(overrides: Partial<Deps> = {}): Deps {
     loadBuild: async (id) => (builds[id] as BuildDoc | undefined) ?? null,
     loadAuthor: async () => 'Ranni',
     listBuilds: async () => [
-      { id: 'SEEDMOON0001', updatedAt: new Date('2026-11-01T10:00:00Z') },
-      { id: 'SEEDBLEED001', updatedAt: new Date('2026-11-15T10:00:00Z') },
+      {
+        id: 'SEEDMOON0001',
+        name: 'Carian Moon Knight',
+        updatedAt: new Date('2026-11-01T10:00:00Z'),
+      },
+      { id: 'SEEDBLEED001', name: 'Bleed Samurai', updatedAt: new Date('2026-11-15T10:00:00Z') },
     ],
     fetchStatic: async (path) => (path === '/index.html' ? INDEX : new Uint8Array([1, 2, 3])),
     renderCard: async () => new Uint8Array([137, 80, 78, 71]),
@@ -61,7 +65,9 @@ describe('build pages', () => {
       '<title>Carian Moon Knight · Level 132 Elden Ring build | Souls Builds</title>',
     );
     expect(body).toContain('Level 132 Elden Ring build by Ranni.');
-    expect(body).toContain('content="https://soulsbuilds.com/build/SEEDMOON0001"');
+    expect(body).toContain(
+      'content="https://soulsbuilds.com/build/SEEDMOON0001/carian-moon-knight"',
+    );
     expect(body).toContain('content="https://soulsbuilds.com/og/build/SEEDMOON0001.png"');
     expect(body).toContain('<div id="root"><style>');
   });
@@ -125,6 +131,68 @@ describe('build pages', () => {
     }
   });
 
+  it('answers a name slug, with or without a tab, and any stale one (T56)', async () => {
+    for (const path of [
+      '/build/SEEDMOON0001/carian-moon-knight',
+      '/build/SEEDMOON0001/carian-moon-knight/guide',
+      '/build/SEEDMOON0001/an-old-name/comments/',
+    ]) {
+      const body = html(await handle(path, deps()));
+      expect(body).toContain('<h1>Carian Moon Knight</h1>');
+      // One canonical URL however the page was reached.
+      expect(body).toContain(
+        '<link rel="canonical" href="https://soulsbuilds.com/build/SEEDMOON0001/carian-moon-knight" />',
+      );
+    }
+  });
+
+  it('describes the build as structured data (T56)', async () => {
+    const withDates = {
+      ...doc,
+      likeCount: 7,
+      commentCount: 3,
+      createdAt: { toDate: () => new Date('2026-10-01T08:00:00Z') },
+      updatedAt: { toDate: () => new Date('2026-11-01T09:30:00Z') },
+    };
+    const body = html(
+      await handle(
+        '/build/SEEDMOON0001',
+        deps({ loadBuild: async () => withDates as unknown as BuildDoc }),
+      ),
+    );
+    const blocks = [...body.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map(
+      (match) => JSON.parse(match[1]!) as Record<string, unknown>,
+    );
+    expect(blocks).toHaveLength(2);
+    const [work, crumbs] = blocks;
+    expect(work).toMatchObject({
+      '@type': 'CreativeWork',
+      url: 'https://soulsbuilds.com/build/SEEDMOON0001/carian-moon-knight',
+      name: 'Carian Moon Knight',
+      author: { '@type': 'Person', name: 'Ranni' },
+      dateCreated: '2026-10-01T08:00:00.000Z',
+      dateModified: '2026-11-01T09:30:00.000Z',
+      about: { '@type': 'VideoGame', name: 'Elden Ring' },
+      interactionStatistic: [{ userInteractionCount: 7 }, { userInteractionCount: 3 }],
+    });
+    expect(crumbs).toMatchObject({
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { position: 1, name: 'Souls Builds' },
+        { position: 2, name: 'Elden Ring builds' },
+        { position: 3, name: 'Carian Moon Knight' },
+      ],
+    });
+  });
+
+  it('cannot be closed early by a build name that contains </script> (T56)', async () => {
+    const body = html(await handle('/build/SEEDBLEED001', deps()));
+    const blocks = [...body.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)];
+    expect(blocks).toHaveLength(2);
+    expect(JSON.parse(blocks[0]![1]!)).toMatchObject({ name: 'Bleed <script>alert(1)</script>' });
+    expect(body).not.toContain('"name":"Bleed <script>');
+  });
+
   it('is a 404 with noindex for a build that does not exist', async () => {
     const reply = await handle('/build/NOSUCHBUILD/guide', deps());
     expect(reply.status).toBe(404);
@@ -172,7 +240,7 @@ describe('sitemap', () => {
     const xml = html(reply);
     expect(xml).toContain('<url><loc>https://soulsbuilds.com/</loc></url>');
     expect(xml).toContain(
-      '<url><loc>https://soulsbuilds.com/build/SEEDBLEED001</loc><lastmod>2026-11-15</lastmod></url>',
+      '<url><loc>https://soulsbuilds.com/build/SEEDBLEED001/bleed-samurai</loc><lastmod>2026-11-15</lastmod></url>',
     );
     expect(xml.match(/<url>/g)).toHaveLength(3);
   });

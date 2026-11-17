@@ -7,7 +7,7 @@ import { completeSignUp } from './helpers';
 test('a build shows how to get it', async ({ page }) => {
   await page.goto('/build/SEEDBLEED001');
   await page.getByRole('link', { name: 'Guide' }).click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/guide$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/guide$/);
   await expect(page.getByRole('link', { name: 'Guide' })).toHaveAttribute('aria-current', 'page');
   const guide = page.getByRole('region', { name: 'How to get this build' });
   await expect(guide.getByText('Limgrave').first()).toBeVisible();
@@ -26,7 +26,7 @@ test('tracking a build makes the route the checklist', async ({ page }) => {
   // A new account tracks no build yet: the intro first, then the Guide tab (T46).
   await page.getByRole('button', { name: 'Track this build' }).click();
   await page.getByRole('button', { name: 'Start tracking' }).click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/guide$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/guide$/);
   const guide = page.getByRole('region', { name: 'How to get this build' });
   const next = guide.locator('ol > li', { hasText: 'Next stop' });
 

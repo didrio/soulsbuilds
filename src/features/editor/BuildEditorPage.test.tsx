@@ -24,7 +24,7 @@ const shownLevel = () =>
     ?.textContent;
 
 const renderPage = (route: string, uid: string | null = null) =>
-  renderWithProviders(<BuildEditorPage />, { route, path: '/build/:buildId/:tab?', uid });
+  renderWithProviders(<BuildEditorPage />, { route, path: '/build/:buildId/*', uid });
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -203,6 +203,18 @@ describe('BuildEditorPage', () => {
       expect(await screen.findByRole('link', { name: 'Guide' })).toHaveAttribute(
         'aria-current',
         'page',
+      );
+    });
+
+    it('links the tabs with the name slug and opens any slug on the right tab (T56)', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      renderPage('/build/SEEDMOON0001/some-old-name/guide');
+      const guide = await screen.findByRole('link', { name: 'Guide' });
+      expect(guide).toHaveAttribute('aria-current', 'page');
+      expect(guide).toHaveAttribute('href', '/build/SEEDMOON0001/carian-moon-knight/guide');
+      expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
+        'href',
+        '/build/SEEDMOON0001/carian-moon-knight',
       );
     });
 

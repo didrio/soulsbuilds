@@ -24,7 +24,7 @@ test('phone sections: glances, open and close, the URL', async ({ page }) => {
 
   // Comments: its URL (replaced, not pushed) and the list.
   await header('Comments').click();
-  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/comments$/);
+  await expect(page).toHaveURL(/\/build\/SEEDBLEED001\/bloodhound-samurai\/comments$/);
   await expect(section('Comments').getByText(/Corpse Piler is absurd/)).toBeVisible();
 
   // A link to the Guide opens it.
