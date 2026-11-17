@@ -66,7 +66,7 @@ shareable page, the acquisition route and credited variations.
    tracking only in the Guide; T48 desktop done, T49 the phone sections next): the build page is the product.
 2. **Measurement** (T38): know whether the next features get used. Blocked on the owner's decision.
 3. **Tracking** (T34–T36): serves most users and works alone.
-4. **Link previews** (T37): a pasted link shows the build. Needs server rendering (Blaze plan).
+4. **Link previews** (T37): a pasted link shows the build (a card with the main item). One small Cloud Function on the Blaze plan.
 5. **Sign-in and account polish** (T30–T31).
 6. **Copies and variations** (T32–T33): better once there's a crowd. Parked indefinitely in `TICKETS.md` until the
    owner asks for them.

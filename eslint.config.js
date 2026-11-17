@@ -14,6 +14,7 @@ export default tseslint.config(
       '.artifacts/**',
       '.firebase/**',
       'public/**',
+      'functions/lib/**',
       'scripts/legacy-data/**',
     ],
   },

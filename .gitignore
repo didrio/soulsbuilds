@@ -11,6 +11,10 @@ coverage/
 # scripts/admin.mjs backups of removed content (user data: never commit)
 .admin-backups/
 
+# Link-preview function (T37): built by `npm run build:functions`
+functions/lib/
+functions/fonts/
+
 # Firebase local state
 .firebase/
 .firebaserc.local

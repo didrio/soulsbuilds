@@ -35,6 +35,9 @@ jobs:
 
       - run: npm ci
 
+      # The link-preview function's own dependencies (T37): its typecheck (part of the check) needs them.
+      - run: npm ci --prefix functions
+
       - run: npm run check
 
   emulator-tests:
@@ -159,6 +162,10 @@ jobs:
 
       - run: npm ci
 
+      # The Firebase CLI loads functions/ to find the function, so its dependencies must be installed; the
+      # functions' predeploy step (firebase.json) bundles it.
+      - run: npm ci --prefix functions
+
       - run: npm run build
 
       - uses: google-github-actions/auth@v3
@@ -169,4 +176,4 @@ jobs:
 
       - run: >-
           node scripts/firebase.mjs deploy --project soulsbuilds --non-interactive
-          --only hosting,firestore:rules,firestore:indexes
+          --only functions,hosting,firestore:rules,firestore:indexes

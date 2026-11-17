@@ -7,7 +7,8 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T50
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T37 (link previews; Opus · extra high · plan mode on). The owner moved to Blaze 2026-11-17. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
+**Next:** nothing is ready: ask the owner. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
+First the owner deploys T37 by hand (`docs/firebase.md` "Link previews").
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -39,7 +40,7 @@ and spacing, and the canvas notes say why.
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
-T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T38 (usage counts), T48 (build page v3 on
+T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
 desktop), T49 (phones) and T43 (email action page).
 
 ## In progress
@@ -48,20 +49,7 @@ desktop), T49 (phones) and T43 (email action page).
 
 ## Up next
 
-### T37 — Link previews: server-rendered build pages
-
-- **Status:** blocked: the owner decides whether to move from Spark to the Blaze plan (pay-as-you-go with a free
-  allowance) for Cloud Functions or Cloud Run
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** A build link pasted into Reddit, Discord or a chat shows a card with the build's name, author and gear,
-  and search engines see the page's content. Today the page renders in the browser, so both get an empty shell.
-- **Done when:**
-  - Per-build Open Graph and Twitter tags (title, description, image) and a generated preview image (the main
-    weapon, the name and level, in the game's skin), served through Hosting rewrites; the landing gets its own.
-  - Cached, with a cost estimate in `docs/firebase.md`.
-  - The options are compared in plan mode: meta tags and image only, or the whole page rendered on the server.
-- **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
-  replaces the backlog's "Per-build share previews".
+(none ready: T32 and T33 are parked in the Backlog)
 
 ## Backlog
 
@@ -170,6 +158,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T37 — Link previews — 2026-11-17 — a Cloud Function (`functions/`, Blaze) behind Hosting rewrites for `/build/**` and `/og/build/**`: per-build title, description and `og:*` tags, and a Satori/resvg card (picture item, name, level, author, weapons) in the game's skin; cached, falls back to the plain page. **Not live until the owner's first deploy** (`docs/firebase.md` "Link previews").
 - T38 — Cookie-free usage counts — 2026-11-17 — GoatCounter (`lib/usage.ts`, live site only): page views by path (`usePageViews`) and events `tracking-started`, `item-collected`, `build-completed`, `route-opened`; privacy page, decision "Analytics" and docs updated. `copy-made` waits for T32.
 - T43 — Branded email action page — 2026-11-16 — `/auth/action` (`features/auth/action/`: ActionPage →
   ResetPassword, VerifyEmail): reset-password form, verify and email-change links applied once (query hooks, no

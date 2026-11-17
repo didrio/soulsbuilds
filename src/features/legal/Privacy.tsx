@@ -49,8 +49,8 @@ function Privacy() {
       <ul>
         <li>
           <strong>Google Firebase</strong> hosts the site and stores the data above (Hosting,
-          Authentication and Cloud Firestore). Like any web server, Hosting logs requests, including
-          your IP address.
+          Authentication, Cloud Firestore and a Cloud Function that makes link previews). Like any
+          web server, Hosting and the function log requests, including your IP address.
         </li>
         <li>
           <strong>GoatCounter</strong> counts visits so we can see what people use. It sets no

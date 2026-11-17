@@ -389,3 +389,18 @@ codes live there) and `countEvent`: `tracking-started`, `item-collected`, `build
 one (`copy-made` when T32 ships). Counts made before the script has loaded are queued. To keep your own visits
 out, run `localStorage.skipgc = 't'` in the browser console on the live site. Ad blockers hide some visitors,
 so counts run low. No consent banner is needed; the privacy page says what's counted.
+
+## Link previews (T37)
+
+A pasted build link shows a card because `functions/` (one HTTPS function `site`, Node 24, `us-central1`) answers two
+Hosting rewrites (`firebase.json`): `/build/**` → the app's own `index.html` fetched from Hosting, with the title,
+description, `og:*` tags and a canonical link replaced (`injectMeta`, `shareMeta` in `src/lib/share.ts`); and
+`/og/build/<id>.png` → a 1200×630 PNG (`functions/src/card.ts`: Satori draws the element tree as SVG, resvg makes
+the PNG, sharp turns the item's WebP icon into a PNG first; EB Garamond and Cinzel come from `@fontsource`; the
+colors are the game's skin). Routing and fallbacks live in `functions/src/handler.ts` with injected dependencies
+(tested in `handler.test.ts`); `index.ts` wires the Admin SDK (reads `builds/{id}` and `users/{uid}`, never writes)
+and the host allow-list for fetching static files. `scripts/build-functions.mjs` bundles `functions/src` together
+with the shared `src/` code (game data, `buildImage`) into `functions/lib/index.js` (rolldown) and copies the
+fonts; `firebase.json` runs it as the predeploy step. Pages are cached 5 minutes at the CDN, images an hour; the
+function never fails a page (any error serves the plain `index.html`). The app itself is unchanged: it still
+renders in the browser. Production setup, cost and checks: `docs/firebase.md` "Link previews".

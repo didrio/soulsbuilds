@@ -9,18 +9,47 @@
     "headers": [
       {
         "source": "/assets/*.@(js|css|woff|woff2|svg|png|webp|ttf)",
-        "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
       },
       {
         "source": "/assets/icons/**",
-        "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=604800"
+          }
+        ]
       },
       {
-        "source": "!/assets/**",
-        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+        "source": "!/{assets,build,og}/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
       }
     ],
     "rewrites": [
+      {
+        "source": "/build/**",
+        "function": {
+          "functionId": "site",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/og/build/**",
+        "function": {
+          "functionId": "site",
+          "region": "us-central1"
+        }
+      },
       {
         "source": "**",
         "destination": "/index.html"
@@ -28,12 +57,43 @@
     ]
   },
   "emulators": {
-    "auth": { "host": "127.0.0.1", "port": 9099 },
-    "firestore": { "host": "127.0.0.1", "port": 8085 },
-    "hosting": { "host": "127.0.0.1", "port": 5190 },
-    "ui": { "enabled": true, "host": "127.0.0.1", "port": 4005 },
-    "hub": { "host": "127.0.0.1", "port": 4405 },
-    "logging": { "host": "127.0.0.1", "port": 4505 },
-    "singleProjectMode": true
-  }
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 9099
+    },
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8085
+    },
+    "hosting": {
+      "host": "127.0.0.1",
+      "port": 5190
+    },
+    "ui": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 4005
+    },
+    "hub": {
+      "host": "127.0.0.1",
+      "port": 4405
+    },
+    "logging": {
+      "host": "127.0.0.1",
+      "port": 4505
+    },
+    "singleProjectMode": true,
+    "functions": {
+      "host": "127.0.0.1",
+      "port": 5005
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "*.local", "src", "tsconfig.json"],
+      "predeploy": ["npm run build:functions"]
+    }
+  ]
 }

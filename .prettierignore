@@ -18,3 +18,7 @@ scripts/legacy-data/
 # Machine-written by npm run data (T7)
 src/data/er/
 scripts/data/name-aliases.json
+
+# Built by npm run build:functions (T37)
+functions/lib/
+functions/fonts/

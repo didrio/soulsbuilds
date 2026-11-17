@@ -4,10 +4,10 @@ Read this before touching auth, Firestore, rules, emulators or deploys.
 
 ## Projects
 
-| Project            | What                                                                                         |
-| ------------------ | -------------------------------------------------------------------------------------------- |
-| `demo-soulsbuilds` | Local emulators only. A `demo-` project has no real backend: nothing can reach production    |
-| `soulsbuilds`      | Production, Spark plan: Hosting (soulsbuilds.com; default domains redirect), Firestore, Auth |
+| Project            | What                                                                                                                                                     |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `demo-soulsbuilds` | Local emulators only. A `demo-` project has no real backend: nothing can reach production                                                                |
+| `soulsbuilds`      | Production, Blaze plan (since 2026-11-17, T37): Hosting (soulsbuilds.com; default domains redirect), Firestore, Auth, one Cloud Function (link previews) |
 
 `src/lib/firebase.ts` picks the project: `import.meta.env.DEV` (Vite dev server and Vitest) → emulators;
 production builds (`npm run build`, `npm run preview`, deploys) → `soulsbuilds`. The web config in that file is
@@ -176,20 +176,73 @@ Things to know (T23, from the SDK source and measurements):
     URL, updated on each push. Previews use the **production backend** (real data); once App Check is enforced
     they can't reach Firestore or Auth (preview domains aren't on the reCAPTCHA key), so they're for the UI.
   - Every push to `main` → the `deploy` job waits for the owner's approval (GitHub `production` environment:
-    the run's page → **Review deployments**), then deploys `hosting,firestore:rules,firestore:indexes`.
+    the run's page → **Review deployments**), then deploys `functions,hosting,firestore:rules,firestore:indexes`.
     Rejecting or ignoring it deploys nothing (pending approvals expire after 30 days).
-- **By hand** (owner; the commands ask first): `npm run deploy` (checks, then hosting only), or
+- **By hand** (owner; the commands ask first): `npm run deploy` (checks, then functions and hosting), or
   `node scripts/firebase.mjs deploy --project soulsbuilds --only firestore:rules,firestore:indexes`. Needs
   `node scripts/firebase.mjs login` once.
-- Never `firebase deploy` without `--only`. Hosting serves `dist/` with an SPA rewrite to `index.html`.
+- Never `firebase deploy` without `--only`. Hosting serves `dist/` with an SPA rewrite to `index.html`, except
+  `/build/**` and `/og/build/**` (the link-preview function, T37: `docs/firebase.md` "Link previews").
 - **Cache headers** (`firebase.json` "headers", T21; globs match the request path, before the rewrite, and
   don't overlap because the docs don't say which rule wins): hashed Vite files `/assets/*.@(js|css|woff…)` →
   `public, max-age=31536000, immutable`; `/assets/icons/**` → one week (names aren't hashed; `npm run data` can
-  change an icon); everything else (`!/assets/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
-  by ETag. Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
+  change an icon); everything else (`!/{assets,build,og}/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
+  by ETag; the function sets its own `Cache-Control` on `/build/**` and `/og/**` (it must not match `no-cache`). Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
 demo-soulsbuilds --only hosting "curl -sI http://127.0.0.1:5190/"` (Hosting emulator port 5190).
 - `index.html` sends `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` to `soulsbuilds.com` (same path).
   Preview channels and Firebase's `/__/auth/*` pages (email verification and password reset links) are unaffected.
+
+## Link previews (T37)
+
+A pasted build link shows a card (title, description, image) because a Cloud Function answers `/build/**` and
+`/og/build/**` (`firebase.json` rewrites; code in `functions/`, shared logic in `src/lib/share.ts`; design in
+`docs/architecture.md` "Link previews"). It needs the **Blaze plan**.
+
+- **Deploy order matters.** The Hosting rewrite points at the function: deploy the function **before or with**
+  the Hosting change, or every build page 404s. `npm run deploy` and CI use `--only functions,hosting,…` for
+  that. **First deploy: do it by hand once**, as the project owner (it enables the APIs and creates the
+  container repository, and proves the pipeline) before approving the CI run:
+
+  ```bash
+  node scripts/firebase.mjs login                    # once
+  npm ci --prefix functions && npm run build
+  node scripts/firebase.mjs deploy --project soulsbuilds --only functions,hosting
+  ```
+
+  The CLI may ask how long to keep old container images: answer 1 day (Artifact Registry charges for storage).
+
+- **CI** (`github-deploy` service account, Workload Identity) needs more roles to deploy a function; add them
+  once, then approve the run:
+
+  ```bash
+  for role in cloudfunctions.admin run.admin iam.serviceAccountUser artifactregistry.admin \
+    cloudbuild.builds.editor serviceusage.serviceUsageAdmin; do
+    gcloud projects add-iam-policy-binding soulsbuilds --condition None \
+      --member serviceAccount:github-deploy@soulsbuilds.iam.gserviceaccount.com --role "roles/$role"
+  done
+  ```
+
+  This list follows Firebase's docs; it hasn't been exercised by CI yet, so if the first CI deploy complains
+  about a permission, add the one it names.
+
+- **Test locally** (own ports, so it works beside `npm run dev`): copy `firebase.json` to a scratch config with
+  other emulator ports (firestore, functions, hosting, hub, logging), `npm run build && npm run build:functions`,
+  then `node scripts/firebase.mjs --config <scratch> emulators:exec --project demo-soulsbuilds --only
+hosting,functions,firestore "node scripts/seed.mjs && curl -s http://127.0.0.1:<hosting>/build/SEEDBLEED001"`.
+- **Check production**: `curl -s https://soulsbuilds.com/build/<id> | grep og:` and open
+  `https://soulsbuilds.com/og/build/<id>.png`. Discord, Reddit and X cache cards (X and Discord for hours or
+  days); Facebook's Sharing Debugger and X's Card Validator re-fetch on demand.
+- **Cost** (not verified against current prices; the Billing page is the truth): each page or image request
+  that misses Hosting's CDN cache runs the function for about 100 ms (pages) to 1 s (a card, cached for an hour),
+  on 512 MiB, at most 5 instances. Pages are cached 5 minutes. The free allowance (millions of requests a month)
+  is far above what a hobby site sends, so expect **$0 to a few cents a month**, plus pennies for container image
+  storage and the one-off build minutes of each deploy. A crawler flood is capped by `maxInstances` and the
+  CDN cache; the budget alert is the backstop.
+- **Failure mode**: the function never breaks a page. If a build can't be read or the card can't be drawn, it
+  serves the plain `index.html` (or redirects the image to the site image). If `index.html` itself can't be
+  fetched from Hosting it returns 502; the app's other routes don't depend on the function.
+- **Stale window**: a function-served page is cached for 5 minutes at the CDN, so for up to 5 minutes after a
+  deploy a build page can reference the previous deploy's hashed files (the same as an open tab; reload fixes it).
 
 ## CI deploys: Workload Identity Federation (set up 2026-11-15)
 
@@ -263,9 +316,9 @@ It reads every tracking doc (collection group) and every build once. A player's 
 overwritten, so run it at a quiet time; a second dry run should say "Every build is counted right". The same
 command repairs counters if they ever drift.
 
-## Backups (Spark plan)
+## Backups
 
-Spark has no managed backups, point-in-time recovery or scheduled exports (all need Blaze). Instead:
+Nothing managed is switched on (Blaze would allow point-in-time recovery and scheduled exports, but they cost money and are not enabled). Instead:
 
 ```bash
 node scripts/admin.mjs export --project soulsbuilds   # every document as JSON in .admin-backups/ (read-only)
@@ -289,7 +342,7 @@ is gitignored: keep a copy somewhere safe. Moving to Blaze would allow PITR (7 d
 - [ ] Email templates (Authentication → Templates): sender name "Souls Builds", the verification and reset texts, and
       the action URL ("Sign-in setup" step 6, T43).
 - [ ] Analytics: no Google/Firebase Analytics (unlink it in Project settings → Integrations if it's linked). Usage counts are GoatCounter (T38, `docs/architecture.md` "Usage counts").
-- [ ] Billing: Spark can't bill, so no budget alert is needed. If the project ever moves to Blaze, add one first.
+- [ ] Billing (Blaze, T37): a budget alert exists (Google Cloud Console → Billing → Budgets & alerts; e.g. $5/month with email at 50%, 100%). Alerts don't stop spending; watch the first month's bill.
 - [ ] The owner has the admin claim (`admin.mjs grant`), and `admin.mjs reports --project soulsbuilds` works.
 
 ## Sign-in setup (T30, owner, before approving T30's deploy)

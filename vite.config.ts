@@ -16,7 +16,11 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.test.{js,jsx,ts,tsx}', 'scripts/**/*.test.{js,mjs,ts}'],
+    include: [
+      'src/**/*.test.{js,jsx,ts,tsx}',
+      'functions/src/**/*.test.ts',
+      'scripts/**/*.test.{js,mjs,ts}',
+    ],
     css: false,
     // The markdown editor imports its own CSS; let Vite process it instead of Node.
     server: { deps: { inline: [/@uiw\//] } },
