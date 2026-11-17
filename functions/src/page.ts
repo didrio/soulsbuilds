@@ -6,12 +6,14 @@
 import { makeStore } from '@/app/store';
 import { getStartingClass } from '@/data';
 import { gearGroups, slotWeaponDetails } from '@/features/editor/gear';
+import { SLOT_TYPE_WEAPON } from '@/features/editor/slots';
 import { itemSubline } from '@/features/editor/itemDetails';
 import { loadBuild } from '@/features/editor/store/build';
 import { selectGearState, selectStatBonuses } from '@/features/editor/store/derived';
 import { selectStats } from '@/features/editor/store/selectors';
 import { STAT_KEYS, STAT_NAMES } from '@/lib/buildMath';
 import type { BuildDoc } from '@/lib/models';
+import { tagHref, weaponPath } from '@/lib/hubs';
 import { escapeHtml } from '@/lib/share';
 import { COLOR_BG, COLOR_LINE, COLOR_TEXT, COLOR_TEXT_MUTED } from '@/theme/colors';
 import { FONT_DISPLAY, FONT_UI } from '@/theme/fonts';
@@ -25,7 +27,7 @@ export interface PageAuthor {
 
 // Body rules too: before the app's global styles load, the browser's white margin would frame the page
 // (and index.html's <noscript> line would be black on the dark background).
-const STYLE = `<style>
+export const STYLE = `<style>
 body{margin:0;background:${COLOR_BG}}
 noscript{display:block;padding:8px 16px;color:${COLOR_TEXT_MUTED};font:14px ${FONT_UI}}
 .sb-plain{box-sizing:border-box;max-width:760px;margin:0 auto;padding:32px 16px 64px;color:${COLOR_TEXT};font:16px/1.6 ${FONT_UI}}
@@ -59,7 +61,9 @@ export function buildContentHtml(build: BuildDoc, author: PageAuthor): string {
     author.uid,
   )}">${escapeHtml(author.name)}</a>`;
   const tags = build.tags.length
-    ? `<p class="sb-muted">Tags: ${build.tags.map(escapeHtml).join(', ')}</p>`
+    ? `<p class="sb-muted">Tags: ${build.tags
+        .map((tag) => `<a href="${escapeHtml(tagHref(tag))}">${escapeHtml(tag)}</a>`)
+        .join(', ')}</p>`
     : null;
 
   const attributes = STAT_KEYS.map((key) => {
@@ -72,7 +76,13 @@ export function buildContentHtml(build: BuildDoc, author: PageAuthor): string {
       if (!entry.item) return [];
       const detail = itemSubline(entry.item, slotWeaponDetails(entry));
       const sub = detail ? ` <span class="sb-muted">(${escapeHtml(detail)})</span>` : '';
-      return [`<li>${escapeHtml(entry.item.name)}${sub}</li>`];
+      // T55: weapons link to their pages, the hubs crawlers find through every build.
+      const name = escapeHtml(entry.item.name);
+      const label =
+        entry.type === SLOT_TYPE_WEAPON
+          ? `<a href="${escapeHtml(weaponPath(entry.item.name))}">${name}</a>`
+          : name;
+      return [`<li>${label}${sub}</li>`];
     });
     return `<h2>${escapeHtml(group.title)}</h2>\n<ul>\n${items.join('\n')}\n</ul>`;
   });

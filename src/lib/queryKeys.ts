@@ -12,6 +12,8 @@ export const queryKeys = {
     minLevel?: number;
     maxLevel?: number;
   }) => ['builds', 'list', filters] as const,
+  /** Builds with a weapon, most liked first (T55's weapon pages). */
+  weaponBuilds: (weaponId: number) => ['builds', 'weapon', weaponId] as const,
   build: (id: string) => ['builds', 'detail', id] as const,
   userBuilds: (userId: string) => ['builds', 'user', userId] as const,
   likedBuilds: (userId: string) => ['builds', 'liked', userId] as const,

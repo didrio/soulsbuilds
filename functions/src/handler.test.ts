@@ -43,9 +43,22 @@ function deps(overrides: Partial<Deps> = {}): Deps {
         id: 'SEEDMOON0001',
         name: 'Carian Moon Knight',
         updatedAt: new Date('2026-11-01T10:00:00Z'),
+        tags: ['Rennala'],
+        weapons: [MOONVEIL, null, null, null, null, null],
       },
-      { id: 'SEEDBLEED001', name: 'Bleed Samurai', updatedAt: new Date('2026-11-15T10:00:00Z') },
+      {
+        id: 'SEEDBLEED001',
+        name: 'Bleed Samurai',
+        updatedAt: new Date('2026-11-15T10:00:00Z'),
+        tags: ['PvP', 'Blood & Guts'],
+        weapons: [UCHIGATANA, null, null, null, null, null],
+      },
     ],
+    listWeaponBuilds: async (weaponId) =>
+      weaponId === MOONVEIL
+        ? [{ id: 'SEEDMOON0001', name: 'Carian Moon Knight', level: 132, likeCount: 4 }]
+        : [],
+    listTagBuilds: async () => [],
     fetchStatic: async (path) => (path === '/index.html' ? INDEX : new Uint8Array([1, 2, 3])),
     renderCard: async () => new Uint8Array([137, 80, 78, 71]),
     ...overrides,
@@ -77,11 +90,16 @@ describe('build pages', () => {
     const root = body.slice(body.indexOf('<div id="root">'), body.indexOf('</main>'));
     expect(root).toContain('Level 132 Elden Ring build by <a href="/user/seed-ranni">Ranni</a>');
     expect(root).toContain('Starting class: Samurai');
-    expect(root).toContain('Tags: PvP, Blood &amp; Guts');
+    // T55: tags link to their pages (these two aren't in the tag list: the landing filter instead)
+    expect(root).toContain(
+      'Tags: <a href="/?tag=PvP">PvP</a>, <a href="/?tag=Blood%20%26%20Guts">Blood &amp; Guts</a>',
+    );
     expect(root).toContain('<li>Strength: 12 (+5 from talismans)</li>');
     expect(root).toContain('<li>Intelligence: 80</li>');
     expect(root).toContain('<h2>Armaments</h2>');
-    expect(root).toContain('<li>Uchigatana <span class="sb-muted">(Blood · Seppuku)</span></li>');
+    expect(root).toContain(
+      '<li><a href="/weapons/uchigatana">Uchigatana</a> <span class="sb-muted">(Blood · Seppuku)</span></li>',
+    );
     expect(root).toContain('<h2>Talismans</h2>');
     expect(root).toContain("<li>Radagon's Soreseal</li>");
     // The write-up as sanitized markdown: structure kept, raw HTML dropped, links marked as user content.
@@ -231,6 +249,100 @@ describe('build pages', () => {
   });
 });
 
+describe('weapon and tag pages (T55)', () => {
+  const many = (count: number) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: `B${i}`,
+      name: `Build <${i}>`,
+      level: 100 + i,
+      likeCount: count - i,
+    }));
+
+  it("serves a weapon's head tags and its facts, where to find it and builds inside #root", async () => {
+    const reply = await handle(
+      '/weapons/moonveil',
+      deps({ listWeaponBuilds: async () => many(3) }),
+    );
+    expect(reply.status).toBe(200);
+    expect(reply.headers['Cache-Control']).toContain('s-maxage=300');
+    const body = html(reply);
+    expect(body).toContain('<title>Moonveil Builds (Elden Ring) | Souls Builds</title>');
+    expect(body).toContain('Elden Ring builds with Moonveil, most liked first');
+    expect(body).toContain('Requires: Str 12, Dex 18, Int 23.');
+    expect(body).toContain(
+      '<link rel="canonical" href="https://soulsbuilds.com/weapons/moonveil" />',
+    );
+    expect(body).not.toContain('noindex');
+    const root = body.slice(body.indexOf('<div id="root">'), body.indexOf('</main>'));
+    expect(root).toContain('<h1>Moonveil Builds</h1>');
+    expect(root).toContain('<a href="/tags/katana">Katana</a> · Elden Ring');
+    expect(root).toContain('<li>Requires: Str 12, Dex 18, Int 23</li>');
+    expect(root).toContain('Defeat Magma Wyrm');
+    expect(root).toContain(
+      '<li><a href="/build/B0/build-0">Build &lt;0&gt;</a> <span class="sb-muted">Level 100 · 3 likes</span></li>',
+    );
+  });
+
+  it('keeps a page with fewer than 3 builds out of search results', async () => {
+    const one = html(await handle('/weapons/moonveil', deps()));
+    expect(one).toContain('<meta name="robots" content="noindex" />');
+    expect(one).toContain('Carian Moon Knight');
+    const none = html(await handle('/weapons/uchigatana/', deps()));
+    expect(none).toContain('noindex');
+    expect(none).toContain('No builds with Uchigatana yet.');
+  });
+
+  it("serves a tag's page under its short name", async () => {
+    const tagged: string[] = [];
+    const body = html(
+      await handle(
+        '/tags/bleed',
+        deps({
+          listTagBuilds: async (tag) => {
+            tagged.push(tag);
+            return many(4);
+          },
+        }),
+      ),
+    );
+    expect(tagged).toEqual(['Bleed (Hemorrhage)']);
+    expect(body).toContain('<title>Bleed Builds (Elden Ring) | Souls Builds</title>');
+    expect(body).toContain('<link rel="canonical" href="https://soulsbuilds.com/tags/bleed" />');
+    expect(body).not.toContain('noindex');
+    expect(body).toContain('<h1>Bleed Builds</h1>');
+    expect(body).toContain('<a href="/build/B3/build-3">');
+    const boss = html(await handle('/tags/malenia', deps()));
+    expect(boss).toContain('<title>Builds for Malenia (Elden Ring) | Souls Builds</title>');
+  });
+
+  it('is a 404 with noindex for a weapon or tag that does not exist', async () => {
+    for (const path of ['/weapons/not-a-weapon', '/tags/not-a-tag', '/tags/bleed-hemorrhage']) {
+      const reply = await handle(path, deps());
+      expect(reply.status).toBe(404);
+      expect(html(reply)).toContain('<meta name="robots" content="noindex" />');
+    }
+  });
+
+  it('serves the plain page when the builds cannot be read', async () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const failing = deps({
+      listWeaponBuilds: async () => {
+        throw new Error('unavailable');
+      },
+      listTagBuilds: async () => {
+        throw new Error('unavailable');
+      },
+    });
+    for (const path of ['/weapons/moonveil', '/tags/malenia']) {
+      const reply = await handle(path, failing);
+      expect(reply.status).toBe(200);
+      expect(reply.headers['Cache-Control']).toContain('s-maxage=60');
+      expect(html(reply)).toContain('<div id="root"></div>');
+    }
+    expect(error).toHaveBeenCalled();
+  });
+});
+
 describe('sitemap', () => {
   it('lists the home page and every build with its last edit, cached for an hour', async () => {
     const reply = await handle('/sitemap.xml', deps());
@@ -243,6 +355,41 @@ describe('sitemap', () => {
       '<url><loc>https://soulsbuilds.com/build/SEEDBLEED001/bleed-samurai</loc><lastmod>2026-11-15</lastmod></url>',
     );
     expect(xml.match(/<url>/g)).toHaveLength(3);
+  });
+
+  it('lists the weapon and tag pages with 3 or more builds, dated by their newest build (T55)', async () => {
+    const at = (day: number) => new Date(`2026-11-${String(day).padStart(2, '0')}T10:00:00Z`);
+    const build = (id: string, day: number, tags: string[], weapons: (number | null)[]) => ({
+      id,
+      name: id,
+      updatedAt: at(day),
+      tags,
+      weapons: [...weapons, null, null, null, null, null].slice(0, 6),
+    });
+    const xml = html(
+      await handle(
+        '/sitemap.xml',
+        deps({
+          listBuilds: async () => [
+            build('A', 1, ['Malenia', 'Bleed (Hemorrhage)'], [MOONVEIL, MOONVEIL]),
+            build('B', 9, ['Malenia', 'Bleed (Hemorrhage)', 'Retired tag'], [null, MOONVEIL]),
+            build('C', 5, ['Malenia', 'Retired tag', 'Retired tag'], [UCHIGATANA, MOONVEIL]),
+            build('D', 2, ['Retired tag'], [UCHIGATANA]),
+          ],
+        }),
+      ),
+    );
+    expect(xml).toContain(
+      '<url><loc>https://soulsbuilds.com/weapons/moonveil</loc><lastmod>2026-11-09</lastmod></url>',
+    );
+    expect(xml).toContain(
+      '<url><loc>https://soulsbuilds.com/tags/malenia</loc><lastmod>2026-11-09</lastmod></url>',
+    );
+    // two builds each: thin; a tag no longer in the list has no page
+    expect(xml).not.toContain('/weapons/uchigatana');
+    expect(xml).not.toContain('/tags/bleed');
+    expect(xml).not.toContain('retired');
+    expect(xml.match(/<url>/g)).toHaveLength(1 + 4 + 2);
   });
 
   it('is an uncached error, never a partial list, when the builds cannot be read', async () => {

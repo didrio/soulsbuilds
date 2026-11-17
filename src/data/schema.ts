@@ -234,6 +234,7 @@ export const cardWeaponSchema = weaponSchema.pick({
   id: true,
   name: true,
   icon: true,
+  type: true,
   skill: true,
   ashesOfWar: true,
 });
@@ -263,10 +264,11 @@ export function makeCards(data: {
   spiritAshes: Named[];
 }): z.infer<typeof cardsSchema> {
   return {
-    weapons: data.weapons.map(({ id, name, icon, skill, ashesOfWar }) => ({
+    weapons: data.weapons.map(({ id, name, icon, type, skill, ashesOfWar }) => ({
       id,
       name,
       icon,
+      type,
       skill,
       ashesOfWar,
     })),

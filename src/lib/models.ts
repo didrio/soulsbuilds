@@ -207,6 +207,8 @@ export interface StatsDoc {
   userCount: number;
   /** Builds per tag. */
   tagCounts: Record<string, number>;
+  /** Builds per weapon game ID (T55); absent until the daily job has run since T55's deploy. */
+  weaponCounts?: Record<string, number>;
   updatedAt: Timestamp;
 }
 

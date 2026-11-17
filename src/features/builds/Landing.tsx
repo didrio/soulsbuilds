@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useSearchParams } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import styled from 'styled-components';
 import { useCurrentGame } from '@/app/game';
 import Button from '@/components/ui/Button';
@@ -16,6 +16,7 @@ import { TextButton } from '@/components/ui/TextButton';
 import { useUserProfiles } from '@/features/profile/queries';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import { errorMessage, type BuildSort } from '@/lib/firebase';
+import { popularWeapons } from '@/lib/hubs';
 import { homeMeta, SITE_ORIGIN } from '@/lib/share';
 import {
   BELOW_MOBILE,
@@ -82,6 +83,8 @@ function Landing() {
   const stats = useGameStats().data;
   const top = stats ? topTags(stats.tagCounts) : [];
   const topNames = new Set(top.map(({ tag }) => tag));
+  // T55: links to the weapon pages with enough builds (from the daily stats).
+  const weapons = popularWeapons(stats?.weaponCounts);
 
   const setFilters = (next: Partial<BuildFilters>) => {
     setSearchParams(toSearchParams({ ...filters, ...next }), { replace: true });
@@ -218,6 +221,18 @@ function Landing() {
           {filtered ? <TextButton onClick={clearFilters}>Clear filters</TextButton> : null}
         </MoreTags>
       </TagsRow>
+      {weapons.length ? (
+        <Popular aria-labelledby="popular-weapons">
+          <PopularLabel id="popular-weapons">Popular weapons</PopularLabel>
+          <PopularList>
+            {weapons.map(({ name, path }) => (
+              <li key={path}>
+                <PopularLink to={path}>{name}</PopularLink>
+              </li>
+            ))}
+          </PopularList>
+        </Popular>
+      ) : null}
 
       <Status aria-live="polite">{builds.isSuccess ? status : ''}</Status>
       {builds.isPending ? <PageMessage loading /> : null}
@@ -439,6 +454,50 @@ const TagCount = styled.span`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_XS};
   font-variant-numeric: tabular-nums;
+`;
+
+// T55: one scrolling line of text links to the weapon pages, quieter than the tag chips above.
+const Popular = styled.nav`
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  min-width: 0;
+
+  @media ${BELOW_MOBILE} {
+    margin: 0 -${SPACE_MD};
+    padding: 0 ${SPACE_MD};
+  }
+`;
+
+const PopularLabel = styled.h2`
+  ${labelText}
+  flex: none;
+  margin: 0;
+`;
+
+const PopularList = styled.ul`
+  display: flex;
+  gap: 0 ${SPACE_MD};
+  list-style: none;
+  margin: 0;
+  min-width: 0;
+  overflow-x: auto;
+  padding: 0;
+  scrollbar-width: none;
+`;
+
+const PopularLink = styled(Link)`
+  align-items: center;
+  color: ${COLOR_TEXT_MUTED};
+  display: inline-flex;
+  font-size: ${TEXT_SM};
+  min-height: 44px;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover {
+    color: ${COLOR_TEXT};
+  }
 `;
 
 const MoreTags = styled.div`

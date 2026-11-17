@@ -13,6 +13,8 @@ const AccountPage = lazy(() => import('@/features/account/AccountPage'));
 const ActionPage = lazy(() => import('@/features/auth/action/ActionPage'));
 const Privacy = lazy(() => import('@/features/legal/Privacy'));
 const Terms = lazy(() => import('@/features/legal/Terms'));
+const WeaponPage = lazy(() => import('@/features/hubs/WeaponPage'));
+const TagPage = lazy(() => import('@/features/hubs/TagPage'));
 
 /** The route table. */
 function AppRoutes() {
@@ -22,6 +24,8 @@ function AppRoutes() {
         <Route path="/" element={<Landing />} />
         <Route path="/build/:buildId/*" element={<BuildEditorPage />} />
         <Route path="/user/:userId" element={<Profile />} />
+        <Route path="/weapons/:slug" element={<WeaponPage />} />
+        <Route path="/tags/:slug" element={<TagPage />} />
         <Route
           path="/account"
           element={

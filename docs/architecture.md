@@ -11,6 +11,8 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 | ------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/`                 | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                                    |
 | `/build/:buildId/*` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                         |
+| `/weapons/:slug`    | `WeaponPage`      | A weapon's page (T55): facts, where to find it (the Guide's route for that weapon), its builds most liked first; `noindex` under 3 builds; unknown slug → not found          |
+| `/tags/:slug`       | `TagPage`         | A tag's page (T55): its builds most liked first ("Builds for Malenia", "Bleed Builds"); `noindex` under 3 builds                                                             |
 | `/user/:userId`     | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                    |
 | `/account`          | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                |
 | `/auth/action`      | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one |
@@ -23,6 +25,21 @@ Account changes (`changeEmail`, `changePassword`, `setPassword` in `lib/firebase
 every time; `useAuth()` copies `email`, `emailVerified` and `providers` off the Auth user and `refreshUser()`
 re-reads them, since Auth changes the user object in place. The item picker
 (`ItemSelector`) is a modal that opens whenever Redux `app.slotType` is set.
+
+**Weapon and tag pages (T55)** are landing pages for what people search ("moonveil build", "bleed build"),
+in `src/features/hubs/`. Slugs, paths, titles and descriptions are pure in `src/lib/hubs.ts` (card data only, so
+build pages and the function can link without the full data): a weapon's slug is its name (`slugify`, unique
+across all weapons, DLC included); a tag's is its name, except a few short names people search (`TAG_LABELS`:
+"Bleed (Hemorrhage)" → `/tags/bleed`). A tag no longer in the list has no page (`tagHref` falls back to the
+landing filter). Builds by weapon need **no extra field**: `listBuildsByWeapon` queries
+`equipment.weapons array-contains <id>` (any of the six slots; index `equipment.weapons`, `game`, `likeCount`);
+tag pages reuse `listBuilds({ tag })`. "Where to find it" is the Guide's solver for that one weapon
+(`findStops.ts`: `planRoute`, gates included; `WhereToFind` is its own chunk with the acquisition data). A page
+with fewer than `HUB_MIN_BUILDS` (3) builds is `noindex` (app and function) and left out of the sitemap. Links
+in: the build title section ("with Rivers of Blood and Uchigatana", tags link to their pages), the crawler HTML
+of every build, the weapon type in a weapon page's tagline (`/tags/katana`), and the landing's Popular weapons
+(from `stats.weaponCounts`, only weapons with 3+ builds and no staffs or seals: casters carry one whatever the
+build, owner's call). Landing rows stay whole-row links (no nested tag links).
 
 **Games.** Souls Builds will cover more FromSoftware games; Elden Ring is the only one today. `src/app/game.ts`
 holds the registry (`GAMES`) and `useCurrentGame()`, the one seam that later reads the game from the route.
@@ -163,6 +180,7 @@ stats/{game}                      community numbers per game (T20; doc id = Game
                                   public read, no client writes; written daily by `admin.mjs stats` in CI
   buildCount, authorCount (distinct build owners), userCount (all accounts): int
   tagCounts: { [tag]: int }       builds per tag (top tags on the landing)
+  weaponCounts: { [weaponId]: int }  builds per weapon (T55: the landing's Popular weapons; absent before T55's first daily run)
   updatedAt: timestamp
 ```
 
@@ -431,7 +449,12 @@ cloaking). A build that doesn't exist is a **404** with `noindex` (`/build/new`,
 not); read failures stay 200 with the plain page. `/sitemap.xml` lists `/` and every build at its slugged URL with its `updatedAt`
 (one field-masked query: `name`, `updatedAt`). The head also carries JSON-LD (T56, `functions/src/jsonld.ts`): a `CreativeWork`
 (author, dates, `about` the game, likes and comments as `interactionStatistic`) and a `BreadcrumbList`; the canonical and
-`og:url` are the slugged URL whichever tab or slug was asked for. `scripts/build-functions.mjs` now writes `functions/lib/` as a directory: the card
+`og:url` are the slugged URL whichever tab or slug was asked for. **Hub pages (T55):** `/weapons/<slug>` and
+`/tags/<slug>` get the same treatment (title, description, canonical, the site image; `functions/src/hub.ts`,
+and `weaponHub.ts` for a weapon's facts and route, its own chunk so only weapon pages load the ~400 KB acquisition
+data); an unknown slug is a 404 with `noindex`, under 3 builds `noindex`. The sitemap adds every hub with 3+
+builds (counted from the same field-masked read, now `name`, `updatedAt`, `tags`, `equipment.weapons`; `lastmod`
+= its newest build). `scripts/build-functions.mjs` now writes `functions/lib/` as a directory: the card
 renderer (satori, resvg, sharp) is its own chunk, loaded on the first image request, so pages and the sitemap
 start faster; the bundle is minified (~0.9 MB, mostly game data). Pages only ever import framework-free editor
 code (the store, selectors, `gear.ts`); keep it that way, or React ends up in the function.

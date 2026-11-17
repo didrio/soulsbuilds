@@ -381,25 +381,36 @@ export async function deleteUserData(
 export const STATS_GAMES = ['elden-ring'];
 
 /**
- * Community numbers for one game (T20): builds, distinct authors, builds per tag, and all accounts.
- * One pass over the game's builds (only `tags` and `ownerId`), plus a `count()` of users.
+ * Community numbers for one game (T20): builds, distinct authors, builds per tag and per weapon (T55: the
+ * landing's Popular weapons), and all accounts. One pass over the game's builds (only `tags`, `ownerId`
+ * and `equipment.weapons`), plus a `count()` of users.
  */
 export async function computeStats(db, game) {
   const [builds, users] = await Promise.all([
-    db.collection('builds').where('game', '==', game).select('tags', 'ownerId').get(),
+    db
+      .collection('builds')
+      .where('game', '==', game)
+      .select('tags', 'ownerId', 'equipment.weapons')
+      .get(),
     db.collection('users').count().get(),
   ]);
   const authors = new Set();
   const tagCounts = {};
+  const weaponCounts = {};
   for (const build of builds.docs) {
     authors.add(build.get('ownerId'));
     for (const tag of new Set(build.get('tags') ?? [])) tagCounts[tag] = (tagCounts[tag] ?? 0) + 1;
+    // Weapon game IDs as keys (a map's keys are strings); a build counts once per weapon.
+    for (const id of new Set(build.get('equipment.weapons') ?? [])) {
+      if (id !== null) weaponCounts[id] = (weaponCounts[id] ?? 0) + 1;
+    }
   }
   return {
     buildCount: builds.size,
     authorCount: authors.size,
     userCount: users.data().count,
     tagCounts,
+    weaponCounts,
   };
 }
 
@@ -613,6 +624,10 @@ async function main() {
       console.log(`  ${stats.buildCount} builds by ${stats.authorCount} authors`);
       console.log(`  ${stats.userCount} accounts`);
       console.log(`  ${Object.keys(stats.tagCounts).length} tags used; top: ${top.join(', ')}`);
+      const hubs = Object.values(stats.weaponCounts).filter((count) => count >= 3).length;
+      console.log(
+        `  ${Object.keys(stats.weaponCounts).length} weapons used; ${hubs} in 3 or more builds`,
+      );
     }
     dryRunNote();
   } else if (command === 'counts') {

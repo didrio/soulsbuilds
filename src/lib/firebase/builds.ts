@@ -154,6 +154,26 @@ export async function listBuilds({
 }
 
 /**
+ * One page of Elden Ring builds with the weapon `weaponId` in any hand, most liked first (T55's weapon
+ * pages). `equipment.weapons` holds game IDs and nulls, so array-contains finds it in any of the six
+ * slots: no extra field on builds (index: equipment.weapons, game, likeCount).
+ */
+export async function listBuildsByWeapon(
+  weaponId: number,
+  { pageSize = 24, cursor }: Pick<PageOptions, 'pageSize' | 'cursor'> = {},
+): Promise<BuildPage> {
+  return fetchPage(
+    [
+      where('game', '==', GAME_ELDEN_RING),
+      where('equipment.weapons', 'array-contains', weaponId),
+      orderBy('likeCount', 'desc'),
+    ],
+    pageSize,
+    cursor,
+  );
+}
+
+/**
  * One page of Elden Ring builds whose name starts with `text` (case-insensitive), by name, optionally
  * with one tag and a level range. Firestore has no full-text search; a prefix query on `nameLower` is
  * the free option.

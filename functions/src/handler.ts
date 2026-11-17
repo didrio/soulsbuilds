@@ -4,11 +4,28 @@
 //                        build as plain HTML inside #root (page.ts); a build that doesn't exist is a 404
 //                        with noindex (the app still shows its own message)
 //   /og/build/:id.png    the card image
-//   /sitemap.xml         the home page and every build (at its named URL, T56)
+//   /weapons/:slug       a weapon's page (T55): its head tags and, inside #root, its facts, where to find
+//                        it and its builds (hub.ts); an unknown slug is a 404; under 3 builds, noindex
+//   /tags/:slug          a tag's page (T55), the same way
+//   /sitemap.xml         the home page, every build (at its named URL, T56), and the weapon and tag
+//                        pages with 3 or more builds (T55)
 // Anything else that goes wrong (a read fails, the content can't be made) serves the plain index.html with
 // status 200: the page must never break because a preview couldn't be made.
+import { getWeapon } from '@/data';
 import { getCardItem, getCardWeapon, iconUrl } from '@/data/core';
+import { weaponDetail } from '@/features/hubs/weaponFacts';
 import { buildImage } from '@/lib/equipment';
+import {
+  HUB_PAGE_SIZE,
+  indexable,
+  tagBySlug,
+  tagHubMeta,
+  tagSlug,
+  tagUrl,
+  weaponBySlug,
+  weaponHubMeta,
+  weaponUrl,
+} from '@/lib/hubs';
 import type { BuildDoc } from '@/lib/models';
 import {
   buildUrl,
@@ -19,8 +36,10 @@ import {
   SITE_ORIGIN,
   shareMeta,
   sitemapXml,
+  type SitemapEntry,
 } from '@/lib/share';
 import type { CardData } from './card';
+import { tagHubHtml, type HubBuild } from './hub';
 import { buildJsonLd } from './jsonld';
 import { buildContentHtml } from './page';
 
@@ -28,11 +47,24 @@ export interface Deps {
   loadBuild(id: string): Promise<BuildDoc | null>;
   /** The author's display name, or '' when they have no profile. */
   loadAuthor(uid: string): Promise<string>;
-  /** Every build's ID and last edit, for the sitemap. */
-  listBuilds(): Promise<{ id: string; name: string; updatedAt?: Date }[]>;
+  /** Every build's ID, name, last edit, tags and weapons: the sitemap's builds and hub pages. */
+  listBuilds(): Promise<SitemapBuild[]>;
+  /** Up to `limit` builds with the weapon in either hand, most liked first (T55). */
+  listWeaponBuilds(weaponId: number, limit: number): Promise<HubBuild[]>;
+  /** Up to `limit` builds with the tag, most liked first (T55). */
+  listTagBuilds(tag: string, limit: number): Promise<HubBuild[]>;
   /** A file Hosting serves (index.html, an icon), or null. */
   fetchStatic(path: string): Promise<Uint8Array | null>;
   renderCard(card: CardData): Promise<Uint8Array>;
+}
+
+export interface SitemapBuild {
+  id: string;
+  name: string;
+  updatedAt?: Date;
+  tags: string[];
+  /** `equipment.weapons`: game IDs and nulls. */
+  weapons: (number | null)[];
 }
 
 export interface Reply {
@@ -45,6 +77,8 @@ const BUILD_ID = '[A-Za-z0-9]{1,40}';
 // `/build/<id>`, then an optional name slug and tab, in any mix (T56): the ID alone decides the build.
 const PAGE = new RegExp(`^/build/(${BUILD_ID})(?:/[^/]+){0,2}/?$`);
 const IMAGE = new RegExp(`^/og/build/(${BUILD_ID})\\.png$`);
+const WEAPON_PAGE = /^\/weapons\/([a-z0-9-]{1,80})\/?$/;
+const TAG_PAGE = /^\/tags\/([a-z0-9-]{1,80})\/?$/;
 
 /** Pages change when the author edits and when a deploy replaces the app's files: keep both short. */
 const PAGE_CACHE = 'public, max-age=0, s-maxage=300';
@@ -95,6 +129,10 @@ export async function handle(path: string, deps: Deps): Promise<Reply> {
     headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': cache },
     body,
   });
+  const weaponPage = WEAPON_PAGE.exec(path);
+  if (weaponPage) return weaponHub(weaponPage[1]!, html, deps);
+  const tagPage = TAG_PAGE.exec(path);
+  if (tagPage) return tagHub(tagPage[1]!, html, deps);
   if (!page || page[1] === NEW_BUILD) return reply(200, html, SHORT_CACHE);
   const id = page[1]!;
   try {
@@ -120,6 +158,97 @@ export async function handle(path: string, deps: Deps): Promise<Reply> {
   }
 }
 
+const htmlReply = (status: number, body: string, cache: string): Reply => ({
+  status,
+  headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': cache },
+  body,
+});
+
+/** The site-level image: hub pages have no card of their own. */
+const SITE_IMAGE = `${SITE_ORIGIN}/icons/og-image.png`;
+
+/**
+ * A hub page (T55): the head tags, then the content inside #root (or not, if making it fails). Fewer
+ * than 3 builds: noindex, like the app does.
+ */
+function hubPage(
+  html: string,
+  meta: { title: string; description: string },
+  url: string,
+  builds: readonly HubBuild[],
+  content: () => string,
+): Reply {
+  let page = injectMeta(html, { ...meta, url, image: SITE_IMAGE });
+  if (!indexable(builds.length)) page = injectNoindex(page);
+  try {
+    page = injectRoot(page, content());
+  } catch (cause) {
+    console.error('hub content failed', url, cause);
+  }
+  return htmlReply(200, page, PAGE_CACHE);
+}
+
+async function weaponHub(slug: string, html: string, deps: Deps): Promise<Reply> {
+  const weapon = getWeapon(weaponBySlug(slug)?.id);
+  if (!weapon) return htmlReply(404, injectNoindex(html), SHORT_CACHE);
+  try {
+    const builds = await deps.listWeaponBuilds(weapon.id, HUB_PAGE_SIZE);
+    // The acquisition data (~400 KB) only weapon pages need: loaded with the first one.
+    const { weaponHubHtml } = await import('./weaponHub');
+    return hubPage(
+      html,
+      weaponHubMeta(weapon.name, 'Elden Ring', weaponDetail(weapon)),
+      weaponUrl(weapon.name),
+      builds,
+      () => weaponHubHtml(weapon, builds),
+    );
+  } catch (cause) {
+    console.error('weapon page failed', slug, cause);
+    return htmlReply(200, html, SHORT_CACHE);
+  }
+}
+
+async function tagHub(slug: string, html: string, deps: Deps): Promise<Reply> {
+  const tag = tagBySlug(slug);
+  if (!tag) return htmlReply(404, injectNoindex(html), SHORT_CACHE);
+  try {
+    const builds = await deps.listTagBuilds(tag, HUB_PAGE_SIZE);
+    return hubPage(html, tagHubMeta(tag, 'Elden Ring'), tagUrl(tag), builds, () =>
+      tagHubHtml(tag, builds),
+    );
+  } catch (cause) {
+    console.error('tag page failed', slug, cause);
+    return htmlReply(200, html, SHORT_CACHE);
+  }
+}
+
+/**
+ * The weapon and tag pages worth listing (T55): those with 3 or more builds, each dated by its newest
+ * edit. From the builds the sitemap reads anyway, so no extra reads.
+ */
+export function hubEntries(builds: readonly SitemapBuild[]): SitemapEntry[] {
+  const hubs = new Map<string, { count: number; lastmod?: Date }>();
+  const add = (loc: string, updatedAt?: Date) => {
+    const hub = hubs.get(loc) ?? { count: 0 };
+    hub.count += 1;
+    if (updatedAt && (!hub.lastmod || updatedAt > hub.lastmod)) hub.lastmod = updatedAt;
+    hubs.set(loc, hub);
+  };
+  for (const build of builds) {
+    for (const id of new Set(build.weapons)) {
+      const name = id === null ? undefined : getCardWeapon(id)?.name;
+      if (name) add(weaponUrl(name), build.updatedAt);
+    }
+    for (const tag of new Set(build.tags)) {
+      if (tagBySlug(tagSlug(tag)) === tag) add(tagUrl(tag), build.updatedAt);
+    }
+  }
+  return [...hubs]
+    .filter(([, hub]) => indexable(hub.count))
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([loc, { lastmod }]) => ({ loc, ...(lastmod ? { lastmod } : {}) }));
+}
+
 /** The page with the build inside #root, or without it (the meta still work) if that fails. */
 function withContent(html: string, build: BuildDoc, author: string, id: string): string {
   try {
@@ -139,6 +268,7 @@ async function sitemap(deps: Deps): Promise<Reply> {
         loc: buildUrl(id, name),
         lastmod: updatedAt,
       })),
+      ...hubEntries(builds),
     ]);
     return {
       status: 200,

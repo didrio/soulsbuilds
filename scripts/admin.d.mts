@@ -84,6 +84,8 @@ export interface GameStatsCounts {
   userCount: number;
   /** Builds per tag. */
   tagCounts: Record<string, number>;
+  /** Builds per weapon game ID (T55). */
+  weaponCounts: Record<string, number>;
 }
 
 export const STATS_GAMES: string[];

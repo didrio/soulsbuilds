@@ -12,10 +12,11 @@ node -e 'console.log(require("./src/data/er/spells.json").filter(s=>/Heal/.test(
 
 Extracted from the owner's own copy of the game (regulation 1.17.3, exported 2026-11-15) and written by
 `npm run data`. The app reads it through `src/data/index.ts` (`@/data`): lists (`weapons`, `armorList(slot)`,
-**Light vs full data (T11):** `src/data/core.ts` is what every page loads: affinities, skills, Ashes of War, tags
-and `er/cards.json` (id, name, icon, skill for weapons; id, name, icon, slot for armor; id, name, icon for
+**Light vs full data (T11):** `src/data/core.ts` is what every page loads: affinities, skills, Ashes of War, tags,
+weapon types (T55: their group tells the landing's Popular weapons to skip staffs and seals) and `er/cards.json`
+(id, name, icon, type, skill for weapons; id, name, icon, slot for armor; id, name, icon for
 talismans, spells, tears, great runes and spirit ashes, which can be a build image (T40); derived from the full
-files by `npm run data`; ~128 KB raw, ~23 KB gzipped). `src/data/index.ts` re-exports it and adds the full lists (stats, spells…, ~1 MB), which
+files by `npm run data`; ~130 KB raw, ~23 KB gzipped). `src/data/index.ts` re-exports it and adds the full lists (stats, spells…, ~1 MB), which
 only the item picker and the editor page load. Build cards, `ItemRow` and the Redux store import `@/data/core`,
 never `@/data` (a test guards `core.ts`).
 `greatRunes`…), lookups by ID (`getWeapon(id)`, `getArmor(id, slot)`, `getAsh(id)`…, `undefined` for an

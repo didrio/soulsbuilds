@@ -7,6 +7,7 @@ import ashesOfWarJson from './er/ashesOfWar.json';
 import cardsJson from './er/cards.json';
 import skillsJson from './er/skills.json';
 import tagsJson from './er/tags.json';
+import weaponTypesJson from './er/weaponTypes.json';
 import * as rules from './rules';
 import type { BuildImage } from '@/lib/models';
 import type {
@@ -21,6 +22,7 @@ import type {
   Skill,
   Tags,
   Weapon,
+  WeaponType,
 } from './schema';
 
 export type * from './schema';
@@ -43,8 +45,14 @@ export function lookup<T extends { id: number }>(items: readonly T[]) {
 }
 
 export const getAsh = lookup(ashesOfWar);
+
+/** Weapon types (Dagger, Straight Sword…) in the game's order, with their group (melee, catalyst…). Small. */
+export const weaponTypes = weaponTypesJson as WeaponType[];
+export const getWeaponType = lookup(weaponTypes);
 export const getSkill = lookup(skills);
 
+/** Every weapon as a card shows it, in data order (T55: weapon pages find theirs by name). */
+export const cardWeapons: readonly CardWeapon[] = cards.weapons;
 /** A weapon as a card or slot shows it: name, icon and skill, none of the stats. */
 export const getCardWeapon = lookup<CardWeapon>(cards.weapons);
 const cardArmorById = lookup<CardArmor>(cards.armor);

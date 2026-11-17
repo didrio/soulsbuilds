@@ -65,6 +65,24 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "equipment.weapons",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "tags",
           "arrayConfig": "CONTAINS"
         },

@@ -310,12 +310,20 @@ describe('stats (T20)', () => {
     await db.recursiveDelete(db.collection('builds'));
     await db.recursiveDelete(db.collection('users'));
     await db.recursiveDelete(db.collection('stats'));
-    const build = (id: string, ownerId: string, tags: string[], game = 'elden-ring') =>
-      db.doc(`builds/${id}`).set({ ownerId, game, tags, name: id });
-    await build('S1', 'alice', ['Malenia', 'Mohg']);
+    const build = (
+      id: string,
+      ownerId: string,
+      tags: string[],
+      game = 'elden-ring',
+      weapons?: (number | null)[],
+    ) =>
+      db
+        .doc(`builds/${id}`)
+        .set({ ownerId, game, tags, name: id, ...(weapons ? { equipment: { weapons } } : {}) });
+    await build('S1', 'alice', ['Malenia', 'Mohg'], 'elden-ring', [9060000, null, 9060000, 2000]);
     await build('S2', 'alice', ['Malenia']);
-    await build('S3', 'bob', ['Malenia', 'Malenia', 'PvP']);
-    await build('S4', 'carol', ['Malenia'], 'dark-souls-3');
+    await build('S3', 'bob', ['Malenia', 'Malenia', 'PvP'], 'elden-ring', [null, null, 9060000]);
+    await build('S4', 'carol', ['Malenia'], 'dark-souls-3', [9060000]);
     await Promise.all(
       ['alice', 'bob', 'dave'].map((uid) =>
         db.doc(`users/${uid}`).set({ displayName: uid, createdAt: at(1) }),
@@ -323,12 +331,13 @@ describe('stats (T20)', () => {
     );
   });
 
-  it('counts one game’s builds, distinct authors, builds per tag and all accounts', async () => {
+  it('counts one game’s builds, distinct authors, builds per tag and weapon, all accounts', async () => {
     expect(await computeStats(db, 'elden-ring')).toEqual({
       buildCount: 3,
       authorCount: 2,
       userCount: 3,
       tagCounts: { Malenia: 3, Mohg: 1, PvP: 1 },
+      weaponCounts: { '9060000': 2, '2000': 1 },
     });
   });
 

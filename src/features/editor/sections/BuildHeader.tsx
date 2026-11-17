@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
@@ -14,6 +14,7 @@ import ReportButton from '@/features/reports/ReportButton';
 import { useUserProfile } from '@/features/profile/queries';
 import { errorMessage } from '@/lib/firebase';
 import { buildImage } from '@/lib/equipment';
+import { tagHref, weaponLinks } from '@/lib/hubs';
 import type { Build } from '@/lib/models';
 import { shareMeta, SITE_ORIGIN } from '@/lib/share';
 import { formatFullDate, relativeTime } from '@/lib/relativeTime';
@@ -68,6 +69,8 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
   const toggleLike = useToggleLike(build.id, uid);
   const isLiked = liked.data === true;
   const image = getCardItem(buildImage(build));
+  // T55: each weapon links to its page ("with Rivers of Blood and Uchigatana"); at most three.
+  const weapons = weaponLinks(build.equipment.weapons).slice(0, 3);
   // The tab's title, description and canonical (T51): the same text the link-preview function writes.
   const meta = shareMeta({
     name: build.name,
@@ -90,6 +93,17 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
             by <AuthorLink to={`/user/${owner.data.id}`}>{owner.data.displayName}</AuthorLink>
           </span>
         ) : null}
+        {weapons.length ? (
+          <span>
+            with{' '}
+            {weapons.map(({ name, path }, index) => (
+              <Fragment key={path}>
+                {index === 0 ? '' : index === weapons.length - 1 ? ' and ' : ', '}
+                <AuthorLink to={path}>{name}</AuthorLink>
+              </Fragment>
+            ))}
+          </span>
+        ) : null}
         <span>
           Level <Strong>{build.level}</Strong>
         </span>
@@ -102,7 +116,7 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
         <Tags aria-label="Tags">
           {build.tags.map((tag) => (
             <li key={tag}>
-              <TagLink to={`/?tag=${encodeURIComponent(tag)}`}>
+              <TagLink to={tagHref(tag)}>
                 <Tag>{tag}</Tag>
               </TagLink>
             </li>

@@ -28,6 +28,7 @@ const {
   deleteBuild,
   getBuild,
   listBuilds,
+  listBuildsByWeapon,
   listUserBuilds,
   searchBuilds,
   updateBuild,
@@ -240,6 +241,31 @@ describe('data layer against the rules', () => {
     expect(first.builds.map((b) => b.level)).toEqual([132]);
     actAs('alice');
     await deleteBuild(low);
+  });
+
+  it('lists: by weapon in any hand, most liked first (T55)', async () => {
+    actAs('alice');
+    // Moonveil in the left hand only; the Uchigatana in the right
+    const offHand = await createBuild('alice', {
+      ...input,
+      name: 'Two Katanas',
+      equipment: { ...input.equipment, weapons: [9000000, null, null, null, 9060000, null] },
+    });
+    actAs(null);
+    const ids = async (p: Promise<{ builds: { id: string }[] }>) =>
+      (await p).builds.map((b) => b.id);
+    const moonveil = await ids(listBuildsByWeapon(9060000));
+    expect(moonveil).toHaveLength(3);
+    expect(moonveil[0]).toBe(buildId); // the liked one
+    expect(moonveil).toContain(offHand);
+    expect(await ids(listBuildsByWeapon(9000000))).toEqual([offHand]);
+    expect(await ids(listBuildsByWeapon(33090000))).not.toContain(offHand);
+    expect(await ids(listBuildsByWeapon(1))).toEqual([]);
+    const page = await listBuildsByWeapon(9060000, { pageSize: 2 });
+    const next = await listBuildsByWeapon(9060000, { pageSize: 2, cursor: page.nextCursor });
+    expect([...page.builds, ...next.builds].map((b) => b.id).sort()).toEqual([...moonveil].sort());
+    actAs('alice');
+    await deleteBuild(offHand);
   });
 
   it('delete: only the owner, and the likes and comments go with it', async () => {

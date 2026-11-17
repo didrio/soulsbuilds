@@ -26,7 +26,7 @@
         ]
       },
       {
-        "source": "!/@(assets|build|og)/**",
+        "source": "!/@(assets|build|og|weapons|tags)/**",
         "headers": [
           {
             "key": "Cache-Control",
@@ -45,6 +45,20 @@
       },
       {
         "source": "/og/build/**",
+        "function": {
+          "functionId": "site",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/weapons/**",
+        "function": {
+          "functionId": "site",
+          "region": "us-central1"
+        }
+      },
+      {
+        "source": "/tags/**",
         "function": {
           "functionId": "site",
           "region": "us-central1"

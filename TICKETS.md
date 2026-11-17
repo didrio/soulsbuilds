@@ -7,8 +7,9 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T66
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T55 (weapon and tag pages; the 22 seeded builds give its first hubs content) · Opus · extra high effort ·
-plan mode on. Then T64 (small), T57–T61 (Dark Souls); T65 waits for search data. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
+**Next:** T64 (landing title for "build planner" searches; small) · Sonnet · low effort · plan mode off. Then T62
+(comments) whenever the owner wants it, T57–T61 (Dark Souls; the data tickets wait for the exports); T65 waits for
+search data. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -28,11 +29,15 @@ and spacing, and the canvas notes say why.
 - Copy the Dark Souls III, Dark Souls Remastered and Dark Souls II Smithbox exports to the Mac (T58, T60, T61 are
   blocked on them; T57 settles the folder layout, `~/Documents/soulsbuilds-gamedata/<game>/` planned). Note
   which Smithbox version and game patch each came from, like the Elden Ring export's `VERSION.txt`.
-- **Seeded builds (T52, T53) to production**, after the deploy that carries T52's two classes and rules (CI on
-  `main`): change the Souls Builds account's password (it was pasted into a session, 2026-11-17), then
-  `node scripts/admin.mjs export --project soulsbuilds`, `node scripts/seed-builds.mjs --project soulsbuilds --owner
-<its email>` (dry run: read it), then `--write` (docs/firebase.md "Seeded builds"). Then resubmit the sitemap. Later:
-  message the credited creators (KeenGamer, Console Pulse, eip.gg's Kelson H. and Joseph Ferguson) with their pages.
+- Seeded builds (T52, T53) are in production (2026-11-17). Left: change the Souls Builds account's password if not
+  done yet (it was pasted into a session), resubmit the sitemap, and message the credited creators (KeenGamer,
+  Console Pulse, eip.gg's Kelson H. and Joseph Ferguson) with their pages.
+- After T55 deploys (CI on `main`: functions, hosting, rules and indexes together): wait for the new
+  `equipment.weapons` index to show **Enabled** (Firestore → Indexes; weapon pages serve the plain page until then),
+  then `curl -sI https://soulsbuilds.com/weapons/moonveil` (expect `s-maxage=300`),
+  `curl -s https://soulsbuilds.com/sitemap.xml | grep -c -e weapons/ -e tags/`, open a weapon page and a tag page.
+  The landing's Popular weapons appears after the next daily stats run (or Actions → Community stats → Run
+  workflow). Resubmit the sitemap in Search Console.
 - After T56 deploys: paste a build URL into https://search.google.com/test/rich-results (breadcrumbs should pass; `CreativeWork` has no rich result, only a schema check), and resubmit the sitemap in Search Console (its URLs now carry the slugs).
 - T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
   is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
@@ -64,7 +69,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD), T63 (Equipment and Discussion tabs) and T54 (Share menu).
+desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD), T63 (Equipment and Discussion tabs), T54 (Share menu) and T55 (weapon and tag pages).
 
 ## In progress
 
@@ -73,34 +78,8 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 ## Up next
 
 Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
-previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53 done; their production write is the
-owner's), then sharing and hub pages (T54 done, T55), then T56. T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
-
-#### T55 — Weapon and tag pages: "Moonveil builds", "Bleed builds"
-
-- **Status:** ready after T50 and T51 (sitemap and head tags)
-- **Session:** Opus · extra high effort · plan mode on
-- **Goal:** Landing pages for what people actually search ("rivers of blood build", "best bleed build"):
-  community builds using a weapon or with a tag, plus what the site already knows about the item. The biggest
-  search lever, and it links builds together.
-- **Done when:**
-  - `/weapons/<slug>` (e.g. `/weapons/moonveil`): the weapon's facts (T45 item card facts, scaling,
-    requirements), where to get it (T14's acquisition data), and the builds using it, most liked first. Needs
-    a way to query builds by weapon: an array field of weapon IDs on builds (`weaponIds`, written with the
-    build, rules check it matches `equipment.weapons`, rules budget measured per T42) or a query the session
-    finds cheaper. Same for `/tags/<slug>` (tags are already queryable, T9).
-  - Pages with fewer than 3 builds are `noindex` and left out of the sitemap (no thin pages).
-  - The function serves their head tags and plain-HTML content like T50 does for builds, and the sitemap lists
-    them.
-  - Links in: the item card's weapon name, tag chips on build pages and rows, a few on the landing page.
-  - ★ Owner questions at the start: which item kinds get pages (weapons only first, or talismans and spells
-    too), slugs (lowercased English names, DLC duplicates), the page's design (mock it on the redesign
-    canvas).
-  - Tests: unit tests for slugs and the page data; rules tests for any new field; e2e: open a weapon page from a
-    build; screenshots desktop and `--mobile`.
-- **Context:** `src/data/index.ts` and `acquisition.ts`, `features/editor/ItemCard.tsx` + `itemFacts.ts`,
-  `features/builds/{filters.ts,queries.ts,BuildsList.tsx}`, `firestore.rules` + `tests/rules/budget.test.ts`,
-  T50's function routes. Licensing: only the owner's game export (golden rule 5).
+previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53 done, in production), then sharing and
+hub pages (T54, T55 done), then T56 (done). T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
 
 #### T64 — Landing title for "build planner" searches
 
@@ -352,6 +331,9 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 ### Ideas
 
+- Hub pages (T55 follow-ups): talismans, spells and spirit ashes get pages the same way (their lists are compacted
+  arrays, so `array-contains` works; one index each); landing rows could link their tags (stretched-link row
+  instead of a whole-row `<a>`); the item card's weapon name as a link needs a hoverable card.
 - Phone sections (T49 follow-ups, small): opening a `/guide` or `/comments` link directly doesn't scroll to that
   section (only navigation within the page does, `BuildSections`); the title section's "Tracking" link does
   nothing when the URL is already `/guide` and the Guide was closed; "Jump to" links under the sticky
@@ -381,6 +363,14 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 ## Done
 
 Older entries: `docs/tickets-archive.md`.
+
+- T55 — Weapon and tag pages — 2026-11-17 — `/weapons/<slug>` (facts, where to find it via the Guide's solver,
+  builds most liked first) and `/tags/<slug>` (`src/features/hubs/`, slugs and copy in `lib/hubs.ts`); builds by
+  weapon through `equipment.weapons array-contains` (one index, no new field, no rules change); under 3 builds
+  `noindex`; the function serves both as plain HTML (`hub.ts`, lazy `weaponHub.ts`) and the sitemap lists hubs with
+  3+ builds. Links in: the build title section ("with Rivers of Blood…", tags → tag pages), the crawler HTML, the
+  weapon type → its tag page, the landing's Popular weapons (`stats.weaponCounts`, no staffs or seals; card
+  weapons now carry `type`). Owner's calls: weapons only, root URLs, no canvas mock. Deploy check: owner to-dos.
 
 - T52 + T53 — Seeded builds — 2026-11-17 — `scripts/seed-builds.mjs` (+ `lib/seed-content.mjs` checks,
   `lib/build-from-names.mjs` out of `seed.mjs`) writes `content/builds/er/<slug>.json` + `.md` as the Souls Builds

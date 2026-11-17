@@ -263,7 +263,8 @@ describe('tracking signed in', () => {
     // Back to the plain route: no bar, items are text again.
     expect(screen.queryByRole('region', { name: 'Your progress' })).not.toBeInTheDocument();
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument();
-    expect(screen.getByText('Moonveil')).toBeInTheDocument();
+    // (the title section's "with Moonveil" is a link to the weapon's page, T55)
+    expect(screen.getByText('Moonveil', { selector: ':not(a)' })).toBeInTheDocument();
   });
 
   it('celebrates a complete build', async () => {

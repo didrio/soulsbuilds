@@ -182,12 +182,13 @@ Things to know (T23, from the SDK source and measurements):
   `node scripts/firebase.mjs deploy --project soulsbuilds --only firestore:rules,firestore:indexes`. Needs
   `node scripts/firebase.mjs login` once.
 - Never `firebase deploy` without `--only`. Hosting serves `dist/` with an SPA rewrite to `index.html`, except
-  `/build/**`, `/og/build/**` and `/sitemap.xml` (the `site` function, T37/T50: "Link previews and crawlers" below).
+  `/build/**`, `/og/build/**`, `/weapons/**`, `/tags/**` (T55) and `/sitemap.xml` (the `site` function, T37/T50:
+  "Link previews and crawlers" below).
 - **Cache headers** (`firebase.json` "headers", T21; globs match the request path, before the rewrite, and
   don't overlap because the docs don't say which rule wins): hashed Vite files `/assets/*.@(js|css|woff…)` →
   `public, max-age=31536000, immutable`; `/assets/icons/**` → one week (names aren't hashed; `npm run data` can
-  change an icon); everything else (`!/@(assets|build|og)/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
-  by ETag; the function sets its own `Cache-Control` on `/build/**` and `/og/**` (it must not match `no-cache`). Use `@(a|b)`, not braces, in a negated pattern: production expanded `!/{assets,build,og}/**` into three OR'd negations, so everything matched and the function's own cache headers were overridden (the emulator didn't, so it can't catch this). After changing these rules, check production with `curl -sI https://soulsbuilds.com/build/<id>` (expect `s-maxage=300`). Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
+  change an icon); everything else (`!/@(assets|build|og|weapons|tags)/**`: every HTML route, favicon, manifest) → `no-cache`, revalidated
+  by ETag; the function sets its own `Cache-Control` on `/build/**`, `/og/**`, `/weapons/**` and `/tags/**` (it must not match `no-cache`). Use `@(a|b)`, not braces, in a negated pattern: production expanded `!/{assets,build,og}/**` into three OR'd negations, so everything matched and the function's own cache headers were overridden (the emulator didn't, so it can't catch this). After changing these rules, check production with `curl -sI https://soulsbuilds.com/build/<id>` (expect `s-maxage=300`). Check locally: `npm run build`, then `node scripts/firebase.mjs emulators:exec --project
 demo-soulsbuilds --only hosting "curl -sI http://127.0.0.1:5190/"` (Hosting emulator port 5190).
 - `index.html` sends `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` to `soulsbuilds.com` (same path).
   Preview channels and Firebase's `/__/auth/*` pages (email verification and password reset links) are unaffected.
@@ -199,6 +200,11 @@ A pasted build link shows a card (title, description, image) because a Cloud Fun
 `docs/architecture.md` "Link previews and crawlers"). Since T50 it also serves `/sitemap.xml`, puts each build
 into the page as plain HTML for crawlers, and answers 404 + `noindex` for builds that don't exist;
 `public/robots.txt` points at the sitemap and keeps crawlers off `/account` and `/auth/`. It needs the **Blaze plan**.
+Since T55 it also serves the weapon and tag pages (`/weapons/**`, `/tags/**`) and lists those with 3+ builds in
+the sitemap. Their queries need the composite index on `equipment.weapons` (deployed with the rules and indexes);
+until it is built, a weapon page's read fails and the function serves the plain `index.html` (the app's own query
+fails the same way). Check after the deploy: `curl -sI https://soulsbuilds.com/weapons/moonveil` (expect
+`s-maxage=300`) and `curl -s https://soulsbuilds.com/sitemap.xml | grep -c weapons/`.
 
 - **Deploy order matters.** The Hosting rewrite points at the function: deploy the function **before or with**
   the Hosting change, or every build page 404s. `npm run deploy` and CI use `--only functions,hosting,…` for
@@ -236,7 +242,7 @@ hosting,functions,firestore "node scripts/seed.mjs && curl -s http://127.0.0.1:<
   Point the function at the dev emulator's seeded Firestore with `FIRESTORE_EMULATOR_HOST=127.0.0.1:8085` instead
   of seeding a scratch one. **Don't load that page with JavaScript on**: `npm run build` (in any `--mode`) is a
   production build, and its JS talks to the production project.
-- **The sitemap isn't cached at the CDN.** The no-cache header rule (`!/@(assets|build|og)/**`) matches
+- **The sitemap isn't cached at the CDN.** The no-cache header rule (`!/@(assets|build|og|weapons|tags)/**`) matches
   `/sitemap.xml` and overrides the function's `s-maxage=3600`. Every pattern that would exclude it while still
   matching `/` needs braces (production expands them differently, see "Cache headers") or `!(…)` segments whose
   production behavior is unverified, and a mistake there would stop the HTML routes revalidating after a deploy.
@@ -300,7 +306,8 @@ The GitHub side: environment `production` with the owner as required reviewer, d
 
 `.github/workflows/stats.yml` runs `node scripts/admin.mjs stats --project soulsbuilds --write` every day at
 04:17 UTC (and from Actions → Community stats → **Run workflow**). It writes `stats/elden-ring` (builds, distinct
-authors, accounts, builds per tag) for the landing page: one read per build, plus a `count()` of users.
+authors, accounts, builds per tag and, since T55, per weapon) for the landing page: one read per build, plus a
+`count()` of users. The landing's Popular weapons line stays hidden until the first run after T55's deploy.
 It runs as its own service account with only **Cloud Datastore User** (no deploy rights; deploys keep theirs),
 through the same Workload Identity pool. No GitHub environment or approval: until the role is granted, the job
 fails harmlessly. One-time setup (owner, `gcloud auth login` first):

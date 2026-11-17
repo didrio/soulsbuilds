@@ -15,10 +15,10 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T54, T56, T63 done; T50/T51/T56's deploy and T52's production seeding are the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T63 done; T50/T51/T55/T56's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
-(base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). CI: checks, PR previews, approved prod deploys on `main`, daily
+(base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T48, T63): title section, tabs Equipment (stats beside the equipment panel, same height), Guide, Discussion (write-up on top, then comments) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
@@ -108,7 +108,7 @@ src/
   app/                     App (shell: global styles + game skin, header (phone menu, T26), auth dialog state (pages open
                            it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; useMediaQuery (T49); AppCheckNotice =
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
-                           routes.tsx (/, /build/:buildId/*, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
+                           routes.tsx (/, /build/:buildId/*, /weapons/:slug, /tags/:slug, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            Header + AccountMenu (T31: the display name opens Profile, Account, Log out)
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
@@ -132,6 +132,9 @@ src/
                            target with − +);
                            T36: queries.ts (useTrackedBuilds), TrackedBuilds (profile panels: Playing, Completed
                            trophies) → PlayingList (lazy: progress + next stop), ProgressBar
+  features/hubs/           Weapon and tag pages (T55): WeaponPage (`/weapons/:slug`: facts via weaponFacts.ts, WhereToFind
+                           = lazy chunk over findStops.ts, the Guide's route for one weapon), TagPage (`/tags/:slug`),
+                           HubBuilds (rows + load more), queries.ts (useWeaponBuilds)
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete; title section + tabs + sidebar, T48; phones:
@@ -168,7 +171,8 @@ src/
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
-                           relativeTime.ts ("3 days ago"), slug.ts (T56: a name as a URL segment), shareText.ts (T54: a build as Reddit markdown), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
+                           relativeTime.ts ("3 days ago"), slug.ts (T56: a name as a URL segment), hubs.ts (T55: weapon/tag slugs, paths,
+                           titles, Popular weapons; pure), shareText.ts (T54: a build as Reddit markdown), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,
                            GameSkinStyle
@@ -184,6 +188,7 @@ tests/                     rules/ (security rules + data layer vs rules), migrat
 public/assets/             icons/<icon>.webp (T7 data)
 functions/                 Link previews (T37) and crawlers (T50): src/ (index = the `site` function, handler = routes +
                            fallbacks + sitemap + 404s, page = the build as plain HTML in #root via the editor store,
+                           hub + weaponHub = weapon and tag pages as plain HTML (T55; weaponHub lazy),
                            markdown = sanitized write-up, card = Satori/resvg image, lazy), own package.json (`npm ci --prefix functions`); lib/ + fonts/ are built
 scripts/                   seed, seed-builds (T52), migrate-v1-to-v2, admin (moderation), e2e, screenshot, perf, doctor,
                            firebase (Java wrapper), lib/ (model-v2, names-to-ids, build-from-names, seed-content); data/ = game data pipeline (TypeScript;
