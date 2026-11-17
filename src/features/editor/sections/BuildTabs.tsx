@@ -13,6 +13,8 @@ import {
   DURATION_FAST,
   SPACE_GUTTER,
   SPACE_SM,
+  TEXT_BODY,
+  TEXT_MD,
   TEXT_XS,
 } from '@/theme';
 import { loadRoute } from '../guide/GuideSection';
@@ -162,7 +164,7 @@ const Tab = styled(NavLink)`
   color: ${COLOR_TEXT_MUTED};
   display: inline-flex;
   flex: none;
-  font-size: 15px;
+  font-size: ${TEXT_BODY};
   font-weight: 500;
   gap: 8px;
   height: ${TAB_BAR_HEIGHT}px;
@@ -192,7 +194,7 @@ const Tab = styled(NavLink)`
   }
 
   @media ${BELOW_TABLET} {
-    font-size: 14px;
+    font-size: ${TEXT_MD};
     padding: 0 12px;
   }
 

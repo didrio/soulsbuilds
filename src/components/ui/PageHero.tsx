@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
-import { BELOW_MOBILE, COLOR_TEXT_MUTED, TEXT_LG, TEXT_XXL } from '@/theme';
+import { BELOW_MOBILE, COLOR_TEXT_MUTED, MEASURE, TEXT_LG, TEXT_MD, TEXT_XXL } from '@/theme';
 import { displayText } from './typography';
 
 interface PageHeroProps {
@@ -38,7 +38,7 @@ const Title = styled.h1`
   overflow-wrap: anywhere;
 
   @media ${BELOW_MOBILE} {
-    font-size: 28px;
+    font-size: 1.75rem;
   }
 `;
 
@@ -46,9 +46,10 @@ const Tagline = styled.p`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_LG};
   margin: 6px 0 0;
+  max-width: ${MEASURE};
 
   @media ${BELOW_MOBILE} {
-    font-size: 15px;
+    font-size: ${TEXT_MD};
   }
 `;
 

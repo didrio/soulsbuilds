@@ -9,11 +9,13 @@ import {
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
   COLOR_TEXT,
+  MEASURE,
   SPACE_GROUP,
   SPACE_LG,
+  SPACE_PANEL,
   SPACE_REGION,
   SPACE_XL,
-  TEXT_MD,
+  TEXT_BODY,
   TEXT_XL,
 } from '@/theme';
 
@@ -42,10 +44,10 @@ function LegalPage({
 }
 
 const Article = styled(Frame)`
-  font-size: ${TEXT_MD};
+  font-size: ${TEXT_BODY};
   line-height: 1.7;
   margin: ${SPACE_REGION} 0 0;
-  max-width: 760px;
+  max-width: calc(${MEASURE} + 2 * ${SPACE_PANEL});
 
   & > :first-child {
     margin-top: 0;

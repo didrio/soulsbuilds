@@ -286,7 +286,7 @@ const AccentLabel = styled(Label)`
 
 const CompleteTitle = styled.h2`
   ${displayText}
-  font-size: 36px;
+  font-size: 2.25rem;
   margin: ${SPACE_XS} 0 0;
   text-shadow: 0 0 24px ${COLOR_CELEBRATE};
 `;

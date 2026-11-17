@@ -17,8 +17,8 @@ import {
   BELOW_MOBILE,
   COLOR_ACCENT,
   COLOR_ACCENT_LINE,
-  COLOR_LINE,
   COLOR_INSET,
+  COLOR_LINE,
   COLOR_LINE_STRONG,
   COLOR_ON_ACCENT,
   COLOR_SURFACE_RAISED,
@@ -27,6 +27,7 @@ import {
   COLOR_TINT,
   SPACE_MD,
   SPACE_SM,
+  TEXT_BODY,
   TEXT_MD,
   TEXT_SM,
   TEXT_XS,
@@ -527,7 +528,7 @@ const NextLabel = styled(Label)`
 
 const Place = styled.p<{ $done: boolean }>`
   color: ${({ $done }) => ($done ? COLOR_TEXT_MUTED : COLOR_TEXT)};
-  font-size: 15px;
+  font-size: ${TEXT_BODY};
   font-weight: 600;
   margin: 2px 0 0;
 `;

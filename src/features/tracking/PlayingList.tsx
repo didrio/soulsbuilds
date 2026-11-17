@@ -25,7 +25,9 @@ import {
   COLOR_TEXT_MUTED,
   SPACE_GROUP,
   SPACE_SM,
+  TEXT_NAME,
   TEXT_SM,
+  TEXT_XL,
   TEXT_XS,
 } from '@/theme';
 import ProgressBar from './ProgressBar';
@@ -148,7 +150,7 @@ const Names = styled.span`
 const Name = styled.span`
   ${displayText}
   display: block;
-  font-size: 19px;
+  font-size: ${TEXT_NAME};
 `;
 
 const Sub = styled.span`
@@ -161,11 +163,11 @@ const Sub = styled.span`
 const Percent = styled.span`
   ${displayText}
   color: ${COLOR_ACCENT};
-  font-size: 26px;
+  font-size: 1.625rem;
   font-variant-numeric: tabular-nums;
 
   @media ${BELOW_MOBILE} {
-    font-size: 24px;
+    font-size: ${TEXT_XL};
   }
 `;
 

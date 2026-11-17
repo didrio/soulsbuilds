@@ -2,6 +2,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from 'react';
 import { Link, type LinkProps } from 'react-router';
 import styled, { css } from 'styled-components';
 import {
+  BELOW_MOBILE,
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
   COLOR_DANGER,
@@ -15,6 +16,7 @@ import {
   FONT_UI,
   RADIUS_FRAME,
   TEXT_MD,
+  TEXT_SM,
 } from '@/theme';
 
 /**
@@ -100,6 +102,12 @@ const base = css<{ $variant: ButtonVariant }>`
   min-height: 44px;
   padding: 0 16px;
   text-align: center;
+
+  /* Phones: 14px and tighter sides, so a row of buttons (the build's Track, Like, Share) fits (T67). */
+  @media ${BELOW_MOBILE} {
+    font-size: ${TEXT_SM};
+    padding: 0 12px;
+  }
   transition:
     box-shadow ${DURATION_FAST},
     border-color ${DURATION_FAST},

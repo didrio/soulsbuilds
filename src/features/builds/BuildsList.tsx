@@ -22,6 +22,7 @@ import {
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   TEXT_LG,
+  TEXT_NAME,
   TEXT_SM,
   WEIGHT_DISPLAY,
 } from '@/theme';
@@ -268,7 +269,7 @@ const Name = styled.span`
   color: ${COLOR_TEXT};
   display: block;
   font-family: ${FONT_DISPLAY};
-  font-size: 20px;
+  font-size: ${TEXT_NAME};
   font-weight: ${WEIGHT_DISPLAY};
   line-height: 1.25;
   overflow: hidden;

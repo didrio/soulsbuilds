@@ -2,12 +2,12 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T67**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T68**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** the owner's next request (they have a run of them, 2026-11-17; T66 was the first). The remaining tickets (T65, T57–T61)
+**Next:** the owner's next request (they have a run of them, 2026-11-17; T66 and T67 so far). The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -301,6 +301,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T67 — Readability pass — 2026-11-17 — owner's request (the site felt too wide, the serif hard to read): type scale one step up and in rem (`fonts.ts`: UI 15px, secondary 14, small 13, labels 12, `TEXT_BODY` 16, `TEXT_NAME` 22); write-ups in Inter 16px/1.7 (`MarkdownView`), EB Garamond only for names and headings ≥ 22px (400/italic/700 no longer loaded; Inter italic added); running text capped at `MEASURE` 35em ≈ 72 characters (write-ups, comments, taglines, legal); `CONTENT_WIDTH` 1240 → 1200 and the stats column 340 → 312 (the owner chose 1160, but the Equipment tab's five-spell row needs 372px columns for the T66 fold); attribute rows 24px and vitals gaps 10px so 1280×800 still fits (~10px to spare); form fields 16px (iOS focus zoom); buttons 14px with 12px sides on phones so Track/Like/Share share a row at 390px (375px wraps, as before).
 - T66 — Build page above the fold — 2026-11-17 — owner's request: no "All builds" (the header's Builds lit on build pages, `$section`); unframed top section: title block (88 px image; Report and Edit/Delete top right) then one sticky 64 px row, tabs left (accent as wide as the label) + `BuildActions` (Track, Like, Share) right; denser Equipment panel (no heading, 68 px tiles, `gear.ts` `equipmentLayout` pairs flask/arrows/spells/items up to 5 tiles) and stats card; a full build (`SEEDFULL0001`) fits 1440×820 and 1280×800 (`tests/e2e/fold.spec.ts`; `screenshot --height`). Also: a saved sign-in that can't renew is signed out and every query reloads (`onAuthChange`, `isDeadSession`; locally after `npm run dev` restarts the Auth emulator empty); comments' Top counts the viewer's own likes, held out of the rank until a sort is chosen (`threadComments` `held`). Remaining tickets moved to Backlog > Priority backlog.
 - T62 — Comments worth reading — 2026-11-17 — comments fill the column; a heart per comment (`commentLikes/{commentId}_{uid}` + the comment's `likeCount`, ±1 in one batch); Top/Newest (Top ranks without the viewer's own like); one reply level (`parentId` = a top-level comment, "@Name " on a reply to a reply; first 2 + "Show N more" past 3); a deleted comment's replies stay under "Comment deleted"; no migration (old comments read as null/0); "Author" badge; account deletion, `deleteBuild` and `admin.mjs remove`/`delete-user` handle comment likes (`lib/comments.ts`, `CommentItem`, `CommentForm`).
 - T64 — Landing title for "build planner" searches — 2026-11-17 — landing title "Elden Ring Build Planner and Builds | Souls Builds" and a description naming stats, equip load and poise (`homeMeta`, `index.html`); judge the effect in Search Console after T50's deploy.

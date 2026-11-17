@@ -17,4 +17,4 @@ export const SPACE_GROUP = '12px';
 /** Between regions of a page (panels, sections). */
 export const SPACE_REGION = '24px';
 /** Max width of the page content. */
-export const CONTENT_WIDTH = '1240px';
+export const CONTENT_WIDTH = '1200px';

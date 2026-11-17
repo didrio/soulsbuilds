@@ -49,7 +49,7 @@ function useFitsWindow(ref: RefObject<HTMLElement | null>, top: number, below: n
  * class, attributes with bars and talisman bonuses, HP / FP / stamina, equip load, poise), then, on
  * the Guide and Discussion tabs, the equipment as small icon tiles by group (`gear.ts`), so it's there
  * at a glance. On the Equipment tab (T63) the equipment is the tab itself: the sidebar is the stats
- * alone, as tall as the Equipment panel beside it, its blocks spread to fill it. Desktop: a 340 px
+ * alone, as tall as the Equipment panel beside it, its blocks spread to fill it. Desktop: a 312 px
  * column that sticks under the tab bar when it fits the window. Editing (Equipment tab only): the
  * stats take inputs.
  */

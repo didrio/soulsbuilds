@@ -283,15 +283,21 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   borders are `COLOR_LINE`,
   headings are the text color, tags and chips are neutral (inset fill, `COLOR_LINE_STRONG` border), counts and
   icons are muted. Check a new use of `COLOR_ACCENT*` against this list.
-- **Type: three tiers** (`fonts.ts`, CSS in `components/ui/typography.ts`). **Names and headings**: `FONT_DISPLAY`
-  (EB Garamond 600, `WEIGHT_DISPLAY`), title case, the text color (`displayText`; `SectionHeading` 24px, page
-  titles 32px, the build name 40px). **Labels**: Inter 11px/600, uppercase, 0.08em tracking, muted (`labelText`,
-  `Label`): the only caps style. **Values and body**: Inter (`FONT_UI`, UI text 14px), numbers with
-  `font-variant-numeric: tabular-nums`. Write-ups (`MarkdownView`): EB Garamond 18px/1.6 (`FONT_PROSE`); h1 serif
-  28px, h2 serif 22px over a hairline, h3 the label, h4–h6 Inter 15px/600. `FONT_BRAND` (Cinzel 700) is the
-  wordmark only. All self-hosted OFL from `@fontsource`, imported in `src/index.css`.
-- **Density**: content 1240px wide (`CONTENT_WIDTH`), panel padding 20px (16px on phones; `SPACE_PANEL`), 12px
-  inside groups (`SPACE_GROUP`), 24px between regions (`SPACE_REGION`).
+- **Type: three tiers** (`fonts.ts`, CSS in `components/ui/typography.ts`; sizes in **rem**, so a browser's default
+  font size applies, T67). **Names and headings**: `FONT_DISPLAY` (EB Garamond 600, `WEIGHT_DISPLAY`), title case,
+  the text color (`displayText`; build names in lists and phone section headers 22px `TEXT_NAME`, `SectionHeading`
+  and dialog titles 24px, page titles and the build name 32px). **Never below 22px**: its short letters read about
+  3/4 of their size. **Labels**: Inter 12px/600, uppercase, 0.06em tracking, muted (`labelText`, `Label`): the only
+  caps style. **Values and body**: Inter (`FONT_UI`; UI text 15px `TEXT_MD`, secondary 14px, small print 13px),
+  numbers with `font-variant-numeric: tabular-nums`. Write-ups (`MarkdownView`): Inter 16px/1.7 (`TEXT_BODY`);
+  h1 serif 28px, h2 serif 24px over a hairline, h3 the label, h4–h6 Inter 16px/600. Form fields are 16px
+  (`fieldStyles`; iOS zooms into smaller ones); buttons 15px, 14px on phones. `FONT_BRAND` (Cinzel 700) is the
+  wordmark only. All self-hosted OFL from `@fontsource`, imported in `src/index.css` (EB Garamond 600 only).
+- **Line length**: running text (write-ups, comments, taglines, legal pages) is capped at `MEASURE` (35em, about
+  72 characters of Inter). Use em, not ch: Inter's "0" is ~1.3 average characters wide, so `68ch` ran ~90.
+- **Density**: content 1200px wide (`CONTENT_WIDTH`, T67: from 1240; the Equipment tab's five-spell row sets the
+  floor), panel padding 20px (16px on phones; `SPACE_PANEL`), 12px inside groups (`SPACE_GROUP`), 24px between
+  regions (`SPACE_REGION`).
 - **Spacing, radii, shadows, motion, breakpoints**: `SPACE_*`, `RADIUS_*`, `SHADOW_*`, `DURATION_*`/`EASE`,
   `BELOW_MOBILE` (640) / `BELOW_TABLET` (900).
 - **Page-wide styles**: `GlobalStyle.ts` (background light, vignette, film grain, focus ring, reduced motion).
@@ -339,7 +345,7 @@ the sidebar (`fill`) and the panel stretch to the row, the panel's rows share th
 `align-content: stretch`, each group centered in its band) and, when the equipment is the taller one, `StatsCard
 fill` spreads its blocks (`space-between`). Editing: every tile opens the picker, and the write-up's editor
 (`DescriptionSection`) sits under the panel; the columns keep their own heights.
-The **build sidebar** (T48, `sections/BuildSidebar`): one 340px column on every tab, the same signed in or out and
+The **build sidebar** (T48, `sections/BuildSidebar`): one 312px column on every tab (T67: from 340), the same signed in or out and
 tracking or not; on Guide and Discussion it sticks under the tab bar only when it fits the window (measured with a
 `ResizeObserver`), else it scrolls with the page; desktop only (phones: the sections below). Top:
 `sections/StatsCard` (T27): rune level, starting class, the 8 attributes as rows with bars and talisman bonuses (a

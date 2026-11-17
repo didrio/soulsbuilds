@@ -1,12 +1,10 @@
-/* Self-hosted OFL fonts (@fontsource). Inter (variable, UI) loads only the latin range a page uses;
-   EB Garamond for names, headings (600) and write-ups (400, italic, 700 for bold); Cinzel 700 for the
-   wordmark only. Page-wide styles live in src/theme/GlobalStyle.ts. */
+/* Self-hosted OFL fonts (@fontsource). Inter (variable, UI and write-ups; the italic loads only when a
+   page has italics) loads only the latin range a page uses; EB Garamond 600 for names and headings;
+   Cinzel 700 for the wordmark only. Page-wide styles live in src/theme/GlobalStyle.ts. */
 @import '@fontsource-variable/inter/wght.css';
+@import '@fontsource-variable/inter/wght-italic.css';
 @import '@fontsource/cinzel/latin-700.css';
-@import '@fontsource/eb-garamond/latin-400.css';
-@import '@fontsource/eb-garamond/latin-400-italic.css';
 @import '@fontsource/eb-garamond/latin-600.css';
-@import '@fontsource/eb-garamond/latin-700.css';
 
 code {
   font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace;

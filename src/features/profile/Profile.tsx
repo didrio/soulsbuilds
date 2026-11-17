@@ -25,6 +25,7 @@ import {
   COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
+  MEASURE,
   SPACE_GUTTER,
   SPACE_LG,
   SPACE_MD,
@@ -268,7 +269,7 @@ const Name = styled.h1`
   overflow-wrap: anywhere;
 
   @media ${BELOW_MOBILE} {
-    font-size: 28px;
+    font-size: 1.75rem;
   }
 `;
 
@@ -276,9 +277,10 @@ const HeroTagline = styled.p`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_LG};
   margin: 0;
+  max-width: ${MEASURE};
 
   @media ${BELOW_MOBILE} {
-    font-size: 15px;
+    font-size: ${TEXT_MD};
   }
 `;
 

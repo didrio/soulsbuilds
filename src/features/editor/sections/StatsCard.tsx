@@ -22,6 +22,7 @@ import {
   SPACE_MD,
   SPACE_SM,
   SPACE_XS,
+  TEXT_BODY,
   TEXT_LABEL,
   TEXT_MD,
   TEXT_SM,
@@ -59,7 +60,7 @@ const ROLLS: { roll: Exclude<RollType, 'overloaded'>; name: string }[] = [
 ];
 
 /** The build sidebar's width on desktop (T28, T48). */
-export const STATS_COLUMN_WIDTH = 340;
+export const STATS_COLUMN_WIDTH = 312;
 
 export const formatNumber = (value: number) => value.toLocaleString('en-US');
 
@@ -359,14 +360,14 @@ const Attributes = styled.ul<{ $editable: boolean }>`
   }
 `;
 
-// Desktop: a row about 25px tall (name, bar, value; T66: from 30, so the card fits above the fold). Phones: a cell, the name and value over the bar.
+// Desktop: a row 24px tall (name, bar, value; T66: from 30, T67: from 25, so the card fits above the fold). Phones: a cell, the name and value over the bar.
 const Attribute = styled.li<{ $editable: boolean }>`
   align-items: center;
   column-gap: 12px;
   display: grid;
   grid-template-areas: 'name bar value';
   grid-template-columns: 96px minmax(0, 1fr) ${({ $editable }) => ($editable ? '56px' : '30px')};
-  min-height: 25px;
+  min-height: 24px;
 
   @media ${BELOW_TABLET} {
     grid-template-areas: ${({ $editable }) => ($editable ? `'name' 'value' 'bar'` : `'name value' 'bar bar'`)};
@@ -429,7 +430,7 @@ const BarFill = styled.span`
 `;
 
 const AttributeValue = styled.span`
-  font-size: 15px;
+  font-size: ${TEXT_MD};
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   grid-area: value;
@@ -439,7 +440,7 @@ const AttributeValue = styled.span`
 // Desktop: HP | FP | Stamina, then the load, then poise. Phones: HP | FP | Stamina | Poise, then the load.
 const Vitals = styled.dl`
   display: grid;
-  gap: ${SPACE_GROUP};
+  gap: ${SPACE_SM}; /* T67: from 12, for the fold */
   grid-template-areas: 'hp fp stamina' 'load load load' 'poise poise poise';
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
@@ -462,12 +463,12 @@ const Vitals = styled.dl`
 
 const bigValue = css`
   color: ${COLOR_TEXT};
-  font-size: 20px;
+  font-size: 1.25rem;
   font-weight: 600;
   line-height: 1.3;
 
   @media ${BELOW_TABLET} {
-    font-size: 17px;
+    font-size: 1.0625rem;
   }
 `;
 
@@ -482,7 +483,6 @@ const Vital = styled.div<{ $area: string }>`
 const Load = styled.div`
   grid-area: load;
   position: relative;
-  margin-top: ${SPACE_XS};
 `;
 
 const LoadNumbers = styled.span`
@@ -566,7 +566,7 @@ const Poise = styled.div`
 
   dd {
     color: ${COLOR_TEXT};
-    font-size: 16px;
+    font-size: ${TEXT_BODY};
     font-weight: 600;
   }
 

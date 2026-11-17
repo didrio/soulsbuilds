@@ -10,6 +10,7 @@ import {
   COLOR_ACCENT_STRONG,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
+  MEASURE,
   SPACE_SM,
   SPACE_XS,
   TEXT_MD,
@@ -124,9 +125,11 @@ const Controls = styled.span`
   margin-left: auto;
 `;
 
+// About 72 characters a line, however wide the panel (T67).
 const Text = styled.p`
   font-size: ${TEXT_MD};
   margin: ${SPACE_XS} 0 0;
+  max-width: ${MEASURE};
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 `;

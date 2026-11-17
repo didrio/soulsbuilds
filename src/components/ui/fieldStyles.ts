@@ -1,4 +1,5 @@
-// The shared look of text fields and selects: sunken, framed, 44 px, accent border + glow on focus.
+// The shared look of text fields and selects: sunken, framed, 44 px, 16px text, accent border + glow on
+// focus.
 import { css } from 'styled-components';
 import {
   COLOR_ACCENT,
@@ -12,7 +13,7 @@ import {
   FONT_UI,
   RADIUS_FRAME,
   SHADOW_FIELD,
-  TEXT_MD,
+  TEXT_BODY,
 } from '@/theme';
 
 export const fieldStyles = css`
@@ -22,7 +23,7 @@ export const fieldStyles = css`
   box-shadow: ${SHADOW_FIELD};
   color: ${COLOR_TEXT};
   font-family: ${FONT_UI};
-  font-size: ${TEXT_MD};
+  font-size: ${TEXT_BODY}; /* 16px: iOS zooms into fields set smaller (T67) */
   min-height: 44px;
   outline: none;
   padding: 8px 12px;

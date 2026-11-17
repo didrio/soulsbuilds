@@ -11,6 +11,7 @@ import {
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   RADIUS_FRAME,
+  TEXT_BODY,
   TEXT_MD,
 } from '@/theme';
 
@@ -154,7 +155,7 @@ const Step = styled.button`
 `;
 
 const Value = styled.span`
-  font-size: 15px;
+  font-size: ${TEXT_BODY};
   font-variant-numeric: tabular-nums;
   text-align: center;
 `;

@@ -17,9 +17,11 @@ import {
   COLOR_SURFACE_RAISED,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
-  FONT_PROSE,
   FONT_UI,
+  MEASURE,
   SPACE_SM,
+  TEXT_BODY,
+  TEXT_MD,
   TEXT_SM,
   TEXT_XL,
   TEXT_XS,
@@ -55,14 +57,15 @@ function MarkdownView({ source }: { source: string }) {
   );
 }
 
-// The write-up: EB Garamond 18px/1.6. Headings follow the type tiers (T26): h1 and h2 in the serif
-// (h2 with a hairline under it), h3 as the caps label, h4 Inter 15px/600; h5 and h6 as h4.
+// The write-up: Inter 16px/1.7, about 72 characters a line (T67: it was EB Garamond, which read small
+// and ran ~87 characters). Headings follow the type tiers (T26): h1 and h2 in the serif (h2 with a
+// hairline under it), h3 as the caps label, h4 Inter 16px/600; h5 and h6 as h4.
 const Body = styled.div`
   color: ${COLOR_TEXT};
-  font-family: ${FONT_PROSE};
-  font-size: 18px;
-  line-height: 1.6;
-  max-width: 68ch;
+  font-family: ${FONT_UI};
+  font-size: ${TEXT_BODY};
+  line-height: 1.7;
+  max-width: ${MEASURE};
   overflow-wrap: anywhere;
 
   & > :first-child {
@@ -136,7 +139,7 @@ const Body = styled.div`
   }
 
   & h1 {
-    font-size: 28px;
+    font-size: 1.75rem;
   }
 
   & h2 {
@@ -156,7 +159,7 @@ const Body = styled.div`
   & h6 {
     color: ${COLOR_TEXT};
     font-family: ${FONT_UI};
-    font-size: 15px;
+    font-size: ${TEXT_BODY};
     font-weight: 600;
     line-height: 1.4;
     margin: 1em 0 0.3em;
@@ -174,6 +177,10 @@ const Body = styled.div`
   & ul,
   & ol {
     padding-left: 1.6em;
+  }
+
+  & strong {
+    font-weight: 600;
   }
 
   & a {
@@ -242,8 +249,7 @@ const Body = styled.div`
   }
 
   & table {
-    font-family: ${FONT_UI};
-    font-size: 15px;
+    font-size: ${TEXT_MD};
   }
 `;
 

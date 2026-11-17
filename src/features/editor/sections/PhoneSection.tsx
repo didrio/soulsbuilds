@@ -10,7 +10,7 @@ import {
   DURATION_FAST,
   SPACE_GUTTER,
   SPACE_MD,
-  TEXT_LG,
+  TEXT_NAME,
   TEXT_SM,
 } from '@/theme';
 
@@ -144,7 +144,7 @@ const HeaderButton = styled.button<{ $open: boolean }>`
 const Title = styled.span`
   ${displayText}
   color: ${COLOR_TEXT};
-  font-size: ${TEXT_LG};
+  font-size: ${TEXT_NAME};
   grid-area: title;
   line-height: 1.25;
 `;

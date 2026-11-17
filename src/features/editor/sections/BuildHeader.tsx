@@ -249,7 +249,7 @@ const Title = styled.h1`
   text-wrap: balance;
 
   @media ${BELOW_MOBILE} {
-    font-size: 26px;
+    font-size: 1.625rem;
   }
 `;
 

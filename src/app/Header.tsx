@@ -19,6 +19,7 @@ import {
   FONT_BRAND,
   SHADOW_OVERLAY,
   SPACE_GUTTER,
+  TEXT_BODY,
   TEXT_MD,
   TEXT_SM,
   TEXT_XS,
@@ -291,7 +292,7 @@ const Menu = styled(FocusScope)`
   & > nav > button {
     border-radius: 0;
     color: ${COLOR_TEXT};
-    font-size: 16px;
+    font-size: ${TEXT_BODY};
     justify-content: flex-start;
     min-height: 48px;
     padding: 0 8px;
