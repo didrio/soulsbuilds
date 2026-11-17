@@ -23,8 +23,8 @@ export const buildTitle = (name: string, level: number) =>
 
 /** The landing page's title and description: "Elden Ring builds" first, for what people search (T51). */
 export const homeMeta = (gameName: string): ShareMeta => ({
-  title: pageTitle(`${gameName} Builds: Create, Share and Discover`),
-  description: `${gameName} builds: create your own, share them, and discover what the community plays. Stats, weapons, armor, talismans and spells, with a route to get the gear.`,
+  title: pageTitle(`${gameName} Build Planner and Builds`),
+  description: `${gameName} build planner: plan a build with stats, equip load and poise, share it, and discover what the community plays. Weapons, armor, talismans and spells, with a route to get the gear.`,
 });
 
 export interface ShareInput {

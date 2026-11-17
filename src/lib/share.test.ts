@@ -140,9 +140,10 @@ describe('titles', () => {
     );
   });
 
-  it('leads the home page with the game and its builds', () => {
+  it('leads the home page with the game and the build planner', () => {
     const home = homeMeta('Elden Ring');
-    expect(home.title).toBe('Elden Ring Builds: Create, Share and Discover | Souls Builds');
-    expect(home.description.startsWith('Elden Ring builds')).toBe(true);
+    expect(home.title).toBe('Elden Ring Build Planner and Builds | Souls Builds');
+    expect(home.description.startsWith('Elden Ring build planner')).toBe(true);
+    expect(home.description).toContain('equip load and poise');
   });
 });

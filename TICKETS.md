@@ -7,8 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T66
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T64 (landing title for "build planner" searches; small) · Sonnet · low effort · plan mode off. Then T62
-(comments) whenever the owner wants it, T57–T61 (Dark Souls; the data tickets wait for the exports); T65 waits for
+**Next:** T62 (comments; rules + data model + UI) · Opus · high effort · plan mode on, whenever the owner wants it, T57–T61 (Dark Souls; the data tickets wait for the exports); T65 waits for
 search data. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -80,21 +79,6 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
 previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53 done, in production), then sharing and
 hub pages (T54, T55 done), then T56 (done). T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
-
-#### T64 — Landing title for "build planner" searches
-
-- **Status:** ready (small; best after T50/T51's deploy so Search Console can show the effect)
-- **Session:** Sonnet · low effort · plan mode off
-- **Goal:** Google's top autocompletes for "elden ring build" are _calculator, planner, builder, maker_ (research
-  for T52, 2026-11-17), and the site is a build planner with stats and build math (T8). Say so in the landing's
-  title and description so it can rank for those words, without losing "Elden Ring builds" first.
-- **Done when:** `homeMeta` in `src/lib/share.ts` (what the landing sets in the browser) and the static `<title>`
-  and description in `index.html` (what crawlers get for `/`: the function serves only build pages, T50) read e.g.
-  "Elden Ring Builds and Build Planner: Create, Share and Discover | Souls Builds", and the description mentions
-  planning a build with stats, weight and poise; `share.test.ts` updated; the landing's visible heading unchanged
-  unless the owner wants it; `npm run check`. Ask the owner to pick between two or three wordings in one question.
-- **Context:** `src/lib/share.ts` (`homeMeta`, `pageTitle`), `index.html`, `src/features/builds/Landing.tsx`,
-  T51's `PageHead`. Keep the title under ~60 characters so Google doesn't cut it.
 
 #### T65 — Second batch of seeded builds, from real search data
 
@@ -364,6 +348,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T64 — Landing title for "build planner" searches — 2026-11-17 — landing title "Elden Ring Build Planner and Builds | Souls Builds" and a description naming stats, equip load and poise (`homeMeta`, `index.html`); judge the effect in Search Console after T50's deploy.
 - T55 — Weapon and tag pages — 2026-11-17 — `/weapons/<slug>` (facts, where to find it via the Guide's solver,
   builds most liked first) and `/tags/<slug>` (`src/features/hubs/`, slugs and copy in `lib/hubs.ts`); builds by
   weapon through `equipment.weapons array-contains` (one index, no new field, no rules change); under 3 builds

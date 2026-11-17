@@ -131,10 +131,10 @@ describe('Landing head', () => {
   it('titles the page for Elden Ring builds, canonical to the home page whatever the filters', async () => {
     renderWithProviders(<Landing />, { route: '/?tag=Malenia&min=100' });
     expect(await screen.findByText('Bleed')).toBeInTheDocument();
-    expect(document.title).toBe('Elden Ring Builds: Create, Share and Discover | Souls Builds');
+    expect(document.title).toBe('Elden Ring Build Planner and Builds | Souls Builds');
     expect(
       document.head.querySelector('meta[name="description"]')?.getAttribute('content'),
-    ).toMatch(/^Elden Ring builds/);
+    ).toMatch(/^Elden Ring build planner/);
     expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute(
       'href',
       'https://soulsbuilds.com/',

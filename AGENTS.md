@@ -15,7 +15,7 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T63 done; T50/T51/T55/T56's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T63, T64 done; T50/T51/T55/T56's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
