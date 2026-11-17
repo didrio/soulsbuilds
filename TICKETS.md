@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T78
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T74 (home list: rows and the filter bar), then T72, T73, T76, T75, T77: the UI/UX pass's tickets in
+**Next:** T72 (back to your run; Opus · high · plan mode on), then T73, T76, T75, T77: the UI/UX pass's tickets in
 Up next. The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
@@ -43,6 +43,12 @@ and spacing, and the canvas notes say why.
   a build's Discussion tab like a comment, reply to one, and switch Top/Newest.
 - After T69 deploys: `curl -s https://soulsbuilds.com/ | grep -c 'Plan, share and follow'` (expect 1) and
   `curl -s https://soulsbuilds.com/build/IAumzY2DNj2NHObXD0QB | grep -c 'sb-home'` (expect 0: the function strips it).
+- After T74 deploys (CI on `main`: hosting, functions, rules and indexes together): the home shelves, the builds
+  list and weapon/tag pages query new composite indexes (count, then `createdAt`). Wait for them to show
+  **Enabled** (Firestore → Indexes; until then those lists fail with "requires an index"), or deploy them first:
+  `node scripts/firebase.mjs deploy --only firestore:indexes --project soulsbuilds`. Then run the stats job once
+  (Actions → Community stats → Run workflow) so search and the shelves have their index; open `/`, `/builds`,
+  search "samurai", and resubmit the sitemap (it now lists `/builds`).
 - After T56 deploys: paste a build URL into https://search.google.com/test/rich-results (breadcrumbs should pass; `CreativeWork` has no rich result, only a schema check), and resubmit the sitemap in Search Console (its URLs now carry the slugs).
 - T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
   is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
@@ -97,44 +103,7 @@ newcomer sees what's going on and where to start, and it stays powerful for peop
 emulator at 1440×900 and 375×812, signed out and signed in, plus the live home page's numbers. Left alone on
 purpose (clear as they are): the home intro, the new-here strip, the tracking intro, the auth dialogs, the
 Guide while tracking, item cards, the Equipment layout, weapon and tag pages, the account page, the 404. T71
-(the write-up named in its tab) is done; the rest in this order.
-
-#### T74 — Home list: build rows and the filter bar
-
-- **Status:** ready (mock first; owner's ideas, 2026-11-17)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** The home list reads like a ranked feed: a build's popularity shows at a glance and compares with
-  the rows around it (owner: "more like Reddit"), and search, sort and filters are one compact, expressive bar
-  instead of four rows of controls.
-- **Done when:** (ask the ★ items in one question at the start; mock the row and the bar on the redesign
-  canvas, desktop and phone, and get the owner's OK before building)
-  - **Row:** a left rail with the like count large; comments and "N playing" in the meta line; level smaller
-    on the right with the slot strip. **Zero is quiet**: an outline heart with no number, counts only when
-    there are some. Live data on 2026-11-17: the top build has 3 likes, nine builds have any, all 22 seeded
-    builds have 0, so a big number column would be a column of zeros.
-  - ★ **Default sort.** "Most liked" over mostly-zero likes puts 4-year-old builds with one like above
-    everything new. Recommended: likes, then newest among ties (a composite index, no model change). A decayed
-    "hot" score needs a stored field and rules (budget, T42): later, if at all.
-  - ★ **Liking from the list.** Recommended no: a like is a heart, not a vote, the row is one link, and a like
-    without opening the build says little.
-  - **Bar:** one search field, then one row of chips with popovers: Sort, Level (presets Any · to 50 · 51–100
-    · 125–150 · 200+ · Custom: the levels people build at, `docs/product.md`), Tags, Weapon; active filters as
-    removable chips with Clear and the result count; the "Most liked first" caption goes. Phones: search plus
-    one **Filters** button that opens a sheet (today the controls fill the first phone screen before any
-    build). Filters stay in the URL (`filters.ts`).
-  - ★ **Search finds what people type.** Today it matches only the start of a build's name (`searchBuilds`: a
-    prefix query on `nameLower`) and replaces the sort: "dark moon" doesn't find "Level 100 Dark Moon
-    Greatsword Build". Recommended: search in the browser over a compact index (id, name, tags, main weapon,
-    likes; under 100 builds today) written by the daily stats job next to `stats/<game>`, words anywhere in
-    the name, weapon and tag matches offered as links to their pages (`lib/hubs.ts`), the sort kept; the
-    prefix query stays as the fallback for builds newer than the index. No rules or model change. Split this
-    into its own ticket if the session runs long.
-  - Tests for the new filter logic and the row; e2e for a filtered, searched list; screenshots desktop and
-    `--mobile`; `docs/decisions.md` ("Landing", the sort, the search index).
-- **Context:** `features/builds/{Landing.tsx,BuildsList.tsx,filters.ts,tags.ts,queries.ts}`,
-  `lib/firebase/builds.ts` (`searchBuilds`, sorts), `firestore.indexes.json`, `scripts/admin.mjs stats` and
-  `lib/firebase/stats.ts` (the daily job), `lib/hubs.ts`, the hub pages' `HubBuilds` (same rows). The redesign
-  canvas: see the top of this file.
+(the write-up named in its tab) and T74 (home shelves, `/builds`) are done; the rest in this order.
 
 #### T72 — Back to your run
 
@@ -143,7 +112,8 @@ Guide while tracking, item cards, the Equipment layout, weapon and tag pages, th
 - **Goal:** A player tracking a build gets back to it in one tap. Today the signed-in home page shows nothing
   about their run; the way back is name menu → Profile → Playing.
 - **Done when:** (owner's pick, 2026-11-17: home row + menu link)
-  - Home, signed in with a build in progress: a **Continue your run** row above the list: the build's image
+  - Home, signed in with a build in progress: a **Continue your run** row above the shelves (T74: `/` is now
+    shelves; it goes above Trending, in `Landing.tsx`'s `Shelves`): the build's image
     and name, the progress bar, the next stop, opening the Guide. Several in progress: the most recently
     tracked first, the rest behind "All N" to the profile's Playing tab. Nothing for accounts that track
     nothing (no extra read for them beyond `tracksAnyBuild`, T41), nothing signed out.
@@ -216,7 +186,7 @@ ProgressBar.tsx}`, `features/builds/Landing.tsx`, `app/AccountMenu.tsx`,
 
 #### T77 — Craft pass at full resolution
 
-- **Status:** after T74, T72, T73 (the structure settles first)
+- **Status:** after T72, T73 (the structure settles first)
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** The details an award jury (and every user, without naming them) notices, which the UI/UX pass
   couldn't judge through a downscaled browser pane.
@@ -231,6 +201,8 @@ ProgressBar.tsx}`, `features/builds/Landing.tsx`, `app/AccountMenu.tsx`,
   - **Keyboard and screen reader:** every flow start to finish without a mouse (plan a build, pick items,
     track, comment); focus order and visible focus; the page behind an open dialog out of reach.
   - **Touch:** the phone editor end to end; targets ≥ 44 px; nothing that needs hover.
+  - **Popovers:** `Chips`' tag picker and `ShareButton`'s menu still hand-roll what `components/ui/Popover`
+    (T74) does; move them onto it if it fits, and give the phone Filters sheet (a `Dialog`) a bottom-sheet look.
 - **Context:** `src/theme/` (motion, spacing, fonts), `components/ui/` (Dialog, FocusScope, Tooltip),
   `docs/architecture.md` "Styling", the run-app skill for screenshots.
 
@@ -453,6 +425,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T74 — Home list: shelves and the builds page — 2026-11-17 — `/` = shelves (Trending by activity over builds-since, Most played, Fresh, Top <tag>), `/builds` = feed rows (likes rail), one filter bar (popovers, phone sheet, chips), search over a daily index in `stats/<game>`, likes/played ties newest first (new indexes)
 - T71 — The write-up named in its tab — 2026-11-17 — from the UI/UX pass (owner's pick: name it in the tab, layout
   and fold unchanged): the write-up sat under "Discussion 0" (phones: "Discussion · No comments yet"), so nobody
   found it. `tabs.ts` `tabLabel` + `hasWriteUp`: the tab reads **Write-up & comments** with a write-up, **Comments**

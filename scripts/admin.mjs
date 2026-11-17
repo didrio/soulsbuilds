@@ -416,15 +416,26 @@ export const STATS_GAMES = ['elden-ring'];
 
 /**
  * Community numbers for one game (T20): builds, distinct authors, builds per tag and per weapon (T55: the
- * landing's Popular weapons), and all accounts. One pass over the game's builds (only `tags`, `ownerId`
- * and `equipment.weapons`), plus a `count()` of users.
+ * weapon filter), and all accounts; plus `searchIndex` (T74): one compact entry per build, newest first,
+ * that the app searches and builds its home shelves from (`SearchEntry` in src/lib/models.ts). One pass
+ * over the game's builds (only the fields below), plus a `count()` of users.
  */
 export async function computeStats(db, game) {
   const [builds, users] = await Promise.all([
     db
       .collection('builds')
       .where('game', '==', game)
-      .select('tags', 'ownerId', 'equipment.weapons')
+      .select(
+        'tags',
+        'ownerId',
+        'equipment.weapons',
+        'name',
+        'level',
+        'likeCount',
+        'commentCount',
+        'playerCount',
+        'createdAt',
+      )
       .get(),
     db.collection('users').count().get(),
   ]);
@@ -445,6 +456,22 @@ export async function computeStats(db, game) {
     userCount: users.data().count,
     tagCounts,
     weaponCounts,
+    searchIndex: builds.docs.map(searchEntry).sort((a, b) => b.createdAt - a.createdAt),
+  };
+}
+
+/** A build as a search index entry (T74; `SearchEntry` in src/lib/models.ts). Dates as milliseconds. */
+function searchEntry(build) {
+  return {
+    id: build.id,
+    name: build.get('name') ?? '',
+    tags: [...new Set(build.get('tags') ?? [])],
+    weapons: [...new Set(build.get('equipment.weapons') ?? [])].filter((id) => id !== null),
+    level: build.get('level') ?? 1,
+    likeCount: build.get('likeCount') ?? 0,
+    commentCount: build.get('commentCount') ?? 0,
+    playerCount: build.get('playerCount') ?? 0,
+    createdAt: build.get('createdAt')?.toMillis() ?? 0,
   };
 }
 
@@ -662,6 +689,10 @@ async function main() {
       const hubs = Object.values(stats.weaponCounts).filter((count) => count >= 3).length;
       console.log(
         `  ${Object.keys(stats.weaponCounts).length} weapons used; ${hubs} in 3 or more builds`,
+      );
+      const indexBytes = JSON.stringify(stats.searchIndex).length;
+      console.log(
+        `  search index: ${stats.searchIndex.length} builds, ${Math.round(indexBytes / 1024)} KB`,
       );
     }
     dryRunNote();

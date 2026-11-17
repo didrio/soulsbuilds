@@ -12,6 +12,7 @@ describe('BuildsList', () => {
     renderWithProviders(<BuildsList builds={[makeBuild()]} />);
     const row = screen.getByRole('link', { name: /Carian Moon Knight/ });
     expect(row).toHaveTextContent('Level 132');
+    expect(row).not.toHaveTextContent('No likes yet');
     expect(row).toHaveTextContent('1 like');
     expect(row).toHaveTextContent('Rennala');
   });
@@ -52,7 +53,8 @@ describe('BuildsList', () => {
 
   it('shows the main weapon as the portrait', () => {
     const { container } = renderWithProviders(<BuildsList builds={[makeBuild()]} />);
-    const portrait = container.querySelector('li a')?.firstElementChild;
+    // After the likes rail (T74).
+    const portrait = container.querySelector('li a')?.children[1];
     expect(portrait).toHaveAttribute('title', 'Moonveil');
     expect(portrait?.querySelector('img')).not.toBeNull();
   });
@@ -61,7 +63,7 @@ describe('BuildsList', () => {
     const empty = makeBuild();
     empty.equipment = { ...empty.equipment, weapons: [null, null, null, null, null, null] };
     const { container } = renderWithProviders(<BuildsList builds={[empty]} />);
-    expect(container.querySelector('li a')?.firstElementChild?.querySelector('img')).toBeNull();
+    expect(container.querySelector('li a')?.children[1]?.querySelector('img')).toBeNull();
   });
 
   it('shows builds that share a name (rows are keyed by id)', () => {
@@ -98,6 +100,31 @@ describe('BuildsList', () => {
         <BuildsList builds={[makeBuild({ tags: ['Rennala', 'PvE', 'Moon'] })]} />,
       );
       expect(screen.queryByText(/^\+\d/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe('the ranked feed (T74)', () => {
+    it('zero is quiet: no number without likes, no zero counts in the meta line', () => {
+      renderWithProviders(<BuildsList builds={[makeBuild({ likeCount: 0, commentCount: 0 })]} />);
+      const row = screen.getByRole('link', { name: /Carian Moon Knight/ });
+      expect(row).toHaveTextContent('No likes yet');
+      expect(row).not.toHaveTextContent(/\b0\b/);
+      expect(row).not.toHaveTextContent('comment');
+      expect(row).not.toHaveTextContent('playing');
+    });
+
+    it('shows comments and players when there are some', () => {
+      renderWithProviders(<BuildsList builds={[makeBuild({ commentCount: 2, playerCount: 3 })]} />);
+      const row = screen.getByRole('link', { name: /Carian Moon Knight/ });
+      expect(row).toHaveTextContent('2 comments');
+      expect(row).toHaveTextContent('3 playing');
+    });
+
+    it('compact rows (home shelves) leave out the tags and the item strip', () => {
+      const { container } = renderWithProviders(<BuildsList builds={[makeBuild()]} compact />);
+      expect(container.querySelector('[data-testid="slots"]')).toBeNull();
+      expect(screen.queryByText('Rennala')).not.toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Lv 132/ })).toBeInTheDocument();
     });
   });
 

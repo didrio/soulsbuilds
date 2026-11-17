@@ -86,6 +86,18 @@ export interface GameStatsCounts {
   tagCounts: Record<string, number>;
   /** Builds per weapon game ID (T55). */
   weaponCounts: Record<string, number>;
+  /** Every build compactly, newest first (T74; `SearchEntry` in src/lib/models.ts). */
+  searchIndex: {
+    id: string;
+    name: string;
+    tags: string[];
+    weapons: number[];
+    level: number;
+    likeCount: number;
+    commentCount: number;
+    playerCount: number;
+    createdAt: number;
+  }[];
 }
 
 export const STATS_GAMES: string[];

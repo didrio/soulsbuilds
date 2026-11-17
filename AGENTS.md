@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71 done; T74, T72, T73, T76, T75, T77 (the UI/UX pass) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74 done; T72, T73, T76, T75, T77 (the UI/UX pass) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T48, T63, T66): unframed top section (title block, then one sticky row: tabs + Track/Like/Share; a full build's Equipment tab fits 1440×820, `fold.spec`), tabs Equipment (stats beside the equipment panel, same height), Guide, and the discussion tab, labelled "Write-up & comments" or just "Comments" (T71; write-up on top, then comments: likes, Top/Newest, one reply level, T62) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Planning needs no account: `/build/new` opens for anyone, Save asks to sign up (T68); signed out, `/` opens with an intro (T69). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done; readability pass (T67): larger rem type, Inter write-ups, ~72-character lines, 1200px. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Planning needs no account: `/build/new` opens for anyone, Save asks to sign up (T68); signed out, `/` opens with an intro (T69). Home `/` = shelves, `/builds` = the full list with search over a daily index (T74). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done; readability pass (T67): larger rem type, Inter write-ups, ~72-character lines, 1200px. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -109,21 +109,25 @@ src/
   app/                     App (shell: global styles + game skin, header (phone menu, T26), auth dialog state (pages open
                            it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; useMediaQuery (T49); AppCheckNotice =
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
-                           routes.tsx (/, /build/:buildId/*, /weapons/:slug, /tags/:slug, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
+                           routes.tsx (/, /builds, /build/:buildId/*, /weapons/:slug, /tags/:slug, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            NewHereStrip (T70: signed out, on build/weapon/tag pages: one line on what the site is + How it works → `/`; in the header row ≥ 1200px (the build's fold), else a row under it; dismissed in localStorage),
                            Header + AccountMenu (T31: the display name opens Profile, Account, Log out)
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
                            ForgotPassword, ChooseName = the display-name step for any account without a profile;
                            GoogleButton, FormField + useFieldErrors: errors by field, focus the first; action/ = the page behind the emails' links, `/auth/action`, T43: ActionPage → ResetPassword, VerifyEmail)
-  features/builds/         LandingIntro (T69: signed out only, above the list: the page's h1, one sentence, three
+  features/builds/         LandingIntro (T69: signed out only, above the shelves: the page's h1, one sentence, three
                            Frame panels: Start planning, See an example route, Browse builds; copy, icons and the
                            example build in intro.ts, mirrored in index.html's #root for crawlers),
-                           Landing (title (h2 under the intro) + community line, one-line toolbar: search, sort, level; scrolling top-tags row;
-                           filters in the URL; load more), BuildsList (88px rows: main-weapon portrait, name, author,
-                           age, tags, left-hand-first slot strip with faint empty cells, level, likes + comments;
-                           tags.ts fits tags on one line + "+N"), filters.ts (+ topTags, toggleTag), queries.ts (useBuilds,
-                           useUserBuilds, useGameStats)
+                           Landing = the home `/` (T74: title + "Search and filter all builds", shelves from shelves.ts:
+                           Trending, Most played, Fresh builds, Top <tag> builds; Popular weapons; View all),
+                           BuildsPage = `/builds` (T74: search, FilterBar = Sort/Level/Tags/Weapon popovers (Popover in
+                           components/ui) or a phone Filters sheet, FilterControls, removable chips, count; load more),
+                           BuildsList (rows: likes rail, portrait, name, meta (comments, playing), tags, slot strip, Lv;
+                           `compact` for shelves; tags.ts fits tags on one line + "+N"), filters.ts (URL filters, weapon,
+                           LEVEL_PRESETS, activeFilters, buildsHref), search.ts (the daily index: words anywhere,
+                           suggestions, resultCount; pure), queries.ts (useBuilds, useBuildSearch, useBuildsByIds,
+                           useFreshBuilds, useUserBuilds, useGameStats)
   features/profile/        Profile = the public page (T31: framed hero; Builds/Liked tabs; the owner's Playing/Completed,
                            T36), queries.ts (useUserProfile(s), useLikedBuilds, useUpdateDisplayName)
   features/account/        AccountPage (`/account`, T31): DisplayNameSection, EmailSection (verify notice, change

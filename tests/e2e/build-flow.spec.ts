@@ -125,11 +125,15 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await page.getByRole('tab', { name: 'Liked' }).click();
   await expect(page.getByRole('link', { name: new RegExp(`${buildName} v2`) })).toBeVisible();
 
-  // Search finds it by name prefix (case-insensitive), and the query stays in the URL.
-  await page.getByRole('link', { name: 'Souls Builds' }).click();
-  await page.getByRole('searchbox', { name: 'Search builds by name' }).fill(`e2e build ${unique}`);
-  await page.getByRole('button', { name: 'Search' }).click();
-  await expect(page).toHaveURL(/\?q=e2e/);
+  // Search on the builds page finds it: newer than the daily index, so by its name's start (T74);
+  // the query stays in the URL.
+  await page.getByRole('navigation').getByRole('link', { name: 'Builds', exact: true }).click();
+  await expect(page).toHaveURL(/\/builds$/);
+  await page
+    .getByRole('searchbox', { name: 'Search builds, weapons and tags' })
+    .fill(`e2e build ${unique}`);
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/builds\?q=e2e/);
   await expect(page.getByRole('link', { name: new RegExp(`${buildName} v2`) })).toBeVisible();
   await expect(page.getByRole('link', { name: /Bloodhound Samurai/ })).toHaveCount(0);
 

@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  documentId,
   getDoc,
   getDocs,
   limit,
@@ -136,41 +137,47 @@ async function fetchPage(
 const SORT_FIELDS = { top: 'likeCount', new: 'createdAt', played: 'playerCount' } as const;
 
 /**
- * One page of Elden Ring builds, most liked, newest or most played first, optionally with one tag and a level
- * range (all in Firestore).
+ * The order for a sort (T74): most liked and most played break ties newest first, so the many builds
+ * with no likes yet don't sit in arbitrary order under a few old ones.
+ */
+function sortConstraints(sort: BuildSort): QueryConstraint[] {
+  const order = [orderBy(SORT_FIELDS[sort], 'desc')];
+  if (sort !== 'new') order.push(orderBy('createdAt', 'desc'));
+  return order;
+}
+
+/**
+ * One page of Elden Ring builds, most liked, newest or most played first, optionally with one tag or one
+ * weapon (game ID, in any hand; T74) and a level range (all in Firestore). Firestore takes one
+ * array-contains per query, so with a weapon the tag is left out: the caller filters tags in the browser.
  */
 export async function listBuilds({
   sort = 'top',
   tag,
+  weaponId,
   pageSize = 24,
   cursor,
   ...levels
-}: PageOptions & { sort?: BuildSort } = {}): Promise<BuildPage> {
+}: PageOptions & { sort?: BuildSort; weaponId?: number } = {}): Promise<BuildPage> {
   const constraints: QueryConstraint[] = [where('game', '==', GAME_ELDEN_RING)];
-  if (tag) constraints.push(where('tags', 'array-contains', tag));
+  if (weaponId !== undefined)
+    constraints.push(where('equipment.weapons', 'array-contains', weaponId));
+  else if (tag) constraints.push(where('tags', 'array-contains', tag));
   constraints.push(...levelConstraints(levels));
-  constraints.push(orderBy(SORT_FIELDS[sort], 'desc'));
+  constraints.push(...sortConstraints(sort));
   return fetchPage(constraints, pageSize, cursor);
 }
 
 /**
  * One page of Elden Ring builds with the weapon `weaponId` in any hand, most liked first (T55's weapon
  * pages). `equipment.weapons` holds game IDs and nulls, so array-contains finds it in any of the six
- * slots: no extra field on builds (index: equipment.weapons, game, likeCount).
+ * slots: no extra field on builds (index: equipment.weapons, game, likeCount, createdAt).
  */
 export async function listBuildsByWeapon(
   weaponId: number,
   { pageSize = 24, cursor }: Pick<PageOptions, 'pageSize' | 'cursor'> = {},
 ): Promise<BuildPage> {
-  return fetchPage(
-    [
-      where('game', '==', GAME_ELDEN_RING),
-      where('equipment.weapons', 'array-contains', weaponId),
-      orderBy('likeCount', 'desc'),
-    ],
-    pageSize,
-    cursor,
-  );
+  return listBuilds({ sort: 'top', weaponId, pageSize, cursor });
 }
 
 /**
@@ -192,6 +199,25 @@ export async function searchBuilds(
     orderBy('nameLower'),
   );
   return fetchPage(constraints, pageSize, cursor);
+}
+
+/** Firestore's `in` takes at most 30 values. */
+const IN_LIMIT = 30;
+
+/**
+ * The builds with these ids, in the same order (T74: search results and home shelves come from the
+ * daily index as ids). Deleted builds are left out.
+ */
+export async function getBuildsByIds(ids: readonly string[]): Promise<Build[]> {
+  const chunks: string[][] = [];
+  for (let i = 0; i < ids.length; i += IN_LIMIT) chunks.push(ids.slice(i, i + IN_LIMIT));
+  const snapshots = await Promise.all(
+    chunks.map((chunk) => getDocs(query(buildsCollection(), where(documentId(), 'in', chunk)))),
+  );
+  const byId = new Map(
+    snapshots.flatMap((snapshot) => snapshot.docs.map((d) => [d.id, toBuild(d)] as const)),
+  );
+  return ids.flatMap((id) => byId.get(id) ?? []);
 }
 
 /** Every build a user owns, newest first. */

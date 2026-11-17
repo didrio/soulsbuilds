@@ -41,7 +41,7 @@ interface HeaderProps {
  * planner opens signed out, T68), Log in and Sign up. Phones: a labelled "+" (New build, or Plan a
  * build) and a Menu button that opens the rest as a panel under the bar.
  * On a build's page Builds shows as the current section (T66: the build page's way back to the list,
- * since "All builds" went).
+ * since "All builds" went). Builds is the full list, `/builds`; the wordmark is the home page (T74).
  */
 function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const { loading, uid } = useAuth();
@@ -74,7 +74,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
         {loading ? null : (
           <>
             <Nav aria-label="Main">
-              <NavItem to="/" end $section={inBuilds}>
+              <NavItem to="/builds" end $section={inBuilds}>
                 Builds
               </NavItem>
               {uid ? null : <NavItem to="/build/new">Plan a build</NavItem>}
@@ -125,7 +125,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
                 {menuOpen ? (
                   <Menu id={menuId} onEscape={closeMenu}>
                     <nav aria-label="Main">
-                      <NavItem to="/" end onClick={closeMenu} $section={inBuilds}>
+                      <NavItem to="/builds" end onClick={closeMenu} $section={inBuilds}>
                         Builds
                       </NavItem>
                       {uid ? null : (

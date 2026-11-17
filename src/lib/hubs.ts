@@ -62,9 +62,9 @@ export const tagPath = (tag: string) => `/tags/${tagSlug(tag)}`;
 
 const isBoss = (tag: string) => tagGroupOf(tag) === 'Bosses';
 
-/** Where a build's tag links: its page, or the landing filtered by it (a tag no longer in the list). */
+/** Where a build's tag links: its page, or the builds page filtered by it (a tag no longer in the list). */
 export const tagHref = (tag: string) =>
-  tagBySlug(tagSlug(tag)) === tag ? tagPath(tag) : `/?tag=${encodeURIComponent(tag)}`;
+  tagBySlug(tagSlug(tag)) === tag ? tagPath(tag) : `/builds?tag=${encodeURIComponent(tag)}`;
 
 // --- Links from a build -------------------------------------------------------------------------------
 

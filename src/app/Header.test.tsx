@@ -27,7 +27,7 @@ describe('Header', () => {
   it('signed out: Builds, Plan a build (T68), Log in and Sign up', async () => {
     const { user, onLogIn, onSignUp } = renderHeader();
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(within(nav).getByRole('link', { name: 'Builds' })).toHaveAttribute('href', '/');
+    expect(within(nav).getByRole('link', { name: 'Builds' })).toHaveAttribute('href', '/builds');
     expect(within(nav).getByRole('link', { name: 'Plan a build' })).toHaveAttribute(
       'href',
       '/build/new',
@@ -99,7 +99,7 @@ describe('Header', () => {
     expect(menuButton).toHaveAttribute('aria-expanded', 'true');
     const menu = document.getElementById(menuButton.getAttribute('aria-controls')!)!;
     const builds = within(menu).getByRole('link', { name: 'Builds', hidden: true });
-    expect(builds).toHaveAttribute('href', '/');
+    expect(builds).toHaveAttribute('href', '/builds');
     // (jsdom won't focus inside a display: none phone control, so send Escape to the item directly.)
     fireEvent.keyDown(builds, { key: 'Escape' });
     expect(menuButton).toHaveAttribute('aria-expanded', 'false');

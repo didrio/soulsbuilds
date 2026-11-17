@@ -93,7 +93,7 @@ describe('build pages', () => {
     expect(root).toContain('Starting class: Samurai');
     // T55: tags link to their pages (these two aren't in the tag list: the landing filter instead)
     expect(root).toContain(
-      'Tags: <a href="/?tag=PvP">PvP</a>, <a href="/?tag=Blood%20%26%20Guts">Blood &amp; Guts</a>',
+      'Tags: <a href="/builds?tag=PvP">PvP</a>, <a href="/builds?tag=Blood%20%26%20Guts">Blood &amp; Guts</a>',
     );
     expect(root).toContain('<li>Strength: 12 (+5 from talismans)</li>');
     expect(root).toContain('<li>Intelligence: 80</li>');
@@ -347,17 +347,18 @@ describe('weapon and tag pages (T55)', () => {
 });
 
 describe('sitemap', () => {
-  it('lists the home page and every build with its last edit, cached for an hour', async () => {
+  it('lists the home page, the builds page and every build with its last edit, cached for an hour', async () => {
     const reply = await handle('/sitemap.xml', deps());
     expect(reply.status).toBe(200);
     expect(reply.headers['Content-Type']).toContain('application/xml');
     expect(reply.headers['Cache-Control']).toBe('public, max-age=3600, s-maxage=3600');
     const xml = html(reply);
     expect(xml).toContain('<url><loc>https://soulsbuilds.com/</loc></url>');
+    expect(xml).toContain('<url><loc>https://soulsbuilds.com/builds</loc></url>');
     expect(xml).toContain(
       '<url><loc>https://soulsbuilds.com/build/SEEDBLEED001/bleed-samurai</loc><lastmod>2026-11-15</lastmod></url>',
     );
-    expect(xml.match(/<url>/g)).toHaveLength(3);
+    expect(xml.match(/<url>/g)).toHaveLength(4);
   });
 
   it('lists the weapon and tag pages with 3 or more builds, dated by their newest build (T55)', async () => {
@@ -392,7 +393,7 @@ describe('sitemap', () => {
     expect(xml).not.toContain('/weapons/uchigatana');
     expect(xml).not.toContain('/tags/bleed');
     expect(xml).not.toContain('retired');
-    expect(xml.match(/<url>/g)).toHaveLength(1 + 4 + 2);
+    expect(xml.match(/<url>/g)).toHaveLength(2 + 4 + 2);
   });
 
   it('is an uncached error, never a partial list, when the builds cannot be read', async () => {

@@ -1,16 +1,23 @@
-// Landing page filters: parsed from / written to the URL
-// (?q=moon&sort=new&tag=Malenia&tag=Mohg&min=50&max=150) so filtered views are shareable, and
-// applied to the loaded builds (the Landing also sends the level range and the first tag to Firestore).
+// The builds page's filters (T74): parsed from / written to the URL
+// (/builds?q=moon&sort=new&tag=Malenia&tag=Mohg&weapon=moonveil&min=50&max=150) so filtered views are
+// shareable, and applied to the loaded builds (Firestore gets the level range and one array filter:
+// the weapon, else the first tag).
 import { tagGroups } from '@/data/core';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import type { BuildSort } from '@/lib/firebase';
+import { tagLabel, weaponBySlug } from '@/lib/hubs';
 import type { Build } from '@/lib/models';
 
+/** The full, filterable list of builds (the home page shows shelves; T74). */
+export const BUILDS_PATH = '/builds';
+
 export interface BuildFilters {
-  /** Build name prefix ('' = no search). */
+  /** Words to search for ('' = no search). */
   search: string;
   sort: BuildSort;
   tags: string[];
+  /** A weapon's slug ('' = any weapon), as in its page's URL. */
+  weapon: string;
   minLevel: number;
   maxLevel: number;
 }
@@ -19,6 +26,7 @@ export const DEFAULT_FILTERS: BuildFilters = {
   search: '',
   sort: 'top',
   tags: [],
+  weapon: '',
   minLevel: 1,
   maxLevel: MAX_LEVEL,
 };
@@ -36,10 +44,12 @@ const parseSort = (value: string | null): BuildSort =>
 export function parseFilters(params: URLSearchParams): BuildFilters {
   const minLevel = clampLevel(params.get('min') ?? '', 1);
   const maxLevel = clampLevel(params.get('max') ?? '', MAX_LEVEL);
+  const weapon = params.get('weapon') ?? '';
   return {
     search: (params.get('q') ?? '').trim().slice(0, 80),
     sort: parseSort(params.get('sort')),
     tags: [...new Set(params.getAll('tag').filter(Boolean))],
+    weapon: weaponBySlug(weapon) ? weapon : '',
     minLevel: Math.min(minLevel, maxLevel),
     maxLevel: Math.max(minLevel, maxLevel),
   };
@@ -51,25 +61,107 @@ export function toSearchParams(filters: BuildFilters): URLSearchParams {
   if (filters.search) params.set('q', filters.search);
   if (filters.sort !== 'top') params.set('sort', filters.sort);
   filters.tags.forEach((tag) => params.append('tag', tag));
+  if (filters.weapon) params.set('weapon', filters.weapon);
   if (filters.minLevel !== 1) params.set('min', String(filters.minLevel));
   if (filters.maxLevel !== MAX_LEVEL) params.set('max', String(filters.maxLevel));
   return params;
 }
 
-/** Builds with every tag in `tags` and a level within the range (both filters apply). */
-export function filterBuilds(builds: Build[], { tags, minLevel, maxLevel }: BuildFilters): Build[] {
+/** The builds page with these filters (a home shelf's "See all"). */
+export function buildsHref(filters: Partial<BuildFilters> = {}): string {
+  const query = toSearchParams({ ...DEFAULT_FILTERS, ...filters }).toString();
+  return query ? `${BUILDS_PATH}?${query}` : BUILDS_PATH;
+}
+
+/** The weapon filter's game ID, or undefined for any weapon. */
+export const weaponIdOf = (filters: Pick<BuildFilters, 'weapon'>) =>
+  filters.weapon ? weaponBySlug(filters.weapon)?.id : undefined;
+
+/** True when anything but the sort narrows the list. */
+export const isFiltered = (filters: BuildFilters) =>
+  toSearchParams({ ...filters, sort: 'top' }).size > 0;
+
+/** Builds with every tag, the weapon in any hand and a level within the range (all filters apply). */
+export function filterBuilds(builds: Build[], filters: BuildFilters): Build[] {
+  const weaponId = weaponIdOf(filters);
   return builds.filter(
     (build) =>
-      build.level >= minLevel &&
-      build.level <= maxLevel &&
-      tags.every((tag) => build.tags.includes(tag)),
+      build.level >= filters.minLevel &&
+      build.level <= filters.maxLevel &&
+      filters.tags.every((tag) => build.tags.includes(tag)) &&
+      (weaponId === undefined || build.equipment.weapons.includes(weaponId)),
   );
 }
 
-/** `tags` with `tag` added at the end, or taken out if it's there (a top-tag chip, T20). */
+/** `tags` with `tag` added at the end, or taken out if it's there (a top-tag toggle, T20). */
 export function toggleTag(tags: string[], tag: string): string[] {
   return tags.includes(tag) ? tags.filter((t) => t !== tag) : [...tags, tag];
 }
+
+// --- Level ---------------------------------------------------------------------------------------------
+
+export interface LevelPreset {
+  label: string;
+  /** Why people build there, shown beside the label. */
+  note?: string;
+  minLevel: number;
+  maxLevel: number;
+}
+
+/** The levels people build at (docs/product.md: early game, mid game, the PvP brackets, end game). */
+export const LEVEL_PRESETS: readonly LevelPreset[] = [
+  { label: 'Any level', minLevel: 1, maxLevel: MAX_LEVEL },
+  { label: 'Up to 50', note: 'early game', minLevel: 1, maxLevel: 50 },
+  { label: '51–100', minLevel: 51, maxLevel: 100 },
+  { label: '125–150', note: 'PvP', minLevel: 125, maxLevel: 150 },
+  { label: '200 and up', minLevel: 200, maxLevel: MAX_LEVEL },
+];
+
+/** The preset these levels are, if any. */
+export const levelPreset = ({ minLevel, maxLevel }: Pick<BuildFilters, 'minLevel' | 'maxLevel'>) =>
+  LEVEL_PRESETS.find((preset) => preset.minLevel === minLevel && preset.maxLevel === maxLevel);
+
+/** The level range in a few characters: "Any", "125–150", "200+", "Up to 50". */
+export function levelText({ minLevel, maxLevel }: Pick<BuildFilters, 'minLevel' | 'maxLevel'>) {
+  if (minLevel === 1 && maxLevel === MAX_LEVEL) return 'Any';
+  if (maxLevel === MAX_LEVEL) return `${minLevel}+`;
+  if (minLevel === 1) return `Up to ${maxLevel}`;
+  return minLevel === maxLevel ? String(minLevel) : `${minLevel}–${maxLevel}`;
+}
+
+// --- Active filters -----------------------------------------------------------------------------------
+
+export interface ActiveFilter {
+  key: string;
+  /** What the chip says ("Level 125–150", "Bleed", "Moonveil"). */
+  label: string;
+  /** The change that takes this filter away. */
+  without: Partial<BuildFilters>;
+}
+
+/** The filters in use, as removable chips: level, then tags, then the weapon. Search and sort aren't. */
+export function activeFilters(filters: BuildFilters): ActiveFilter[] {
+  const active: ActiveFilter[] = [];
+  if (filters.minLevel !== 1 || filters.maxLevel !== MAX_LEVEL) {
+    active.push({
+      key: 'level',
+      label: `Level ${levelText(filters)}`,
+      without: { minLevel: 1, maxLevel: MAX_LEVEL },
+    });
+  }
+  for (const tag of filters.tags) {
+    active.push({
+      key: `tag:${tag}`,
+      label: tagLabel(tag),
+      without: { tags: filters.tags.filter((t) => t !== tag) },
+    });
+  }
+  const weapon = filters.weapon ? weaponBySlug(filters.weapon) : undefined;
+  if (weapon) active.push({ key: 'weapon', label: weapon.name, without: { weapon: '' } });
+  return active;
+}
+
+// --- Top tags ------------------------------------------------------------------------------------------
 
 const KNOWN_TAGS = new Set(Object.values(tagGroups).flat());
 

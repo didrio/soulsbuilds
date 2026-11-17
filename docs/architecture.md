@@ -7,16 +7,17 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 
 `src/app/routes.tsx` defines the routes:
 
-| Route               | Component         | What it does                                                                                                                                                                 |
-| ------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`                 | `Landing`         | Builds a page at a time (most liked or newest, "Load more"); tag + level filters; filters live in the URL                                                                    |
-| `/build/:buildId/*` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                         |
-| `/weapons/:slug`    | `WeaponPage`      | A weapon's page (T55): facts, where to find it (the Guide's route for that weapon), its builds most liked first; `noindex` under 3 builds; unknown slug → not found          |
-| `/tags/:slug`       | `TagPage`         | A tag's page (T55): its builds most liked first ("Builds for Malenia", "Bleed Builds"); `noindex` under 3 builds                                                             |
-| `/user/:userId`     | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                    |
-| `/account`          | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                |
-| `/auth/action`      | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one |
-| `*`                 | `NotFound`        | 404 page                                                                                                                                                                     |
+| Route               | Component         | What it does                                                                                                                                                                   |
+| ------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/`                 | `Landing`         | Home (T74): signed out the intro (T69); shelves from the daily search index: Trending, Most played, Fresh builds, Top builds per used tag; Popular weapons; links to `/builds` |
+| `/builds`           | `BuildsPage`      | Every build (T74): search (words anywhere, over the index), Sort/Level/Tags/Weapon popovers (phones: a Filters sheet), removable chips, "Load more"; filters in the URL        |
+| `/build/:buildId/*` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                           |
+| `/weapons/:slug`    | `WeaponPage`      | A weapon's page (T55): facts, where to find it (the Guide's route for that weapon), its builds most liked first; `noindex` under 3 builds; unknown slug → not found            |
+| `/tags/:slug`       | `TagPage`         | A tag's page (T55): its builds most liked first ("Builds for Malenia", "Bleed Builds"); `noindex` under 3 builds                                                               |
+| `/user/:userId`     | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                      |
+| `/account`          | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                  |
+| `/auth/action`      | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one   |
+| `*`                 | `NotFound`        | 404 page                                                                                                                                                                       |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
 Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. Signed in, the
@@ -190,7 +191,10 @@ stats/{game}                      community numbers per game (T20; doc id = Game
                                   public read, no client writes; written daily by `admin.mjs stats` in CI
   buildCount, authorCount (distinct build owners), userCount (all accounts): int
   tagCounts: { [tag]: int }       builds per tag (top tags on the landing)
-  weaponCounts: { [weaponId]: int }  builds per weapon (T55: the landing's Popular weapons; absent before T55's first daily run)
+  weaponCounts: { [weaponId]: int }  builds per weapon (T55: Popular weapons, the Weapon filter; absent before T55's first daily run)
+  searchIndex: [{ id, name, tags, weapons, level, likeCount, commentCount, playerCount, createdAt (ms) }]
+                                  every build, newest first (T74): what search and the home shelves read
+                                  (~200 B a build; past ~2,000 builds it belongs in a doc of its own)
   updatedAt: timestamp
 ```
 
@@ -232,15 +236,18 @@ stats/{game}                      community numbers per game (T20; doc id = Game
   like likes. Account deletion and `admin.mjs delete-user` delete the user's tracking docs with the counters;
   `admin.mjs remove` leaves other players' tracking of a removed build as orphans (the profile skips them).
 - **Queries and indexes** (`firestore.indexes.json`): builds by `game` + `likeCount desc` / `createdAt desc` /
-  `playerCount desc` ("Most played", T36; builds without the field are left out until backfilled)
-  (optionally `tags array-contains`), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`; optionally
+  `playerCount desc` ("Most played", T36; builds without the field are left out until backfilled); the two
+  count orders break ties `createdAt desc` (T74), so their indexes end in `createdAt`
+  (optionally `tags array-contains` or, T74, `equipment.weapons array-contains`: one array filter per query, so
+  with a weapon the tags filter in the browser), `getBuildsByIds` (`documentId() in`, chunks of 30: search
+  results and home shelves), by `game` + `nameLower` (prefix search: `>= q`, `<= q + '\uf8ff'`; optionally
   with a tag), each optionally with a `level` range (`>=`/`<=` next to an `orderBy` on another field, which Firestore's
   multi-field range support allows; the index lists equality fields, the order field, then `level`), by
   `ownerId` + `createdAt desc`; likes collection group by `userId` + `createdAt desc` ("Liked" tab).
   Account deletion's equality-only collection-group queries (likes and commentLikes by `userId`, comments by `authorId`) use
   single-field `fieldOverrides` with a `COLLECTION_GROUP` scope. The emulator doesn't need indexes; production does (deployed in T12).
 - **Community stats (T20)** are counted once a day, not live: a `count()` per tag would cost ~100 reads per
-  visitor (Spark: 50k/day) and client-written counters can't be cheaply verified by rules. The landing reads
+  visitor (Spark: 50k/day) and client-written counters can't be cheaply verified by rules. The home and builds pages read
   `stats/{game}` once per visit (`useGameStats`, 1 h `staleTime`) and hides the top tags and "N builds by M
   players" when the doc is missing. `npm run seed` writes it with the same code (`updateStats`).
 - **v1 → v2**: `scripts/migrate-v1-to-v2.mjs` (dry run by default, idempotent, tested in `tests/migration/`).
@@ -252,9 +259,11 @@ stats/{game}                      community numbers per game (T20; doc id = Game
 
 ## Known problems (fixed by the ticket in brackets)
 
-- Landing filters: the search, the first tag and the level range are Firestore queries; further tags filter the
-  loaded pages, so a page can come back short ("Load more" fetches more). Search is a name prefix match only, and
-  ignores sort (it is ordered by name).
+- Builds page filters (T74): the weapon or the first tag and the level range are Firestore queries; further tags
+  filter the loaded pages, so a page can come back short ("Load more" fetches more). Search runs over the daily
+  index (`stats/{game}.searchIndex`): a build newer than the last daily run is found only by its name's start
+  (the old prefix query, first page), and the result order uses yesterday's counts. Before the first daily run
+  after T74's deploy, search is the prefix query alone and the home page shows Fresh builds only.
 - The rules check the types of positional equipment lists and single slots, but only the sizes of the
   talisman/spell/tear/consumable lists (Firestore's per-request expression budget; `firestore.rules`). The app
   ignores IDs it doesn't know.

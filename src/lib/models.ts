@@ -225,7 +225,27 @@ export interface StatsDoc {
   tagCounts: Record<string, number>;
   /** Builds per weapon game ID (T55); absent until the daily job has run since T55's deploy. */
   weaponCounts?: Record<string, number>;
+  /**
+   * Every build, compactly, newest first (T74): what search and the home shelves read. Absent until the
+   * daily job has run since T74's deploy. Past ~2,000 builds this belongs in a doc of its own.
+   */
+  searchIndex?: SearchEntry[];
   updatedAt: Timestamp;
+}
+
+/** A build in `StatsDoc.searchIndex` (T74; written by `scripts/admin.mjs` searchEntry). */
+export interface SearchEntry {
+  id: string;
+  name: string;
+  tags: string[];
+  /** Weapon game IDs in any hand, each once. */
+  weapons: number[];
+  level: number;
+  likeCount: number;
+  commentCount: number;
+  playerCount: number;
+  /** Milliseconds since the epoch (0 if unknown). */
+  createdAt: number;
 }
 
 export interface GameStats extends Omit<StatsDoc, 'updatedAt'> {

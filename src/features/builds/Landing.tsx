@@ -1,136 +1,104 @@
-import { useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router';
+import type { ReactNode } from 'react';
+import { Link } from 'react-router';
 import styled from 'styled-components';
 import { useCurrentGame } from '@/app/game';
-import Button from '@/components/ui/Button';
-import Chips from '@/components/ui/Chips';
+import { ButtonLink } from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import { SearchIcon } from '@/components/ui/icons';
-import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import ItemTile from '@/components/ui/ItemTile';
 import PageHead from '@/components/ui/PageHead';
 import PageMessage from '@/components/ui/PageMessage';
-import SegmentedControl from '@/components/ui/SegmentedControl';
-import TextInput from '@/components/ui/TextInput';
-import VisuallyHidden from '@/components/ui/VisuallyHidden';
-import { TextButton } from '@/components/ui/TextButton';
+import { cardWeapons, iconUrl } from '@/data/core';
 import useAuth from '@/features/auth/useAuth';
 import { useUserProfiles } from '@/features/profile/queries';
-import { MAX_LEVEL } from '@/lib/buildMath';
-import { errorMessage, type BuildSort } from '@/lib/firebase';
+import { errorMessage } from '@/lib/firebase';
 import { popularWeapons } from '@/lib/hubs';
+import type { Build } from '@/lib/models';
 import { homeMeta, SITE_ORIGIN } from '@/lib/share';
 import {
   BELOW_MOBILE,
-  COLOR_ACCENT,
-  COLOR_ACCENT_STRONG,
+  BELOW_TABLET,
   COLOR_LINE,
-  COLOR_SURFACE_RAISED,
+  COLOR_LINE_STRONG,
+  COLOR_SURFACE,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
+  RADIUS_FRAME,
   SPACE_LG,
   SPACE_MD,
   SPACE_SM,
+  SPACE_XL,
+  SPACE_XXL,
+  TEXT_NAME,
   TEXT_SM,
   TEXT_XL,
   TEXT_XS,
   WEIGHT_DISPLAY,
 } from '@/theme';
 import BuildsList from './BuildsList';
+import { BUILDS_PATH, buildsHref } from './filters';
 import { LIST_HEADING_ID } from './intro';
 import LandingIntro from './LandingIntro';
+import { useBuildsByIds, useFreshBuilds, useGameStats } from './queries';
 import {
-  clampLevel,
-  filterBuilds,
-  parseFilters,
-  toggleTag,
-  topTags,
-  toSearchParams,
-  type BuildFilters,
-} from './filters';
-import { useBuilds, useGameStats } from './queries';
-import { labelText } from '@/components/ui/typography';
-
-const SORTS = [
-  { value: 'top', label: 'Most liked' },
-  { value: 'new', label: 'Newest' },
-  { value: 'played', label: 'Most played' },
-] as const satisfies readonly { value: BuildSort; label: string }[];
-
-const SORT_STATUS: Record<BuildSort, string> = {
-  top: 'Most liked first',
-  new: 'Newest first',
-  played: 'Most played first',
-};
+  arrangeShelves,
+  indexShelves,
+  SHELF_MIN,
+  SHELF_SIZE,
+  trendingIds,
+  type Shelf,
+} from './shelves';
 
 /**
- * `/`: the current game's builds, most liked or newest first, a page at a time, or a search by name.
- * The search, the first tag and the level range filter in Firestore; further tags filter the loaded
- * builds (a page can come back short: "Load more" fetches the next). Filters live in the URL.
+ * `/` (T74): the home page curates; `/builds` is the full list. Signed out, the intro (T69) first. Then
+ * Trending (full rows), compact shelves two across (Most played, Fresh builds, Top builds for the most
+ * used tags; each "See all" is `/builds` with that sort or tag), Popular weapons, and the way to every
+ * build. The shelves come from the daily search index (one read), their builds read by id; Fresh
+ * builds from Firestore, so a new build shows at once.
  */
 function Landing() {
   const game = useCurrentGame();
   const auth = useAuth();
-  // T69: signed-out visitors get the intro, which holds the page's h1; the list's title steps down to h2.
+  // T69: signed-out visitors get the intro, which holds the page's h1; the title steps down to h2.
   const intro = !auth.loading && !auth.uid;
-  const [searchParams, setSearchParams] = useSearchParams();
-  const filters = parseFilters(searchParams);
-  const builds = useBuilds({
-    sort: filters.sort,
-    tag: filters.tags[0],
-    search: filters.search || undefined,
-    minLevel: filters.minLevel,
-    maxLevel: filters.maxLevel,
-  });
+  const statsQuery = useGameStats();
+  const stats = statsQuery.data;
+  const index = stats?.searchIndex ?? [];
 
-  const [searchText, setSearchText] = useState(filters.search);
-  const [minText, setMinText] = useState(String(filters.minLevel));
-  const [maxText, setMaxText] = useState(String(filters.maxLevel));
-  const stats = useGameStats().data;
-  const top = stats ? topTags(stats.tagCounts) : [];
-  const topNames = new Set(top.map(({ tag }) => tag));
-  // T55: links to the weapon pages with enough builds (from the daily stats).
-  const weapons = popularWeapons(stats?.weaponCounts);
+  const trending = trendingIds(index);
+  const { played, tags } = indexShelves(index, stats?.tagCounts ?? {});
+  const fresh = useFreshBuilds(SHELF_SIZE);
+  const freshBuilds = fresh.data ?? [];
+  const freshShelf: Shelf | null =
+    freshBuilds.length >= SHELF_MIN
+      ? {
+          key: 'fresh',
+          title: 'Fresh builds',
+          caption: 'Just posted',
+          href: buildsHref({ sort: 'new' }),
+          ids: freshBuilds.map((build) => build.id),
+        }
+      : null;
+  const shelves = arrangeShelves(played, freshShelf, tags);
 
-  const setFilters = (next: Partial<BuildFilters>) => {
-    setSearchParams(toSearchParams({ ...filters, ...next }), { replace: true });
-  };
+  const indexIds = [
+    ...new Set([...trending, ...(played?.ids ?? []), ...tags.flatMap((shelf) => shelf.ids)]),
+  ];
+  const byIds = useBuildsByIds(indexIds);
+  const builds = new Map<string, Build>(
+    [...(byIds.data ?? []), ...freshBuilds].map((build) => [build.id, build]),
+  );
+  const pick = (ids: readonly string[]) => ids.flatMap((id) => builds.get(id) ?? []);
+  const authors = useUserProfiles([...builds.values()].map((build) => build.ownerId));
+  const weapons = popularWeapons(stats?.weaponCounts, 8);
 
-  const applyLevels = (event?: FormEvent) => {
-    event?.preventDefault();
-    let min = clampLevel(minText, 1);
-    let max = clampLevel(maxText, filters.maxLevel);
-    if (min > max) [min, max] = [max, min];
-    setMinText(String(min));
-    setMaxText(String(max));
-    setFilters({ minLevel: min, maxLevel: max });
-  };
-
-  const applySearch = (event: FormEvent) => {
-    event.preventDefault();
-    setFilters({ search: searchText.trim() });
-  };
-
-  const clearSearch = () => {
-    setSearchText('');
-    setFilters({ search: '' });
-  };
-
-  const clearFilters = () => {
-    setSearchText('');
-    setMinText('1');
-    setMaxText(String(MAX_LEVEL));
-    setFilters({ search: '', tags: [], minLevel: 1, maxLevel: MAX_LEVEL });
-  };
-
-  const loaded = builds.data?.pages.flatMap((page) => page.builds) ?? [];
-  const shown = filterBuilds(loaded, filters);
-  const authors = useUserProfiles(shown.map((build) => build.ownerId));
-  const filtered = toSearchParams({ ...filters, sort: 'top' }).size > 0;
-
-  const status = filters.search
-    ? `Builds whose name starts with “${filters.search}”`
-    : SORT_STATUS[filters.sort];
+  const loading =
+    statsQuery.isPending || fresh.isPending || (indexIds.length > 0 && byIds.isPending);
+  const failed = statsQuery.error ?? fresh.error ?? byIds.error;
+  const total = stats?.buildCount ?? 0;
+  // No index yet (before the daily job's first run since T74): the newest builds stand in for Trending.
+  const lead = trending.length ? pick(trending) : freshBuilds;
 
   return (
     <>
@@ -140,171 +108,147 @@ function Landing() {
         <Title as={intro ? 'h2' : 'h1'} id={LIST_HEADING_ID} tabIndex={-1}>
           {`${game.name} builds`}
         </Title>
-        {stats && stats.buildCount > 0 ? (
+        {stats && total > 0 ? (
           <Community>
-            <b>{stats.buildCount}</b> {stats.buildCount === 1 ? 'build' : 'builds'} by{' '}
-            <b>{stats.authorCount}</b> {stats.authorCount === 1 ? 'player' : 'players'}
+            <b>{total}</b> {total === 1 ? 'build' : 'builds'} by <b>{stats.authorCount}</b>{' '}
+            {stats.authorCount === 1 ? 'player' : 'players'}
           </Community>
         ) : null}
+        <AllLink to={BUILDS_PATH}>
+          <SearchIcon size={16} />
+          Search and filter all builds
+        </AllLink>
       </Heading>
-      <Toolbar>
-        <SearchForm role="search" onSubmit={applySearch}>
-          <SearchField>
-            <TextInput
-              id="build-search"
-              aria-label="Search builds by name"
-              enterKeyHint="search"
-              maxLength={80}
-              onChange={setSearchText}
-              placeholder="Search builds by name"
-              type="search"
-              value={searchText}
-            />
-            <SearchSubmit type="submit" aria-label="Search">
-              <SearchIcon />
-            </SearchSubmit>
-          </SearchField>
-        </SearchForm>
-        {filters.search ? (
-          <Note>By name while searching</Note>
-        ) : (
-          <SegmentedControl
-            label="Sort builds"
-            options={SORTS}
-            value={filters.sort}
-            onChange={(sort) => setFilters({ sort })}
-          />
-        )}
-        <LevelForm onSubmit={applyLevels} aria-label="Level range">
-          <LevelLabel as="span">Level</LevelLabel>
-          <LevelInput>
-            <TextInput
-              aria-label="Minimum level"
-              centered
-              inputMode="numeric"
-              onBlur={() => applyLevels()}
-              onChange={setMinText}
-              value={minText}
-            />
-          </LevelInput>
-          <Dash aria-hidden="true">–</Dash>
-          <LevelInput>
-            <TextInput
-              aria-label="Maximum level"
-              centered
-              inputMode="numeric"
-              onBlur={() => applyLevels()}
-              onChange={setMaxText}
-              value={maxText}
-            />
-          </LevelInput>
-        </LevelForm>
-      </Toolbar>
-      <TagsRow>
-        {top.length ? (
-          <TopTags role="group" aria-label="Top tags">
-            {top.map(({ tag, count }) => (
-              <TopTag
-                key={tag}
-                type="button"
-                aria-pressed={filters.tags.includes(tag)}
-                onClick={() => setFilters({ tags: toggleTag(filters.tags, tag) })}>
-                {filters.tags.includes(tag) ? <Check aria-hidden="true">✓</Check> : null}
-                {tag}
-                <TagCount>
-                  {count}
-                  <VisuallyHidden>{count === 1 ? ' build' : ' builds'}</VisuallyHidden>
-                </TagCount>
-              </TopTag>
-            ))}
-          </TopTags>
-        ) : null}
-        <MoreTags>
-          <Chips
-            addLabel={top.length ? 'More tags' : 'Add tag'}
-            onAdd={(tag) => setFilters({ tags: [...new Set([...filters.tags, tag])] })}
-            onRemove={(tag) => setFilters({ tags: filters.tags.filter((t) => t !== tag) })}
-            values={filters.tags.filter((tag) => !topNames.has(tag))}
-          />
-          {filters.search ? <TextButton onClick={clearSearch}>Clear search</TextButton> : null}
-          {filtered ? <TextButton onClick={clearFilters}>Clear filters</TextButton> : null}
-        </MoreTags>
-      </TagsRow>
-      {weapons.length ? (
-        <Popular aria-labelledby="popular-weapons">
-          <PopularLabel id="popular-weapons">Popular weapons</PopularLabel>
-          <PopularList>
-            {weapons.map(({ name, path }) => (
-              <li key={path}>
-                <PopularLink to={path}>{name}</PopularLink>
-              </li>
-            ))}
-          </PopularList>
-        </Popular>
-      ) : null}
 
-      <Status aria-live="polite">{builds.isSuccess ? status : ''}</Status>
-      {builds.isPending ? <PageMessage loading /> : null}
-      {builds.isError ? (
+      {loading ? <PageMessage loading /> : null}
+      {failed && !loading ? (
         <PageMessage title="Couldn’t load builds">
-          <ErrorMessage onRetry={() => void builds.refetch()}>
-            {errorMessage(builds.error)}
+          <ErrorMessage
+            onRetry={() => {
+              void statsQuery.refetch();
+              void fresh.refetch();
+              void byIds.refetch();
+            }}>
+            {errorMessage(failed)}
           </ErrorMessage>
         </PageMessage>
       ) : null}
-      {builds.isSuccess && shown.length === 0 && !builds.hasNextPage ? (
-        <PageMessage title={filtered ? 'No builds match these filters' : 'No builds yet'}>
-          {filtered ? (
-            <Button variant="secondary" onClick={clearFilters}>
-              Clear filters
-            </Button>
+
+      {!loading && !failed ? (
+        <Shelves>
+          {lead.length ? (
+            <ShelfSection
+              id="shelf-trending"
+              title={trending.length ? 'Trending' : 'Fresh builds'}
+              caption={trending.length ? 'Liked and played lately' : 'Just posted'}>
+              <BuildsList builds={lead} authors={authors} />
+            </ShelfSection>
           ) : (
-            <p>Be the first: sign up and create one.</p>
+            <PageMessage title="No builds yet">
+              <p>Be the first: plan one and save it.</p>
+            </PageMessage>
           )}
-        </PageMessage>
-      ) : null}
-      {shown.length > 0 ? <BuildsList builds={shown} authors={authors} /> : null}
-      {builds.hasNextPage ? (
-        <LoadMore>
-          {builds.isFetchingNextPage ? (
-            <LoadingAnimation size={30} />
-          ) : (
-            <Button variant="secondary" onClick={() => void builds.fetchNextPage()}>
-              Load more builds
-            </Button>
-          )}
-        </LoadMore>
-      ) : null}
-      {builds.isFetchNextPageError ? (
-        <ErrorMessage onRetry={() => void builds.fetchNextPage()}>
-          {errorMessage(builds.error)}
-        </ErrorMessage>
+
+          {trending.length && shelves.length ? (
+            <Grid>
+              {shelves.map((shelf) => (
+                <ShelfSection
+                  key={shelf.key}
+                  id={`shelf-${shelf.key.replace(/[^a-z0-9]+/gi, '-')}`}
+                  title={shelf.title}
+                  caption={shelf.caption}
+                  href={shelf.href}>
+                  <BuildsList builds={pick(shelf.ids)} authors={authors} compact />
+                </ShelfSection>
+              ))}
+            </Grid>
+          ) : null}
+
+          {weapons.length ? (
+            <ShelfSection
+              id="shelf-weapons"
+              title="Popular weapons"
+              caption="Each with its builds and where to find it">
+              <Weapons>
+                {weapons.map(({ name, path, count }) => {
+                  const weapon = cardWeapons.find((card) => card.name === name);
+                  return (
+                    <li key={path}>
+                      <WeaponLink to={path}>
+                        <ItemTile src={weapon ? iconUrl(weapon.icon) : null} size={36} />
+                        {name}
+                        <WeaponCount>
+                          {count} {count === 1 ? 'build' : 'builds'}
+                        </WeaponCount>
+                      </WeaponLink>
+                    </li>
+                  );
+                })}
+              </Weapons>
+            </ShelfSection>
+          ) : null}
+
+          {total > 0 ? (
+            <ViewAll>
+              <ButtonLink to={BUILDS_PATH}>View all {total} builds</ButtonLink>
+            </ViewAll>
+          ) : null}
+        </Shelves>
       ) : null}
     </>
   );
 }
 
-// No frame, no hero: the title and the community line, then one toolbar, then the tags row (T29).
+/** A shelf: its heading, a caption, "See all" (to the builds page) and its builds. */
+function ShelfSection({
+  id,
+  title,
+  caption,
+  href,
+  children,
+}: {
+  id: string;
+  title: string;
+  caption: string;
+  href?: string;
+  children: ReactNode;
+}) {
+  return (
+    <section aria-labelledby={id}>
+      <ShelfHead>
+        <ShelfTitle id={id}>{title}</ShelfTitle>
+        <Caption>{caption}</Caption>
+        {href ? (
+          <SeeAll to={href} aria-label={`See all: ${title}`}>
+            See all →
+          </SeeAll>
+        ) : null}
+      </ShelfHead>
+      {children}
+    </section>
+  );
+}
+
 const Heading = styled.div`
-  align-items: baseline;
+  align-items: center;
   display: flex;
   flex-wrap: wrap;
-  gap: 0 ${SPACE_MD};
-  margin-top: ${SPACE_LG};
+  gap: ${SPACE_SM} ${SPACE_MD};
+  margin: ${SPACE_LG} 0 ${SPACE_XL};
 
   @media ${BELOW_MOBILE} {
-    margin-top: ${SPACE_MD};
+    margin: ${SPACE_MD} 0 ${SPACE_LG};
   }
 `;
 
 const Title = styled.h1`
   color: ${COLOR_TEXT};
-  scroll-margin-top: ${SPACE_LG};
   font-family: ${FONT_DISPLAY};
   font-size: ${TEXT_XL};
   font-weight: ${WEIGHT_DISPLAY};
   line-height: 1.2;
   margin: 0;
+  scroll-margin-top: ${SPACE_LG};
 `;
 
 const Community = styled.p`
@@ -319,215 +263,107 @@ const Community = styled.p`
   }
 `;
 
-const Toolbar = styled.div`
-  align-items: center;
+const AllLink = styled(ButtonLink)`
+  margin-left: auto;
+
+  @media ${BELOW_MOBILE} {
+    margin-left: 0;
+    width: 100%;
+  }
+`;
+
+const Shelves = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${SPACE_XXL};
+
+  @media ${BELOW_MOBILE} {
+    gap: ${SPACE_XL};
+  }
+`;
+
+const ShelfHead = styled.div`
+  align-items: baseline;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: ${SPACE_MD};
+  gap: 4px ${SPACE_SM};
+  margin-bottom: ${SPACE_SM};
 `;
 
-const SearchForm = styled.form`
-  flex: 1 1 320px;
-  margin: 0;
-
-  @media ${BELOW_MOBILE} {
-    flex-basis: 100%;
-  }
-`;
-
-const SearchField = styled.div`
-  position: relative;
-
-  & > input {
-    padding-right: 44px;
-  }
-`;
-
-const SearchSubmit = styled.button`
-  align-items: center;
-  background: none;
-  border: none;
-  color: ${COLOR_TEXT_MUTED};
-  cursor: pointer;
-  display: flex;
-  height: 44px;
-  justify-content: center;
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 44px;
-
-  &:hover {
-    color: ${COLOR_ACCENT_STRONG};
-  }
-`;
-
-const LevelForm = styled.form`
-  align-items: center;
-  display: flex;
-  gap: 8px;
+const ShelfTitle = styled.h2`
+  color: ${COLOR_TEXT};
+  font-family: ${FONT_DISPLAY};
+  font-size: ${TEXT_NAME};
+  font-weight: ${WEIGHT_DISPLAY};
+  line-height: 1.2;
   margin: 0;
 `;
 
-const LevelLabel = styled.label`
-  ${labelText}
-`;
-
-const LevelInput = styled.div`
-  width: 72px;
-`;
-
-const Dash = styled.span`
+const Caption = styled.span`
   color: ${COLOR_TEXT_MUTED};
-`;
-
-const Note = styled.p`
-  align-items: center;
-  color: ${COLOR_TEXT_MUTED};
-  display: flex;
   font-size: ${TEXT_SM};
-  margin: 0;
-  min-height: 44px;
 `;
 
-// The top tags scroll sideways on every width (their popover-free row); "More tags" and picked
-// tags sit after them, outside the scroller so the popover isn't clipped.
-const TagsRow = styled.div`
+const SeeAll = styled(Link)`
   align-items: center;
-  display: flex;
-  gap: ${SPACE_SM} 12px;
-  margin-top: ${SPACE_SM};
-
-  @media ${BELOW_MOBILE} {
-    flex-wrap: wrap;
-  }
-`;
-
-const TopTags = styled.div`
-  display: flex;
-  flex: 0 1 auto;
-  gap: 8px;
-  min-width: 0;
-  overflow-x: auto;
-  padding: 4px 0;
-  scrollbar-width: none;
-
-  @media ${BELOW_MOBILE} {
-    flex: 1 1 100%;
-    margin: 0 -${SPACE_MD};
-    padding: 4px ${SPACE_MD};
-  }
-`;
-
-// A toggle chip: 36 px to look like a tag, with a ::after that makes the tap target 44 px.
-const TopTag = styled.button`
-  align-items: center;
-  background: none;
-  border: 1px solid ${COLOR_LINE};
-  color: ${COLOR_TEXT_MUTED};
-  cursor: pointer;
   display: inline-flex;
-  flex: none;
   font-size: ${TEXT_SM};
   font-weight: 500;
-  gap: 6px;
-  min-height: 36px;
-  padding: 0 10px;
-  position: relative;
+  margin-left: auto;
+  min-height: 44px;
+  text-decoration: none;
   white-space: nowrap;
+`;
 
-  &::after {
-    content: '';
-    inset: -4px 0;
-    position: absolute;
+const Grid = styled.div`
+  display: grid;
+  gap: ${SPACE_XXL};
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  @media ${BELOW_TABLET} {
+    gap: ${SPACE_XL};
+    grid-template-columns: minmax(0, 1fr);
   }
+`;
+
+const Weapons = styled.ul`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${SPACE_SM};
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const WeaponLink = styled(Link)`
+  align-items: center;
+  background: ${COLOR_SURFACE};
+  border: 1px solid ${COLOR_LINE};
+  border-radius: ${RADIUS_FRAME};
+  color: ${COLOR_TEXT};
+  display: inline-flex;
+  font-size: ${TEXT_SM};
+  gap: ${SPACE_SM};
+  min-height: 52px;
+  padding: 0 14px 0 8px;
+  text-decoration: none;
 
   &:hover {
-    border-color: ${COLOR_TEXT_MUTED};
-    color: ${COLOR_TEXT};
-  }
-
-  &[aria-pressed='true'] {
-    background: ${COLOR_SURFACE_RAISED};
-    border-color: ${COLOR_TEXT_MUTED};
+    border-color: ${COLOR_LINE_STRONG};
     color: ${COLOR_TEXT};
   }
 `;
 
-const Check = styled.span`
-  color: ${COLOR_ACCENT};
-  font-size: ${TEXT_XS};
-`;
-
-const TagCount = styled.span`
+const WeaponCount = styled.span`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_XS};
   font-variant-numeric: tabular-nums;
 `;
 
-// T55: one scrolling line of text links to the weapon pages, quieter than the tag chips above.
-const Popular = styled.nav`
-  align-items: center;
-  display: flex;
-  gap: 12px;
-  min-width: 0;
-
-  @media ${BELOW_MOBILE} {
-    margin: 0 -${SPACE_MD};
-    padding: 0 ${SPACE_MD};
-  }
-`;
-
-const PopularLabel = styled.h2`
-  ${labelText}
-  flex: none;
-  margin: 0;
-`;
-
-const PopularList = styled.ul`
-  display: flex;
-  gap: 0 ${SPACE_MD};
-  list-style: none;
-  margin: 0;
-  min-width: 0;
-  overflow-x: auto;
-  padding: 0;
-  scrollbar-width: none;
-`;
-
-const PopularLink = styled(Link)`
-  align-items: center;
-  color: ${COLOR_TEXT_MUTED};
-  display: inline-flex;
-  font-size: ${TEXT_SM};
-  min-height: 44px;
-  text-decoration: none;
-  white-space: nowrap;
-
-  &:hover {
-    color: ${COLOR_TEXT};
-  }
-`;
-
-const MoreTags = styled.div`
-  align-items: center;
-  display: flex;
-  flex: none;
-  flex-wrap: wrap;
-  gap: ${SPACE_SM} 14px;
-`;
-
-const Status = styled.p`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_SM};
-  margin: ${SPACE_LG} 0 ${SPACE_SM};
-`;
-
-const LoadMore = styled.div`
+const ViewAll = styled.div`
   display: flex;
   justify-content: center;
-  margin: ${SPACE_LG} 0;
+  margin-bottom: ${SPACE_LG};
 `;
 
 export default Landing;

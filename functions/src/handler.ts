@@ -7,7 +7,7 @@
 //   /weapons/:slug       a weapon's page (T55): its head tags and, inside #root, its facts, where to find
 //                        it and its builds (hub.ts); an unknown slug is a 404; under 3 builds, noindex
 //   /tags/:slug          a tag's page (T55), the same way
-//   /sitemap.xml         the home page, every build (at its named URL, T56), and the weapon and tag
+//   /sitemap.xml         the home page, the builds page (T74), every build (at its named URL, T56), and the weapon and tag
 //                        pages with 3 or more builds (T55)
 // Anything else that goes wrong (a read fails, the content can't be made) serves the plain index.html with
 // status 200: the page must never break because a preview couldn't be made.
@@ -266,6 +266,7 @@ async function sitemap(deps: Deps): Promise<Reply> {
     const builds = await deps.listBuilds();
     const body = sitemapXml([
       { loc: `${SITE_ORIGIN}/` },
+      { loc: `${SITE_ORIGIN}/builds` },
       ...builds.map(({ id, name, updatedAt }) => ({
         loc: buildUrl(id, name),
         lastmod: updatedAt,

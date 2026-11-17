@@ -117,7 +117,7 @@ describe('BuildHeader', () => {
     expect(screen.getByText('132')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Comet Azur' })).toHaveAttribute(
       'href',
-      '/?tag=Comet%20Azur',
+      '/builds?tag=Comet%20Azur',
     );
   });
 

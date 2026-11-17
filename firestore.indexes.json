@@ -9,20 +9,6 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "likeCount",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
           "fieldPath": "createdAt",
           "order": "DESCENDING"
         }
@@ -55,7 +41,229 @@
           "order": "ASCENDING"
         },
         {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nameLower",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nameLower",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nameLower",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "nameLower",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
           "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "equipment.weapons",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
           "order": "DESCENDING"
         }
       ]
@@ -75,6 +283,14 @@
         {
           "fieldPath": "likeCount",
           "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "level",
+          "order": "ASCENDING"
         }
       ]
     },
@@ -83,12 +299,12 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
-        },
-        {
           "fieldPath": "game",
           "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "playerCount",
+          "order": "DESCENDING"
         },
         {
           "fieldPath": "createdAt",
@@ -105,36 +321,8 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "nameLower",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "likeCount",
+          "fieldPath": "playerCount",
           "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "level",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
         },
         {
           "fieldPath": "createdAt",
@@ -159,12 +347,12 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "likeCount",
+          "fieldPath": "playerCount",
           "order": "DESCENDING"
         },
         {
-          "fieldPath": "level",
-          "order": "ASCENDING"
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
         }
       ]
     },
@@ -179,6 +367,10 @@
         {
           "fieldPath": "game",
           "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "playerCount",
+          "order": "DESCENDING"
         },
         {
           "fieldPath": "createdAt",
@@ -195,79 +387,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "nameLower",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "level",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "nameLower",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "nameLower",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "level",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "playerCount",
-          "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "tags",
+          "fieldPath": "equipment.weapons",
           "arrayConfig": "CONTAINS"
         },
         {
@@ -277,6 +397,10 @@
         {
           "fieldPath": "playerCount",
           "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
         }
       ]
     },
@@ -285,11 +409,19 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "equipment.weapons",
+          "arrayConfig": "CONTAINS"
+        },
+        {
           "fieldPath": "game",
           "order": "ASCENDING"
         },
         {
           "fieldPath": "playerCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {
@@ -303,7 +435,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "tags",
+          "fieldPath": "equipment.weapons",
           "arrayConfig": "CONTAINS"
         },
         {
@@ -311,7 +443,25 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "playerCount",
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "equipment.weapons",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
           "order": "DESCENDING"
         },
         {

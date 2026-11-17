@@ -55,6 +55,13 @@ export const ChevronDownIcon = ({ size = 16, ...rest }: IconProps) => (
 );
 
 /** A speech bubble: comment counts (T20). */
+/** Three lines narrowing down: a list's filters (T74). */
+export const FilterIcon = ({ size = 16, ...rest }: IconProps) => (
+  <svg {...stroke(size, rest)}>
+    <path d="M4 6h16M7 12h10M10 18h4" />
+  </svg>
+);
+
 export const CommentIcon = ({ size = 16, ...rest }: IconProps) => (
   <svg {...stroke(size, rest)}>
     <path d="M4 5h16v11H9l-5 4z" />

@@ -27,6 +27,12 @@ export const homeMeta = (gameName: string): ShareMeta => ({
   description: `${gameName} build planner: plan a build with stats, equip load and poise, share it, and discover what the community plays. Weapons, armor, talismans and spells, with a route to get the gear.`,
 });
 
+/** The builds page's title and description (T74: the full, filterable list at /builds). */
+export const buildsMeta = (gameName: string): ShareMeta => ({
+  title: pageTitle(`All ${gameName} builds`),
+  description: `Every ${gameName} build on ${SITE_NAME}: search by name, weapon or tag, filter by level, tags and weapon, and sort by likes, newest or most played.`,
+});
+
 export interface ShareInput {
   name: string;
   level: number;

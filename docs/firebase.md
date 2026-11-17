@@ -307,8 +307,10 @@ The GitHub side: environment `production` with the owner as required reviewer, d
 
 `.github/workflows/stats.yml` runs `node scripts/admin.mjs stats --project soulsbuilds --write` every day at
 04:17 UTC (and from Actions → Community stats → **Run workflow**). It writes `stats/elden-ring` (builds, distinct
-authors, accounts, builds per tag and, since T55, per weapon) for the landing page: one read per build, plus a
-`count()` of users. The landing's Popular weapons line stays hidden until the first run after T55's deploy.
+authors, accounts, builds per tag and, since T55, per weapon; since T74 the search index, one compact entry per
+build) for the home and builds pages: one read per build, plus a `count()` of users. Popular weapons stay hidden
+until the first run after T55's deploy; search over the index and the home shelves other than Fresh builds wait
+for the first run after T74's deploy (run it by hand then).
 It runs as its own service account with only **Cloud Datastore User** (no deploy rights; deploys keep theirs),
 through the same Workload Identity pool. No GitHub environment or approval: until the role is granted, the job
 fails harmlessly. One-time setup (owner, `gcloud auth login` first):

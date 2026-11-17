@@ -76,7 +76,7 @@ export const site = onRequest(
           weapons: (doc.get('equipment.weapons') as (number | null)[] | undefined) ?? [],
         }));
       },
-      // The app's queries (src/lib/firebase/builds.ts), with the same indexes.
+      // The app's queries (src/lib/firebase/builds.ts: most liked, then newest; T74), with the same indexes.
       listWeaponBuilds: async (weaponId, limit) =>
         hubBuilds(
           db
@@ -84,6 +84,7 @@ export const site = onRequest(
             .where('game', '==', GAME_ELDEN_RING)
             .where('equipment.weapons', 'array-contains', weaponId)
             .orderBy('likeCount', 'desc')
+            .orderBy('createdAt', 'desc')
             .limit(limit),
         ),
       listTagBuilds: async (tag, limit) =>
@@ -93,6 +94,7 @@ export const site = onRequest(
             .where('game', '==', GAME_ELDEN_RING)
             .where('tags', 'array-contains', tag)
             .orderBy('likeCount', 'desc')
+            .orderBy('createdAt', 'desc')
             .limit(limit),
         ),
       fetchStatic: async (path) => {

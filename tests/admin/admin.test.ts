@@ -357,7 +357,42 @@ describe('stats (T20)', () => {
       userCount: 3,
       tagCounts: { Malenia: 3, Mohg: 1, PvP: 1 },
       weaponCounts: { '9060000': 2, '2000': 1 },
+      searchIndex: expect.any(Array),
     });
+  });
+
+  it('indexes each build compactly, newest first (T74)', async () => {
+    await db.doc('builds/S2').update({
+      name: 'Moon Knight',
+      level: 150,
+      likeCount: 3,
+      commentCount: 2,
+      playerCount: 1,
+      createdAt: at(5),
+    });
+    await db.doc('builds/S1').update({ createdAt: at(9) });
+    const { searchIndex } = await computeStats(db, 'elden-ring');
+    expect(searchIndex.map((entry: { id: string }) => entry.id)).toEqual(['S1', 'S2', 'S3']);
+    expect(searchIndex[0]).toEqual({
+      id: 'S1',
+      name: 'S1',
+      tags: ['Malenia', 'Mohg'],
+      weapons: [9060000, 2000],
+      level: 1,
+      likeCount: 0,
+      commentCount: 0,
+      playerCount: 0,
+      createdAt: at(9).toMillis(),
+    });
+    expect(searchIndex[1]).toMatchObject({
+      name: 'Moon Knight',
+      level: 150,
+      likeCount: 3,
+      commentCount: 2,
+      playerCount: 1,
+    });
+    // Duplicate tags count once; a build without fields still gets an entry
+    expect(searchIndex[2]).toMatchObject({ tags: ['Malenia', 'PvP'], weapons: [9060000] });
   });
 
   it('writes stats/<game> only with write, with a server updatedAt', async () => {

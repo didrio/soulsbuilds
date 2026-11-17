@@ -70,9 +70,9 @@ describe('links from a build', () => {
     expect(weaponLinks([null, null, null, null, null, null])).toEqual([]);
   });
 
-  it('links a tag to its page, or to the landing filter for one no longer in the list', () => {
+  it('links a tag to its page, or to the builds page filtered by one no longer in the list', () => {
     expect(tagHref('Bleed (Hemorrhage)')).toBe('/tags/bleed');
-    expect(tagHref('Old tag')).toBe('/?tag=Old%20tag');
+    expect(tagHref('Old tag')).toBe('/builds?tag=Old%20tag');
   });
 });
 

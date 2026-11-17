@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import styled from 'styled-components';
-import { CommentIcon, HeartIcon } from '@/components/ui/icons';
+import { HeartIcon } from '@/components/ui/icons';
 import { selectionBar } from '@/components/ui/inWorld';
 import ItemTile from '@/components/ui/ItemTile';
 import Tag from '@/components/ui/Tag';
@@ -22,6 +22,7 @@ import {
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   TEXT_LG,
+  TEXT_MD,
   TEXT_NAME,
   TEXT_SM,
   WEIGHT_DISPLAY,
@@ -40,9 +41,15 @@ const ARMOR = [
 ] as const;
 
 const TILE = 38;
+const TILE_PHONE = 32;
 const GAP = 4;
 const PORTRAIT = 72;
-const PORTRAIT_PHONE = 60;
+const PORTRAIT_PHONE = 56;
+const PORTRAIT_COMPACT = 48;
+const ROW_HEIGHT_COMPACT = 68;
+// The likes column (T74).
+const RAIL = 44;
+const RAIL_PHONE = 36;
 // Fixed row heights on desktop and tablets (name, author, one line of tags; the strip goes underneath
 // on tablets). Phones size to their content: names may take two lines.
 const ROW_HEIGHT = 88;
@@ -54,14 +61,18 @@ interface BuildsListProps {
   builds: Build[];
   /** Author profiles by uid, to show "by …" (left out on a profile page, where it's one author). */
   authors?: Record<string, UserProfile>;
+  /** A home shelf's short rows (T74): likes, portrait, name, and the level in the meta line. */
+  compact?: boolean;
 }
 
 /**
- * Builds as full-width rows (one link each): the build image (T40) as a portrait, name, author, age and tags;
- * a strip of item tiles (hands, then armor); level, likes and comments. Dense on purpose, so many builds
- * fit on screen, and all the same height on desktop (tags on one line, the rest as "+N").
+ * Builds as full-width rows (one link each), a ranked feed (T74): likes first, large, in a rail (none
+ * yet: a quiet outline heart); the build image (T40) as a portrait; name, then author, age, comments
+ * and players (counts only when there are some), then tags; a strip of item tiles (hands, then armor);
+ * the level, small. Dense on purpose, so many builds fit on screen, and all the same height on
+ * desktop (tags on one line, the rest as "+N").
  */
-function BuildsList({ builds, authors }: BuildsListProps) {
+function BuildsList({ builds, authors, compact = false }: BuildsListProps) {
   return (
     <Rows>
       {builds.map((build) => {
@@ -70,16 +81,32 @@ function BuildsList({ builds, authors }: BuildsListProps) {
         const main = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
-            <Row to={tabPath(build.id, 'equipment', build.name)}>
+            <Row to={tabPath(build.id, 'equipment', build.name)} $compact={compact}>
+              <Rail $zero={build.likeCount === 0}>
+                <HeartIcon size={18} filled={build.likeCount > 0} />
+                {build.likeCount > 0 ? (
+                  <>
+                    <LikeCount>{build.likeCount}</LikeCount>
+                    <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
+                  </>
+                ) : (
+                  <VisuallyHidden>No likes yet</VisuallyHidden>
+                )}
+              </Rail>
               <Portrait
                 src={main ? iconUrl(main.icon) : null}
                 title={main?.name}
-                size={PORTRAIT}
+                size={compact ? PORTRAIT_COMPACT : PORTRAIT}
                 placeholder
+                $compact={compact}
               />
               <Head>
                 <Name>{build.name}</Name>
                 <Meta>
+                  <MetaLevel $always={compact}>
+                    Lv <b>{build.level}</b>
+                    <Dot aria-hidden="true">·</Dot>
+                  </MetaLevel>
                   {author ? (
                     <>
                       by <b>{author.displayName}</b>
@@ -91,62 +118,68 @@ function BuildsList({ builds, authors }: BuildsListProps) {
                     title={formatFullDate(build.createdAt)}>
                     {relativeTime(build.createdAt)}
                   </time>
+                  {activity(build).map((part) => (
+                    <span key={part}>
+                      <Dot aria-hidden="true">·</Dot>
+                      {part}
+                    </span>
+                  ))}
                 </Meta>
               </Head>
-              <RowTags tags={build.tags} />
-              <Strip data-testid="slots">
-                {PREVIEW_WEAPONS.map((index) => {
-                  const weapon = getCardWeapon(equipment.weapons[index]);
-                  return (
-                    <Tile
-                      key={index}
-                      src={weapon ? iconUrl(weapon.icon) : null}
-                      title={weapon?.name}
-                      size={TILE}
-                      placeholder
-                    />
-                  );
-                })}
-                <Divider aria-hidden="true" />
-                {ARMOR.map(([slot, armorSlot]) => {
-                  const piece = getCardArmor(equipment[slot], armorSlot);
-                  return (
-                    <Tile
-                      key={slot}
-                      src={piece ? iconUrl(piece.icon) : null}
-                      title={piece?.name}
-                      size={TILE}
-                      placeholder
-                    />
-                  );
-                })}
-              </Strip>
-              <Numbers>
-                <Level>
-                  <LevelLabel>Level</LevelLabel> <LevelNumber>{build.level}</LevelNumber>
-                </Level>
-                <Activity>
-                  <Likes>
-                    <HeartIcon size={15} />
-                    {build.likeCount}
-                    <VisuallyHidden> {build.likeCount === 1 ? 'like' : 'likes'}</VisuallyHidden>
-                  </Likes>
-                  <Comments>
-                    <CommentIcon size={14} />
-                    {build.commentCount}
-                    <VisuallyHidden>
-                      {' '}
-                      {build.commentCount === 1 ? 'comment' : 'comments'}
-                    </VisuallyHidden>
-                  </Comments>
-                </Activity>
-              </Numbers>
+              {compact ? null : (
+                <>
+                  <RowTags tags={build.tags} />
+                  <Strip data-testid="slots">
+                    {PREVIEW_WEAPONS.map((index) => {
+                      const weapon = getCardWeapon(equipment.weapons[index]);
+                      return (
+                        <Tile
+                          key={index}
+                          src={weapon ? iconUrl(weapon.icon) : null}
+                          title={weapon?.name}
+                          size={TILE}
+                          placeholder
+                        />
+                      );
+                    })}
+                    <Divider aria-hidden="true" />
+                    {ARMOR.map(([slot, armorSlot]) => {
+                      const piece = getCardArmor(equipment[slot], armorSlot);
+                      return (
+                        <Tile
+                          key={slot}
+                          src={piece ? iconUrl(piece.icon) : null}
+                          title={piece?.name}
+                          size={TILE}
+                          placeholder
+                        />
+                      );
+                    })}
+                  </Strip>
+                  <Level>
+                    <LevelLabel aria-hidden="true">Lv</LevelLabel>
+                    <VisuallyHidden>Level</VisuallyHidden> <LevelNumber>{build.level}</LevelNumber>
+                  </Level>
+                </>
+              )}
             </Row>
           </li>
         );
       })}
     </Rows>
   );
+}
+
+/** "3 comments", "2 playing": only the counts there are (T74: zero is quiet). */
+export function activity({
+  commentCount,
+  playerCount,
+}: Pick<Build, 'commentCount' | 'playerCount'>) {
+  const parts: string[] = [];
+  if (commentCount > 0)
+    parts.push(`${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}`);
+  if (playerCount > 0) parts.push(`${playerCount} playing`);
+  return parts;
 }
 
 const TAG_GAP = 6;
@@ -201,20 +234,20 @@ const Rows = styled.ul`
   }
 `;
 
-// One grid for every width, by named areas: desktop is portrait | name over tags | strip | level |
-// likes and comments; tablets move the numbers to the right and the strip underneath; phones stack.
-const Row = styled(Link)`
+// One grid for every width, by named areas: desktop is likes | portrait | name over tags | strip |
+// level; tablets move the strip underneath; phones stack, with the level in the meta line.
+const Row = styled(Link)<{ $compact: boolean }>`
   ${selectionBar}
   align-content: center;
-  column-gap: 20px;
+  column-gap: 18px;
   display: grid;
   grid-template-areas:
-    'portrait head strip level activity'
-    'portrait tags strip level activity';
-  grid-template-columns: ${PORTRAIT}px minmax(0, 1fr) ${STRIP_WIDTH} 56px 84px;
+    'rail portrait head strip level'
+    'rail portrait tags strip level';
+  grid-template-columns: ${RAIL}px ${PORTRAIT}px minmax(0, 1fr) ${STRIP_WIDTH} 44px;
   grid-template-rows: auto auto;
   height: ${ROW_HEIGHT}px;
-  padding: 0 16px;
+  padding: 0 16px 0 8px;
   position: relative;
 
   &:hover img {
@@ -224,34 +257,78 @@ const Row = styled(Link)`
   @media ${BELOW_TABLET} {
     column-gap: 14px;
     grid-template-areas:
-      'portrait head numbers'
-      'portrait tags numbers'
-      'strip strip strip';
-    grid-template-columns: ${PORTRAIT}px minmax(0, 1fr) auto;
+      'rail portrait head level'
+      'rail portrait tags level'
+      'rail strip strip strip';
+    grid-template-columns: ${RAIL}px ${PORTRAIT}px minmax(0, 1fr) auto;
     height: ${ROW_HEIGHT_TABLET}px;
     row-gap: 0;
   }
 
   @media ${BELOW_MOBILE} {
+    column-gap: 12px;
     grid-template-areas:
-      'portrait head'
-      'portrait numbers'
-      'tags tags'
-      'strip strip';
-    grid-template-columns: ${PORTRAIT_PHONE}px minmax(0, 1fr);
+      'rail portrait head'
+      'rail portrait tags'
+      'rail strip strip';
+    grid-template-columns: ${RAIL_PHONE}px ${PORTRAIT_PHONE}px minmax(0, 1fr);
     height: auto;
-    padding: 12px 4px;
+    padding: 14px 4px 14px 0;
+  }
+
+  /* A home shelf (T74): one line of likes, portrait and name over meta, at every width. */
+  && {
+    ${({ $compact }) =>
+      $compact
+        ? `
+    column-gap: 12px;
+    grid-template-areas: 'rail portrait head';
+    grid-template-columns: ${RAIL_PHONE}px ${PORTRAIT_COMPACT}px minmax(0, 1fr);
+    grid-template-rows: auto;
+    height: auto;
+    min-height: ${ROW_HEIGHT_COMPACT}px;
+    padding: 8px 8px 8px 0;
+  `
+        : ''}
   }
 `;
 
-const Portrait = styled(ItemTile)`
+const Rail = styled.span<{ $zero: boolean }>`
+  align-items: center;
+  align-self: center;
+  color: ${({ $zero }) => ($zero ? COLOR_LINE_STRONG : COLOR_TEXT_MUTED)};
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  grid-area: rail;
+
+  @media ${BELOW_MOBILE} {
+    align-self: start;
+    padding-top: 8px;
+  }
+`;
+
+const LikeCount = styled.span`
+  color: ${COLOR_TEXT};
+  font-size: ${TEXT_LG};
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  line-height: 1.1;
+`;
+
+const Portrait = styled(ItemTile)<{ $compact: boolean }>`
   align-self: center;
   grid-area: portrait;
 
   @media ${BELOW_MOBILE} {
+    ${({ $compact }) =>
+      $compact
+        ? ''
+        : `
     align-self: start;
     height: ${PORTRAIT_PHONE}px;
     width: ${PORTRAIT_PHONE}px;
+    `}
   }
 `;
 
@@ -297,9 +374,26 @@ const Meta = styled.span`
   text-overflow: ellipsis;
   white-space: nowrap;
 
-  & > b {
+  & b {
     color: ${COLOR_TEXT};
     font-weight: 500;
+  }
+
+  @media ${BELOW_MOBILE} {
+    white-space: normal;
+  }
+`;
+
+// Phones show the level here; wider screens in its own column.
+const MetaLevel = styled.span<{ $always: boolean }>`
+  display: ${({ $always }) => ($always ? 'inline' : 'none')};
+
+  & > b {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media ${BELOW_MOBILE} {
+    display: inline;
   }
 `;
 
@@ -318,7 +412,6 @@ const Tags = styled.span`
   overflow: hidden;
   position: relative;
 
-  /* Phones: no empty line between the numbers and the strip. */
   @media ${BELOW_MOBILE} {
     &:empty {
       display: none;
@@ -364,44 +457,27 @@ const Divider = styled.span`
 
 const Tile = styled(ItemTile)`
   @media ${BELOW_MOBILE} {
-    height: ${TILE}px;
-    width: ${TILE}px;
-  }
-`;
-
-// Desktop: two grid columns (level, then likes over comments); tablets: stacked at the top right;
-// phones: one line under the name.
-const Numbers = styled.div`
-  display: contents;
-
-  @media ${BELOW_TABLET} {
-    align-items: flex-end;
-    align-self: start;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    grid-area: numbers;
-  }
-
-  @media ${BELOW_MOBILE} {
-    align-items: center;
-    align-self: start;
-    flex-direction: row;
-    gap: 14px;
+    height: ${TILE_PHONE}px;
+    width: ${TILE_PHONE}px;
   }
 `;
 
 const Level = styled.span`
   align-items: flex-end;
+  align-self: center;
   display: flex;
   flex-direction: column;
   grid-area: level;
+  line-height: 1.2;
   text-align: right;
 
+  @media ${BELOW_TABLET} {
+    align-self: start;
+    padding-top: 4px;
+  }
+
   @media ${BELOW_MOBILE} {
-    align-items: baseline;
-    flex-direction: row;
-    gap: 6px;
+    display: none;
   }
 `;
 
@@ -411,44 +487,9 @@ const LevelLabel = styled.span`
 
 const LevelNumber = styled.span`
   color: ${COLOR_TEXT};
-  font-size: ${TEXT_LG};
+  font-size: ${TEXT_MD};
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-`;
-
-// Likes over comments (T20); on tablets and phones side by side.
-const Activity = styled.span`
-  align-items: flex-end;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  grid-area: activity;
-
-  @media ${BELOW_TABLET} {
-    flex-direction: row;
-    gap: 10px;
-    grid-area: auto;
-  }
-`;
-
-const Likes = styled.span`
-  align-items: center;
-  color: ${COLOR_TEXT};
-  display: inline-flex;
-  font-size: ${TEXT_SM};
-  font-variant-numeric: tabular-nums;
-  font-weight: 600;
-  gap: 5px;
-  justify-content: flex-end;
-
-  & > svg {
-    color: ${COLOR_TEXT_MUTED};
-  }
-`;
-
-const Comments = styled(Likes)`
-  color: ${COLOR_TEXT_MUTED};
-  font-weight: 500;
 `;
 
 export default BuildsList;

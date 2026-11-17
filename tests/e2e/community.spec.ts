@@ -1,14 +1,25 @@
-// Community touches on the seed data (T20): top tags filter the landing, and the discussion tab shows the
+// Community touches on the seed data (T20, T74): the home shelves, top tags filter the builds page, and the discussion tab shows the
 // comment count, the author's write-up and the comments (T28, T63), or asks for one. Read-only. `npm run e2e`.
 import { expect, test } from '@playwright/test';
 
-test('top tags, community line and the discussion tab', async ({ page }) => {
+test('home shelves, a tag filter on the builds page, and the discussion tab', async ({ page }) => {
+  // The home page (T74): the community line, Trending, and the way to the full list.
   await page.goto('/');
   await expect(page.getByText(/\d+ builds? by \d+ players?/)).toBeVisible();
-  const mohg = page.getByRole('group', { name: 'Top tags' }).getByRole('button', { name: /^Mohg/ });
+  await expect(page.getByRole('region', { name: 'Trending' })).toBeVisible();
+  await page.getByRole('link', { name: 'Search and filter all builds' }).click();
+  await expect(page).toHaveURL(/\/builds$/);
+
+  // A top tag from the Tags popover filters the list (T20, T74).
+  await page.getByRole('button', { name: /^Tags Any/ }).click();
+  const mohg = page
+    .getByRole('group', { name: 'Most used tags' })
+    .getByRole('button', { name: /^Mohg/ });
   await mohg.click();
   await expect(mohg).toHaveAttribute('aria-pressed', 'true');
   await expect(page).toHaveURL(/[?&]tag=Mohg/);
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: /Mohg \(remove\)/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Carian Moon Knight/ })).toHaveCount(0);
   await page.getByRole('link', { name: /Bloodhound Samurai/ }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Bloodhound Samurai' })).toBeVisible();

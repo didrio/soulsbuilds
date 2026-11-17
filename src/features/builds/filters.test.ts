@@ -1,13 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import type { Build } from '@/lib/models';
+import { emptyEquipment, makeBuild, MOONVEIL, UCHIGATANA } from '@/test/fixtures';
 import {
+  activeFilters,
+  buildsHref,
   clampLevel,
   DEFAULT_FILTERS,
   filterBuilds,
+  isFiltered,
+  LEVEL_PRESETS,
+  levelPreset,
+  levelText,
   parseFilters,
   toggleTag,
   topTags,
   toSearchParams,
+  weaponIdOf,
 } from './filters';
 
 const build = (id: string, level: number, tags: string[]) => ({ id, level, tags }) as Build;
@@ -49,20 +57,23 @@ describe('URL filters', () => {
       search: 'moon',
       sort: 'new' as const,
       tags: ['Malenia', 'Mohg'],
+      weapon: 'moonveil',
       minLevel: 50,
       maxLevel: 150,
     };
     const params = toSearchParams(filters);
-    expect(params.toString()).toBe('q=moon&sort=new&tag=Malenia&tag=Mohg&min=50&max=150');
+    expect(params.toString()).toBe(
+      'q=moon&sort=new&tag=Malenia&tag=Mohg&weapon=moonveil&min=50&max=150',
+    );
     expect(parseFilters(params)).toEqual(filters);
     expect(toSearchParams(DEFAULT_FILTERS).toString()).toBe('');
     expect(parseFilters(new URLSearchParams('sort=played')).sort).toBe('played');
   });
 
   it('ignores junk and swaps a reversed range', () => {
-    expect(parseFilters(new URLSearchParams('sort=hot&min=abc&max=99999'))).toEqual(
-      DEFAULT_FILTERS,
-    );
+    expect(
+      parseFilters(new URLSearchParams('sort=hot&min=abc&max=99999&weapon=no-such-sword')),
+    ).toEqual(DEFAULT_FILTERS);
     expect(parseFilters(new URLSearchParams('min=200&max=100'))).toMatchObject({
       minLevel: 100,
       maxLevel: 200,
@@ -105,5 +116,72 @@ describe('topTags', () => {
 
   it('uses the real tag list by default', () => {
     expect(topTags({ Malenia: 1, 'Not A Tag': 5 })).toEqual([{ tag: 'Malenia', count: 1 }]);
+  });
+});
+
+describe('the weapon filter (T74)', () => {
+  const withWeapons = [
+    makeBuild({
+      id: 'm',
+      equipment: { ...emptyEquipment(), weapons: [null, null, null, MOONVEIL, null, null] },
+    }),
+    makeBuild({
+      id: 'u',
+      equipment: { ...emptyEquipment(), weapons: [UCHIGATANA, null, null, null, null, null] },
+    }),
+  ];
+
+  it('finds the weapon in any hand, by its slug', () => {
+    const filters = { ...DEFAULT_FILTERS, weapon: 'moonveil' };
+    expect(weaponIdOf(filters)).toBe(MOONVEIL);
+    expect(ids(filterBuilds(withWeapons, filters))).toEqual(['m']);
+    expect(weaponIdOf(DEFAULT_FILTERS)).toBeUndefined();
+  });
+});
+
+describe('levels (T74)', () => {
+  it('names the presets and any other range briefly', () => {
+    expect(levelText(DEFAULT_FILTERS)).toBe('Any');
+    expect(levelText({ minLevel: 125, maxLevel: 150 })).toBe('125–150');
+    expect(levelText({ minLevel: 200, maxLevel: 713 })).toBe('200+');
+    expect(levelText({ minLevel: 1, maxLevel: 50 })).toBe('Up to 50');
+    expect(levelText({ minLevel: 80, maxLevel: 80 })).toBe('80');
+  });
+
+  it('knows which preset a range is', () => {
+    expect(levelPreset({ minLevel: 125, maxLevel: 150 })?.label).toBe('125–150');
+    expect(levelPreset(DEFAULT_FILTERS)).toBe(LEVEL_PRESETS[0]);
+    expect(levelPreset({ minLevel: 126, maxLevel: 150 })).toBeUndefined();
+  });
+});
+
+describe('activeFilters (T74)', () => {
+  it('lists level, tags, then the weapon, each with the change that removes it', () => {
+    const filters = {
+      ...DEFAULT_FILTERS,
+      search: 'moon',
+      sort: 'new' as const,
+      tags: ['Bleed (Hemorrhage)', 'PvP'],
+      weapon: 'moonveil',
+      minLevel: 125,
+      maxLevel: 150,
+    };
+    const active = activeFilters(filters);
+    expect(active.map((f) => f.label)).toEqual(['Level 125–150', 'Bleed', 'PvP', 'Moonveil']);
+    expect(active[0]!.without).toEqual({ minLevel: 1, maxLevel: 713 });
+    expect(active[1]!.without).toEqual({ tags: ['PvP'] });
+    expect(active[3]!.without).toEqual({ weapon: '' });
+    expect(activeFilters(DEFAULT_FILTERS)).toEqual([]);
+  });
+
+  it('isFiltered ignores the sort', () => {
+    expect(isFiltered({ ...DEFAULT_FILTERS, sort: 'new' })).toBe(false);
+    expect(isFiltered({ ...DEFAULT_FILTERS, weapon: 'moonveil' })).toBe(true);
+  });
+
+  it('buildsHref: the builds page with filters, defaults left out', () => {
+    expect(buildsHref()).toBe('/builds');
+    expect(buildsHref({ tags: ['PvP'] })).toBe('/builds?tag=PvP');
+    expect(buildsHref({ sort: 'played' })).toBe('/builds?sort=played');
   });
 });

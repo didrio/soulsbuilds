@@ -27,6 +27,7 @@ const {
   createBuild,
   deleteBuild,
   getBuild,
+  getBuildsByIds,
   listBuilds,
   listBuildsByWeapon,
   listUserBuilds,
@@ -273,6 +274,35 @@ describe('data layer against the rules', () => {
     expect([...page.builds, ...next.builds].map((b) => b.id).sort()).toEqual([...moonveil].sort());
     actAs('alice');
     await deleteBuild(offHand);
+  });
+
+  it('lists: ties newest first, a weapon with a level range, builds by ids (T74)', async () => {
+    actAs('alice');
+    const older = await createBuild('alice', { ...input, name: 'Tie Older' });
+    const newer = await createBuild('alice', { ...input, name: 'Tie Newer', tags: ['Godrick'] });
+    actAs(null);
+    const ids = async (p: Promise<{ builds: { id: string }[] }>) =>
+      (await p).builds.map((b) => b.id);
+    const before = (list: string[]) => list.indexOf(newer) < list.indexOf(older);
+    // Both have no likes and no players: the newer one leads either count order.
+    expect(before(await ids(listBuilds({ sort: 'top' })))).toBe(true);
+    expect(before(await ids(listBuilds({ sort: 'played' })))).toBe(true);
+    // A weapon goes to Firestore with the level range; the tag is the caller's to filter then.
+    const level = (await getBuild(older))!.level;
+    expect(
+      await ids(listBuilds({ sort: 'new', weaponId: 9060000, minLevel: level, maxLevel: level })),
+    ).toEqual(expect.arrayContaining([newer, older]));
+    expect(await ids(listBuilds({ weaponId: 9060000, tag: 'Godrick' }))).toContain(older);
+    expect(await ids(listBuilds({ weaponId: 1 }))).toEqual([]);
+    // By ids: in the order asked, deleted or unknown ids left out.
+    expect((await getBuildsByIds([newer, 'NOSUCHBUILD1', older])).map((b) => b.id)).toEqual([
+      newer,
+      older,
+    ]);
+    expect(await getBuildsByIds([])).toEqual([]);
+    actAs('alice');
+    await deleteBuild(older);
+    await deleteBuild(newer);
   });
 
   it('replies and comment likes (T62)', async () => {

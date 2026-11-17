@@ -8,10 +8,17 @@ export const queryKeys = {
   buildList: (filters: {
     sort: BuildSort;
     tag?: string;
-    search?: string;
+    weaponId?: number;
     minLevel?: number;
     maxLevel?: number;
   }) => ['builds', 'list', filters] as const,
+  /** A search over the daily index (T74): the matching ids, read a page at a time. */
+  buildSearch: (filters: object, ids: readonly string[]) =>
+    ['builds', 'search', filters, ids] as const,
+  /** The newest builds (T74: the home's Fresh builds shelf). */
+  freshBuilds: (size: number) => ['builds', 'fresh', size] as const,
+  /** Builds read by id (T74: the home shelves). */
+  buildsByIds: (ids: readonly string[]) => ['builds', 'ids', ids] as const,
   /** Builds with a weapon, most liked first (T55's weapon pages). */
   weaponBuilds: (weaponId: number) => ['builds', 'weapon', weaponId] as const,
   build: (id: string) => ['builds', 'detail', id] as const,
