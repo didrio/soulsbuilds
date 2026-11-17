@@ -61,8 +61,8 @@ shareable page, the acquisition route and credited variations.
   shelf of finished builds. No streaks, daily rewards, points for site activity, badges for posting or
   commenting, nagging notifications or completion leaderboards. People come back because their run moved on, not
   because the site pulls them.
-- **Low friction without added risk.** Tracking starts without an account; the site asks for one once there's
-  progress worth keeping. Sign-in details: T30.
+- **Low friction without added risk.** Planning a build needs no account: Save asks for one (T68). Tracking needs
+  one (T41: progress worth keeping). Sign-in details: T30.
 
 ## Priorities
 

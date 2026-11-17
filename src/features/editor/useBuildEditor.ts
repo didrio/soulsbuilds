@@ -1,12 +1,14 @@
 // State of the build page: which build (or a new one), view vs edit, the name/description/tags
 // draft, and save/cancel/delete. The slots (equipment, stats…) live in Redux (./store); server data
 // comes from ./queries.
-import { useLayoutEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { useOpenAuthDialog } from '@/app/authDialog';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import useAuth from '@/features/auth/useAuth';
 import { errorMessage } from '@/lib/firebase';
-import { hasImageItem } from '@/lib/equipment';
+import { hasImageItem, imageChoices } from '@/lib/equipment';
+import { countEvent } from '@/lib/usage';
 import { LIMITS, type BuildImage } from '@/lib/models';
 import { useBuild, useDeleteBuild, useSaveBuild } from './queries';
 import { clearEditor, loadBuild, selectBuildFields } from './store/build';
@@ -31,7 +33,8 @@ export function useBuildEditor(buildId: string | null) {
 
   const buildQuery = useBuild(buildId);
   const build = buildQuery.data ?? null;
-  const save = useSaveBuild(auth.uid);
+  const save = useSaveBuild();
+  const openAuthDialog = useOpenAuthDialog();
   const remove = useDeleteBuild();
 
   const [editing, setEditing] = useState(isNew);
@@ -40,7 +43,28 @@ export function useBuildEditor(buildId: string | null) {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const isOwner = Boolean(build && auth.uid && build.ownerId === auth.uid);
-  const editable = editing && (isNew ? Boolean(auth.uid) : isOwner);
+  // A new build is editable signed out too (T68): planning needs no account, saving does.
+  const editable = editing && (isNew || isOwner);
+  const signedOutDraft = isNew && !auth.loading && !auth.uid;
+  // Unsaved work worth a "leave the page?" warning: a name, a write-up, tags or any gear.
+  const dirty =
+    isNew &&
+    (draft.name.trim() !== '' ||
+      draft.description.trim() !== '' ||
+      draft.tags.length > 0 ||
+      imageChoices(buildFields.equipment).length > 0);
+
+  useEffect(() => {
+    if (signedOutDraft) countEvent('planner-opened-signed-out');
+  }, [signedOutDraft]);
+
+  // A new build lives only in this tab until it's saved: warn before a reload or close drops it.
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
 
   // The slots show the saved build whenever it (re)loads, except while the owner is editing.
   // A layout effect, so a cached build never flashes the previous build's slots.
@@ -71,15 +95,11 @@ export function useBuildEditor(buildId: string | null) {
     setValidationError('');
   };
 
-  const handleSave = () => {
-    if (!draft.name.trim()) {
-      setValidationError('Give your build a name.');
-      return;
-    }
-    setValidationError('');
+  const saveAs = (ownerId: string) => {
     save.mutate(
       {
         buildId,
+        ownerId,
         input: {
           name: draft.name,
           description: draft.description,
@@ -99,6 +119,24 @@ export function useBuildEditor(buildId: string | null) {
         },
       },
     );
+  };
+
+  const handleSave = () => {
+    if (!draft.name.trim()) {
+      setValidationError('Give your build a name.');
+      return;
+    }
+    setValidationError('');
+    if (!auth.uid) {
+      // Signed out (a new build only): sign up or log in, then save what's on the page (T68). The
+      // dialog is modal, so the build can't change in between.
+      openAuthDialog('signup', (uid) => {
+        countEvent('signed-in-to-save');
+        saveAs(uid);
+      });
+      return;
+    }
+    saveAs(auth.uid);
   };
 
   const handleDelete = () => {
@@ -128,6 +166,8 @@ export function useBuildEditor(buildId: string | null) {
     isNew,
     isOwner,
     editable,
+    /** Planning a new build while signed out: Save asks for an account first (T68). */
+    signedOutDraft,
     name: shown.name,
     description: shown.description,
     tags: shown.tags,

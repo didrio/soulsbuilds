@@ -1,5 +1,6 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthDialogContext } from '@/app/authDialog';
 import { makeBuild, makeProfile } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
 import BuildEditorPage from './BuildEditorPage';
@@ -137,11 +138,34 @@ describe('BuildEditorPage', () => {
     expect(screen.getByRole('heading', { name: 'Carian Moon Knight' })).toBeInTheDocument();
   });
 
-  it('asks signed-out visitors to log in before creating a build', async () => {
-    renderPage('/build/new');
-    expect(
-      await screen.findByRole('heading', { name: 'Log in to create a build' }),
-    ).toBeInTheDocument();
+  it('opens the planner signed out; Save asks for an account, then saves as the new user (T68)', async () => {
+    let onSignedIn: ((uid: string) => void) | undefined;
+    const openAuthDialog = vi.fn((_kind: string, next?: (uid: string) => void) => {
+      onSignedIn = next;
+    });
+    firebase.createBuild.mockResolvedValue('NEWBUILD0001');
+    firebase.getBuild.mockResolvedValue(makeBuild({ id: 'NEWBUILD0001', name: 'My first build' }));
+    const { user } = renderWithProviders(
+      <AuthDialogContext value={openAuthDialog}>
+        <BuildEditorPage />
+      </AuthDialogContext>,
+      { route: '/build/new', path: '/build/:buildId/*' },
+    );
+    expect(await screen.findByRole('heading', { name: 'New build' })).toBeInTheDocument();
+    expect(screen.getByText(/Free account needed to save/)).toBeInTheDocument();
+    await user.type(screen.getByLabelText('Build name'), 'My first build');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(openAuthDialog).toHaveBeenCalledWith('signup', expect.any(Function));
+    expect(firebase.createBuild).not.toHaveBeenCalled();
+
+    act(() => onSignedIn?.('new-user'));
+    await waitFor(() =>
+      expect(firebase.createBuild).toHaveBeenCalledWith(
+        'new-user',
+        expect.objectContaining({ name: 'My first build' }),
+      ),
+    );
+    expect(await screen.findByRole('heading', { name: 'My first build' })).toBeInTheDocument();
   });
 
   it('starts /build/new from an empty editor', async () => {

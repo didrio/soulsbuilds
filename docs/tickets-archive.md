@@ -190,3 +190,31 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   `applyEmailLink`, `isDeadLink`; e2e from the emulator's oobCodes. Owner sets the action URL after the deploy.
 - T38 — Cookie-free usage counts — 2026-11-17 — GoatCounter (`lib/usage.ts`, live site only): page views by path (`usePageViews`) and events `tracking-started`, `item-collected`, `build-completed`, `route-opened`; privacy page, decision "Analytics" and docs updated. `copy-made` waits for T32.
 - T37 — Link previews — 2026-11-17 — a Cloud Function (`functions/`, Blaze) behind Hosting rewrites for `/build/**` and `/og/build/**`: per-build title, description and `og:*` tags, and a Satori/resvg card (picture item, name, level, author, weapons) in the game's skin; cached, falls back to the plain page. **Not live until the owner's first deploy** (`docs/firebase.md` "Link previews").
+- T50 — Crawlable build pages — 2026-11-17 — the `site` function serves `/sitemap.xml` (home + every build,
+  `updatedAt`), each build as plain HTML in `#root` (`functions/src/page.ts` via the editor store; write-up as
+  sanitized markdown, `markdown.ts`), 404 + `noindex` for missing builds; `robots.txt`; lazy card chunk, minified
+  bundle (~0.9 MB); `screenshot --no-js`. Sitemap left uncached at the CDN (header glob risk); `minInstances` waits
+  for a post-deploy cold-start measure (owner to-dos).
+- T51 — Head tags per page — 2026-11-17 — `PageHead` (`components/ui/`) edits the head's own title, description, canonical and `noindex` (effects, not hoisted tags, so the function's tags aren't doubled); home, build (`shareMeta`), profile (noindex with no builds), legal pages, 404, account, `/auth/action`. Formats in `lib/share.ts` (`buildTitle`, `homeMeta`, `pageTitle`) shared with the function; `index.html` has the keyword title and no static canonical.
+- T56 — Build URLs with names, and structured data — 2026-11-17 — `/build/<id>/<name slug>[/<tab>]` (`lib/slug.ts`, `tabs.ts` `splitBuildPath`, `tabPath(id, tab, name)`): the ID alone decides, a missing or stale slug is replaced, old tab links still work; the function's `PAGE` takes any slug, canonical, `og:url` and sitemap are slugged (the sitemap reads `name`), JSON-LD `CreativeWork` + `BreadcrumbList` (`functions/src/jsonld.ts`). **Owner:** after the deploy, run a build page through Google's Rich Results Test.
+- T63 — Equipment and Discussion tabs — 2026-11-17 — owner's request, no prior ticket. The build page's tabs are
+  Equipment (default, `/build/<id>/<slug>`), Guide, Discussion (`/discussion`; old `/description` and `/comments`
+  links redirect there). Equipment: `EquipmentSection` (game layout, each hand on its own, 104/80 px tiles, empty
+  fixed slots faint, `gear.ts` `equipmentGroups`) beside a stats-only sidebar, both columns the same height
+  (`StatsCard fill`); editing happens there, write-up editor under the panel. Guide and Discussion keep the
+  sidebar's equipment tiles (`GearTiles.tsx`, shared). Discussion (`DiscussionSection`): the write-up on top, then
+  the comments; the count is comments only. T47's generated description removed (app, phones, crawler page);
+  `STAT_NAMES` moved to `lib/buildMath.ts`. Phones: Weapons open by default, sections end Guide, Discussion.
+- T54 — Share menu — 2026-11-17 — `ShareButton` in the build's title section: Copy link (canonical), Copy for Reddit (`lib/shareText.ts` `redditText`, ends with the link), Download image (the T37 card), Share… where `navigator.share` exists; GoatCounter events `share-link|reddit|image|native`. Arrows and consumables aren't in the Reddit text (no card names). Download image and Share… weren't tried in a real browser (the card function isn't in the emulators).
+- T52 + T53 — Seeded builds — 2026-11-17 — `scripts/seed-builds.mjs` (+ `lib/seed-content.mjs` checks,
+  `lib/build-from-names.mjs` out of `seed.mjs`) writes `content/builds/er/<slug>.json` + `.md` as the Souls Builds
+  account: credit line added, gaps named, idempotent, dry run by default. 22 builds from search research
+  (`docs/product.md` "Seeding"). The Tarnished Pack's Idus Knight (3010) and Heavy Knight (3011) added to the data
+  and rules. Production write is the owner's (owner to-dos); the editor's class picker wasn't screenshotted.
+- T55 — Weapon and tag pages — 2026-11-17 — `/weapons/<slug>` (facts, where to find it via the Guide's solver,
+  builds most liked first) and `/tags/<slug>` (`src/features/hubs/`, slugs and copy in `lib/hubs.ts`); builds by
+  weapon through `equipment.weapons array-contains` (one index, no new field, no rules change); under 3 builds
+  `noindex`; the function serves both as plain HTML (`hub.ts`, lazy `weaponHub.ts`) and the sitemap lists hubs with
+  3+ builds. Links in: the build title section ("with Rivers of Blood…", tags → tag pages), the crawler HTML, the
+  weapon type → its tag page, the landing's Popular weapons (`stats.weaponCounts`, no staffs or seals; card
+  weapons now carry `type`). Owner's calls: weapons only, root URLs, no canvas mock. Deploy check: owner to-dos.

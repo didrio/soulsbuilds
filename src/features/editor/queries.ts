@@ -31,11 +31,22 @@ export function useBuild(buildId: string | null) {
   });
 }
 
-/** Creates (no `buildId`) or updates a build; resolves to its id. */
-export function useSaveBuild(ownerId: string | null) {
+/**
+ * Creates (no `buildId`) or updates a build; resolves to its id. `ownerId` comes with each save: a
+ * signed-out planner signs in on Save (T68), before `useAuth` has caught up.
+ */
+export function useSaveBuild() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ buildId, input }: { buildId: string | null; input: BuildInput }) => {
+    mutationFn: async ({
+      buildId,
+      ownerId,
+      input,
+    }: {
+      buildId: string | null;
+      ownerId: string | null;
+      input: BuildInput;
+    }) => {
       if (!ownerId) throw new Error('Log in to save a build.');
       if (buildId) {
         await updateBuild(buildId, input);

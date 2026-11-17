@@ -228,3 +228,29 @@ test('password reset and consumables', async ({ page }) => {
   await reset.getByRole('button', { name: 'Send reset link' }).click();
   await expect(page.getByText(/a reset link is on its way/)).toBeVisible();
 });
+
+// T68: the planner opens signed out; Save asks for an account and keeps the build through sign-up.
+test('plan a build signed out, then sign up to save it', async ({ page }) => {
+  const id = Date.now().toString(36);
+  const name = `Planned ${id}`;
+  await page.goto('/');
+  await page
+    .getByRole('navigation', { name: 'Main' })
+    .getByRole('link', { name: 'Plan a build' })
+    .click();
+  await expect(page.getByRole('heading', { name: 'New build' })).toBeVisible();
+  await page.getByLabel('Build name').fill(name);
+  await page.getByRole('list', { name: 'Right hand' }).getByRole('button').first().click();
+  await page.getByLabel('Search items').fill('Moonveil');
+  await page.getByRole('button', { name: /^Moonveil/ }).click();
+  await expect(page.getByRole('button', { name: /^Change Moonveil/ })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Save' }).click();
+  await signUpWithEmail(page, `e2e-plan-${id}@example.test`, `Planner ${id}`);
+
+  await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
+  await expect(page.getByRole('heading', { name })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Moonveil/ }).first()).toBeVisible();
+});

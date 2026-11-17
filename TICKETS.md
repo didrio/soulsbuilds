@@ -2,12 +2,12 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T68**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T71**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** the owner's next request (they have a run of them, 2026-11-17; T66 and T67 so far). The remaining tickets (T65, T57–T61)
+**Next:** T69, home page intro (Opus · high effort · plan mode off); then T70 (Up next: newcomers, the owner's request of 2026-11-17). The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -79,8 +79,63 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 
 ## Up next
 
-The owner's current run of requests (2026-11-17), one at a time, before anything in the Priority backlog. Empty
-until the owner's next request.
+The owner's current run of requests (2026-11-17), one at a time, before anything in the Priority backlog.
+
+**Newcomers (owner, 2026-11-17):** a first-time visitor can't tell what the site is or what to do. Checked on
+the live site: the home page is only the list (no pitch; `index.html`'s `#root` is empty, so crawlers on `/`
+read only the meta tags); the home title promises a "Build Planner" (the top search modifier, `docs/product.md`
+"Seeding") but signed out, `/build/new` is a log-in wall and the header has no way to plan; build pages (where
+most people arrive) never say that the Guide is a step-by-step route to every item you can track. Not mainly
+SEO (T50–T56 did that): it's what people see once they arrive. Owner's calls: plan before signing up; an intro
+band above the home list; a slim dismissible strip on build pages. T68 (plan without an account) is done; in order:
+
+#### T69 — Home page intro: what Souls Builds is, three things you can do
+
+- **Status:** ready
+- **Session:** Opus · high effort · plan mode off
+- **Goal:** A signed-out visitor on `/` sees in one screen what the site is and has one button per thing they
+  can do; signed-in users see the page as it is now.
+- **Done when:**
+  - New `features/builds/LandingIntro.tsx` at the top of `Landing.tsx`, signed out only (`useAuth()`: not
+    loading, no uid). It holds the page's `h1` ("Plan, share and follow Elden Ring builds" or similar); the
+    list keeps "Elden Ring builds" with the community count as an `h2`.
+  - One sentence under the heading, then three short panels (`Frame`, `SectionHeading`, `Label`; real item
+    icons via `iconUrl` from `@/data/core`), one button each: **Plan a build** (stats, HP, equip load and poise
+    update as you pick gear → `/build/new`); **Follow it in your run** (where every item is, in order; check
+    them off as you go → an example build's Guide: one seeded build with a strong early route, e.g.
+    `moonveil-early`, whose fixed id `IAumzY2DNj2NHObXD0QB` is the same locally and in production; one constant
+    with a unit test that the id is in `content/builds/er/`); **Share and discover** (one link shows the whole
+    build; browse what people play → scrolls to the list).
+  - Phones: the panels stack as compact rows so the list starts within about a screen.
+  - Crawlers: a static version (h1, the sentence, three links) inside `index.html`'s `#root`, which React
+    replaces on mount, so `/` has real text (check Hosting serves `/` from `index.html`; `functions/src/handler.ts`
+    doesn't route it).
+  - Usage: `intro-plan`, `intro-example`, `intro-browse`.
+  - Tests: `Landing.test.tsx` (signed out shows the intro and its links; signed in doesn't); new color pairs
+    in `src/theme/colors.test.ts`; e2e stays green. Screenshots of `/` signed out and in, desktop and `--mobile`.
+  - Docs: AGENTS.md project map (`features/builds/`); `docs/product.md` if the pitch wording settles.
+- **Context:** `features/builds/Landing.tsx`, `components/ui/{Frame,SectionHeading}`, `typography.ts`,
+  docs/architecture.md "Styling" (accent budget, type tiers), `content/builds/er/moonveil-early.json`,
+  `index.html`, `lib/share.ts` `homeMeta`.
+
+#### T70 — Build pages: a slim "new here?" strip for signed-out visitors
+
+- **Status:** after T69 (its "How it works" link goes to T69's intro)
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Someone landing on a build from a shared link or search learns in one line what the site is and
+  what the Guide does, without the build losing its place above the fold.
+- **Done when:**
+  - One line under the header on build pages and weapon/tag pages (`features/hubs/`), signed out only: "Souls
+    Builds: Elden Ring builds with a step-by-step route to every item." + "How it works" (→ `/`) + "Plan your
+    own" (→ `/build/new`) + a close button. Dismissal in `localStorage` (try/catch; renders fine without it).
+    The component lives in `src/app/` (shell-level).
+  - `tests/e2e/fold.spec.ts` (a full build's Equipment tab fits 1440×820) still passes: keep the strip
+    ≤ ~40 px, check whether the spec runs signed out; if it breaks the fold, move the line into the header row.
+  - Tests: unit (shown signed out; hidden signed in and after dismiss); `npm run e2e`. Screenshots of a build
+    page signed out, `--width 1440 --height 820` and `--mobile`.
+  - Docs: AGENTS.md project map.
+- **Context:** `src/app/App.tsx` (shell), `features/editor/BuildEditorPage.tsx`, `features/hubs/`,
+  `tests/e2e/fold.spec.ts`.
 
 ## Backlog
 
@@ -301,36 +356,17 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T68 — Plan a build without an account — 2026-11-17 — owner's request (newcomers can't tell what the site is for;
+  first of T68–T70): `/build/new` opens for anyone (`useBuildEditor`: a new build is editable signed out); Save
+  signed out opens the sign-up dialog and saves as the new account through `onSignedIn` (`useSaveBuild` takes the
+  owner per save, since `useAuth` lags); a note beside Save says an account is needed; a `beforeunload` warning
+  while an unsaved new build has a name, write-up, tags or gear; header **Plan a build** signed out (desktop nav,
+  phone "+" and menu); GoatCounter events `planner-opened-signed-out`, `signed-in-to-save`. No rules change.
+  Tests: `BuildEditorPage.test.tsx` (plan, Save, sign in, saved as the new uid), `Header.test.tsx`, e2e
+  `build-flow.spec.ts` "plan a build signed out, then sign up to save it" (the old "Log in to create a build"
+  e2e test removed). Docs: decision row "Plan before an account", `docs/product.md` "Low friction".
+
 - T67 — Readability pass — 2026-11-17 — owner's request (the site felt too wide, the serif hard to read): type scale one step up and in rem (`fonts.ts`: UI 15px, secondary 14, small 13, labels 12, `TEXT_BODY` 16, `TEXT_NAME` 22); write-ups in Inter 16px/1.7 (`MarkdownView`), EB Garamond only for names and headings ≥ 22px (400/italic/700 no longer loaded; Inter italic added); running text capped at `MEASURE` 35em ≈ 72 characters (write-ups, comments, taglines, legal); `CONTENT_WIDTH` 1240 → 1200 and the stats column 340 → 312 (the owner chose 1160, but the Equipment tab's five-spell row needs 372px columns for the T66 fold); attribute rows 24px and vitals gaps 10px so 1280×800 still fits (~10px to spare); form fields 16px (iOS focus zoom); buttons 14px with 12px sides on phones so Track/Like/Share share a row at 390px (375px wraps, as before).
 - T66 — Build page above the fold — 2026-11-17 — owner's request: no "All builds" (the header's Builds lit on build pages, `$section`); unframed top section: title block (88 px image; Report and Edit/Delete top right) then one sticky 64 px row, tabs left (accent as wide as the label) + `BuildActions` (Track, Like, Share) right; denser Equipment panel (no heading, 68 px tiles, `gear.ts` `equipmentLayout` pairs flask/arrows/spells/items up to 5 tiles) and stats card; a full build (`SEEDFULL0001`) fits 1440×820 and 1280×800 (`tests/e2e/fold.spec.ts`; `screenshot --height`). Also: a saved sign-in that can't renew is signed out and every query reloads (`onAuthChange`, `isDeadSession`; locally after `npm run dev` restarts the Auth emulator empty); comments' Top counts the viewer's own likes, held out of the rank until a sort is chosen (`threadComments` `held`). Remaining tickets moved to Backlog > Priority backlog.
 - T62 — Comments worth reading — 2026-11-17 — comments fill the column; a heart per comment (`commentLikes/{commentId}_{uid}` + the comment's `likeCount`, ±1 in one batch); Top/Newest (Top ranks without the viewer's own like); one reply level (`parentId` = a top-level comment, "@Name " on a reply to a reply; first 2 + "Show N more" past 3); a deleted comment's replies stay under "Comment deleted"; no migration (old comments read as null/0); "Author" badge; account deletion, `deleteBuild` and `admin.mjs remove`/`delete-user` handle comment likes (`lib/comments.ts`, `CommentItem`, `CommentForm`).
 - T64 — Landing title for "build planner" searches — 2026-11-17 — landing title "Elden Ring Build Planner and Builds | Souls Builds" and a description naming stats, equip load and poise (`homeMeta`, `index.html`); judge the effect in Search Console after T50's deploy.
-- T55 — Weapon and tag pages — 2026-11-17 — `/weapons/<slug>` (facts, where to find it via the Guide's solver,
-  builds most liked first) and `/tags/<slug>` (`src/features/hubs/`, slugs and copy in `lib/hubs.ts`); builds by
-  weapon through `equipment.weapons array-contains` (one index, no new field, no rules change); under 3 builds
-  `noindex`; the function serves both as plain HTML (`hub.ts`, lazy `weaponHub.ts`) and the sitemap lists hubs with
-  3+ builds. Links in: the build title section ("with Rivers of Blood…", tags → tag pages), the crawler HTML, the
-  weapon type → its tag page, the landing's Popular weapons (`stats.weaponCounts`, no staffs or seals; card
-  weapons now carry `type`). Owner's calls: weapons only, root URLs, no canvas mock. Deploy check: owner to-dos.
-
-- T52 + T53 — Seeded builds — 2026-11-17 — `scripts/seed-builds.mjs` (+ `lib/seed-content.mjs` checks,
-  `lib/build-from-names.mjs` out of `seed.mjs`) writes `content/builds/er/<slug>.json` + `.md` as the Souls Builds
-  account: credit line added, gaps named, idempotent, dry run by default. 22 builds from search research
-  (`docs/product.md` "Seeding"). The Tarnished Pack's Idus Knight (3010) and Heavy Knight (3011) added to the data
-  and rules. Production write is the owner's (owner to-dos); the editor's class picker wasn't screenshotted.
-- T54 — Share menu — 2026-11-17 — `ShareButton` in the build's title section: Copy link (canonical), Copy for Reddit (`lib/shareText.ts` `redditText`, ends with the link), Download image (the T37 card), Share… where `navigator.share` exists; GoatCounter events `share-link|reddit|image|native`. Arrows and consumables aren't in the Reddit text (no card names). Download image and Share… weren't tried in a real browser (the card function isn't in the emulators).
-- T63 — Equipment and Discussion tabs — 2026-11-17 — owner's request, no prior ticket. The build page's tabs are
-  Equipment (default, `/build/<id>/<slug>`), Guide, Discussion (`/discussion`; old `/description` and `/comments`
-  links redirect there). Equipment: `EquipmentSection` (game layout, each hand on its own, 104/80 px tiles, empty
-  fixed slots faint, `gear.ts` `equipmentGroups`) beside a stats-only sidebar, both columns the same height
-  (`StatsCard fill`); editing happens there, write-up editor under the panel. Guide and Discussion keep the
-  sidebar's equipment tiles (`GearTiles.tsx`, shared). Discussion (`DiscussionSection`): the write-up on top, then
-  the comments; the count is comments only. T47's generated description removed (app, phones, crawler page);
-  `STAT_NAMES` moved to `lib/buildMath.ts`. Phones: Weapons open by default, sections end Guide, Discussion.
-- T56 — Build URLs with names, and structured data — 2026-11-17 — `/build/<id>/<name slug>[/<tab>]` (`lib/slug.ts`, `tabs.ts` `splitBuildPath`, `tabPath(id, tab, name)`): the ID alone decides, a missing or stale slug is replaced, old tab links still work; the function's `PAGE` takes any slug, canonical, `og:url` and sitemap are slugged (the sitemap reads `name`), JSON-LD `CreativeWork` + `BreadcrumbList` (`functions/src/jsonld.ts`). **Owner:** after the deploy, run a build page through Google's Rich Results Test.
-- T51 — Head tags per page — 2026-11-17 — `PageHead` (`components/ui/`) edits the head's own title, description, canonical and `noindex` (effects, not hoisted tags, so the function's tags aren't doubled); home, build (`shareMeta`), profile (noindex with no builds), legal pages, 404, account, `/auth/action`. Formats in `lib/share.ts` (`buildTitle`, `homeMeta`, `pageTitle`) shared with the function; `index.html` has the keyword title and no static canonical.
-- T50 — Crawlable build pages — 2026-11-17 — the `site` function serves `/sitemap.xml` (home + every build,
-  `updatedAt`), each build as plain HTML in `#root` (`functions/src/page.ts` via the editor store; write-up as
-  sanitized markdown, `markdown.ts`), 404 + `noindex` for missing builds; `robots.txt`; lazy card chunk, minified
-  bundle (~0.9 MB); `screenshot --no-js`. Sitemap left uncached at the CDN (header glob risk); `minInstances` waits
-  for a post-deploy cold-start measure (owner to-dos).

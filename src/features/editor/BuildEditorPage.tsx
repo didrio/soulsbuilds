@@ -6,7 +6,6 @@ import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import PageMessage from '@/components/ui/PageMessage';
 import { useAppSelector } from '@/app/hooks';
-import { useOpenAuthDialog } from '@/app/authDialog';
 import { useMediaQuery } from '@/app/useMediaQuery';
 import { errorMessage } from '@/lib/firebase';
 import {
@@ -14,6 +13,7 @@ import {
   BELOW_TABLET,
   COLOR_BG,
   COLOR_LINE_STRONG,
+  COLOR_TEXT_MUTED,
   SHADOW_OVERLAY,
   SPACE_GUTTER,
   SPACE_LG,
@@ -21,6 +21,7 @@ import {
   SPACE_REGION,
   SPACE_SM,
   SPACE_XXL,
+  TEXT_SM,
 } from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildHeader, { BuildActions } from './sections/BuildHeader';
@@ -72,24 +73,11 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
   const { auth, build, buildQuery, editable, isNew } = editor;
   const tracking = useBuildTracking(editable ? null : build);
   const routeId = buildId ?? 'new';
-  const openAuthDialog = useOpenAuthDialog();
   const phone = useMediaQuery(BELOW_TABLET);
 
+  // A new build opens for anyone (T68): signed out, Save asks for an account first.
   if (isNew) {
     if (auth.loading) return <PageMessage loading />;
-    if (!auth.uid) {
-      return (
-        <PageMessage title="Log in to create a build">
-          <p>Builds are saved to your account. Once you’re in, the editor opens right here.</p>
-          <SignInActions>
-            <Button onClick={() => openAuthDialog('signup')}>Create account</Button>
-            <Button variant="secondary" onClick={() => openAuthDialog('login')}>
-              Log in
-            </Button>
-          </SignInActions>
-        </PageMessage>
-      );
-    }
   } else {
     if (buildQuery.isPending) return <PageMessage loading />;
     if (buildQuery.isError) {
@@ -253,6 +241,11 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
       {editable ? (
         <EditBar aria-label="Save changes">
           <ErrorMessage>{editor.saveError}</ErrorMessage>
+          {editor.signedOutDraft && !editor.saveError ? (
+            <SaveNote>
+              Free account needed to save: you’ll sign up or log in, and keep this build.
+            </SaveNote>
+          ) : null}
           <EditButtons>
             <Button variant="secondary" onClick={editor.handleCancel} disabled={editor.saving}>
               Cancel
@@ -330,11 +323,11 @@ const EditButtons = styled.div`
   margin-left: auto;
 `;
 
-const SignInActions = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${SPACE_SM};
-  justify-content: center;
+// Signed out: why Save asks for an account (T68).
+const SaveNote = styled.p`
+  color: ${COLOR_TEXT_MUTED};
+  font-size: ${TEXT_SM};
+  margin: 0;
 `;
 
 export default BuildEditorPage;

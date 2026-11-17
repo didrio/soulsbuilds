@@ -24,10 +24,16 @@ const renderHeader = (uid: string | null = null, route?: string) => {
 // jsdom doesn't apply media queries, so the desktop nav is what's visible; the phone controls are
 // display: none and queried with `hidden: true`.
 describe('Header', () => {
-  it('signed out: Builds, Log in and Sign up', async () => {
+  it('signed out: Builds, Plan a build (T68), Log in and Sign up', async () => {
     const { user, onLogIn, onSignUp } = renderHeader();
     const nav = screen.getByRole('navigation', { name: 'Main' });
     expect(within(nav).getByRole('link', { name: 'Builds' })).toHaveAttribute('href', '/');
+    expect(within(nav).getByRole('link', { name: 'Plan a build' })).toHaveAttribute(
+      'href',
+      '/build/new',
+    );
+    // Phones: the labelled "+" plans a build too.
+    expect(screen.getAllByRole('link', { name: 'Plan a build', hidden: true })).toHaveLength(2);
     expect(within(nav).queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument();
     await user.click(within(nav).getByRole('button', { name: 'Log in' }));
     expect(onLogIn).toHaveBeenCalled();

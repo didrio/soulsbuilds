@@ -1,6 +1,6 @@
 // Sign up and log in (T30): email + password with the display-name step, log out and back in where
-// you were, "Forgot password?", Google in the Auth emulator's popup, and "Log in to create a build"
-// continuing to the editor. `npm run e2e`.
+// you were, "Forgot password?" and Google in the Auth emulator's popup. Signing up from the
+// planner's Save (T68) is in build-flow.spec.ts. `npm run e2e`.
 import { expect, test } from '@playwright/test';
 import {
   accountButton,
@@ -128,18 +128,4 @@ test('an account without a profile gets the name step; closing it logs out', asy
   await login.getByLabel('Password').fill(E2E_PASSWORD);
   await login.getByRole('button', { name: 'Log in' }).click();
   await chooseName(page, `Late ${unique}`);
-});
-
-test('“Log in to create a build” opens the editor once signed up', async ({ page }) => {
-  const unique = uniqueId();
-  await page.goto('/build/new');
-  await expect(page.getByRole('heading', { name: 'Log in to create a build' })).toBeVisible();
-  await page.getByRole('main').getByRole('button', { name: 'Create account' }).click();
-  const signUp = page.getByRole('form', { name: 'Sign up' });
-  await signUp.getByLabel('Email').fill(`new-build-${unique}@example.test`);
-  await signUp.getByLabel('Password').fill(E2E_PASSWORD);
-  await signUp.getByRole('button', { name: 'Create account' }).click();
-  await chooseName(page, `Builder ${unique}`);
-  await expect(page).toHaveURL(/\/build\/new$/);
-  await expect(page.getByLabel('Build name')).toBeVisible();
 });

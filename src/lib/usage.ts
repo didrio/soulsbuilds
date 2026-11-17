@@ -69,4 +69,7 @@ export type UsageEvent =
   | 'share-link'
   | 'share-reddit'
   | 'share-image'
-  | 'share-native';
+  | 'share-native'
+  // T68: the planner opened signed out, and a sign-in (or sign-up) started from its Save.
+  | 'planner-opened-signed-out'
+  | 'signed-in-to-save';

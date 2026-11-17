@@ -36,8 +36,9 @@ interface HeaderProps {
 
 /**
  * Full-width bar: the wordmark and the current game; Builds, the account menu (the display name:
- * Profile, Account, Log out; T31) and New build (the primary button), or Builds, Log in and Sign up.
- * Phones: a labelled "+" (New build) and a Menu button that opens the rest as a panel under the bar.
+ * Profile, Account, Log out; T31) and New build (the primary button), or Builds, Plan a build (the
+ * planner opens signed out, T68), Log in and Sign up. Phones: a labelled "+" (New build, or Plan a
+ * build) and a Menu button that opens the rest as a panel under the bar.
  * On a build's page Builds shows as the current section (T66: the build page's way back to the list,
  * since "All builds" went).
  */
@@ -74,6 +75,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
               <NavItem to="/" end $section={inBuilds}>
                 Builds
               </NavItem>
+              {uid ? null : <NavItem to="/build/new">Plan a build</NavItem>}
               {uid ? <AccountMenu /> : logIn()}
               {uid ? (
                 <ButtonLink to="/build/new" variant="primary">
@@ -96,6 +98,11 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
                   <PlusIcon size={18} />
                 </IconLink>
               ) : (
+                <IconLink to="/build/new" variant="secondary" aria-label="Plan a build">
+                  <PlusIcon size={18} />
+                </IconLink>
+              )}
+              {uid ? null : (
                 <Button
                   variant="primary"
                   aria-haspopup="dialog"
@@ -119,6 +126,11 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
                       <NavItem to="/" end onClick={closeMenu} $section={inBuilds}>
                         Builds
                       </NavItem>
+                      {uid ? null : (
+                        <NavItem to="/build/new" onClick={closeMenu}>
+                          Plan a build
+                        </NavItem>
+                      )}
                       {uid ? (
                         <PhoneAccountLinks uid={uid} onNavigate={closeMenu} />
                       ) : (
