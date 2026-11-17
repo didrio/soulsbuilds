@@ -2,7 +2,7 @@ import { FirebaseError } from 'firebase/app';
 import { describe, expect, it, vi } from 'vitest';
 import { errorField, errorMessage, hasPassword, isWrongPassword, sendPasswordReset } from './auth';
 
-vi.mock('./app', () => ({ auth: {} }));
+vi.mock('./app', () => ({ auth: {}, USE_EMULATORS: false }));
 const sendPasswordResetEmail = vi.hoisted(() => vi.fn());
 vi.mock('firebase/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/auth')>()),
@@ -68,7 +68,17 @@ describe('sendPasswordReset', () => {
   it('answers the same for an email without an account', async () => {
     sendPasswordResetEmail.mockRejectedValueOnce(authError('auth/user-not-found'));
     await expect(sendPasswordReset(' nobody@example.test ')).resolves.toBeUndefined();
-    expect(sendPasswordResetEmail).toHaveBeenCalledWith({}, 'nobody@example.test');
+    expect(sendPasswordResetEmail).toHaveBeenCalledWith({}, 'nobody@example.test', {
+      url: 'https://soulsbuilds.com',
+    });
+  });
+
+  it('links back to the site from the default action page', async () => {
+    sendPasswordResetEmail.mockResolvedValueOnce(undefined);
+    await sendPasswordReset('me@example.test');
+    expect(sendPasswordResetEmail).toHaveBeenLastCalledWith({}, 'me@example.test', {
+      url: 'https://soulsbuilds.com',
+    });
   });
 
   it('still reports other errors', async () => {

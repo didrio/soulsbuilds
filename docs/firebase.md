@@ -315,11 +315,17 @@ unaffected).
    display name; then delete that test account from the Account page (the menu under your name; it
    re-authenticates with Google).
 
-6. **Email action URL (T43).** Authentication → Templates → Password reset (the same setting applies to Email
-   address verification and Email address change) → Customize action URL → `https://soulsbuilds.com/auth/action`.
-   The links in the emails then open the site's own page (`/auth/action?mode=…&oobCode=…`, `ActionPage`) instead of
-   Firebase's default one on soulsbuilds.firebaseapp.com. Smoke test on soulsbuilds.com: "Forgot password?" with a
-   real address → the email's link → a new password → log in; the link a second time says it has expired.
+6. **Email action URL (T43), blocked.** The action URL (`notification.sendEmail.callbackUri`, one setting for the
+   verification, reset and email-change templates) is still Firebase's default
+   `https://soulsbuilds.firebaseapp.com/__/auth/action`. On 2026-11-17 the console said "An error occurred updating
+   action URL", and the Identity Platform API refused the same change too (`PATCH
+identitytoolkit.googleapis.com/admin/v2/projects/soulsbuilds/config?updateMask=notification.sendEmail.callbackUri`
+   → 400 `EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`), though `soulsbuilds.com` is an authorized domain. The cause is
+   unknown (maybe tied to a custom email domain, Authentication → Templates → custom domain: four DNS records, up
+   to 48 h; or ask Firebase support). Until it's set, the emails' links open Firebase's default page, which shows a "Continue" link back to the site (every email call in `lib/firebase/auth.ts` passes `emailLinkSettings()`, a `continueUrl` on `soulsbuilds.com`); `/auth/action`
+   (`ActionPage`) is deployed and waiting. When it works: set it to `https://soulsbuilds.com/auth/action`, then smoke
+   test on soulsbuilds.com: "Forgot password?" with a real address → the email's link → a new password → log in; the
+   link a second time says it has expired.
    Locally the Auth emulator's emails are not sent: their codes are at
    `http://127.0.0.1:9099/emulator/v1/projects/demo-soulsbuilds/oobCodes` (`tests/e2e/email-actions.spec.ts`
    builds `/auth/action?mode=…&oobCode=…` from them). Mail scanners may open a link first and use it up, so an

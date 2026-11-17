@@ -19,13 +19,24 @@ import {
   updatePassword,
   verifyBeforeUpdateEmail,
   verifyPasswordResetCode,
+  type ActionCodeSettings,
   type User,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { LIMITS } from '@/lib/models';
-import { auth } from './app';
+import { auth, USE_EMULATORS } from './app';
 
 export type AuthUser = User;
+
+/**
+ * For the emails Auth sends (verification, reset, email change): a `continueUrl` that makes Firebase's
+ * default action page show a "Continue" link back to the site, until the emails' action URL can point
+ * at our own `/auth/action` (T43, blocked: docs/firebase.md "Sign-in setup" step 6). It has to be on an
+ * authorized domain, so production always uses the main one.
+ */
+function emailLinkSettings(): ActionCodeSettings {
+  return { url: USE_EMULATORS ? window.location.origin : 'https://soulsbuilds.com' };
+}
 
 /** Calls `callback` with the signed-in user (or null) now and on every change; returns unsubscribe. */
 export function onAuthChange(callback: (user: AuthUser | null) => void): () => void {
@@ -45,7 +56,7 @@ export async function signIn(email: string, password: string): Promise<string> {
 export async function signUp(email: string, password: string): Promise<string> {
   const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
   // Send-only verification: posting doesn't require it, so a failure here must not fail sign-up.
-  await sendEmailVerification(user).catch(() => undefined);
+  await sendEmailVerification(user, emailLinkSettings()).catch(() => undefined);
   return user.uid;
 }
 
@@ -104,7 +115,7 @@ export async function signOut(): Promise<void> {
  */
 export async function sendPasswordReset(email: string): Promise<void> {
   try {
-    await sendPasswordResetEmail(auth, email.trim());
+    await sendPasswordResetEmail(auth, email.trim(), emailLinkSettings());
   } catch (error) {
     if (error instanceof FirebaseError && error.code === 'auth/user-not-found') return;
     throw error;
@@ -147,7 +158,7 @@ function currentUser(): AuthUser {
 
 /** Sends the signed-in user a verification email (the Account page's "Resend" button). */
 export async function resendVerificationEmail(): Promise<void> {
-  await sendEmailVerification(currentUser());
+  await sendEmailVerification(currentUser(), emailLinkSettings());
 }
 
 /**
@@ -179,7 +190,7 @@ export async function changePassword(current: string, next: string): Promise<voi
  */
 export async function changeEmail(newEmail: string, password: string): Promise<void> {
   await reauthenticate(password);
-  await verifyBeforeUpdateEmail(currentUser(), newEmail.trim());
+  await verifyBeforeUpdateEmail(currentUser(), newEmail.trim(), emailLinkSettings());
 }
 
 /**

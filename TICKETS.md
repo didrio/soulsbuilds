@@ -16,9 +16,10 @@ and spacing, and the canvas notes say why.
 
 **Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
 
-- After T43's deploy is live: Console → Authentication → Templates → Customize action URL →
-  `https://soulsbuilds.com/auth/action` (`docs/firebase.md` "Sign-in setup" step 6), then smoke test a reset
-  email. Setting it before the deploy sends the links to a 404.
+- T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
+  is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
+  again later, set up the custom email domain, or ask Firebase support; details in `docs/firebase.md` "Sign-in
+  setup" step 6. Until then the emails use Firebase's default page.
 - Approve the first CI production run (Actions → the run → Review deployments); it proves Workload Identity end to
   end. Open a throwaway PR once to see the preview comment.
 - In a day or two: App Check → APIs, check that nearly all requests are verified, then **Enforce** for Firestore
