@@ -2,7 +2,7 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T78**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T79**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
@@ -408,6 +408,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T78 — Level filters failed in production — 2026-11-17 — every `/builds` level range said "Couldn't load builds": Firestore wants a range field (`level`) last in the index in the last orderBy's direction, ours were ascending after likes/date/players; 9 indexes flipped to `level` descending (deployed by hand, checked live), `src/lib/firebase/indexes.test.ts` checks every list/search query shape against `firestore.indexes.json` (the emulator never does). Production still holds 18 indexes not in the file (the old ascending ones + older); harmless, delete in the console or with `--force` if wanted.
 - T76 — Small fixes from the UI/UX pass — 2026-11-17 — signed-out comment box is one "Log in to comment" button (opens the dialog); Guide legend swatches 12 px; stat "+N" titled "From talismans"; phone tags keep distance from the actions. Not checked: Report's spacing signed in on phones.
 - T74 — Home list: shelves and the builds page — 2026-11-17 — `/` = shelves (Trending by activity over builds-since, Most played, Fresh, Top <tag>), `/builds` = feed rows (likes rail), one filter bar (popovers, phone sheet, chips), search over a daily index in `stats/<game>`, likes/played ties newest first (new indexes)
 - T71 — The write-up named in its tab — 2026-11-17 — from the UI/UX pass (owner's pick: name it in the tab, layout

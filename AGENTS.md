@@ -15,7 +15,7 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74, T76 done; T72, T73, T75, T77 (the UI/UX pass) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74, T76, T78 done; T72, T73, T75, T77 (the UI/UX pass) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
@@ -262,6 +262,8 @@ TICKETS.md                 Ordered backlog; one ticket per session
   `fsevents` are deliberately denied (not needed here).
 - **Production deploys go through CI** (approved runs on `main`: hosting, rules and indexes together). A rules
   change that needs data rewritten needs a migration script, a backup (`admin.mjs export`) and the owner first.
+- **The emulator ignores composite indexes**: a missing or mis-ordered one fails only in production. New
+  builds query shapes go into `src/lib/firebase/indexes.test.ts`; range fields sort in the last orderBy's direction.
 - **`serverTimestamp()` reads back as an estimate** until the server confirms (`toBuild` and friends pass
   `serverTimestamps: 'estimate'`), so a just-written doc never has a null `createdAt`.
 - **`npm run seed` wipes the emulator's Firestore** before seeding, and so does importing `scripts/seed.mjs`

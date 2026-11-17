@@ -107,7 +107,9 @@ interface PageOptions extends LevelRange {
 /**
  * The level range as Firestore range filters. They sit next to an `orderBy` on another field (likes,
  * date or name), which works with Firestore's multi-field range support and an index that ends in
- * `level` (equality fields, then the order field, then the range): see firestore.indexes.json.
+ * `level` (equality fields, then the order fields, then the range in the LAST order field's direction:
+ * `level` descending after likes or date). indexes.test.ts checks every query against
+ * firestore.indexes.json, since the emulator doesn't.
  */
 function levelConstraints({ minLevel, maxLevel }: LevelRange): QueryConstraint[] {
   const constraints: QueryConstraint[] = [];

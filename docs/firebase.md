@@ -37,7 +37,7 @@ public by design; security rules protect the data.
   It now ships with every approved production deploy from CI.
 - `firestore.indexes.json` has the composite indexes the queries need (builds by game + likes/date, by tag, by
   owner; likes by user) and, under `fieldOverrides`, collection-group single-field indexes for account
-  deletion (likes and commentLikes (T62) by `userId`, comments by `authorId`). A new index takes minutes to build in production; queries that need it fail until then.
+  deletion (likes and commentLikes (T62) by `userId`, comments by `authorId`). A new index takes minutes to build in production; queries that need it fail until then. The emulator never checks indexes, so `src/lib/firebase/indexes.test.ts` runs every builds list/search query shape against the file (a range field such as `level` goes last, in the direction of the last `orderBy`).
 - Production also holds an unused 2022 doc, `app/tags` (the old boss-tag list). No rule matches it, so clients
   can't read it; it's in the T12 backup.
 

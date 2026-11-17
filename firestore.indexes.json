@@ -74,7 +74,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -96,7 +96,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -194,28 +194,6 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "builds",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "game",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "likeCount",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
           "order": "DESCENDING"
         }
       ]
@@ -239,10 +217,32 @@
         {
           "fieldPath": "createdAt",
           "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "builds",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "game",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -290,7 +290,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -330,7 +330,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -378,7 +378,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -426,7 +426,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
@@ -466,7 +466,7 @@
         },
         {
           "fieldPath": "level",
-          "order": "ASCENDING"
+          "order": "DESCENDING"
         }
       ]
     },
