@@ -51,6 +51,13 @@
         }
       },
       {
+        "source": "/sitemap.xml",
+        "function": {
+          "functionId": "site",
+          "region": "us-central1"
+        }
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

@@ -50,6 +50,9 @@ shareable page, the acquisition route and credited variations.
   Community features (likes, comments, variations) add to that; they can't be the reason to come while the site is
   small (52 builds by 33 players at relaunch).
 - **Credit is permanent.** A copy always links to the original, and the link can't be removed (T32).
+- **Seeded builds credit their source** (T52). The Souls Builds account recreates community builds: the
+  loadout is copied, the write-up is our own (or the author's, with their OK), and a fixed credit line links
+  the original.
 - **Like and Track, not Favorite.** A like is public appreciation and doubles as your long-term favorites (the
   profile's Liked tab). Tracking means "I'm playing this now": private by default, with only totals on the build
   page ("37 playing · 12 finished").
@@ -70,6 +73,11 @@ shareable page, the acquisition route and credited variations.
 5. **Sign-in and account polish** (T30–T31).
 6. **Copies and variations** (T32–T33): better once there's a crowd. Parked indefinitely in `TICKETS.md` until the
    owner asks for them.
+7. **Discoverability** (T50–T56, planned 2026-11-16): crawlers can read every build (sitemap, content in the
+   HTML, real 404s, per-page titles), seeded builds, a Share button with "Copy for Reddit", and weapon and tag
+   pages for what people search. Fextralife owns generic searches; the chance is the long tail and shared links.
+8. **More games** (T57–T61): Dark Souls III, Remastered and II from the owner's exports, same UX, seeded at
+   launch.
 
 ## Validate cheaply
 

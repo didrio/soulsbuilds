@@ -390,7 +390,7 @@ one (`copy-made` when T32 ships). Counts made before the script has loaded are q
 out, run `localStorage.skipgc = 't'` in the browser console on the live site. Ad blockers hide some visitors,
 so counts run low. No consent banner is needed; the privacy page says what's counted.
 
-## Link previews (T37)
+## Link previews and crawlers (T37, T50)
 
 A pasted build link shows a card because `functions/` (one HTTPS function `site`, Node 24, `us-central1`) answers two
 Hosting rewrites (`firebase.json`): `/build/**` → the app's own `index.html` fetched from Hosting, with the title,
@@ -403,4 +403,18 @@ and the host allow-list for fetching static files. `scripts/build-functions.mjs`
 with the shared `src/` code (game data, `buildImage`) into `functions/lib/index.js` (rolldown) and copies the
 fonts; `firebase.json` runs it as the predeploy step. Pages are cached 5 minutes at the CDN, images an hour; the
 function never fails a page (any error serves the plain `index.html`). The app itself is unchanged: it still
-renders in the browser. Production setup, cost and checks: `docs/firebase.md` "Link previews".
+renders in the browser. Production setup, cost and checks: `docs/firebase.md` "Link previews and crawlers".
+
+**Crawlers (T50).** The same function makes the site readable without JavaScript. A found build's page also
+carries the build as plain HTML inside `#root` (`functions/src/page.ts`): it loads the build into a fresh editor
+store (`makeStore` + `loadBuild`) and reads the same selectors the page uses (`gearGroups`, the attributes and
+talisman bonuses, `describeBuild` when there's no write-up), so it says what the app shows; the write-up goes
+through the app's markdown pipeline as HTML (`functions/src/markdown.ts`: GFM, raw HTML dropped, rehype-sanitize,
+links `rel="nofollow ugc"`). A `<style>` in that block paints it in the site's colors, since visitors see it until
+the bundle runs; `createRoot` replaces it on the first render (not hydration: it's the same content, not
+cloaking). A build that doesn't exist is a **404** with `noindex` (`/build/new`, the editor's create page, is
+not); read failures stay 200 with the plain page. `/sitemap.xml` lists `/` and every build with its `updatedAt`
+(one field-masked query). `scripts/build-functions.mjs` now writes `functions/lib/` as a directory: the card
+renderer (satori, resvg, sharp) is its own chunk, loaded on the first image request, so pages and the sitemap
+start faster; the bundle is minified (~0.9 MB, mostly game data). Pages only ever import framework-free editor
+code (the store, selectors, `gear.ts`, `describe.ts`); keep it that way, or React ends up in the function.

@@ -4,12 +4,15 @@
 // errors and failed requests, which are often the real answer.
 //
 //   npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>]
-//                         [--click <button name>]
+//                         [--click <button name>] [--no-js]
 //   npm run screenshot -- /build/SEEDBLEED001 --mobile
 //   npm run screenshot -- /build/SEEDBLEED001 --width 1000   (desktop at another width)
 //   npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"
 //     (clicks the button with that accessible name first, e.g. to open a dialog; signed out only:
 //     for signed-in pages drive the browser or write an e2e test)
+//   BASE_URL=http://127.0.0.1:5190 npm run screenshot -- /build/SEEDBLEED001 --no-js
+//     (JavaScript off: what crawlers read, T50; only the function behind Hosting fills the page, so point
+//     BASE_URL at a Hosting emulator: docs/firebase.md "Link previews and crawlers")
 import { mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,6 +36,7 @@ function parseArgs(argv) {
     wait: 1500,
     name: null,
     click: null,
+    js: true,
   };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -42,6 +46,7 @@ function parseArgs(argv) {
     else if (arg === '--wait') opts.wait = Number(argv[(i += 1)]);
     else if (arg === '--name') opts.name = argv[(i += 1)];
     else if (arg === '--click') opts.click = argv[(i += 1)];
+    else if (arg === '--no-js') opts.js = false;
     else if (arg === '--help' || arg === '-h') opts.help = true;
     else if (!arg.startsWith('--')) opts.route = arg.startsWith('/') ? arg : `/${arg}`;
     else throw new Error(`Unknown option ${arg}`);
@@ -53,7 +58,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
     console.log(
-      'npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>] [--click <button name>]',
+      'npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>] [--click <button name>] [--no-js]',
     );
     return;
   }
@@ -70,7 +75,12 @@ async function main() {
   const base = opts.mobile ? VIEWPORTS.mobile : VIEWPORTS.desktop;
   const viewport = opts.width ? { ...base, width: opts.width } : base;
   const browser = await chromium.launch({ executablePath: CHROME });
-  const page = await browser.newPage({ viewport, isMobile: opts.mobile, hasTouch: opts.mobile });
+  const page = await browser.newPage({
+    viewport,
+    isMobile: opts.mobile,
+    hasTouch: opts.mobile,
+    javaScriptEnabled: opts.js,
+  });
   const problems = [];
   page.on('console', (msg) => msg.type() === 'error' && problems.push(`console: ${msg.text()}`));
   page.on('pageerror', (error) => problems.push(`page error: ${error.message}`));
@@ -92,7 +102,7 @@ async function main() {
 
   const slug =
     opts.name ??
-    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}`;
+    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}${opts.js ? '' : '-nojs'}`;
   const dir = join(root, '.artifacts', 'screenshots');
   await mkdir(dir, { recursive: true });
   const file = join(dir, `${slug}.png`);

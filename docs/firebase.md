@@ -182,7 +182,7 @@ Things to know (T23, from the SDK source and measurements):
   `node scripts/firebase.mjs deploy --project soulsbuilds --only firestore:rules,firestore:indexes`. Needs
   `node scripts/firebase.mjs login` once.
 - Never `firebase deploy` without `--only`. Hosting serves `dist/` with an SPA rewrite to `index.html`, except
-  `/build/**` and `/og/build/**` (the link-preview function, T37: `docs/firebase.md` "Link previews").
+  `/build/**`, `/og/build/**` and `/sitemap.xml` (the `site` function, T37/T50: "Link previews and crawlers" below).
 - **Cache headers** (`firebase.json` "headers", T21; globs match the request path, before the rewrite, and
   don't overlap because the docs don't say which rule wins): hashed Vite files `/assets/*.@(js|css|woff…)` →
   `public, max-age=31536000, immutable`; `/assets/icons/**` → one week (names aren't hashed; `npm run data` can
@@ -192,11 +192,13 @@ demo-soulsbuilds --only hosting "curl -sI http://127.0.0.1:5190/"` (Hosting emul
 - `index.html` sends `soulsbuilds.web.app` and `soulsbuilds.firebaseapp.com` to `soulsbuilds.com` (same path).
   Preview channels and Firebase's `/__/auth/*` pages (email verification and password reset links) are unaffected.
 
-## Link previews (T37)
+## Link previews and crawlers (T37, T50)
 
 A pasted build link shows a card (title, description, image) because a Cloud Function answers `/build/**` and
 `/og/build/**` (`firebase.json` rewrites; code in `functions/`, shared logic in `src/lib/share.ts`; design in
-`docs/architecture.md` "Link previews"). It needs the **Blaze plan**.
+`docs/architecture.md` "Link previews and crawlers"). Since T50 it also serves `/sitemap.xml`, puts each build
+into the page as plain HTML for crawlers, and answers 404 + `noindex` for builds that don't exist;
+`public/robots.txt` points at the sitemap and keeps crawlers off `/account` and `/auth/`. It needs the **Blaze plan**.
 
 - **Deploy order matters.** The Hosting rewrite points at the function: deploy the function **before or with**
   the Hosting change, or every build page 404s. `npm run deploy` and CI use `--only functions,hosting,…` for
@@ -229,9 +231,25 @@ A pasted build link shows a card (title, description, image) because a Cloud Fun
   other emulator ports (firestore, functions, hosting, hub, logging), `npm run build && npm run build:functions`,
   then `node scripts/firebase.mjs --config <scratch> emulators:exec --project demo-soulsbuilds --only
 hosting,functions,firestore "node scripts/seed.mjs && curl -s http://127.0.0.1:<hosting>/build/SEEDBLEED001"`.
+- **Look at what crawlers read** (T50): with that recipe's Hosting emulator running (`emulators:start` instead of
+  `exec`), `BASE_URL=http://127.0.0.1:<hosting> npm run screenshot -- /build/SEEDBLEED001 --no-js [--mobile]`.
+  Point the function at the dev emulator's seeded Firestore with `FIRESTORE_EMULATOR_HOST=127.0.0.1:8085` instead
+  of seeding a scratch one. **Don't load that page with JavaScript on**: `npm run build` (in any `--mode`) is a
+  production build, and its JS talks to the production project.
+- **The sitemap isn't cached at the CDN.** The no-cache header rule (`!/@(assets|build|og)/**`) matches
+  `/sitemap.xml` and overrides the function's `s-maxage=3600`. Every pattern that would exclude it while still
+  matching `/` needs braces (production expands them differently, see "Cache headers") or `!(…)` segments whose
+  production behavior is unverified, and a mistake there would stop the HTML routes revalidating after a deploy.
+  The cost is one Firestore read per build per sitemap fetch (crawlers fetch it a few times a day); revisit with a
+  sitemap index or an in-memory cache when there are thousands of builds.
 - **Check production**: `curl -s https://soulsbuilds.com/build/<id> | grep og:` and open
-  `https://soulsbuilds.com/og/build/<id>.png`. Discord, Reddit and X cache cards (X and Discord for hours or
+  `https://soulsbuilds.com/og/build/<id>.png`. After T50: `curl -sI https://soulsbuilds.com/build/NOSUCHBUILD`
+  (404), `curl -s https://soulsbuilds.com/sitemap.xml | head`, and the page's `#root` holds the build. Discord, Reddit and X cache cards (X and Discord for hours or
   days); Facebook's Sharing Debugger and X's Card Validator re-fetch on demand.
+- **Cold starts** (T50): measured 2026-11-16 on T37's function, a cold first byte was 2.5 s and a warm one about
+  0.3 s (`curl -w '%{time_starttransfer}'` with a cache-busting query; the instance stayed warm 12 minutes after a
+  request). Re-measure after T50's deploy (a bigger bundle, but the card libraries now load lazily) and decide on
+  `minInstances: 1` then (`docs/decisions.md`).
 - **Cost** (not verified against current prices; the Billing page is the truth): each page or image request
   that misses Hosting's CDN cache runs the function for about 100 ms (pages) to 1 s (a card, cached for an hour),
   on 512 MiB, at most 5 instances. Pages are cached 5 minutes. The free allowance (millions of requests a month)
@@ -239,7 +257,9 @@ hosting,functions,firestore "node scripts/seed.mjs && curl -s http://127.0.0.1:<
   storage and the one-off build minutes of each deploy. A crawler flood is capped by `maxInstances` and the
   CDN cache; the budget alert is the backstop.
 - **Failure mode**: the function never breaks a page. If a build can't be read or the card can't be drawn, it
-  serves the plain `index.html` (or redirects the image to the site image). If `index.html` itself can't be
+  serves the plain `index.html` (or redirects the image to the site image); if only the plain content fails, the
+  page keeps its meta tags. A build that doesn't exist is a 404 (with the app's HTML, so the app still shows
+  "Build not found"). A failed sitemap read is a 500 with `no-store`, never a partial list. If `index.html` itself can't be
   fetched from Hosting it returns 502; the app's other routes don't depend on the function.
 - **Stale window**: a function-served page is cached for 5 minutes at the CDN, so for up to 5 minutes after a
   deploy a build page can reference the previous deploy's hashed files (the same as an open tab; reload fixes it).

@@ -32,7 +32,8 @@ export interface DescriptionFacts {
   dlcItems: string[];
 }
 
-const STAT_NAMES: Record<StatKey, string> = {
+/** The attributes' names, in the game's order (also the function's plain page, T50). */
+export const STAT_NAMES: Record<StatKey, string> = {
   vigor: 'Vigor',
   mind: 'Mind',
   end: 'Endurance',

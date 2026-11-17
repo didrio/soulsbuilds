@@ -1,6 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { escapeHtml, injectMeta, shareMeta, truncate } from './share';
+import {
+  escapeHtml,
+  injectMeta,
+  injectNoindex,
+  injectRoot,
+  shareMeta,
+  sitemapXml,
+  truncate,
+} from './share';
 
 const input = {
   name: 'Bleed Samurai',
@@ -84,5 +92,41 @@ describe('injectMeta', () => {
 describe('escapeHtml', () => {
   it('escapes the characters that break an attribute', () => {
     expect(escapeHtml(`<a href="x">&</a>`)).toBe('&lt;a href=&quot;x&quot;&gt;&amp;&lt;/a&gt;');
+  });
+});
+
+describe('injectRoot', () => {
+  const index = readFileSync('index.html', 'utf8');
+
+  it("puts the content inside the app's root div, once", () => {
+    const html = injectRoot(index, '<main>$& Bleed</main>');
+    expect(html).toContain('<div id="root"><main>$& Bleed</main></div>');
+    expect(html.match(/id="root"/g)).toHaveLength(1);
+  });
+
+  it('leaves a page without an empty root div alone', () => {
+    expect(injectRoot('<div id="app"></div>', '<p>x</p>')).toBe('<div id="app"></div>');
+  });
+});
+
+describe('injectNoindex', () => {
+  it('adds the robots tag to the head', () => {
+    const html = injectNoindex(readFileSync('index.html', 'utf8'));
+    expect(html).toMatch(/<meta name="robots" content="noindex" \/>\s*<\/head>/);
+  });
+});
+
+describe('sitemapXml', () => {
+  it('lists each URL with its date, escaped', () => {
+    const xml = sitemapXml([
+      { loc: 'https://soulsbuilds.com/' },
+      { loc: 'https://soulsbuilds.com/build/A?x=1&y=2', lastmod: new Date('2026-11-16T23:59:00Z') },
+    ]);
+    expect(xml).toMatch(/^<\?xml version="1.0" encoding="UTF-8"\?>\n<urlset xmlns=/);
+    expect(xml).toContain('<url><loc>https://soulsbuilds.com/</loc></url>');
+    expect(xml).toContain(
+      '<url><loc>https://soulsbuilds.com/build/A?x=1&amp;y=2</loc><lastmod>2026-11-16</lastmod></url>',
+    );
+    expect(xml.trimEnd().endsWith('</urlset>')).toBe(true);
   });
 });

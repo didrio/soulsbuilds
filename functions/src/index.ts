@@ -1,11 +1,18 @@
-// Link previews (T37): one HTTPS function behind Hosting rewrites (firebase.json). docs/architecture.md
-// "Link previews". Reads builds with the Admin SDK (builds are public anyway); never writes.
+// Link previews (T37) and crawlable build pages (T50): one HTTPS function behind Hosting rewrites
+// (firebase.json). docs/architecture.md "Link previews". Reads builds with the Admin SDK (builds are
+// public anyway); never writes.
 import { initializeApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, type Timestamp } from 'firebase-admin/firestore';
 import { onRequest } from 'firebase-functions/https';
 import type { BuildDoc } from '@/lib/models';
-import { renderCard } from './card';
+import type { CardData } from './card';
 import { handle, type Deps } from './handler';
+
+/**
+ * The card renderer loads on the first image request only: satori, resvg and sharp would add to the cold
+ * start of every page and sitemap request (T50).
+ */
+const renderCard = async (card: CardData) => (await import('./card')).renderCard(card);
 
 initializeApp();
 const db = getFirestore();
@@ -41,6 +48,14 @@ export const site = onRequest(
       loadAuthor: async (uid) => {
         const snap = await db.doc(`users/${uid}`).get();
         return (snap.get('displayName') as string | undefined) ?? '';
+      },
+      // Only the field the sitemap needs (a field mask; each document is still one read).
+      listBuilds: async () => {
+        const snap = await db.collection('builds').select('updatedAt').get();
+        return snap.docs.map((doc) => ({
+          id: doc.id,
+          updatedAt: (doc.get('updatedAt') as Timestamp | undefined)?.toDate(),
+        }));
       },
       fetchStatic: async (path) => {
         const response = await fetch(`${origin}${path}`);

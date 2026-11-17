@@ -75,3 +75,38 @@ export function injectMeta(html: string, meta: PageMeta): string {
     .replace(metaTag('property', 'og:image'), `<meta property="og:image" content="${image}" />`)
     .replace('</head>', `<link rel="canonical" href="${url}" />\n  </head>`);
 }
+
+/**
+ * The SPA's `index.html` with `inner` inside `<div id="root">` (T50): what crawlers read without running
+ * JavaScript. `createRoot` replaces it on the app's first render. Left alone if the div isn't found.
+ */
+export function injectRoot(html: string, inner: string): string {
+  return html.replace('<div id="root"></div>', () => `<div id="root">${inner}</div>`);
+}
+
+/** Keeps a page out of search results (T50: builds that don't exist). */
+export function injectNoindex(html: string): string {
+  return html.replace('</head>', '<meta name="robots" content="noindex" />\n  </head>');
+}
+
+export interface SitemapEntry {
+  /** An absolute URL. */
+  loc: string;
+  /** When the page last changed. */
+  lastmod?: Date;
+}
+
+/** A sitemap (sitemaps.org protocol; one file holds up to 50,000 URLs). */
+export function sitemapXml(entries: readonly SitemapEntry[]): string {
+  const urls = entries.map(({ loc, lastmod }) => {
+    const date = lastmod ? `<lastmod>${lastmod.toISOString().slice(0, 10)}</lastmod>` : '';
+    return `  <url><loc>${escapeHtml(loc)}</loc>${date}</url>`;
+  });
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls,
+    '</urlset>',
+    '',
+  ].join('\n');
+}

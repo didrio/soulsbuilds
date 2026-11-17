@@ -156,3 +156,14 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   ones, gear or marks). `guide/progress.ts` `stopMarkKeys` (a stop's gate and item keys, not its number) +
   `stopProgress(…, marked)`; `RouteAction.gate`; `applyChange` `mark` (pruned to the route); optional
   `marked` on the tracking doc (`validTracking`: list ≤ 64); e2e `guide.spec.ts`; decision "Route stops done".
+- T42 — Free up rules budget on builds — 2026-11-16 — headroom 0 → 93 paddings (create), 17 → 99 (edit); a
+  level-1 build with every slot filled couldn't be saved before. Builds rules rewritten for fewer evaluated
+  expressions (stats in one regex, one level sum, key sets by size, args over `incoming()`/`let`, no redundant
+  `is` checks); owner: Ash of War and arrow slots by length only (decision "Items in builds"). Guard
+  `tests/rules/budget.test.ts` (`HEADROOM` 90; `RULES_BUDGET=measure`); cost model in docs/firebase.md "Rules
+  budget".
+- T46 — Tracking lives in the Guide — 2026-11-16 — tracking only on How to get: `TrackingBar` (progress,
+  Your stats, Stop; Build complete), the new-items notice, a checkbox on each build item in the route
+  (`itemTrackKeys`; `toggle` takes an item's keys); hero's Track → the tab, "Tracking" link while tracking;
+  profile cards → `/route`. Gone: `TrackingHero`, `NextStop`, Loadout/StatsCard/ItemRow tracking, ItemTile's
+  `collected` badge, the route's second bar.

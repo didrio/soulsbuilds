@@ -34,7 +34,11 @@ npm run screenshot -- /build/SEEDBLEED001 --mobile   # 390×844 phone
 npm run screenshot -- /build/SEEDBLEED001/guide --width 1000   # desktop at another width (build tabs: Description at /build/x, /guide, /comments)
 npm run screenshot -- /user/seed-ranni --full        # whole page
 npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"   # click a button first (a dialog, T41)
+BASE_URL=http://127.0.0.1:<hosting> npm run screenshot -- /build/SEEDBLEED001 --no-js   # what crawlers read (T50)
 ```
+
+`--no-js` only shows something on a page the `site` function serves, so it needs the Hosting + functions
+emulators (`docs/firebase.md` "Link previews and crawlers"); the Vite dev server has no function.
 
 `--click` presses the button with that accessible name before the shot (signed out). Signed-in pages (tracking
 progress, the signed-in intro) need a session: drive `http://127.0.0.1:5180` in the browser pane and sign up
