@@ -11,15 +11,16 @@ import {
 } from './tabs';
 
 describe('parseTab', () => {
-  it('reads no segment as Description and known segments as their tab', () => {
-    expect(parseTab(undefined)).toBe('description');
+  it('reads no segment as Equipment and known segments as their tab', () => {
+    expect(parseTab(undefined)).toBe('equipment');
     expect(parseTab('guide')).toBe('guide');
-    expect(parseTab('comments')).toBe('comments');
+    expect(parseTab('discussion')).toBe('discussion');
   });
 
-  it('still opens the segments links used before T48', () => {
-    expect(parseTab('description')).toBe('description');
+  it('still opens the segments older links use', () => {
     expect(parseTab('route')).toBe('guide');
+    expect(parseTab('description')).toBe('discussion');
+    expect(parseTab('comments')).toBe('discussion');
   });
 
   it('returns null for an unknown segment', () => {
@@ -30,22 +31,22 @@ describe('parseTab', () => {
 
 describe('isCanonical', () => {
   it("is true only for the tab's own segment, so old links redirect", () => {
-    expect(isCanonical(undefined, 'description')).toBe(true);
+    expect(isCanonical(undefined, 'equipment')).toBe(true);
     expect(isCanonical('guide', 'guide')).toBe(true);
-    expect(isCanonical('description', 'description')).toBe(false);
+    expect(isCanonical('comments', 'discussion')).toBe(false);
     expect(isCanonical('route', 'guide')).toBe(false);
   });
 });
 
 describe('tabPath', () => {
-  it('puts Description at the build URL and the others under it', () => {
-    expect(tabPath('abc', 'description')).toBe('/build/abc');
+  it('puts Equipment at the build URL and the others under it', () => {
+    expect(tabPath('abc', 'equipment')).toBe('/build/abc');
     expect(tabPath('abc', 'guide')).toBe('/build/abc/guide');
-    expect(tabPath('new', 'comments')).toBe('/build/new/comments');
+    expect(tabPath('new', 'discussion')).toBe('/build/new/discussion');
   });
 
   it('puts the name slug between the ID and the tab (T56)', () => {
-    expect(tabPath('abc', 'description', 'Bleed Samurai')).toBe('/build/abc/bleed-samurai');
+    expect(tabPath('abc', 'equipment', 'Bleed Samurai')).toBe('/build/abc/bleed-samurai');
     expect(tabPath('abc', 'guide', 'Bleed Samurai')).toBe('/build/abc/bleed-samurai/guide');
   });
 
@@ -54,6 +55,8 @@ describe('tabPath', () => {
       if (segment) expect(slugify(segment)).not.toBe(segment);
     }
     expect(parseTab(slugify('Guide'))).toBeNull();
+    expect(parseTab(slugify('Comments'))).toBeNull();
+    expect(parseTab(slugify('Discussion'))).toBeNull();
   });
 });
 
@@ -84,19 +87,19 @@ describe('splitBuildPath', () => {
 });
 
 describe('visibleTabs', () => {
-  it('shows every tab to a viewer: Description always has something (T47)', () => {
-    expect(visibleTabs({ editable: false })).toEqual(['description', 'guide', 'comments']);
+  it('shows every tab to a viewer', () => {
+    expect(visibleTabs({ editable: false })).toEqual(['equipment', 'guide', 'discussion']);
   });
 
-  it('shows only Description while editing (the build is edited in the sidebar)', () => {
-    expect(visibleTabs({ editable: true })).toEqual(['description']);
+  it('shows only Equipment while editing (the whole build is edited there)', () => {
+    expect(visibleTabs({ editable: true })).toEqual(['equipment']);
   });
 });
 
 describe('pageKey', () => {
   it("treats a build's tabs as one page", () => {
     expect(pageKey('/build/abc')).toBe('/build/abc');
-    expect(pageKey('/build/abc/comments')).toBe('/build/abc');
+    expect(pageKey('/build/abc/discussion')).toBe('/build/abc');
     expect(pageKey('/build/abc/guide/')).toBe('/build/abc');
     expect(pageKey('/build/abc/bleed-samurai')).toBe('/build/abc');
     expect(pageKey('/build/abc/bleed-samurai/guide')).toBe('/build/abc');

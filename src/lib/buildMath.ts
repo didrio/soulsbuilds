@@ -12,6 +12,18 @@ export const STAT_KEYS = ['vigor', 'mind', 'end', 'str', 'dex', 'int', 'fai', 'a
 
 export type StatKey = (typeof STAT_KEYS)[number];
 
+/** The attributes' names as the game spells them. */
+export const STAT_NAMES: Record<StatKey, string> = {
+  vigor: 'Vigor',
+  mind: 'Mind',
+  end: 'Endurance',
+  str: 'Strength',
+  dex: 'Dexterity',
+  int: 'Intelligence',
+  fai: 'Faith',
+  arc: 'Arcane',
+};
+
 /** The 8 attributes, each an integer from MIN_STAT to MAX_STAT. */
 export type Stats = Record<StatKey, number>;
 

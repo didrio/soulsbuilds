@@ -69,7 +69,7 @@ function BuildsList({ builds, authors }: BuildsListProps) {
         const main = getCardItem(buildImage(build));
         return (
           <li key={build.id}>
-            <Row to={tabPath(build.id, 'description', build.name)}>
+            <Row to={tabPath(build.id, 'equipment', build.name)}>
               <Portrait
                 src={main ? iconUrl(main.icon) : null}
                 title={main?.name}

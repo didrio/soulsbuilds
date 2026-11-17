@@ -1,21 +1,16 @@
 // The build as plain HTML inside the page's `#root` (T50), so search engines and AI crawlers can read it
 // without running JavaScript. The same content the app shows: it goes through the editor's own store,
-// selectors, gear groups and generated description, and `createRoot` replaces it on the first render.
+// selectors and gear groups, and `createRoot` replaces it on the first render.
 // Users see it until the bundle runs, so a small stylesheet in the site's colors makes that read as a
 // plain page.
 import { makeStore } from '@/app/store';
 import { getStartingClass } from '@/data';
-import { describeBuild, GENERATED_NOTE, STAT_NAMES } from '@/features/editor/describe';
 import { gearGroups, slotWeaponDetails } from '@/features/editor/gear';
 import { itemSubline } from '@/features/editor/itemDetails';
 import { loadBuild } from '@/features/editor/store/build';
-import {
-  selectDescriptionFacts,
-  selectGearState,
-  selectStatBonuses,
-} from '@/features/editor/store/derived';
+import { selectGearState, selectStatBonuses } from '@/features/editor/store/derived';
 import { selectStats } from '@/features/editor/store/selectors';
-import { STAT_KEYS } from '@/lib/buildMath';
+import { STAT_KEYS, STAT_NAMES } from '@/lib/buildMath';
 import type { BuildDoc } from '@/lib/models';
 import { escapeHtml } from '@/lib/share';
 import { COLOR_BG, COLOR_LINE, COLOR_TEXT, COLOR_TEXT_MUTED } from '@/theme/colors';
@@ -82,10 +77,8 @@ export function buildContentHtml(build: BuildDoc, author: PageAuthor): string {
     return `<h2>${escapeHtml(group.title)}</h2>\n<ul>\n${items.join('\n')}\n</ul>`;
   });
 
-  const generated = !build.description.trim();
-  const writeUp = markdownToHtml(
-    generated ? describeBuild(selectDescriptionFacts(state)) : build.description,
-  );
+  // The author's write-up, when there is one (the app shows it atop the Discussion tab).
+  const writeUp = build.description.trim() ? markdownToHtml(build.description) : null;
 
   return join([
     STYLE,
@@ -97,9 +90,8 @@ export function buildContentHtml(build: BuildDoc, author: PageAuthor): string {
     '<h2>Attributes</h2>',
     `<ul>\n${attributes.join('\n')}\n</ul>`,
     ...gear,
-    '<h2>Description</h2>',
-    `<article>\n${writeUp}\n</article>`,
-    generated ? `<p class="sb-muted">${GENERATED_NOTE}</p>` : null,
+    writeUp ? '<h2>Description</h2>' : null,
+    writeUp ? `<article>\n${writeUp}\n</article>` : null,
     '<p><a href="/">More Elden Ring builds on Souls Builds</a></p>',
     '</main>',
   ]);

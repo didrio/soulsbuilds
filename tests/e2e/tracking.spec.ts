@@ -40,9 +40,9 @@ test('track a build: sign up from the intro, check items off, reload, stop', asy
   await page.getByRole('button', { name: /^Show the \d+ finished stops?$/ }).click();
   await expect(page.getByRole('checkbox', { name: /^White Mask/ })).toBeChecked();
 
-  // The Description tab and the sidebar are what any visitor sees; the hero's "Tracking" leads back.
+  // The Equipment tab is what any visitor sees; the hero's "Tracking" leads back.
   await page.goto(SEED_BUILD);
-  await expect(page.getByRole('complementary', { name: 'Stats and gear' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Equipment' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Your progress', exact: true })).toHaveCount(0);
   await expect(page.getByRole('checkbox')).toHaveCount(0);
   await page.getByRole('link', { name: 'Tracking', exact: true }).click();

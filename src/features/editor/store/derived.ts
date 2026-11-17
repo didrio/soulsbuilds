@@ -4,7 +4,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { statCurves } from '@/data';
 import {
-  calculateLevel,
   checkRequirements,
   effectiveStats,
   memorySlots,
@@ -17,28 +16,16 @@ import {
   type Modifiers,
   type RequirementCheck,
 } from '@/lib/buildMath';
-import type { DescriptionFacts, WeaponFact } from '../describe';
 import type { GearState } from '../gear';
-import { itemWarning, weaponDetails } from '../itemDetails';
 import {
   ARMOR_SLOTS,
   ARROW_SLOTS,
-  CONSUMABLE_SLOTS,
   SPELL_SLOTS,
   TALISMAN_SLOTS,
-  TEAR_SLOTS,
-  WEAPON_AFFINITY_SLOTS,
-  WEAPON_SKILL_SLOTS,
   WEAPON_SLOTS,
   type ItemSlot,
 } from '../slots';
-import {
-  selectEquipment,
-  selectSpellSlots,
-  selectStartingClass,
-  selectStats,
-  selectTearSlots,
-} from './selectors';
+import { selectEquipment, selectSpellSlots, selectStats, selectTearSlots } from './selectors';
 
 const notNull = <T>(value: T | null | undefined): value is T => value != null;
 
@@ -130,116 +117,4 @@ export const selectGearState = createSelector(
     over,
     memory: { used, available },
   }),
-);
-
-/** What the generated description (T47, features/editor/describe.ts) says about the build. */
-export const selectDescriptionFacts = createSelector(
-  [
-    selectEquipment,
-    selectSpellSlots,
-    selectTearSlots,
-    selectStats,
-    selectStartingClass,
-    selectEffectiveStats,
-    selectVitals,
-    selectEquipWeight,
-    selectPoise,
-    selectMemorySlots,
-    selectMemoryUsed,
-    selectSpellsOverSlots,
-    selectRequirementChecks,
-  ],
-  (
-    equipment,
-    spellSlots,
-    tearSlots,
-    baseStats,
-    startingClass,
-    stats,
-    vitalsNow,
-    weight,
-    poiseNow,
-    available,
-    used,
-    over,
-    checks,
-  ): DescriptionFacts => {
-    const weaponFact = (index: number): WeaponFact | null => {
-      const weapon = equipment[WEAPON_SLOTS[index]!];
-      if (!weapon) return null;
-      const details = weaponDetails(
-        weapon,
-        equipment[WEAPON_SKILL_SLOTS[index]!],
-        equipment[WEAPON_AFFINITY_SLOTS[index]!],
-      );
-      return {
-        name: weapon.name,
-        details: [details.affinity, details.skill?.name].filter(
-          (part): part is string => part != null,
-        ),
-      };
-    };
-    // Weapons 1–3 are the right hand (the main one), 4–6 the left.
-    const firstFilled = (indexes: number[]) => indexes.map(weaponFact).find(notNull) ?? null;
-    const right = firstFilled([0, 1, 2]);
-    const left = firstFilled([3, 4, 5]);
-    const weapons = right ? [right, left] : [left];
-
-    const spells = SPELL_SLOTS.map((slot) => spellSlots[slot]).filter(notNull);
-    const tears = TEAR_SLOTS.map((slot) => tearSlots[slot]).filter(notNull);
-    const armor = ARMOR_SLOTS.map((slot) => equipment[slot]).filter(notNull);
-    const talismans = TALISMAN_SLOTS.map((slot) => equipment[slot]).filter(notNull);
-    const arrows = ARROW_SLOTS.map((slot) => equipment[slot]).filter(notNull);
-    const consumables = CONSUMABLE_SLOTS.map((slot) => equipment[slot]).filter(notNull);
-    const ashes = WEAPON_SKILL_SLOTS.map((slot) => equipment[slot]).filter(notNull);
-    const weaponItems = WEAPON_SLOTS.map((slot) => equipment[slot]).filter(notNull);
-    const singles = [equipment.greatRune, equipment.spiritAsh].filter(notNull);
-
-    const warnings = [
-      ...WEAPON_SLOTS.flatMap((slot) => {
-        const weapon = equipment[slot];
-        const warning = weapon ? itemWarning(checks[slot]) : null;
-        return weapon && warning ? [{ name: weapon.name, text: warning.text }] : [];
-      }),
-      ...SPELL_SLOTS.flatMap((slot) => {
-        const spell = spellSlots[slot];
-        const warning = spell ? itemWarning(checks[slot], over.has(slot)) : null;
-        return spell && warning ? [{ name: spell.name, text: warning.text }] : [];
-      }),
-    ];
-    const everything = [
-      ...weaponItems,
-      ...ashes,
-      ...arrows,
-      ...armor,
-      ...talismans,
-      ...spells,
-      ...tears,
-      ...consumables,
-      ...singles,
-    ];
-
-    return {
-      level: calculateLevel(baseStats),
-      className: startingClass?.name ?? null,
-      gearCount: everything.length - ashes.length,
-      weapons: weapons.filter(notNull),
-      stats,
-      load:
-        weight > 0
-          ? { weight, max: vitalsNow.equipLoad, roll: rollType(weight, vitalsNow.equipLoad) }
-          : null,
-      poise: poiseNow,
-      talismans: talismans.map((item) => item.name),
-      spiritAsh: equipment.spiritAsh?.name ?? null,
-      spells: {
-        incantations: spells.filter((spell) => spell.kind === 'incantation').length,
-        sorceries: spells.filter((spell) => spell.kind === 'sorcery').length,
-        used,
-        available,
-      },
-      warnings,
-      dlcItems: [...new Set(everything.filter((item) => item.dlc).map((item) => item.name))],
-    };
-  },
 );

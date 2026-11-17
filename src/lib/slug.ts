@@ -2,7 +2,7 @@
 // link-preview function. The ID alone decides the build; the slug is for readers and search engines.
 
 /** URL segments a build's tabs (and links from before T48) use: a slug must never equal one. */
-const RESERVED = new Set(['description', 'route', 'guide', 'comments']);
+const RESERVED = new Set(['description', 'route', 'guide', 'comments', 'discussion']);
 
 const SLUG_MAX = 60;
 

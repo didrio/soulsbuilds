@@ -28,8 +28,9 @@ import BuildHeader from './sections/BuildHeader';
 import BuildSections from './sections/BuildSections';
 import BuildSidebar from './sections/BuildSidebar';
 import BuildTabs from './sections/BuildTabs';
-import CommentsSection from './sections/CommentsSection';
 import DescriptionSection from './sections/DescriptionSection';
+import DiscussionSection from './sections/DiscussionSection';
+import EquipmentSection from './sections/EquipmentSection';
 import { STATS_COLUMN_WIDTH } from './sections/StatsCard';
 import GuideSection from './guide/GuideSection';
 import OwnerActions from './sections/OwnerActions';
@@ -52,15 +53,17 @@ function BuildEditorPage() {
 }
 
 /**
- * View, create and edit a build (T22, T28, T48: the owner's design): the title section, a tab bar
- * (Description, Guide, Comments), then the build sidebar (stats and gear, `BuildSidebar`) beside the
- * tab, the same on every tab, signed in or out, tracking or not. Below 900 px the sidebar sits above
- * the tab (until T49's collapsible sections). Editing (and new builds): "edit mode is the view
- * layout": the sidebar takes the stats and gear, Description is the only tab (the write-up), and a
- * sticky Save/Cancel bar. Tracking (T34, view mode) lives in the Guide only (T46): the progress bar,
- * the player's stats and the new-items notice at the top, the route as the checklist; the title
- * section's "Track this build" (or "Tracking") opens it. Phones and tablets (< 900 px, T49): one layout
- picked in JS, collapsible sections (`BuildSections`) instead of the tab bar and the sidebar.
+ * View, create and edit a build (T22, T28, T48, T63: the owner's design): the title section, a tab
+ * bar (Equipment, Guide, Discussion), then the build sidebar (`BuildSidebar`) beside the tab. Equipment
+ * (the build's own URL): the stats in the sidebar and the equipment as the main content, the two the
+ * same height. Guide and Discussion: the sidebar has the stats and the equipment as small tiles.
+ * Discussion: the author's write-up (if any) at the top, then the comments. Editing (and new builds):
+ * "edit mode is the view layout": Equipment is the only tab, with the stats, every slot and the
+ * write-up editable, and a sticky Save/Cancel bar. Tracking (T34, view mode) lives in the Guide only
+ * (T46): the progress bar, the player's stats and the new-items notice at the top, the route as the
+ * checklist; the title section's "Track this build" (or "Tracking") opens it. Phones and tablets
+ * (< 900 px, T49): one layout picked in JS, collapsible sections (`BuildSections`) instead of the tab
+ * bar and the sidebar.
  */
 function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string }) {
   const editor = useBuildEditor(buildId);
@@ -115,22 +118,30 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
   const tab = parseTab(tabSegment);
   const name = build?.name;
   if (!tab || !tabs.includes(tab)) {
-    return <Navigate to={tabPath(routeId, 'description', name)} replace />;
+    return <Navigate to={tabPath(routeId, 'equipment', name)} replace />;
   }
   if (!isCanonical(tabSegment, tab) || slug !== (name === undefined ? null : slugify(name))) {
     return <Navigate to={tabPath(routeId, tab, name)} replace />;
   }
 
+  // The write-up's editor: under the equipment on desktop, its own section on phones.
+  const descriptionEditor = editable ? (
+    <DescriptionSection
+      description={editor.description}
+      editable
+      onChange={editor.setDescription}
+      bare={phone}
+    />
+  ) : null;
+
   // Each tab's content: beside the sidebar on desktop, in its section on phones (bare: the section
-  // is the panel and has the heading).
+  // is the panel and has the heading). Phones show the equipment as their own gear sections.
   const bodies: Record<BuildTab, ReactNode> = {
-    description: (
-      <DescriptionSection
-        description={editor.description}
-        editable={editable}
-        onChange={editor.setDescription}
-        bare={phone}
-      />
+    equipment: phone ? null : (
+      <>
+        <EquipmentSection editable={editable} />
+        {descriptionEditor}
+      </>
     ),
     guide: build ? (
       <>
@@ -152,8 +163,13 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
         />
       </>
     ) : null,
-    comments: build ? (
-      <CommentsSection buildId={build.id} ownerId={build.ownerId} bare={phone} />
+    discussion: build ? (
+      <DiscussionSection
+        buildId={build.id}
+        ownerId={build.ownerId}
+        description={build.description}
+        bare={phone}
+      />
     ) : null,
   };
 
@@ -200,6 +216,7 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
           editable={editable}
           level={level}
           description={editor.description}
+          descriptionEditor={descriptionEditor}
           build={build}
           tracking={tracking}
           bodies={bodies}
@@ -214,8 +231,13 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
             commentCount={editable ? undefined : build?.commentCount}
           />
           <WithSidebar>
-            <BuildSidebar editable={editable} level={level} />
-            <Content>{bodies[tab]}</Content>
+            <BuildSidebar
+              editable={editable}
+              level={level}
+              equipment={tab !== 'equipment'}
+              fill={tab === 'equipment' && !editable}
+            />
+            <Content $fill={tab === 'equipment' && !editable}>{bodies[tab]}</Content>
           </WithSidebar>
         </div>
       )}
@@ -248,9 +270,11 @@ const Back = styled(TextLink)`
   margin: ${SPACE_MD} 0 -${SPACE_SM};
 `;
 
-// The tab's panels, stacked.
-const Content = styled.div`
-  display: grid;
+// The tab's panels, stacked. Equipment: a column whose first panel stretches to the sidebar's height.
+const Content = styled.div<{ $fill: boolean }>`
+  align-self: ${({ $fill }) => ($fill ? 'stretch' : 'start')};
+  display: flex;
+  flex-direction: column;
   gap: ${SPACE_LG};
   min-width: 0;
 `;

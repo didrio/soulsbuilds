@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { makeStore } from '@/app/store';
 import { armor, spells, startingClasses, talismans, weapons } from '@/data';
 import {
-  selectDescriptionFacts,
   selectEffectiveStats,
   selectEquipWeight,
   selectMemorySlots,
@@ -133,38 +132,5 @@ describe('starting class', () => {
     store.dispatch(setStartingClass(null));
     expect(store.getState().startingClass).toBeNull();
     expect(store.getState().stats.end).toBe(13);
-  });
-});
-
-describe('selectDescriptionFacts (T47)', () => {
-  it('has no gear on a fresh build', () => {
-    const facts = selectDescriptionFacts(makeStore().getState());
-    expect(facts).toMatchObject({
-      level: 1,
-      className: null,
-      gearCount: 0,
-      weapons: [],
-      load: null,
-    });
-  });
-
-  it('gathers the main weapon, the other hand, talismans and spells', () => {
-    const store = makeStore();
-    store.dispatch(setStartingClass(samurai));
-    store.dispatch(updateWeapon({ id: 'weapon1', item: byName(weapons, 'Greatsword') }));
-    store.dispatch(updateWeapon({ id: 'weapon4', item: byName(weapons, 'Dagger') }));
-    store.dispatch(updateTal({ id: 'tal1', item: talisman('Arsenal Charm') }));
-    const facts = selectDescriptionFacts(store.getState());
-    expect(facts.className).toBe('Samurai');
-    expect(facts.weapons.map((weapon) => weapon.name)).toEqual(['Greatsword', 'Dagger']);
-    expect(facts.talismans).toEqual(['Arsenal Charm']);
-    expect(facts.gearCount).toBe(3);
-    expect(facts.load?.weight).toBeGreaterThan(0);
-  });
-
-  it("uses the other hand's weapon as the main one when the main hand is empty", () => {
-    const store = makeStore();
-    store.dispatch(updateWeapon({ id: 'weapon5', item: byName(weapons, 'Dagger') }));
-    expect(selectDescriptionFacts(store.getState()).weapons.map((w) => w.name)).toEqual(['Dagger']);
   });
 });

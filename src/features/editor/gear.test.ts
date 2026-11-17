@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { makeStore } from '@/app/store';
 import { arrows, spells, talismans, weapons } from '@/data';
-import { gearGroups } from './gear';
+import { equipmentGroups, gearGroups } from './gear';
 import { selectGearState } from './store/derived';
 import { updateArrow, updateTal, updateWeapon } from './store/equipment';
 import { updateSpell } from './store/spells';
@@ -95,5 +95,51 @@ describe('gearGroups, editable', () => {
     for (const id of ['spell1', 'spell2', 'spell3', 'spell4'] as const)
       store.dispatch(updateSpell({ id, item: comet }));
     expect(names(true, 'spells')).toEqual(Array(4).fill('Comet Azur'));
+  });
+});
+
+describe('equipmentGroups (the Equipment panel, T63)', () => {
+  const panel = (store: ReturnType<typeof makeStore>, editable = false) =>
+    equipmentGroups(selectGearState(store.getState()), editable);
+
+  it('always has each hand, armor, talismans and the flask, with every slot', () => {
+    const store = makeStore();
+    const groups = panel(store);
+    expect(groups.map((group) => group.key)).toEqual([
+      'rightHand',
+      'leftHand',
+      'armor',
+      'talismans',
+      'flask',
+    ]);
+    expect(groups.map((group) => group.entries.length)).toEqual([3, 3, 4, 4, 4]);
+  });
+
+  it('keeps each hand apart and adds arrows, spells and items only when filled', () => {
+    const store = makeStore();
+    store.dispatch(updateWeapon({ id: 'weapon4', item: byName(weapons, 'Dagger') }));
+    store.dispatch(updateArrow({ id: 'arrow2', item: byName(arrows, 'Arrow') }));
+    store.dispatch(updateSpell({ id: 'spell3', item: byName(spells, 'Glintstone Pebble') }));
+    const groups = panel(store);
+    expect(groups.map((group) => group.key)).toEqual([
+      'rightHand',
+      'leftHand',
+      'arrows',
+      'armor',
+      'talismans',
+      'spells',
+      'flask',
+    ]);
+    const names = (key: string) =>
+      groups.find((group) => group.key === key)?.entries.map((entry) => entry.item?.name ?? null);
+    expect(names('rightHand')).toEqual([null, null, null]);
+    expect(names('leftHand')).toEqual(['Dagger', null, null]);
+    expect(names('arrows')).toEqual(['Arrow']);
+    expect(names('spells')).toEqual(['Glintstone Pebble']);
+  });
+
+  it('editable: the same groups as the editor (every slot to choose)', () => {
+    const store = makeStore();
+    expect(panel(store, true)).toEqual(gearGroups(selectGearState(store.getState()), true));
   });
 });

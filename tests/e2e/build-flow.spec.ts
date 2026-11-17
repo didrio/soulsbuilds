@@ -79,8 +79,8 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
   await expect(page.getByRole('heading', { name: buildName })).toBeVisible();
   // Saved by ID and shown in view mode: the weapon's affinity and Ash of War, the great rune. The
-  // sidebar's tiles carry the names (T48), and one shows them on tap.
-  const sidebar = page.getByRole('complementary', { name: 'Stats and gear' });
+  // Equipment panel's tiles carry the names (T48, T63), and one shows them on tap.
+  const sidebar = page.getByRole('region', { name: 'Equipment' });
   const weapon = sidebar.getByRole('button', {
     name: /^Uchigatana \(Blood affinity, Seppuku skill/,
   });
@@ -97,17 +97,17 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
     'true',
   );
 
-  // Comment, on the Comments tab (T28).
-  await page.getByRole('link', { name: 'Comments 0' }).click();
-  await expect(page).toHaveURL(/\/comments$/);
+  // Comment, on the Discussion tab (T28, T63).
+  await page.getByRole('link', { name: 'Discussion 0' }).click();
+  await expect(page).toHaveURL(/\/discussion$/);
   await page.getByLabel('Post a comment').fill('My own build, my own comment.');
   await page.getByRole('button', { name: 'Post' }).click();
   await expect(page.getByText('My own build, my own comment.')).toBeVisible();
   await expect(page.getByLabel('Post a comment')).toHaveValue('');
   await expect(page.getByRole('button', { name: 'Delete your comment' })).toBeVisible();
 
-  // Edit keeps likes and comments (2022 bug: saving reset them). Editing opens Description, the only
-  // tab while editing (T48): the build itself is edited in the sidebar.
+  // Edit keeps likes and comments (2022 bug: saving reset them). Editing opens Equipment, the only
+  // tab while editing (T63): the whole build is edited there.
   await page.getByRole('button', { name: 'Edit' }).click();
   await expect(page).toHaveURL(/\/build\/[0-9A-Z]{12}\/[a-z0-9-]+$/);
   await page.getByLabel('Build name').fill(`${buildName} v2`);
@@ -115,7 +115,7 @@ test('sign up, create, like, comment, edit, delete, log out', async ({ page }) =
   await expect(page.getByRole('heading', { name: `${buildName} v2` })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: /1 Like/ })).toBeVisible();
-  await page.getByRole('link', { name: 'Comments 1' }).click();
+  await page.getByRole('link', { name: 'Discussion 1' }).click();
   await expect(page.getByText('My own build, my own comment.')).toBeVisible();
 
   // Profile: own builds and liked builds.

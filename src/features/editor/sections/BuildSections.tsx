@@ -19,11 +19,10 @@ import {
   TEXT_XS,
 } from '@/theme';
 import type { BuildTracking } from '@/features/tracking/useBuildTracking';
-import { describeBuild } from '../describe';
 import { loadRoute } from '../guide/GuideSection';
 import ItemRow from '../ItemRow';
 import { useLatestComment } from '../queries';
-import { selectDescriptionFacts, selectGearState } from '../store/derived';
+import { selectGearState } from '../store/derived';
 import { selectStats } from '../store/selectors';
 import { tabPath, type BuildTab } from '../tabs';
 import {
@@ -37,7 +36,10 @@ import {
 import PhoneSection from './PhoneSection';
 import StatsCard from './StatsCard';
 
-type SectionKey = 'stats' | PhoneGearKey | BuildTab;
+type SectionKey = 'stats' | PhoneGearKey | Exclude<BuildTab, 'equipment'> | 'description';
+
+/** The section a tab opens: Equipment is the gear sections, the weapons first. */
+const sectionFor = (tab: BuildTab): SectionKey => (tab === 'equipment' ? 'weapons' : tab);
 
 /** The id of a section's header, to scroll to (one build page at a time). */
 const sectionAnchor = (key: SectionKey) => `section-${key}`;
@@ -50,11 +52,13 @@ interface BuildSectionsProps {
   routeId: string;
   /** The section the URL names. */
   tab: BuildTab;
-  /** Which content sections exist (editing: Description only). */
+  /** Which tabs exist (editing: Equipment only, which is the gear sections here). */
   tabs: BuildTab[];
   editable: boolean;
   level: number;
   description: string;
+  /** Editing: the write-up's editor, its own section after the gear. */
+  descriptionEditor: ReactNode;
   build: Build | null;
   tracking: BuildTracking;
   /** The content sections' bodies, as the desktop tabs show them (bare). */
@@ -108,15 +112,15 @@ function GearBody({ section, editable }: { section: PhoneGearSection; editable: 
 }
 
 /**
- * The build page on phones and tablets (T49, the owner's design): instead of the tab bar and the
- * sidebar, one list of collapsible sections under the title section: Stats, the gear (Weapons, Armor,
- * Talismans, Spells, Tears rune and ash, Items), then Description, Guide and Comments. Closed, each
- * header says something (the glance: the level and top attributes, the gear's icons, how many items
- * the Guide finds, the newest comment). The section the URL names starts open (Description by
- * default); several can be open. Opening Description, Guide or Comments replaces the URL with its
- * own (no history entry per tap); a URL change from elsewhere (Track → `/guide`, Back) opens that
- * section and scrolls to it. Editing: the same list with every gear section and its slots as rows
- * that open the picker, the stats as inputs, Description as the editor.
+ * The build page on phones and tablets (T49, T63, the owner's design): instead of the tab bar and the
+ * sidebar, one list of collapsible sections under the title section: Stats, the equipment (Weapons,
+ * Armor, Talismans, Spells, Tears rune and ash, Items), then Guide and Discussion. Closed, each header
+ * says something (the glance: the level and top attributes, the gear's icons, how many items the Guide
+ * finds, the newest comment). The section the URL names starts open (Equipment, the default: Weapons);
+ * several can be open. Opening Guide or Discussion replaces the URL with its own (no history entry per
+ * tap); a URL change from elsewhere (Track → `/guide`, Back) opens that section and scrolls to it.
+ * Editing: Stats, every gear section with its slots as rows that open the picker, the stats as
+ * inputs, then Description (the write-up's editor).
  */
 function BuildSections({
   routeId,
@@ -125,23 +129,23 @@ function BuildSections({
   editable,
   level,
   description,
+  descriptionEditor,
   build,
   tracking,
   bodies,
 }: BuildSectionsProps) {
   const navigate = useNavigate();
   const stats = useAppSelector(selectStats);
-  const facts = useAppSelector(selectDescriptionFacts);
   const gear = phoneGearSections(useAppSelector(selectGearState), editable);
   const commentCount = build?.commentCount ?? 0;
   const latest = useLatestComment(build?.id ?? '', Boolean(build) && !editable && commentCount > 0);
 
-  const [open, setOpen] = useState<ReadonlySet<SectionKey>>(() => new Set([tab]));
+  const [open, setOpen] = useState<ReadonlySet<SectionKey>>(() => new Set([sectionFor(tab)]));
   // The URL names another section (a tap here, Track, Back): it opens. Adjusted while rendering.
   const [urlTab, setUrlTab] = useState(tab);
   if (urlTab !== tab) {
     setUrlTab(tab);
-    if (!open.has(tab)) setOpen(new Set(open).add(tab));
+    if (!open.has(sectionFor(tab))) setOpen(new Set(open).add(sectionFor(tab)));
   }
 
   // And scrolls into view, unless the change came from tapping its header here.
@@ -154,8 +158,11 @@ function BuildSections({
       tapped.current = null;
       return;
     }
-    document.getElementById(sectionAnchor(tab))?.scrollIntoView?.({ block: 'start' });
+    document.getElementById(sectionAnchor(sectionFor(tab)))?.scrollIntoView?.({ block: 'start' });
   }, [tab]);
+
+  // The content sections: the tabs past Equipment (which is the gear sections).
+  const contents = tabs.filter((each) => each !== 'equipment');
 
   const toggle = (key: SectionKey) => {
     const next = new Set(open);
@@ -163,7 +170,7 @@ function BuildSections({
       next.delete(key);
     } else {
       next.add(key);
-      const content = tabs.find((each) => each === key);
+      const content = contents.find((each) => each === key);
       if (content && content !== tab) {
         tapped.current = content;
         void navigate(tabPath(routeId, content, build?.name), { replace: true });
@@ -173,15 +180,13 @@ function BuildSections({
   };
 
   const top = statsGlance(stats, level).top;
-  const writeUp = firstParagraph(editable || description ? description : describeBuild(facts));
-  const glances: Record<BuildTab, ReactNode> = {
-    description: <span>{writeUp || (editable ? 'Not written yet' : '')}</span>,
+  const glances: Record<Exclude<BuildTab, 'equipment'>, ReactNode> = {
     guide: (
       <span>
         {build ? guideGlance(trackedItems(build.equipment).length, tracking.progress) : ''}
       </span>
     ),
-    comments: <span>{commentsGlance(commentCount, latest.data?.text ?? null)}</span>,
+    discussion: <span>{commentsGlance(commentCount, latest.data?.text ?? null)}</span>,
   };
 
   return (
@@ -211,7 +216,17 @@ function BuildSections({
           <GearBody section={each} editable={editable} />
         </PhoneSection>
       ))}
-      {tabs.map((each) => (
+      {editable ? (
+        <PhoneSection
+          title="Description"
+          glance={<span>{firstParagraph(description) || 'Not written yet'}</span>}
+          open={open.has('description')}
+          onToggle={() => toggle('description')}
+          anchorId={sectionAnchor('description')}>
+          {descriptionEditor}
+        </PhoneSection>
+      ) : null}
+      {contents.map((each) => (
         <PhoneSection
           key={each}
           title={TITLES[each]}
@@ -227,10 +242,9 @@ function BuildSections({
   );
 }
 
-const TITLES: Record<BuildTab, string> = {
-  description: 'Description',
+const TITLES: Record<Exclude<BuildTab, 'equipment'>, string> = {
   guide: 'Guide',
-  comments: 'Comments',
+  discussion: 'Discussion',
 };
 
 // One surface, the sections divided by hairlines (owner, T49).

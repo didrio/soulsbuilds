@@ -278,31 +278,41 @@ author's pick else the main weapon; `getCardItem` in `@/data/core` shows any kin
 on the right (in a row under the tags below 900px); in edit mode `BuildDetailsForm` takes its place, with the name,
 tags and "Build image": the current tile and "Change image", which opens `BuildImageDialog`, radio rows of the
 default and the build's gear), then (desktop, ≥ 900px) a **tab bar** (`sections/BuildTabs`: `NavLink`s across the page, labels
-centered, sticky at the window's top; Comments shows the stored count), then the **build sidebar** beside the tab.
-Tabs are URLs (`/build/:buildId/*`, `tabs.ts`): `/build/<id>/<slug>` Description, `/<slug>/guide`, `/<slug>/comments`,
+centered, sticky at the window's top; Discussion shows the stored comment count), then the **build sidebar** beside the tab.
+Tabs are URLs (`/build/:buildId/*`, `tabs.ts`; T63): `/build/<id>/<slug>` Equipment, `/<slug>/guide`, `/<slug>/discussion`,
 where the slug is the name (`lib/slug.ts`, T56: `/build/x/bleed-samurai`). **The ID alone decides the build**: a missing
 or stale slug (or a rename) is replaced in the URL (`<Navigate replace>`), and `splitBuildPath` tells a lone tab
-segment (links from before T56 and T48: `/build/x/guide`, `/description`, `/route`) from a slug; `slugify` never
+segment (links from before T56, T48 and T63: `/build/x/guide`, `/route` → Guide, `/description` and `/comments` → Discussion) from a slug; `slugify` never
 returns a tab's segment ("Guide" → `guide-build`). Links built with `tabPath(id, tab, name)` carry the slug. An
-unknown tab, or one the build doesn't show (editing and `/build/new`: Description only), redirects to Description. Description always
-shows (T47): the write-up, or `describe.ts`'s `describeBuild(selectDescriptionFacts)`, markdown made at view time
-from the build (main weapon and the other hand's, top three attributes, load and poise, talismans, spells, a "Worth
-knowing" list) with a muted "automatically generated" note. Switching tabs keeps the editor (and an edit in
+unknown tab, or one the build doesn't show (editing and `/build/new`: Equipment only), redirects to Equipment. Nothing
+is generated for a build without a write-up (T47's generated description was removed in T63): Discussion then has
+the comments alone. Switching tabs keeps the editor (and an edit in
 progress) and the scroll position (`useScrollToTop` compares `pageKey`s; the bar scrolls itself back to the top
 when it was stuck).
+**Equipment** (T63, the default tab; `sections/EquipmentSection`): the sidebar is the stats alone (`equipment={false}`)
+and the main content is the equipment panel, laid out like the game's screen: `gear.ts` `equipmentGroups` (pure:
+the editable groups; read-only, the right hand, left hand, armor, talismans and flask with every slot, empty ones as
+faint `ItemTile placeholder`s hidden from screen readers, and arrows, spells, items only when filled) in a two-column
+grid (one below a 560px container): right | left hand (104px tiles), armor | talismans, flask | arrows (the flask
+spans the row without arrows), spells and items across (80px tiles). Viewing, **both columns are the same height**:
+the sidebar (`fill`) and the panel stretch to the row, the panel's rows share the spare height evenly (auto rows,
+`align-content: stretch`, each group centered in its band) and, when the equipment is the taller one, `StatsCard
+fill` spreads its blocks (`space-between`). Editing: every tile opens the picker, and the write-up's editor
+(`DescriptionSection`) sits under the panel; the columns keep their own heights.
 The **build sidebar** (T48, `sections/BuildSidebar`): one 340px column on every tab, the same signed in or out and
-tracking or not; it sticks under the tab bar only when it fits the window (measured with a `ResizeObserver`), else
-it scrolls with the page; desktop only (phones: the sections below). Top:
+tracking or not; on Guide and Discussion it sticks under the tab bar only when it fits the window (measured with a
+`ResizeObserver`), else it scrolls with the page; desktop only (phones: the sections below). Top:
 `sections/StatsCard` (T27): rune level, starting class, the 8 attributes as rows with bars and talisman bonuses (a
 4×2 grid with short names below 900px; inputs in the same place when editing, plus the starting-class picker),
-HP/FP/stamina, the equip load bar marked at 30% and 70% with the roll, poise. Then **Gear**: `gear.ts`
-`gearGroups(selectGearState)` (pure, shared with T49) groups the slots as `SlotEntry`s, and each is a 44px tile,
+HP/FP/stamina, the equip load bar marked at 30% and 70% with the roll, poise. Then, on Guide and Discussion,
+**Equipment** at a glance: `gear.ts` `gearGroups(selectGearState)` (pure, shared with T49) groups the slots as
+`SlotEntry`s, and each is a 44px tile (`sections/GearTiles`: `GearTile`, `GearRow`, shared with the Equipment panel),
 **no names on the page**. Read-only: the filled slots only (Armaments = right hand, left hand, arrows; Armor;
 Talismans; Spells with "N of M memory slots"; Tears, rune and ash; Items), empty groups left out, "No items yet."
 with none; a tile is a button named like "Uchigatana (Blood affinity, Seppuku skill, Needs 11 Str)"
 (`ItemRow.tsx` `itemLabel`) whose `Tooltip` shows the name, the subline (`itemSubline`) and the warning
-(`itemWarning`, also a dot on the tile's corner) on mouse hover, keyboard focus or tap (Escape closes). Editable:
-every slot (each hand and the arrows as their own rows; spells and items, saved without positions, as the filled
+(`itemWarning`, also a dot on the tile's corner) on mouse hover, keyboard focus or tap (Escape closes). Editable
+(the Equipment panel): every slot (each hand and the arrows as their own rows; spells and items, saved without positions, as the filled
 ones plus one "Choose"), each tile the button that opens the picker ("Choose talisman", "Change Uchigatana (Blood
 affinity, Seppuku skill)", `changeLabel`), named on hover or focus. `ItemRow` (tile + name + detail line +
 warning) stays for rows (the Guide's items; the phone sections).
@@ -310,23 +320,25 @@ warning) stays for rows (the Guide's items; the phone sections).
 `useMediaQuery(BELOW_TABLET)`; tests stub `matchMedia` in `src/test/viewport.ts`, desktop by default,
 `setViewportWidth(390)` for phones), never both with CSS (fixed ids). `sections/BuildSections` replaces the tab bar
 and the sidebar with one list (a panel, hairlines between) of `sections/PhoneSection`s: Stats, Weapons (with
-arrows), Armor, Talismans, Spells\*, Tears rune and ash, Items\* (\*viewing: only with some), Description, Guide,
-Comments. A section is a region named by its title; its header (`<h2><button aria-expanded aria-controls>`) shows
+arrows), Armor, Talismans, Spells\*, Tears rune and ash, Items\* (\*viewing: only with some), Guide, Discussion
+(editing: Description, the write-up's editor, instead of the last two). A section is a region named by its title; its header (`<h2><button aria-expanded aria-controls>`) shows
 the title over a **glance** while closed (`sections/glances.ts`, pure: `statsGlance` rune level + top three
 attributes, the gear's icons (`phoneGearSections` over `gearGroups`; an empty always-listed gear section is a plain
 heading with "None"), `guideGlance` "14 items to find" / "3 of 14 items" while tracking, `commentsGlance` with the
 newest comment: `useLatestComment`, one `limit(1)` read when `commentCount` > 0, or the loaded list's first), the
 title alone while open, sticky inside its section. Bodies render only while open (so Comments and the Guide's
 route load on open): `StatsCard bare`, `ItemRow`s (64px weapons, editable rows open the picker), and the tab bodies
-with `bare` (no Frame or heading). The URL's tab starts open (Description by default); several can be open;
-tapping Description/Guide/Comments open replaces the URL (no history entry); a URL change from elsewhere (Track →
+with `bare` (no Frame or heading). The URL's tab starts open (Equipment, the default, opens Weapons); several can
+be open; tapping Guide/Discussion open replaces the URL (no history entry); a URL change from elsewhere (Track →
 `/guide`, Back) opens that section and scrolls its header (`#section-<key>`) into view; a load doesn't scroll.
-**Description**: the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
+**Description** (`DescriptionSection`): the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
 `user-content-<slug>` on the highest heading level used twice); while editing, the markdown editor. **Guide**
 (`GuideSection`, "How to get this build"): the route shown at once as numbered stops (T35, `GuideRoute`: area
 label, place, what to do with a boss's reason, every item's icon, the build's lit and others dimmed, and why a key
-item is needed; tracking adds "N of M stops done", folds the finished stops and boxes the next one). **Comments**:
-the thread at a readable 72ch.
+item is needed; tracking adds "N of M stops done", folds the finished stops and boxes the next one). **Discussion**
+(T63, `DiscussionSection`): like a post and its replies: the author's write-up (if any) at the top as its own
+"Description" panel, then the comments (`CommentsSection`, the thread at a readable 72ch); the tab's count is the
+comments only. On phones one body, a "Comments" label between the two.
 The **picker** is a tall
 `Dialog` (`ItemSelector`): search, weapon type / spell kind / base game–DLC filters (`picker.ts`), the current item
 marked (`aria-current`), "Show more" paging; picking a weapon with Ashes of War moves to its Ash of War and
@@ -411,7 +423,7 @@ renders in the browser. Production setup, cost and checks: `docs/firebase.md` "L
 **Crawlers (T50).** The same function makes the site readable without JavaScript. A found build's page also
 carries the build as plain HTML inside `#root` (`functions/src/page.ts`): it loads the build into a fresh editor
 store (`makeStore` + `loadBuild`) and reads the same selectors the page uses (`gearGroups`, the attributes and
-talisman bonuses, `describeBuild` when there's no write-up), so it says what the app shows; the write-up goes
+talisman bonuses; the write-up only when there is one), so it says what the app shows; the write-up goes
 through the app's markdown pipeline as HTML (`functions/src/markdown.ts`: GFM, raw HTML dropped, rehype-sanitize,
 links `rel="nofollow ugc"`). A `<style>` in that block paints it in the site's colors, since visitors see it until
 the bundle runs; `createRoot` replaces it on the first render (not hydration: it's the same content, not
@@ -422,4 +434,4 @@ not); read failures stay 200 with the plain page. `/sitemap.xml` lists `/` and e
 `og:url` are the slugged URL whichever tab or slug was asked for. `scripts/build-functions.mjs` now writes `functions/lib/` as a directory: the card
 renderer (satori, resvg, sharp) is its own chunk, loaded on the first image request, so pages and the sitemap
 start faster; the bundle is minified (~0.9 MB, mostly game data). Pages only ever import framework-free editor
-code (the store, selectors, `gear.ts`, `describe.ts`); keep it that way, or React ends up in the function.
+code (the store, selectors, `gear.ts`); keep it that way, or React ends up in the function.

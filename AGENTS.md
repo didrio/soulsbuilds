@@ -15,11 +15,11 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T51, T56 done; T50/T51/T56's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T51, T56, T63 done; T50/T51/T56's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
-`stats/{game}`. Build page (T48): title section, tabs (Description, Guide, Comments) beside one build sidebar (stats + gear tiles with item cards on hover, T45); phones: collapsible sections with glances (T49), build math (T8), the
+`stats/{game}`. Build page (T48, T63): title section, tabs Equipment (stats beside the equipment panel, same height), Guide, Discussion (write-up on top, then comments) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
@@ -135,12 +135,14 @@ src/
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
   features/editor/         BuildEditorPage (view/create/edit/delete; title section + tabs + sidebar, T48; phones:
                            BuildSections, T49) +
-                           useBuildEditor; tabs.ts (Description, Guide, Comments: URLs, old-link redirects, which
+                           useBuildEditor; tabs.ts (Equipment, Guide, Discussion (T63): URLs, old-link redirects, which
                            show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments, useLatestComment); gear.ts (T48: the
-                           gear as groups of SlotEntry, view and edit; pure); sections/ (BuildHeader = title
+                           gear as groups of SlotEntry, view and edit; equipmentGroups = the Equipment panel's, T63; pure); sections/ (BuildHeader = title
                            section: build image (T40), like/report/tags, OwnerActions, BuildTabs (sticky tab bar),
-                           BuildDetailsForm (edit title block + BuildImageDialog), BuildSidebar (T48: StatsCard +
-                           gear tiles named on hover/focus/tap, the same on every tab; editable while editing),
+                           BuildDetailsForm (edit title block + BuildImageDialog), BuildSidebar (T48: StatsCard + (Guide,
+                           Discussion) equipment tiles named on hover/focus/tap), EquipmentSection (T63: the Equipment
+                           tab's panel, game layout; editable while editing), GearTiles (GearTile, GearRow: shared),
+                           DiscussionSection (T63: write-up + CommentsSection),
                            BuildSections + PhoneSection (T49: < 900 px, collapsible sections; glances.ts = the
                            closed headers' glances + phoneGearSections, pure),
                            StatsCard (attributes + HP, load, poise, T27), DescriptionSection, MarkdownView +

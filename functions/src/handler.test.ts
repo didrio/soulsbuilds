@@ -89,7 +89,6 @@ describe('build pages', () => {
     expect(root).toContain('<strong>bleed</strong>');
     expect(root).toContain('<a href="https://x.test" rel="nofollow ugc noopener">Guide</a>');
     expect(root).not.toContain('onerror');
-    expect(root).not.toContain('This description was automatically generated.');
   });
 
   it('escapes what the author wrote, in the head and in the page', async () => {
@@ -101,10 +100,11 @@ describe('build pages', () => {
     expect(body).toContain('&lt;b&gt;Mal&lt;/b&gt;</a>');
   });
 
-  it('describes a build without a write-up, and says the text was generated', async () => {
+  it('leaves the description out of a build without a write-up', async () => {
     const body = html(await handle('/build/SEEDEMPTY001', deps()));
-    expect(body).toMatch(/<article>\n<p>A level 132 build/);
-    expect(body).toContain('This description was automatically generated.');
+    expect(body).toContain('<h2>Attributes</h2>');
+    expect(body).not.toContain('<h2>Description</h2>');
+    expect(body).not.toContain('<article>');
   });
 
   it('still serves the meta when the plain content fails', async () => {
@@ -123,7 +123,7 @@ describe('build pages', () => {
   });
 
   it('answers every tab of the build the same way', async () => {
-    for (const tab of ['description', 'guide', 'comments']) {
+    for (const tab of ['guide', 'discussion', 'description', 'comments']) {
       const reply = await handle(`/build/SEEDMOON0001/${tab}`, deps());
       expect(html(reply)).toContain(
         '<title>Carian Moon Knight · Level 132 Elden Ring build | Souls Builds</title>',

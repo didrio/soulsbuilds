@@ -115,12 +115,14 @@ function StatsCard({
   editable,
   level,
   bare = false,
+  fill = false,
 }: {
   editable: boolean;
   level: number;
   bare?: boolean;
+  /** Fill the sidebar's height (the Equipment tab, T63): the blocks spread out evenly. */
+  fill?: boolean;
 }) {
-  const Wrapper = bare ? 'div' : 'section';
   const dispatch = useAppDispatch();
   const stats = useAppSelector(selectStats);
   const startingClass = useAppSelector(selectStartingClass);
@@ -132,7 +134,10 @@ function StatsCard({
   const percent = equipLoad > 0 ? Math.round((weight / equipLoad) * 1000) / 10 : 0;
 
   return (
-    <Wrapper aria-labelledby={bare ? undefined : 'stats-title'}>
+    <Sheet
+      as={bare ? 'div' : 'section'}
+      aria-labelledby={bare ? undefined : 'stats-title'}
+      $fill={fill}>
       <Head>
         <div>
           {bare ? null : <SectionHeading id="stats-title">Stats</SectionHeading>}
@@ -262,9 +267,17 @@ function StatsCard({
           </Poise>
         </Vitals>
       </Block>
-    </Wrapper>
+    </Sheet>
   );
 }
+
+// Filling: a column with the room left over shared between the blocks.
+const Sheet = styled.section<{ $fill: boolean }>`
+  display: ${({ $fill }) => ($fill ? 'flex' : 'block')};
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+`;
 
 const Head = styled.div`
   align-items: flex-end;

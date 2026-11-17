@@ -157,26 +157,28 @@ describe('BuildEditorPage', () => {
         .getAllByRole('link')
         .map((link) => link.textContent);
 
-    it('opens on Description, with every tab, the comment count and the sidebar', async () => {
+    it('opens on Equipment: the stats beside the equipment, every tab, the comment count', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild({ commentCount: 2 }));
       renderPage('/build/SEEDMOON0001');
-      expect(await screen.findByRole('link', { name: 'Description' })).toHaveAttribute(
+      expect(await screen.findByRole('link', { name: 'Equipment' })).toHaveAttribute(
         'aria-current',
         'page',
       );
-      expect(tabNames()).toEqual(['Description', 'Guide', 'Comments 2']);
-      expect(screen.getByRole('heading', { name: 'About this build' })).toBeInTheDocument();
-      expect(screen.getByRole('complementary', { name: 'Stats and gear' })).toBeInTheDocument();
-      // T48: no cards leading to other tabs, no "More by".
-      expect(screen.queryByRole('link', { name: /Read the description/ })).not.toBeInTheDocument();
+      expect(tabNames()).toEqual(['Equipment', 'Guide', 'Discussion 2']);
+      const sidebar = screen.getByRole('complementary', { name: 'Stats' });
+      expect(within(sidebar).queryByRole('button')).not.toBeInTheDocument();
+      const panel = screen.getByRole('region', { name: 'Equipment' });
+      expect(within(panel).getByRole('button', { name: /^Moonveil/ })).toBeInTheDocument();
+      // The write-up isn't on this tab (T63), and nothing is generated in its place.
+      expect(screen.queryByText('Moonveil and full-moon sorceries.')).not.toBeInTheDocument();
       expect(screen.queryByRole('heading', { name: /^More by/ })).not.toBeInTheDocument();
     });
 
-    it('shows the same sidebar on every tab', async () => {
+    it('shows the stats and the equipment in the sidebar on Guide and Discussion', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      const { user } = renderPage('/build/SEEDMOON0001/comments');
+      const { user } = renderPage('/build/SEEDMOON0001/discussion');
       expect(await screen.findByRole('heading', { name: 'Comments' })).toBeInTheDocument();
-      const sidebar = () => screen.getByRole('complementary', { name: 'Stats and gear' });
+      const sidebar = () => screen.getByRole('complementary', { name: 'Stats and equipment' });
       expect(within(sidebar()).getByRole('button', { name: /^Moonveil/ })).toBeInTheDocument();
       await user.click(screen.getByRole('link', { name: 'Guide' }));
       expect(
@@ -185,22 +187,46 @@ describe('BuildEditorPage', () => {
       expect(within(sidebar()).getByRole('button', { name: /^Moonveil/ })).toBeInTheDocument();
     });
 
+    it("heads Discussion with the author's write-up; the count is the comments only", async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild({ commentCount: 0 }));
+      renderPage('/build/SEEDMOON0001/discussion');
+      expect(await screen.findByRole('heading', { name: 'Description' })).toBeInTheDocument();
+      expect(screen.getByText('Moonveil and full-moon sorceries.')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Comments' })).toBeInTheDocument();
+      expect(tabNames()).toEqual(['Equipment', 'Guide', 'Discussion 0']);
+    });
+
+    it('leaves the write-up out of Discussion when the author wrote none', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
+      renderPage('/build/SEEDMOON0001/discussion');
+      expect(await screen.findByRole('heading', { name: 'Comments' })).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Description' })).not.toBeInTheDocument();
+    });
+
     it('switches tabs without losing the page', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
-      const { user } = renderPage('/build/SEEDMOON0001/comments');
-      await user.click(await screen.findByRole('link', { name: 'Description' }));
-      expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
+      const { user } = renderPage('/build/SEEDMOON0001/discussion');
+      await user.click(await screen.findByRole('link', { name: 'Equipment' }));
+      expect(screen.getByRole('link', { name: 'Equipment' })).toHaveAttribute(
         'aria-current',
         'page',
       );
       expect(firebase.getBuild).toHaveBeenCalledTimes(1);
     });
 
-    it('opens the links used before T48 on their new tab', async () => {
+    it('opens older links on their new tab', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
       renderPage('/build/SEEDMOON0001/route');
       expect(await screen.findByRole('link', { name: 'Guide' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+    });
+
+    it('opens the old Description and Comments links on Discussion (T63)', async () => {
+      firebase.getBuild.mockResolvedValue(makeBuild());
+      renderPage('/build/SEEDMOON0001/carian-moon-knight/comments');
+      expect(await screen.findByRole('link', { name: /^Discussion/ })).toHaveAttribute(
         'aria-current',
         'page',
       );
@@ -212,47 +238,32 @@ describe('BuildEditorPage', () => {
       const guide = await screen.findByRole('link', { name: 'Guide' });
       expect(guide).toHaveAttribute('aria-current', 'page');
       expect(guide).toHaveAttribute('href', '/build/SEEDMOON0001/carian-moon-knight/guide');
-      expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
+      expect(screen.getByRole('link', { name: 'Equipment' })).toHaveAttribute(
         'href',
         '/build/SEEDMOON0001/carian-moon-knight',
       );
     });
 
-    it('shows Description for an unknown tab', async () => {
+    it('shows Equipment for an unknown tab', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
       renderPage('/build/SEEDMOON0001/loadout');
-      expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
-      expect(screen.getByRole('link', { name: 'Description' })).toHaveAttribute(
+      expect(await screen.findByRole('link', { name: 'Equipment' })).toHaveAttribute(
         'aria-current',
         'page',
       );
     });
 
-    it('generates a description from the build when the author wrote none (T47)', async () => {
-      firebase.getBuild.mockResolvedValue(makeBuild({ description: '' }));
-      renderPage('/build/SEEDMOON0001');
-      expect(await screen.findByText(/^A level \d+ .*build/)).toBeInTheDocument();
-      expect(screen.getByText('This description was automatically generated.')).toBeInTheDocument();
-      expect(tabNames()).toEqual(['Description', 'Guide', 'Comments 0']);
-    });
-
-    it("shows the author's write-up without the generated note", async () => {
-      firebase.getBuild.mockResolvedValue(makeBuild());
-      renderPage('/build/SEEDMOON0001');
-      expect(await screen.findByRole('heading', { name: 'About this build' })).toBeInTheDocument();
-      expect(screen.queryByText(/automatically generated/)).not.toBeInTheDocument();
-    });
-
-    it('edits the build in the sidebar and the write-up on Description, the only tab', async () => {
+    it('edits the stats, every slot and the write-up on Equipment, the only tab', async () => {
       firebase.getBuild.mockResolvedValue(makeBuild());
       const { user } = renderPage('/build/SEEDMOON0001/guide', 'seed-ranni');
       await user.click(await screen.findByRole('button', { name: 'Edit' }));
       expect(await screen.findByText(/Markdown works/)).toBeInTheDocument();
-      expect(tabNames()).toEqual(['Description']);
-      const sidebar = screen.getByRole('complementary', { name: 'Stats and gear' });
+      expect(tabNames()).toEqual(['Equipment']);
+      const sidebar = screen.getByRole('complementary', { name: 'Stats' });
       expect(within(sidebar).getByLabelText('Intelligence')).toHaveValue('80');
-      expect(within(sidebar).getByRole('button', { name: 'Choose helm' })).toBeInTheDocument();
-      expect(within(sidebar).getByRole('button', { name: /^Change Moonveil/ })).toBeInTheDocument();
+      const panel = screen.getByRole('region', { name: 'Equipment' });
+      expect(within(panel).getByRole('button', { name: 'Choose helm' })).toBeInTheDocument();
+      expect(within(panel).getByRole('button', { name: /^Change Moonveil/ })).toBeInTheDocument();
       expect(screen.getByLabelText('Build name')).toHaveValue('Carian Moon Knight');
     });
   });

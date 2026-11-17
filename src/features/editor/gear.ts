@@ -207,3 +207,28 @@ export function gearGroups(state: GearState, editable: boolean): GearGroup[] {
     { key: 'items', title: 'Items', entries: filledAndNext(items) },
   ];
 }
+
+/** The Equipment panel's slots that always show, empty ones as placeholders (the game's fixed layout). */
+const FIXED_GROUPS: ReadonlySet<GearGroupKey> = new Set([
+  'rightHand',
+  'leftHand',
+  'armor',
+  'talismans',
+  'flask',
+]);
+
+/**
+ * The Equipment tab's panel (T63): laid out like the game's equipment screen, each hand on its own.
+ * Editable: every slot to choose (`gearGroups`). Read-only: the hands, armor, talismans and flask with
+ * all their slots (empty ones hold their place), and the arrows, spells and items only as far as the
+ * build has any (a group with none is left out).
+ */
+export function equipmentGroups(state: GearState, editable: boolean): GearGroup[] {
+  const groups = gearGroups(state, true);
+  if (editable) return groups;
+  return groups.flatMap((group) => {
+    if (FIXED_GROUPS.has(group.key)) return [group];
+    const entries = filled(group.entries);
+    return entries.length ? [{ ...group, entries }] : [];
+  });
+}

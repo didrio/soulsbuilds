@@ -26,7 +26,7 @@ interface BuildTabsProps {
   buildName?: string;
   current: BuildTab;
   tabs: BuildTab[];
-  /** Shown on the Comments tab (the build's stored count). */
+  /** Shown on the Discussion tab: the build's stored comment count (the write-up isn't one). */
   commentCount?: number;
 }
 
@@ -60,9 +60,9 @@ function BuildTabs({ buildId, buildName, current, tabs, commentCount }: BuildTab
             onFocus={tab === 'guide' ? () => void loadRoute() : undefined}
             onPointerEnter={tab === 'guide' ? () => void loadRoute() : undefined}>
             {label}
-            {tab === 'comments' && commentCount !== undefined ? (
+            {tab === 'discussion' && commentCount !== undefined ? (
               <>
-                {/* A space for the accessible name ("Comments 3"); flex layout drops it visually. */}{' '}
+                {/* A space for the accessible name ("Discussion 3"); flex layout drops it visually. */}{' '}
                 <Count>{commentCount}</Count>
               </>
             ) : null}

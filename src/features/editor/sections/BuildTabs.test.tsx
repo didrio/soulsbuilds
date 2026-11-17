@@ -7,8 +7,8 @@ const renderTabs = (route: string, props: Partial<Parameters<typeof BuildTabs>[0
   renderWithProviders(
     <BuildTabs
       buildId="abc"
-      current="description"
-      tabs={['description', 'guide', 'comments']}
+      current="equipment"
+      tabs={['equipment', 'guide', 'discussion']}
       {...props}
     />,
     { route, path: '/build/:buildId/*' },
@@ -22,22 +22,22 @@ describe('BuildTabs', () => {
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/build/abc',
       '/build/abc/guide',
-      '/build/abc/comments',
+      '/build/abc/discussion',
     ]);
     expect(within(bar).getByRole('link', { name: 'Guide' })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    // Description matches its path exactly, so it isn't current on another tab.
-    expect(within(bar).getByRole('link', { name: 'Description' })).not.toHaveAttribute(
+    // Equipment matches its path exactly, so it isn't current on another tab.
+    expect(within(bar).getByRole('link', { name: 'Equipment' })).not.toHaveAttribute(
       'aria-current',
     );
-    expect(within(bar).getByRole('link', { name: 'Comments 3' })).toBeInTheDocument();
+    expect(within(bar).getByRole('link', { name: 'Discussion 3' })).toBeInTheDocument();
   });
 
   it('shows only the tabs it is given', () => {
-    renderTabs('/build/abc', { tabs: ['description'] });
+    renderTabs('/build/abc', { tabs: ['equipment'] });
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
-    expect(links.map((link) => link.textContent)).toEqual(['Description']);
+    expect(links.map((link) => link.textContent)).toEqual(['Equipment']);
   });
 });

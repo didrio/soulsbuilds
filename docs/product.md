@@ -65,7 +65,7 @@ shareable page, the acquisition route and credited variations.
 
 ## Priorities
 
-1. **Redesign** (T26–T29; build page v3, T46–T49: the build in a fixed sidebar, Description · Guide · Comments,
+1. **Redesign** (T26–T29; build page v3, T46–T49: the build in a fixed sidebar; T63: Equipment · Guide · Discussion,
    tracking only in the Guide; T48 desktop done, T49 the phone sections next): the build page is the product.
 2. **Measurement** (T38): know whether the next features get used. Blocked on the owner's decision.
 3. **Tracking** (T34–T36): serves most users and works alone.

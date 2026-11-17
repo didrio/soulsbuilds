@@ -2,7 +2,7 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T63**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T64**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
@@ -61,7 +61,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags) and T56 (named URLs, JSON-LD).
+desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD) and T63 (Equipment and Discussion tabs).
 
 ## In progress
 
@@ -174,7 +174,7 @@ previews. Order: crawlers can read the site (T50, T51 done), then content (T52, 
 
 - **Status:** ready (independent of T52–T61; touches rules, so it needs the owner's deploy)
 - **Session:** Opus · high effort · plan mode on (rules, data model and UI in one go)
-- **Goal:** Make the Comments tab a place where people talk about the build, without going full Reddit.
+- **Goal:** Make the Discussion tab (the Comments tab until T63; the author's write-up sits on top) a place where people talk about the build, without going full Reddit.
   Owner's asks (2026-11-16): comments should fill the width they sit in; upvoting (or a simple like);
   sorting; and threaded replies, or at least one sub-level for very basic conversations.
 - **Recommended design** (confirm the first two with the owner in plan mode):
@@ -187,7 +187,7 @@ previews. Order: crawlers can read the site (T50, T51 done), then content (T52, 
     first; the author's pinned or "Author" badge on comments by the build's owner is a cheap extra. Sorting
     applies to top-level comments only; replies stay chronological.
   - **Width:** drop the `READABLE` (72ch) `max-width` in `CommentsSection.tsx` (comments, form, reply forms)
-    so they fill the tab column like the Description does. Keep a readable line length inside text only if
+    so they fill the tab column like the write-up above them does. Keep a readable line length inside text only if
     it looks bad when wide; look at it on desktop at 1000/1440 px and on phones.
 - **Done when:**
   - Comments fill the available width on every tab layout and phone section (screenshots, desktop and mobile).
@@ -418,6 +418,14 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T63 — Equipment and Discussion tabs — 2026-11-17 — owner's request, no prior ticket. The build page's tabs are
+  Equipment (default, `/build/<id>/<slug>`), Guide, Discussion (`/discussion`; old `/description` and `/comments`
+  links redirect there). Equipment: `EquipmentSection` (game layout, each hand on its own, 104/80 px tiles, empty
+  fixed slots faint, `gear.ts` `equipmentGroups`) beside a stats-only sidebar, both columns the same height
+  (`StatsCard fill`); editing happens there, write-up editor under the panel. Guide and Discussion keep the
+  sidebar's equipment tiles (`GearTiles.tsx`, shared). Discussion (`DiscussionSection`): the write-up on top, then
+  the comments; the count is comments only. T47's generated description removed (app, phones, crawler page);
+  `STAT_NAMES` moved to `lib/buildMath.ts`. Phones: Weapons open by default, sections end Guide, Discussion.
 - T56 — Build URLs with names, and structured data — 2026-11-17 — `/build/<id>/<name slug>[/<tab>]` (`lib/slug.ts`, `tabs.ts` `splitBuildPath`, `tabPath(id, tab, name)`): the ID alone decides, a missing or stale slug is replaced, old tab links still work; the function's `PAGE` takes any slug, canonical, `og:url` and sitemap are slugged (the sitemap reads `name`), JSON-LD `CreativeWork` + `BreadcrumbList` (`functions/src/jsonld.ts`). **Owner:** after the deploy, run a build page through Google's Rich Results Test.
 - T51 — Head tags per page — 2026-11-17 — `PageHead` (`components/ui/`) edits the head's own title, description, canonical and `noindex` (effects, not hoisted tags, so the function's tags aren't doubled); home, build (`shareMeta`), profile (noindex with no builds), legal pages, 404, account, `/auth/action`. Formats in `lib/share.ts` (`buildTitle`, `homeMeta`, `pageTitle`) shared with the function; `index.html` has the keyword title and no static canonical.
 - T50 — Crawlable build pages — 2026-11-17 — the `site` function serves `/sitemap.xml` (home + every build,
@@ -435,16 +443,3 @@ Older entries: `docs/tickets-archive.md`.
   focus, tap; facts as `aria-describedby`; editing keeps the short tooltip) and the route's own items (mouse
   hover only, `gearByRef`); phone rows show `factsLines`. Pure `itemFacts.ts` per kind. Pipeline: weapon
   `scaling` per affinity (tuples, +0), spirit ash `fp`/`hp`; `scalingGrade` from MenuValueTableParam 100–105.
-- T49 — Build page v3, phones — 2026-11-16 — below 900 px collapsible sections (`BuildSections`,
-  `PhoneSection`) instead of the tab bar and sidebar, one layout per width in JS (`useMediaQuery`, jsdom stub
-  `src/test/viewport.ts`); closed headers show glances (`glances.ts`: level + top attributes, gear icons, "None"
-  for empty gear, Guide items, newest comment via `fetchLatestComment` `limit(1)`); URL's section open, taps
-  replace the URL, outside navigation opens and scrolls; editing as rows; e2e `build-phone.spec.ts`.
-- T48 — Build page v3, desktop — 2026-11-16 — split (owner): desktop + shared now, phones → T49. Tabs
-  Description (`/build/:id`) · Guide · Comments, old `/description` `/route` redirect (`isCanonical`); one
-  `BuildSidebar` (StatsCard + gear tiles named on hover/focus/tap, warning dots; editable while editing,
-  Description the only tab) from `gear.ts` `gearGroups(selectGearState)`; 72px title tile. Gone: Loadout tab,
-  `LoadoutPanel`, `Loadout`, `TabLinkCard`, `MoreByAuthor`, `BuildSummary`, `BELOW_WIDE`, `SHORT_SCREEN`.
-- T47 — Auto-generated description — 2026-11-16 — Description tab always shown: the write-up, or `describe.ts`
-  `describeBuild(selectDescriptionFacts)` made at view time (weapons, top attributes, load, poise, talismans,
-  spells, "Worth knowing"), with an "automatically generated" note; `visibleTabs` lost `hasDescription`.

@@ -167,3 +167,16 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   (`itemTrackKeys`; `toggle` takes an item's keys); hero's Track → the tab, "Tracking" link while tracking;
   profile cards → `/route`. Gone: `TrackingHero`, `NextStop`, Loadout/StatsCard/ItemRow tracking, ItemTile's
   `collected` badge, the route's second bar.
+- T47 — Auto-generated description — 2026-11-16 — Description tab always shown: the write-up, or `describe.ts`
+  `describeBuild(selectDescriptionFacts)` made at view time (weapons, top attributes, load, poise, talismans,
+  spells, "Worth knowing"), with an "automatically generated" note; `visibleTabs` lost `hasDescription`.
+- T48 — Build page v3, desktop — 2026-11-16 — split (owner): desktop + shared now, phones → T49. Tabs
+  Description (`/build/:id`) · Guide · Comments, old `/description` `/route` redirect (`isCanonical`); one
+  `BuildSidebar` (StatsCard + gear tiles named on hover/focus/tap, warning dots; editable while editing,
+  Description the only tab) from `gear.ts` `gearGroups(selectGearState)`; 72px title tile. Gone: Loadout tab,
+  `LoadoutPanel`, `Loadout`, `TabLinkCard`, `MoreByAuthor`, `BuildSummary`, `BELOW_WIDE`, `SHORT_SCREEN`.
+- T49 — Build page v3, phones — 2026-11-16 — below 900 px collapsible sections (`BuildSections`,
+  `PhoneSection`) instead of the tab bar and sidebar, one layout per width in JS (`useMediaQuery`, jsdom stub
+  `src/test/viewport.ts`); closed headers show glances (`glances.ts`: level + top attributes, gear icons, "None"
+  for empty gear, Guide items, newest comment via `fetchLatestComment` `limit(1)`); URL's section open, taps
+  replace the URL, outside navigation opens and scrolls; editing as rows; e2e `build-phone.spec.ts`.
