@@ -335,6 +335,11 @@ const Tags = styled.ul`
   list-style: none;
   margin: -${SPACE_XS} 0 -${SPACE_SM};
   padding: 0;
+
+  /* Phones: the second row of tags keeps its distance from the actions. */
+  @media ${BELOW_TABLET} {
+    margin-bottom: ${SPACE_SM};
+  }
 `;
 
 // The tag stays small; the link's padding makes the tap target 44 px tall.

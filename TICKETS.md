@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T78
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T72 (back to your run; Opus · high · plan mode on), then T73, T76, T75, T77: the UI/UX pass's tickets in
+**Next:** T72 (back to your run; Opus · high · plan mode on), then T73, T75, T77: the UI/UX pass's tickets in
 Up next. The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
@@ -148,23 +148,6 @@ ProgressBar.tsx}`, `features/builds/Landing.tsx`, `app/AccountMenu.tsx`,
   `features/editor/useBuildEditor.ts` (the name check, line ~126), `features/auth/FormField` +
   `useFieldErrors` (errors by field, focus the first), `app/Header.tsx`, `features/profile/Profile.tsx`,
   `features/builds/intro.ts`.
-
-#### T76 — Small fixes from the UI/UX pass
-
-- **Status:** ready
-- **Session:** Sonnet · low effort · plan mode off
-- **Goal:** The rough edges the pass found, in one short session.
-- **Done when:**
-  - Phone build title: the tags' second row no longer touches the Track/Like/Share row, and "Report" doesn't
-    hang alone under them.
-  - The Guide's legend ("in this build / other items", "collected / still to get") stops looking like two
-    unchecked filter checkboxes: non-interactive swatches.
-  - Signed out, the comment box is a live-looking textarea ("Log in to comment") with a Post button: one "Log
-    in to comment" button that opens the dialog (check what it does today first).
-  - The stat rows' "+5" names its source on hover or focus (talisman, great rune), if it doesn't already.
-  - Screenshots of each, desktop and `--mobile`; `npm run check`, `npm run e2e`.
-- **Context:** `features/editor/sections/{BuildHeader.tsx,BuildActions,StatsCard.tsx,CommentForm}`,
-  `features/editor/guide/GuideSection.tsx`.
 
 #### T75 — Picker rows with facts
 
@@ -425,6 +408,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T76 — Small fixes from the UI/UX pass — 2026-11-17 — signed-out comment box is one "Log in to comment" button (opens the dialog); Guide legend swatches 12 px; stat "+N" titled "From talismans"; phone tags keep distance from the actions. Not checked: Report's spacing signed in on phones.
 - T74 — Home list: shelves and the builds page — 2026-11-17 — `/` = shelves (Trending by activity over builds-since, Most played, Fresh, Top <tag>), `/builds` = feed rows (likes rail), one filter bar (popovers, phone sheet, chips), search over a daily index in `stats/<game>`, likes/played ties newest first (new indexes)
 - T71 — The write-up named in its tab — 2026-11-17 — from the UI/UX pass (owner's pick: name it in the tab, layout
   and fold unchanged): the write-up sat under "Discussion 0" (phones: "Discussion · No comments yet"), so nobody

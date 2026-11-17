@@ -182,7 +182,7 @@ function StatsCard({
                 <Full>{name}</Full>
                 <Short aria-hidden="true">{short}</Short>
                 {bonuses[key] ? (
-                  <Bonus>
+                  <Bonus title="From talismans">
                     {` +${bonuses[key]}`}
                     <VisuallyHidden> from talismans</VisuallyHidden>
                   </Bonus>

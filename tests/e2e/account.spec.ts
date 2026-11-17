@@ -49,7 +49,7 @@ test('delete your account and everything you published', async ({ page }) => {
 
   // Signed out on the landing page; everything they published is gone.
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('button', { name: 'Log in' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Log in', exact: true })).toBeVisible();
   await page.goto(ownBuild);
   await expect(page.getByRole('heading', { name: 'Build not found' })).toBeVisible();
   await page.goto(profile);
@@ -63,7 +63,7 @@ test('delete your account and everything you published', async ({ page }) => {
   await expect(page.getByText(comment)).toHaveCount(0);
 
   // The account is gone too: logging in fails.
-  await page.getByRole('button', { name: 'Log in' }).click();
+  await page.getByRole('button', { name: 'Log in', exact: true }).click();
   const login = page.getByRole('form', { name: 'Log in' });
   await login.getByLabel('Email').fill(email);
   await login.getByLabel('Password').fill(password);

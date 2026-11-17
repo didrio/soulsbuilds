@@ -43,8 +43,8 @@ function GuideSection({
           upgrade materials and runes aren’t included.
         </Hint>
         <Legend aria-hidden="true">
-          <SolidTile $size={20} /> {tracking ? 'collected' : 'in this build'}
-          <DashedTile $size={20} /> {tracking ? 'still to get' : 'other items'}
+          <SolidTile $size={12} /> {tracking ? 'collected' : 'in this build'}
+          <DashedTile $size={12} /> {tracking ? 'still to get' : 'other items'}
         </Legend>
       </Intro>
       <Suspense fallback={<LoadingAnimation size={30} />}>
