@@ -2,13 +2,14 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T46**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T49**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T32 — Make a copy: a build based on another · Opus · extra high · plan mode on (then T33,
-variations). T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on
+**Next:** T46 — Tracking lives in the Guide · Opus · high · plan mode off, then T47 (auto-generated
+description) and T48 (build page v3: the build in a sidebar, Description · Guide · Comments), the owner's
+design of 2026-11-16. Then T32 — Make a copy (then T33, variations); T42 freed the rules budget it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on
 the owner), link previews (T37, blocked on the Blaze decision), the branded email action page (T43), and item
 hover cards (T45, no rush).
 T32, T33 and T45 start with owner questions (★ in each ticket).
@@ -47,6 +48,153 @@ and T42 (rules budget).
 
 ## Up next
 
+### T46 — Tracking lives in the Guide
+
+- **Status:** ready (owner, 2026-11-16: the first of the build page v3 tickets, T46–T48)
+- **Session:** Opus · high effort · plan mode off
+- **Goal:** Tracking happens in one place: the How to get tab (renamed Guide in T48). The rest of the build
+  page looks the same whether or not you track, so the build reads the same for everyone, and the route
+  becomes the checklist (owner's design, 2026-11-16).
+- **Done when:**
+  - The How to get tab, while tracking:
+    - A compact bar at the top: the progress bar, "3 of 14 items · Level 62 of 131", Stop tracking (asks
+      first, as today), and a "Your stats" button (`aria-expanded`, closed by default) that opens the eight
+      attributes with − + (`TrackedAttributes`) in place under the bar.
+    - The new-items notice (`NewItemsNotice`) under the bar.
+    - A checkbox on each of the build's items at its stop (`tracking.toggle`, the same state the Loadout
+      checkboxes write today); items that aren't the build's (Whetstone Knife…) get none. Every build item has
+      a stop: items with no known source sit in the last ("elsewhere") stop. "Mark done" stays on stops
+      without the build's gear (T44); the next stop highlighted and finished stops folded, as today.
+    - At 100%: the Build complete moment (today in `TrackingHero`, with its share) at the top of the tab,
+      instead of the bar.
+  - One guide, no toggle (owner): not tracking, the tab is exactly today's route.
+  - Tracking leaves the rest of the page: the hero's progress block (`TrackingHero`'s in-progress and
+    complete states), the Next stop card on the Loadout tab (`NextStop`), the yours/target rows in
+    `StatsCard`, the checkboxes in `Loadout`, the new-items notice above the tabs. While tracking, those show
+    exactly what a visitor sees.
+  - "Track this build" stays in the hero: it starts tracking as today (the intro first, T41), then opens the How
+    to get tab. While tracking it's a secondary "Tracking" link to that tab, with no percentage.
+  - The profile's Playing list and Completed trophies (`PlayingList`, `TrackedBuilds`) link to the build's How
+    to get tab.
+  - Tests: `Tracking.test.tsx`; `GuideSection.test.tsx`/`GuideRoute.test.tsx` (a checkbox collects the item,
+    Your stats opens, Build complete); `StatsCard.test.tsx`/`Loadout.test.tsx` (no tracking UI left); e2e
+    `tracking`, `guide`, `playing` updated. `npm run check` and `npm run e2e` pass. Screenshots of How to get
+    tracking and not, and of the hero while tracking, desktop and `--mobile`.
+  - Docs: decision "Build page layout" (tracking only in How to get), AGENTS.md "Where things stand" and the
+    map's `features/tracking` line.
+- **Context:** `BuildEditorPage.tsx` wires tracking into the hero (`TrackButton`, `TrackingHero`),
+  `NewItemsNotice`, `NextStop` and `LoadoutPanel`'s tracking props; `tracking/useBuildTracking.ts` (state,
+  progress, baseline, toggle, mark, setStat, newItems, acknowledge); `guide/{GuideSection,GuideRoute,
+progress}.tsx` (`RouteItems` already lights collected items; `routeProgress`);
+  `tracking/{TrackingHero,TrackedAttributes,TrackingCards,PlayingList,TrackedBuilds}.tsx`. No data or rules
+  change: the same tracking doc. T48 renames the tab Guide (`/guide`) and puts the build's stats in a sidebar.
+
+### T47 — Auto-generated description
+
+- **Status:** ready (owner, 2026-11-16; build page v3, T46–T48)
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Every build has something on its Description tab, which becomes the page a build opens to in T48:
+  the author's write-up, or a short one generated from the build, "just the basics and anything to note"
+  (owner).
+- **Done when:**
+  - A pure `describeBuild(facts)` (e.g. `features/editor/describe.ts`) turns a facts object into short
+    markdown; a selector (e.g. `selectDescriptionFacts` in `store/derived.ts`) gathers the facts from the
+    editor state the page already loads. Names from `@/data/core` (light data; check what the view can import
+    without the full data, docs/data.md).
+  - The content, in plain sentences, a few lines at most, e.g. "A level 131 Samurai build around Rivers of
+    Blood (Corpse Piler) and an Uchigatana (Blood, Seppuku). Its highest attributes are Vigor 50, Arcane 45
+    and Dexterity 40. Medium load (39.8 of 72.0), 42 poise. Talismans: Lord of Blood's Exultation, Rotten
+    Winged Sword Insignia, Millicent's Prosthesis and Shard of Alexander. Spirit Ash: Mimic Tear Ashes."
+    - The main weapon first (`mainWeaponId`, `lib/equipment.ts`), then the other hand's; affinity and skill
+      from `weaponDetails`.
+    - The three highest effective attributes (with talisman bonuses).
+    - Spells when there are any: count by kind and memory slots used ("3 incantations, 5 of 10 memory slots").
+    - Then a short "Worth knowing" list, only for what applies: unmet requirements and two-handed-only weapons
+      (from `itemWarning`), spells over the memory slots, DLC items ("Needs Shadow of the Erdtree: …").
+    - Nothing empty is mentioned; a build with no gear gets one line ("A level 9 build with no gear chosen
+      yet.").
+  - Rendered at view time through `MarkdownView` (never stored, so it follows edits), ending with a muted "This
+    description was automatically generated."
+  - The Description tab shows for every build (`tabs.ts` `visibleTabs`: drop the `hasDescription` rule).
+    Editing is unchanged: Loadout and Description, the editor starting empty (not prefilled).
+  - Tests: `describe.test.ts` (each sentence and note, an empty build, ties in the top attributes),
+    `tabs.test.ts`, a `BuildEditorPage` test for the generated text and its note; e2e `build-tabs`
+    (SEEDNAKED001 now has a Description tab). `npm run check` passes; screenshots of a build without a
+    write-up, desktop and `--mobile`.
+  - Docs: decision "Build page layout" (Description always shown), docs/architecture.md if it lists the tabs.
+- **Context:** `store/derived.ts` (`selectEffectiveStats`, `selectVitals`, `selectEquipWeight`,
+  `selectRollType`, `selectPoise`, `selectMemorySlots`, `selectMemoryUsed`, `selectSpellsOverSlots`,
+  `selectRequirementChecks`), `store/selectors.ts`, `itemDetails.ts` (`weaponDetails`, `itemSubline`,
+  `itemWarning`), `src/data/schema.ts` (the `dlc` flag on items), `data/startingClasses` (class names),
+  `sections/{DescriptionSection,MarkdownView}.tsx`.
+
+### T48 — Build page v3: the build in a sidebar, Description · Guide · Comments
+
+- **Status:** ready after T46 and T47 (owner's design, 2026-11-16)
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** The build's stats and gear live in one sidebar that's the same on every tab and for every visitor,
+  and the page's tabs are Description (the default), Guide and Comments. The build reads at a glance, the page
+  doesn't reshape itself, and the cards that pointed at other tabs are gone. On phones: collapsible sections
+  whose closed headers already say something.
+- **Done when:**
+  - **Title section** (`BuildHeader`), shorter: a ~72 px tile (from 112), name, meta and tags packed tighter,
+    the actions on the right (Track / Tracking from T46, Like, Report, the owner's Edit and Delete).
+  - **Tab bar** across the full width, labels centered: Description · Guide · Comments (count). URLs:
+    `/build/:id` = Description, `/build/:id/guide`, `/build/:id/comments`; `/route` → `/guide` and
+    `/description` → `/build/:id` redirect (`replace`). `tabs.ts` (`BuildTab`, `BUILD_TABS`, `parseTab`,
+    `tabPath`, `pageKey`) and T46's links (Track, profile lists) follow.
+  - **Sidebar** (desktop ≥ 900 px, `STATS_COLUMN_WIDTH` 340), one component from `BuildSummary` + `StatsCard`:
+    - Stats: rune level, starting class, the eight attributes as rows with bars and talisman bonuses (StatsCard's
+      desktop look; shrink as needed, owner: "your call"), HP / FP / stamina, equip load bar with the roll,
+      poise.
+    - Gear as icon tiles by group: armaments (+ arrows), armor, talismans, spells (memory slots), tears, Great
+      Rune, spirit ash, items. **No names on the page** (owner): hover, keyboard focus or tap shows the name, a
+      subline (`itemSubline`: affinity · skill for weapons) and the requirement warning (`itemWarning`, also a
+      small mark on the tile). `BuildSummary`'s `GearTile` + `Tooltip` are the start; T45 makes them full cards.
+    - Sticky under the tab bar when it fits the window, else it scrolls with the page.
+    - Identical on all three tabs, signed in or out, tracking or not.
+  - **Description**: the write-up or T47's generated one. **Guide**: T46's How to get tab, renamed.
+    **Comments**: as today.
+  - **Removed:** the Loadout tab and `LoadoutPanel`; `Loadout`'s view mode (its edit rows may live on in the
+    phone sections); `TabLinkCard`; `MoreByAuthor` with its test and e2e step; the condensed summary as a
+    separate thing (it becomes the sidebar).
+  - **Editing** keeps "edit mode is the view layout": the sidebar becomes editable (StatsCard's class picker
+    and inputs; tiles are buttons that open the picker, empty slots as placeholder tiles named on hover,
+    warnings on the tiles). While editing, the only tab is Description (the markdown editor), with the sticky
+    Save bar as today. New builds the same.
+  - **Phones and tablets** (< 900 px, `BELOW_TABLET`): no tab bar; collapsible sections under the title
+    section, in this order: Stats · Weapons (with arrows) · Armor · Talismans · Spells\* · Tears, rune and ash ·
+    Items\* · Description · Guide · Comments (\*only when the build has some).
+    - A closed header is a glance: Stats → the rune level and the three highest attributes; gear sections →
+      their icons; Guide → "21 stops", or "3 of 14 items" while tracking; Comments → the count and the start of
+      the latest.
+    - Opening a gear section lists its items as rows with icon, name and subline (like `ItemRow`), so phones
+      get names without hover. Stats opens to the compact sheet (4×2 attributes, vitals, equip load, poise).
+    - On load, the section the URL names is open (Description by default; `/guide`, `/comments`), the rest
+      closed. Several can be open at once. Opening a content section replaces the URL (no history entry per
+      tap). An open section's header sticks to the top while you scroll through it, so it closes from anywhere.
+    - Headers are `<button aria-expanded aria-controls>` ≥ 44 px; each section is a region named by its header.
+    - Editing on phones: the build sections open as edit rows (picker buttons, stat inputs), Description as
+      the editor.
+  - Tests: `tabs.test.ts`, `BuildTabs.test.tsx`, `BuildEditorPage.test.tsx`, `BuildHeader.test.tsx`, the
+    sidebar (from `BuildSummary.test.tsx`/`StatsCard.test.tsx`), the phone sections (open and close, the URL's
+    section open, the glances), what remains of `Loadout.test.tsx`, `test/editor.tsx` if the editor's entry
+    points move; e2e `build-tabs`, `community` (no More by), `build-flow` (editing in the sidebar),
+    `build-image`, `guide`, `tracking`, `playing`. `npm run check` and `npm run e2e` pass.
+  - Screenshots: each tab desktop and `--mobile` (sections closed and opened), tracking and not, edit mode, and
+    a build with no gear (SEEDNAKED001).
+  - Docs: decisions "Build page layout", "Redesign v2" and "Build page and editor" revised (owner's design,
+    2026-11-16); AGENTS.md map (`features/editor/sections`) and "Where things stand"; docs/architecture.md;
+    the `run-app` skill if it names the Loadout tab; docs/product.md "Priorities".
+- **Context:** the design came from a review on 2026-11-16 (inline mockups, not saved): the owner chose a
+  fixed build sidebar over an Overview/Guide split and over one long page, so the build reads the same
+  everywhere and only the Guide changes while tracking. Files: `BuildEditorPage.tsx` (layout: `WithSummary`,
+  `Summary`, `Cards`), `sections/{BuildHeader,BuildTabs,BuildSummary,StatsCard,Loadout,LoadoutPanel,
+TabLinkCard,MoreByAuthor}.tsx`, `ItemRow.tsx`, `itemDetails.ts`, `slots.ts`, `tabs.ts`, `app/routes.tsx`,
+  `components/ui/{Tooltip,ItemTile,Frame}.tsx`, `theme/media.ts`. The Gotcha on `@/data/core` vs `@/data`: the
+  sidebar renders on every build view, so its tooltips use light data. Big: the plan may split it (e.g. desktop,
+  then phones) as long as each part ships with the whole build still visible on phones.
+
 ### T38 — Cookie-free usage counts
 
 - **Status:** blocked: the owner decides whether to revisit decision "Analytics" (dropped, so there's no consent
@@ -80,7 +228,8 @@ and T42 (rules budget).
 
 ### T32 — Make a copy: a build based on another
 
-- **Status:** ready (T42 made room for `basedOn`; the button goes in T28's build hero); owner decisions first
+- **Status:** ready (T42 made room for `basedOn`; the button goes in the build's title section, shorter since
+  T48); owner decisions first
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -123,8 +272,9 @@ and T42 (rules budget).
 - **Goal:** A build that's been copied shows everyone's versions of it and how each one differs, so a visitor sees
   the original next to the PVE take, the cheaper version, or the one that claims to be better.
 - **Done when:**
-  - ★ A "Variations" tab on the build page with its count, shown only when there's at least one (like the empty
-    Description tab, T28). The count is one `count()` aggregation (`where('basedOn.buildId', '==', id)`, about 1
+  - ★ A "Variations" tab on the build page with its count, shown only when there's at least one. Since T48 the
+    tabs are Description · Guide · Comments beside the build sidebar, with collapsible sections on phones:
+    decide then whether Variations is a fourth tab (and section) or part of Description. The count is one `count()` aggregation (`where('basedOn.buildId', '==', id)`, about 1
     read), not a stored counter: no counter rules, and nothing drifts when copies are deleted.
   - The tab lists the copies, most liked first (composite index in `firestore.indexes.json`), in T29's row
     style. Each row says what changed against this build, e.g. "3 items changed · Faith 80 → 60 · +1 spell ·
@@ -161,11 +311,12 @@ and T42 (rules budget).
 
 ### T45 — Item cards on hover across the build page
 
-- **Status:** ready (owner, 2026-11-16: no rush)
+- **Status:** ready after T48 (owner, 2026-11-16: no rush)
 - **Session:** Opus · high effort · plan mode on
-- **Goal:** Hovering over (or focusing) any item image on the build page, on any tab (Loadout, Description, How
-  to get, the hero, the summary column), shows a small card with the item's name and the few facts a player
-  wants at a glance. The landing page's rows stay as they are.
+- **Goal:** Hovering over (or focusing) any item image on the build page (above all T48's sidebar, where items
+  are named only on hover; also the Guide's route icons and the title section's tile) shows a small card with
+  the item's name and the few facts a player wants at a glance. The landing page's rows stay as they are.
+  T48 ships the first version (name, affinity · skill, requirement warning); this ticket fills in the facts.
 - **Done when:** (★ owner questions first: which facts per kind; how it works on phones)
   - One shared hover card for every item tile on the build page. The facts are per kind, kept short. A
     proposal to confirm:
@@ -178,7 +329,7 @@ and T42 (rules budget).
   - ★ Only what `src/data/` already has (check `schema.ts`); a missing fact means a pipeline change in
     `scripts/data/` from the owner's export, never a new source (golden rule 5).
   - Opens on hover and keyboard focus, closes on Escape and when the pointer leaves. Phones have no hover:
-    ★ tap shows it, or the card stays desktop-only. It never covers the edit-mode tile buttons or blocks a
+    ★ tap shows it, or the card stays desktop-only (T48's phone sections already name the items when opened). It never covers the edit-mode tile buttons or blocks a
     click. Visual only for screen readers unless the facts also go in the accessible name or description.
   - The card's facts come from a pure helper (e.g. extending `features/editor/itemDetails.ts`) with unit
     tests; component tests for show and hide; `npm run check`; screenshots desktop and `--mobile`; `npm run
