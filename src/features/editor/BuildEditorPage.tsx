@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
@@ -6,6 +7,7 @@ import PageMessage from '@/components/ui/PageMessage';
 import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
 import { useOpenAuthDialog } from '@/app/authDialog';
+import { useMediaQuery } from '@/app/useMediaQuery';
 import { errorMessage } from '@/lib/firebase';
 import {
   BELOW_MOBILE,
@@ -22,6 +24,7 @@ import {
 } from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
 import BuildHeader from './sections/BuildHeader';
+import BuildSections from './sections/BuildSections';
 import BuildSidebar from './sections/BuildSidebar';
 import BuildTabs from './sections/BuildTabs';
 import CommentsSection from './sections/CommentsSection';
@@ -34,7 +37,7 @@ import { TrackingBar } from '@/features/tracking/TrackingBar';
 import { NewItemsNotice } from '@/features/tracking/TrackingCards';
 import { useBuildTracking } from '@/features/tracking/useBuildTracking';
 import { selectLevel } from './store/build';
-import { isCanonical, parseTab, tabPath, visibleTabs } from './tabs';
+import { isCanonical, parseTab, tabPath, visibleTabs, type BuildTab } from './tabs';
 import { useBuildEditor } from './useBuildEditor';
 
 /**
@@ -55,7 +58,8 @@ function BuildEditorPage() {
  * layout": the sidebar takes the stats and gear, Description is the only tab (the write-up), and a
  * sticky Save/Cancel bar. Tracking (T34, view mode) lives in the Guide only (T46): the progress bar,
  * the player's stats and the new-items notice at the top, the route as the checklist; the title
- * section's "Track this build" (or "Tracking") opens it.
+ * section's "Track this build" (or "Tracking") opens it. Phones and tablets (< 900 px, T49): one layout
+ picked in JS, collapsible sections (`BuildSections`) instead of the tab bar and the sidebar.
  */
 function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?: string }) {
   const editor = useBuildEditor(buildId);
@@ -64,6 +68,7 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
   const tracking = useBuildTracking(editable ? null : build);
   const routeId = buildId ?? 'new';
   const openAuthDialog = useOpenAuthDialog();
+  const phone = useMediaQuery(BELOW_TABLET);
 
   if (isNew) {
     if (auth.loading) return <PageMessage loading />;
@@ -108,6 +113,42 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
   if (!tab || !tabs.includes(tab)) return <Navigate to={tabPath(routeId, 'description')} replace />;
   if (!isCanonical(tabParam, tab)) return <Navigate to={tabPath(routeId, tab)} replace />;
 
+  // Each tab's content: beside the sidebar on desktop, in its section on phones (bare: the section
+  // is the panel and has the heading).
+  const bodies: Record<BuildTab, ReactNode> = {
+    description: (
+      <DescriptionSection
+        description={editor.description}
+        editable={editable}
+        onChange={editor.setDescription}
+        bare={phone}
+      />
+    ),
+    guide: build ? (
+      <>
+        <TrackingBar tracking={tracking} buildName={build.name} target={build.stats} />
+        <NewItemsNotice tracking={tracking} />
+        <GuideSection
+          equipment={build.equipment}
+          bare={phone}
+          tracking={
+            tracking.state
+              ? {
+                  collected: tracking.state.collected,
+                  marked: tracking.state.marked,
+                  onToggle: tracking.toggle,
+                  onMark: tracking.mark,
+                }
+              : undefined
+          }
+        />
+      </>
+    ) : null,
+    comments: build ? (
+      <CommentsSection buildId={build.id} ownerId={build.ownerId} bare={phone} />
+    ) : null,
+  };
+
   return (
     <Page>
       <Back to="/">← All builds</Back>
@@ -141,48 +182,32 @@ function BuildEditor({ buildId, tabParam }: { buildId: string | null; tabParam?:
           }
         />
       ) : null}
-      <div>
-        <BuildTabs
-          buildId={routeId}
-          current={tab}
+      {phone ? (
+        <BuildSections
+          routeId={routeId}
+          tab={tab}
           tabs={tabs}
-          commentCount={editable ? undefined : build?.commentCount}
+          editable={editable}
+          level={level}
+          description={editor.description}
+          build={build}
+          tracking={tracking}
+          bodies={bodies}
         />
-        <WithSidebar>
-          <BuildSidebar editable={editable} level={level} />
-          <Content>
-            {tab === 'description' ? (
-              <DescriptionSection
-                description={editor.description}
-                editable={editable}
-                onChange={editor.setDescription}
-              />
-            ) : null}
-            {tab === 'guide' && build ? (
-              <>
-                <TrackingBar tracking={tracking} buildName={build.name} target={build.stats} />
-                <NewItemsNotice tracking={tracking} />
-                <GuideSection
-                  equipment={build.equipment}
-                  tracking={
-                    tracking.state
-                      ? {
-                          collected: tracking.state.collected,
-                          marked: tracking.state.marked,
-                          onToggle: tracking.toggle,
-                          onMark: tracking.mark,
-                        }
-                      : undefined
-                  }
-                />
-              </>
-            ) : null}
-            {tab === 'comments' && build ? (
-              <CommentsSection buildId={build.id} ownerId={build.ownerId} />
-            ) : null}
-          </Content>
-        </WithSidebar>
-      </div>
+      ) : (
+        <div>
+          <BuildTabs
+            buildId={routeId}
+            current={tab}
+            tabs={tabs}
+            commentCount={editable ? undefined : build?.commentCount}
+          />
+          <WithSidebar>
+            <BuildSidebar editable={editable} level={level} />
+            <Content>{bodies[tab]}</Content>
+          </WithSidebar>
+        </div>
+      )}
       {editable ? (
         <EditBar aria-label="Save changes">
           <ErrorMessage>{editor.saveError}</ErrorMessage>
@@ -219,18 +244,13 @@ const Content = styled.div`
   min-width: 0;
 `;
 
-// The sidebar on the left (it sticks under the tab bar itself when it fits), the tab beside it.
-// Tablets and phones: one column, the sidebar first.
+// Desktop: the sidebar on the left (it sticks under the tab bar itself when it fits), the tab beside it.
 const WithSidebar = styled.div`
   align-items: start;
   display: grid;
   gap: ${SPACE_REGION};
   grid-template-columns: ${STATS_COLUMN_WIDTH}px minmax(0, 1fr);
   margin-top: ${SPACE_REGION};
-
-  @media ${BELOW_TABLET} {
-    grid-template-columns: minmax(0, 1fr);
-  }
 `;
 
 // Stays on screen at the bottom while editing, so Save is always one Tab or tap away.

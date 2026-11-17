@@ -6,6 +6,7 @@ import {
   createBuild,
   deleteBuild,
   deleteComment,
+  fetchLatestComment,
   getBuild,
   hasLiked,
   likeBuild,
@@ -117,6 +118,23 @@ export function useComments(buildId: string | null) {
     queryKey: queryKeys.comments(buildId ?? ''),
     queryFn: () => listComments(buildId!),
     enabled: Boolean(buildId),
+  });
+}
+
+/**
+ * A build's newest comment, for the phone's Comments header (T49): one read, and none when the full
+ * list is already loaded (its first). Its key sits under the list's, so posting or deleting a comment
+ * refreshes it too.
+ */
+export function useLatestComment(buildId: string, enabled: boolean) {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: queryKeys.latestComment(buildId),
+    queryFn: () => {
+      const list = queryClient.getQueryData<Comment[]>(queryKeys.comments(buildId));
+      return list ? (list[0] ?? null) : fetchLatestComment(buildId);
+    },
+    enabled,
   });
 }
 

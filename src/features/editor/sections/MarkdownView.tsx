@@ -8,6 +8,7 @@ import remarkGfm from 'remark-gfm';
 import styled from 'styled-components';
 import { displayText, labelText } from '@/components/ui/typography';
 import {
+  BELOW_TABLET,
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
   COLOR_INSET,
@@ -24,6 +25,7 @@ import {
   TEXT_XS,
 } from '@/theme';
 import { TAB_BAR_HEIGHT } from './BuildTabs';
+import { PHONE_OPEN_HEADER_HEIGHT } from './PhoneSection';
 import rehypeJumpTo from './rehypeJumpTo';
 
 const REMARK_PLUGINS = [remarkGfm];
@@ -71,9 +73,13 @@ const Body = styled.div`
     margin-bottom: 0;
   }
 
-  /* A section heading jumped to lands under the sticky tab bar. */
+  /* A section heading jumped to lands under the sticky tab bar (phones: the open section's header). */
   & [id] {
     scroll-margin-top: ${TAB_BAR_HEIGHT + 16}px;
+
+    @media ${BELOW_TABLET} {
+      scroll-margin-top: ${PHONE_OPEN_HEADER_HEIGHT + 16}px;
+    }
   }
 
   /* "Jump to": the label, then the sections as small chips (44 px tap targets). */

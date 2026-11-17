@@ -35,7 +35,16 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
  * View mode: the comments, newest first (authors link to their profile), and the post form. With no
  * comments yet, it asks visitors to tell the build's author how it went.
  */
-function CommentsSection({ buildId, ownerId }: { buildId: string; ownerId: string }) {
+function CommentsSection({
+  buildId,
+  ownerId,
+  bare = false,
+}: {
+  buildId: string;
+  ownerId: string;
+  /** The phone's Comments section (T49): no panel or heading of its own. */
+  bare?: boolean;
+}) {
   const { uid } = useAuth();
   const owner = useUserProfile(ownerId);
   const comments = useComments(buildId);
@@ -53,11 +62,8 @@ function CommentsSection({ buildId, ownerId }: { buildId: string; ownerId: strin
   const list = comments.data ?? [];
   const count = comments.data?.length;
 
-  return (
-    <Frame aria-labelledby="comments-title">
-      <SectionHeading id="comments-title">
-        {count ? `Comments · ${count}` : 'Comments'}
-      </SectionHeading>
+  const body = (
+    <>
       {comments.isPending ? <LoadingAnimation size={30} /> : null}
       {comments.isError ? (
         <ErrorMessage onRetry={() => void comments.refetch()}>
@@ -126,6 +132,15 @@ function CommentsSection({ buildId, ownerId }: { buildId: string; ownerId: strin
           </Button>
         </div>
       </PostForm>
+    </>
+  );
+  if (bare) return <div>{body}</div>;
+  return (
+    <Frame aria-labelledby="comments-title">
+      <SectionHeading id="comments-title">
+        {count ? `Comments · ${count}` : 'Comments'}
+      </SectionHeading>
+      {body}
     </Frame>
   );
 }

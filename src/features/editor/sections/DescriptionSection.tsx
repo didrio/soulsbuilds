@@ -18,18 +18,24 @@ interface DescriptionSectionProps {
   description: string;
   editable: boolean;
   onChange: (description: string) => void;
+  /** The phone's Description section (T49): no panel or heading of its own. */
+  bare?: boolean;
 }
 
 /**
  * "About this build": a markdown editor in edit mode, the sanitized write-up otherwise, or (T47) a short
  * one generated from the build when the author wrote none.
  */
-function DescriptionSection({ description, editable, onChange }: DescriptionSectionProps) {
+function DescriptionSection({
+  description,
+  editable,
+  onChange,
+  bare = false,
+}: DescriptionSectionProps) {
   const facts = useAppSelector(selectDescriptionFacts);
   const generated = !editable && !description;
-  return (
-    <Frame aria-labelledby="about-title">
-      <SectionHeading id="about-title">About this build</SectionHeading>
+  const body = (
+    <>
       {editable ? (
         <Hint>How to play it, what it's for, the levels it works at. Markdown works.</Hint>
       ) : null}
@@ -41,6 +47,13 @@ function DescriptionSection({ description, editable, onChange }: DescriptionSect
         )}
       </Suspense>
       {generated ? <Note>{GENERATED_NOTE}</Note> : null}
+    </>
+  );
+  if (bare) return <div>{body}</div>;
+  return (
+    <Frame aria-labelledby="about-title">
+      <SectionHeading id="about-title">About this build</SectionHeading>
+      {body}
     </Frame>
   );
 }

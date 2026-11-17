@@ -34,7 +34,8 @@ const {
 } = await import('@/lib/firebase/builds');
 const { hasLiked, likeBuild, listLikedBuildIds, unlikeBuild } =
   await import('@/lib/firebase/likes');
-const { addComment, deleteComment, listComments } = await import('@/lib/firebase/comments');
+const { addComment, deleteComment, fetchLatestComment, listComments } =
+  await import('@/lib/firebase/comments');
 const { reportContent } = await import('@/lib/firebase/reports');
 const { deleteAccountData, findAccountData } = await import('@/lib/firebase/account');
 const { createUserProfile, getUserProfile, getUserProfiles, updateDisplayName } =
@@ -160,6 +161,7 @@ describe('data layer against the rules', () => {
 
   it('comments: post (trimmed), list newest first, delete own only', async () => {
     actAs(null);
+    expect(await fetchLatestComment(buildId)).toBeNull();
     await expect(addComment(buildId, 'bob', 'anonymous')).rejects.toThrow();
     actAs('bob');
     const first = await addComment(buildId, 'bob', '  Nice build!  ');
@@ -170,6 +172,9 @@ describe('data layer against the rules', () => {
     const comments = await listComments(buildId);
     expect(comments.map((c) => c.text)).toEqual(['Thanks!', 'Nice build!']);
     expect((await getBuild(buildId))?.commentCount).toBe(2);
+    // The newest one alone (T49), readable signed out.
+    actAs(null);
+    expect((await fetchLatestComment(buildId))?.text).toBe('Thanks!');
     actAs('bob');
     await deleteComment(buildId, first.id);
     expect((await getBuild(buildId))?.commentCount).toBe(1);

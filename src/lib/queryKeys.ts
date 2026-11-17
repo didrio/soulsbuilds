@@ -17,6 +17,8 @@ export const queryKeys = {
   likedBuilds: (userId: string) => ['builds', 'liked', userId] as const,
   hasLiked: (buildId: string, userId: string) => ['likes', buildId, userId] as const,
   comments: (buildId: string) => ['comments', buildId] as const,
+  /** A build's newest comment (the phone's Comments header, T49); under the comments prefix. */
+  latestComment: (buildId: string) => ['comments', buildId, 'latest'] as const,
   user: (id: string) => ['users', id] as const,
   stats: (game: GameId) => ['stats', game] as const,
   /** The signed-in player's progress on a build (T34). */

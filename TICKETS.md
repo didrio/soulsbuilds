@@ -7,11 +7,10 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T50
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T49 (build page v3, part 2: collapsible sections on phones; owner's design of 2026-11-16, its two
-glance decisions in the ticket). Then T32 — Make a copy (then T33, variations); T42 freed the rules budget it
-needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
-blocked on the Blaze decision), the branded email action page (T43), and item hover cards (T45, no rush; T48's
-sidebar tiles are where they'd show).
+**Next:** T32 — Make a copy (Opus · extra high · plan mode on; then T33, variations); T42 freed the rules budget
+it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
+blocked on the Blaze decision), the branded email action page (T43), and item hover cards (T45, no rush; desktop
+sidebar tiles, phones already show names in the open sections since T49).
 T32, T33 and T45 start with owner questions (★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -40,59 +39,14 @@ and spacing, and the canvas notes say why.
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
-T42 (rules budget), T46 (tracking in How to get), T47 (generated descriptions) and T48 (build page v3 on
-desktop).
+T42 (rules budget), T46 (tracking in How to get), T47 (generated descriptions), T48 (build page v3 on
+desktop) and T49 (phones).
 
 ## In progress
 
 (none)
 
 ## Up next
-
-### T49 — Build page v3, part 2: collapsible sections on phones
-
-- **Status:** ready (T48 done 2026-11-16: desktop sidebar, tabs, gear.ts)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** On phones and tablets (< 900 px, `BELOW_TABLET`) the build page is collapsible sections whose
-  closed headers already say something, instead of T48's interim (the tab bar with the sidebar stacked above
-  each tab).
-- **Done when:**
-  - No tab bar below 900 px; collapsible sections under the title section, in this order: Stats · Weapons (with
-    arrows) · Armor · Talismans · Spells\* · Tears, rune and ash · Items\* · Description · Guide · Comments (\*only
-    when the build has some).
-  - A closed header is a glance: Stats → the rune level and the three highest attributes; gear sections → their
-    icons; Guide → "14 items to find" (counted from the build: `trackedItems(equipment).length`, no route chunk;
-    owner, 2026-11-16), or "3 of 14 items" while tracking (`tracking.progress.gear`); Comments → the count and
-    the start of the newest comment.
-  - Newest comment (owner, 2026-11-16): a `limit(1)` query (`fetchLatestComment` in
-    `src/lib/firebase/comments.ts` + a query hook), only on phones and only when `commentCount` isn't 0: 1 read
-    per phone visit; the full list loads when the section opens. Data-layer test in `tests/rules/`.
-  - Opening a gear section lists its items as rows with icon, name and subline (`ItemRow`), so phones get names
-    without hover. Stats opens to the compact sheet (4×2 attributes, vitals, equip load, poise).
-  - On load, the section the URL names is open (Description by default; `/guide`, `/comments`), the rest
-    closed; navigating to one (the hero's Track → `/guide`) opens it and scrolls to it. Several can be open at
-    once. Opening a content section replaces the URL (no history entry per tap). An open section's header
-    sticks to the top while you scroll through it, so it closes from anywhere.
-  - Headers are `<button aria-expanded aria-controls>` ≥ 44 px; each section is a region named by its header.
-  - Editing on phones: the build sections open as edit rows (picker buttons, stat inputs), Description as the
-    editor.
-  - Tests: the phone sections (open and close, the URL's section open, the glances), the newest-comment query;
-    e2e at a phone viewport for one journey. `npm run check` and `npm run e2e` pass.
-  - Screenshots `--mobile`: sections closed and opened, tracking and not, edit mode, SEEDNAKED001.
-  - Docs: decisions "Build page layout" (phones), AGENTS.md map, docs/architecture.md.
-- **Context:** T48 built the shared parts: `src/features/editor/gear.ts` (the gear groups, view and edit; reuse
-  it for the gear sections), `sections/BuildSidebar.tsx` (stats + gear tiles), `tabs.ts`. Pick one layout per
-  width in JS (a `matchMedia` hook; jsdom needs a stub) rather than rendering both and hiding one with CSS
-  (duplicate ids and headings). `BuildEditorPage.tsx` is where the layout switches.
-  - **Handoff from T48:** below 900 px today the page is the tab bar with `BuildSidebar` stacked above the tab.
-    `StatsCard` already has the compact phone sheet (4×2 attributes, HP/FP/stamina/poise row, load) under
-    `BELOW_TABLET` media queries; reuse it as the Stats section's body. Gear rows: `ItemRow` with
-    `gearGroups(selectGearState, editable)` entries (`slotWeaponDetails`, `itemSubline`, `changeLabel` are
-    there). StatsCard and BuildSidebar use fixed ids (`stats-title`, `gear-title`): render one of them per
-    page. Comments are publicly readable (`allow read: if true` in `firestore.rules`), so the `limit(1)` query
-    needs no rule change, only a data-layer test. `BuildTabs` scrolls the page on tab change; the sections
-    replace it on phones, so the URL ↔ open-section sync lives in the sections. Track → `/guide` must open and
-    scroll to the Guide section. e2e at a phone viewport: Playwright `test.use({ viewport })` in one spec.
 
 ### T38 — Cookie-free usage counts
 
@@ -240,6 +194,10 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 ## Backlog
 
+- Phone sections (T49 follow-ups, small): opening a `/guide` or `/comments` link directly doesn't scroll to that
+  section (only navigation within the page does, `BuildSections`); the title section's "Tracking" link does
+  nothing when the URL is already `/guide` and the Guide was closed; "Jump to" links under the sticky
+  Description header weren't tried on a phone (`MarkdownView` scroll margin).
 - Route (T15 follow-ups): upgrade materials (Smithing/Somber stones, needs upgrade levels on builds), rune
   farming to the build's level (where and how long), and the starting class: builds now save one (T8,
   `startingClass`; classes in `character.json`), so the route can say "your Samurai starts with it" instead of
@@ -268,6 +226,11 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T49 — Build page v3, phones — 2026-11-16 — below 900 px collapsible sections (`BuildSections`,
+  `PhoneSection`) instead of the tab bar and sidebar, one layout per width in JS (`useMediaQuery`, jsdom stub
+  `src/test/viewport.ts`); closed headers show glances (`glances.ts`: level + top attributes, gear icons, "None"
+  for empty gear, Guide items, newest comment via `fetchLatestComment` `limit(1)`); URL's section open, taps
+  replace the URL, outside navigation opens and scrolls; editing as rows; e2e `build-phone.spec.ts`.
 - T48 — Build page v3, desktop — 2026-11-16 — split (owner): desktop + shared now, phones → T49. Tabs
   Description (`/build/:id`) · Guide · Comments, old `/description` `/route` redirect (`isCanonical`); one
   `BuildSidebar` (StatsCard + gear tiles named on hover/focus/tap, warning dots; editable while editing,
@@ -287,8 +250,3 @@ Older entries: `docs/tickets-archive.md`.
   `is` checks); owner: Ash of War and arrow slots by length only (decision "Items in builds"). Guard
   `tests/rules/budget.test.ts` (`HEADROOM` 90; `RULES_BUDGET=measure`); cost model in docs/firebase.md "Rules
   budget".
-- T44 — Check off route stops that aren't gear — 2026-11-16 — owner: one "Mark done" per stop (How to get and
-  the Next stop card), not in the percentage, and no inference (a later stop done says nothing about earlier
-  ones, gear or marks). `guide/progress.ts` `stopMarkKeys` (a stop's gate and item keys, not its number) +
-  `stopProgress(…, marked)`; `RouteAction.gate`; `applyChange` `mark` (pruned to the route); optional
-  `marked` on the tracking doc (`validTracking`: list ≤ 64); e2e `guide.spec.ts`; decision "Route stops done".

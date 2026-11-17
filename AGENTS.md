@@ -15,11 +15,11 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-16 (T1–T31, T34–T36, T39–T42, T44, T46–T48 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-16 (T1–T31, T34–T36, T39–T42, T44, T46–T49 done): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Spark), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
-`stats/{game}`. Build page (T48): title section, tabs (Description, Guide, Comments) beside one build sidebar (stats + gear tiles; phones: sections next, T49), build math (T8), the
+`stats/{game}`. Build page (T48): title section, tabs (Description, Guide, Comments) beside one build sidebar (stats + gear tiles); phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step. Account page (T31) apart from the public profile. Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
@@ -103,7 +103,7 @@ index.html                 Vite entry (meta, theme-color, icons) → src/main.ts
 src/
   main.tsx                 createRoot + <AppProviders><App/>
   app/                     App (shell: global styles + game skin, header (phone menu, T26), auth dialog state (pages open
-                           it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; AppCheckNotice =
+                           it with authDialog.ts useOpenAuthDialog(kind, onSignedIn); no profile → the name step), item-picker modal, footer; useScrollToTop; useMediaQuery (T49); AppCheckNotice =
                            "reCAPTCHA blocked", T24), game.ts (game registry + useCurrentGame),
                            routes.tsx (/, /build/:buildId/:tab?, /user/:userId, /account, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
@@ -131,13 +131,16 @@ src/
                            trophies) → PlayingList (lazy: progress + next stop), ProgressBar
   features/legal/          Privacy, Terms (static pages; keep Privacy true to what the app stores)
   features/reports/        ReportButton (inline report form on builds and comments), queries.ts (useReport)
-  features/editor/         BuildEditorPage (view/create/edit/delete; title section + tabs + sidebar, T48) +
+  features/editor/         BuildEditorPage (view/create/edit/delete; title section + tabs + sidebar, T48; phones:
+                           BuildSections, T49) +
                            useBuildEditor; tabs.ts (Description, Guide, Comments: URLs, old-link redirects, which
-                           show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments); gear.ts (T48: the
+                           show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments, useLatestComment); gear.ts (T48: the
                            gear as groups of SlotEntry, view and edit; pure); sections/ (BuildHeader = title
                            section: build image (T40), like/report/tags, OwnerActions, BuildTabs (sticky tab bar),
                            BuildDetailsForm (edit title block + BuildImageDialog), BuildSidebar (T48: StatsCard +
                            gear tiles named on hover/focus/tap, the same on every tab; editable while editing),
+                           BuildSections + PhoneSection (T49: < 900 px, collapsible sections; glances.ts = the
+                           closed headers' glances + phoneGearSections, pure),
                            StatsCard (attributes + HP, load, poise, T27), DescriptionSection, MarkdownView +
                            rehypeJumpTo ("Jump to"), CommentsSection); ItemRow (any slot as tile + name; button in
                            edit mode; itemLabel/changeLabel) + itemDetails.ts; ItemSelector (picker Dialog: filters
@@ -168,7 +171,7 @@ src/
                            armorList(slot), iconUrl…), rules.ts (Ash of War/affinity/talisman rules, shared
                            with scripts), startingClasses/statCurves (character.json, T8), acquisition.ts (where
                            items come from; lazy, T14). docs/data.md
-  test/                    Vitest setup, renderWithProviders (store, QueryClient, router, uid), fixtures
+  test/                    Vitest setup (+ viewport.ts: matchMedia stub, setViewportWidth), renderWithProviders (store, QueryClient, router, uid), fixtures
                            (+ game IDs), editor.tsx (EditorWithPicker, searchItems)
 tests/                     rules/ (security rules + data layer vs rules), migration/ (v1→v2), admin/
                            (scripts/admin.mjs), e2e/ (Playwright)

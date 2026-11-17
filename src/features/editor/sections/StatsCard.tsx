@@ -108,9 +108,19 @@ function StatInput({
  * ("+5"), then what it all adds up to: HP, FP and stamina, the equip load on a bar marked where the
  * rolls change, and poise. Talisman effects count (store/derived.ts). Phones and tablets: the
  * attributes in a 4×2 grid with short names, HP, FP, stamina and poise in one row. The player's own
- * levels, while tracking, are in the Guide (T46).
+ * levels, while tracking, are in the Guide (T46). `bare`: the phone's Stats section (T49) is the region
+and has the heading, so the sheet goes without its own.
  */
-function StatsCard({ editable, level }: { editable: boolean; level: number }) {
+function StatsCard({
+  editable,
+  level,
+  bare = false,
+}: {
+  editable: boolean;
+  level: number;
+  bare?: boolean;
+}) {
+  const Wrapper = bare ? 'div' : 'section';
   const dispatch = useAppDispatch();
   const stats = useAppSelector(selectStats);
   const startingClass = useAppSelector(selectStartingClass);
@@ -122,10 +132,10 @@ function StatsCard({ editable, level }: { editable: boolean; level: number }) {
   const percent = equipLoad > 0 ? Math.round((weight / equipLoad) * 1000) / 10 : 0;
 
   return (
-    <section aria-labelledby="stats-title">
+    <Wrapper aria-labelledby={bare ? undefined : 'stats-title'}>
       <Head>
         <div>
-          <SectionHeading id="stats-title">Stats</SectionHeading>
+          {bare ? null : <SectionHeading id="stats-title">Stats</SectionHeading>}
           {!editable && startingClass ? (
             <ClassName>
               Starting class: <strong>{startingClass.name}</strong>
@@ -252,7 +262,7 @@ function StatsCard({ editable, level }: { editable: boolean; level: number }) {
           </Poise>
         </Vitals>
       </Block>
-    </section>
+    </Wrapper>
   );
 }
 

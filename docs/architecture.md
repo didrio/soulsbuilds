@@ -270,13 +270,13 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   build (or Sign up) as the primary button; on phones a labelled "+" (New build) or Sign up, and a Menu button
   that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
-**Build page** (T17, reshaped in T22, T27, T28 and T48, `features/editor/`): view and edit share one layout. The
+**Build page** (T17, reshaped in T22, T27, T28, T48 and T49, `features/editor/`): view and edit share one layout. The
 **title section** (`BuildHeader`, the hero frame: the build image (T40: `lib/equipment.ts` `buildImage`, the
 author's pick else the main weapon; `getCardItem` in `@/data/core` shows any kind) as a 72px tile (T48; 56px below
 900px) with the skin's tint glow, name as `<h1>`, author, level and age, tags, then Track/Like/Report/owner actions
 on the right (in a row under the tags below 900px); in edit mode `BuildDetailsForm` takes its place, with the name,
 tags and "Build image": the current tile and "Change image", which opens `BuildImageDialog`, radio rows of the
-default and the build's gear), then a **tab bar** (`sections/BuildTabs`: `NavLink`s across the page, labels
+default and the build's gear), then (desktop, ≥ 900px) a **tab bar** (`sections/BuildTabs`: `NavLink`s across the page, labels
 centered, sticky at the window's top; Comments shows the stored count), then the **build sidebar** beside the tab.
 Tabs are URLs (`/build/:buildId/:tab?`, `tabs.ts`): `/build/x` Description, `/guide`, `/comments`; the links used
 before T48 (`/description`, `/route`) redirect to their tab's URL (`isCanonical`), and an unknown tab, or one the
@@ -288,7 +288,7 @@ progress) and the scroll position (`useScrollToTop` compares `pageKey`s; the bar
 when it was stuck).
 The **build sidebar** (T48, `sections/BuildSidebar`): one 340px column on every tab, the same signed in or out and
 tracking or not; it sticks under the tab bar only when it fits the window (measured with a `ResizeObserver`), else
-it scrolls with the page; below 900px it sits above the tab (T49 turns phones into collapsible sections). Top:
+it scrolls with the page; desktop only (phones: the sections below). Top:
 `sections/StatsCard` (T27): rune level, starting class, the 8 attributes as rows with bars and talisman bonuses (a
 4×2 grid with short names below 900px; inputs in the same place when editing, plus the starting-class picker),
 HP/FP/stamina, the equip load bar marked at 30% and 70% with the roll, poise. Then **Gear**: `gear.ts`
@@ -301,7 +301,22 @@ with none; a tile is a button named like "Uchigatana (Blood affinity, Seppuku sk
 every slot (each hand and the arrows as their own rows; spells and items, saved without positions, as the filled
 ones plus one "Choose"), each tile the button that opens the picker ("Choose talisman", "Change Uchigatana (Blood
 affinity, Seppuku skill)", `changeLabel`), named on hover or focus. `ItemRow` (tile + name + detail line +
-warning) stays for rows (the Guide's items; T49's phone sections).
+warning) stays for rows (the Guide's items; the phone sections).
+**Phones and tablets** (< 900px, T49): `BuildEditorPage` picks one layout in JS (`app/useMediaQuery`
+`useMediaQuery(BELOW_TABLET)`; tests stub `matchMedia` in `src/test/viewport.ts`, desktop by default,
+`setViewportWidth(390)` for phones), never both with CSS (fixed ids). `sections/BuildSections` replaces the tab bar
+and the sidebar with one list (a panel, hairlines between) of `sections/PhoneSection`s: Stats, Weapons (with
+arrows), Armor, Talismans, Spells\*, Tears rune and ash, Items\* (\*viewing: only with some), Description, Guide,
+Comments. A section is a region named by its title; its header (`<h2><button aria-expanded aria-controls>`) shows
+the title over a **glance** while closed (`sections/glances.ts`, pure: `statsGlance` rune level + top three
+attributes, the gear's icons (`phoneGearSections` over `gearGroups`; an empty always-listed gear section is a plain
+heading with "None"), `guideGlance` "14 items to find" / "3 of 14 items" while tracking, `commentsGlance` with the
+newest comment: `useLatestComment`, one `limit(1)` read when `commentCount` > 0, or the loaded list's first), the
+title alone while open, sticky inside its section. Bodies render only while open (so Comments and the Guide's
+route load on open): `StatsCard bare`, `ItemRow`s (64px weapons, editable rows open the picker), and the tab bodies
+with `bare` (no Frame or heading). The URL's tab starts open (Description by default); several can be open;
+tapping Description/Guide/Comments open replaces the URL (no history entry); a URL change from elsewhere (Track →
+`/guide`, Back) opens that section and scrolls its header (`#section-<key>`) into view; a load doesn't scroll.
 **Description**: the write-up, with a "Jump to" row (`rehypeJumpTo`, after `rehype-sanitize`: ids
 `user-content-<slug>` on the highest heading level used twice); while editing, the markdown editor. **Guide**
 (`GuideSection`, "How to get this build"): the route shown at once as numbered stops (T35, `GuideRoute`: area

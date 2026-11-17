@@ -24,30 +24,41 @@ export const hasItems = (equipment: Equipment) =>
  * (`GuideRoute`, loaded with its data on the tab's first open). `tracking`: the player's progress
  * (T35): the route becomes the checklist, items checked off (T46) and stops marked done (T44).
  */
-function GuideSection({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
+function GuideSection({
+  equipment,
+  tracking,
+  bare = false,
+}: {
+  equipment: Equipment;
+  tracking?: RouteTracking;
+  /** The phone's Guide section (T49): no panel or heading of its own. */
+  bare?: boolean;
+}) {
   const items = hasItems(equipment);
+  const body = items ? (
+    <>
+      <Intro>
+        <Hint>
+          A sensible order through the usual progression, from a fresh save. Not a walkthrough:
+          upgrade materials and runes aren’t included.
+        </Hint>
+        <Legend aria-hidden="true">
+          <SolidTile $size={20} /> {tracking ? 'collected' : 'in this build'}
+          <DashedTile $size={20} /> {tracking ? 'still to get' : 'other items'}
+        </Legend>
+      </Intro>
+      <Suspense fallback={<LoadingAnimation size={30} />}>
+        <GuideRoute equipment={equipment} tracking={tracking} />
+      </Suspense>
+    </>
+  ) : (
+    <Hint>This build has no items yet, so there’s nothing to find.</Hint>
+  );
+  if (bare) return <div>{body}</div>;
   return (
     <Frame aria-labelledby="guide-title">
       <SectionHeading id="guide-title">How to get this build</SectionHeading>
-      {items ? (
-        <>
-          <Intro>
-            <Hint>
-              A sensible order through the usual progression, from a fresh save. Not a walkthrough:
-              upgrade materials and runes aren’t included.
-            </Hint>
-            <Legend aria-hidden="true">
-              <SolidTile $size={20} /> {tracking ? 'collected' : 'in this build'}
-              <DashedTile $size={20} /> {tracking ? 'still to get' : 'other items'}
-            </Legend>
-          </Intro>
-          <Suspense fallback={<LoadingAnimation size={30} />}>
-            <GuideRoute equipment={equipment} tracking={tracking} />
-          </Suspense>
-        </>
-      ) : (
-        <Hint>This build has no items yet, so there’s nothing to find.</Hint>
-      )}
+      {body}
     </Frame>
   );
 }

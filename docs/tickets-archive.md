@@ -151,3 +151,8 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   here); `reauthenticate` in `lib/firebase/auth.ts` before every change (set password = `updatePassword`:
   `linkWithCredential` fails for the account's own email); `useAuth()` snapshots email/verified/providers +
   `refreshUser()`; `app/AccountMenu`; e2e `settings.spec.ts` + `helpers.ts` `accountMenu`/`headerLogIn`.
+- T44 — Check off route stops that aren't gear — 2026-11-16 — owner: one "Mark done" per stop (How to get and
+  the Next stop card), not in the percentage, and no inference (a later stop done says nothing about earlier
+  ones, gear or marks). `guide/progress.ts` `stopMarkKeys` (a stop's gate and item keys, not its number) +
+  `stopProgress(…, marked)`; `RouteAction.gate`; `applyChange` `mark` (pruned to the route); optional
+  `marked` on the tracking doc (`validTracking`: list ≤ 64); e2e `guide.spec.ts`; decision "Route stops done".

@@ -5,6 +5,7 @@ import {
   doc,
   getDocs,
   increment,
+  limit,
   orderBy,
   query,
   serverTimestamp,
@@ -33,6 +34,18 @@ function toComment(snapshot: QueryDocumentSnapshot): Comment {
 export async function listComments(buildId: string): Promise<Comment[]> {
   const snapshot = await getDocs(query(commentsCollection(buildId), orderBy('createdAt', 'desc')));
   return snapshot.docs.map(toComment);
+}
+
+/**
+ * A build's newest comment, or null (T49: the phone's Comments header shows its start). One read:
+ * cheaper than the list when the section stays closed.
+ */
+export async function fetchLatestComment(buildId: string): Promise<Comment | null> {
+  const snapshot = await getDocs(
+    query(commentsCollection(buildId), orderBy('createdAt', 'desc'), limit(1)),
+  );
+  const [first] = snapshot.docs;
+  return first ? toComment(first) : null;
 }
 
 /** Posts a comment (text is trimmed) and resolves to it. */
