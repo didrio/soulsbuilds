@@ -12,6 +12,8 @@ import {
 
 interface TooltipProps {
   open: boolean;
+  /** A fixed width in px for richer content (an item card); by default it fits its text, up to 240. */
+  width?: number;
   children: ReactNode;
 }
 
@@ -24,7 +26,7 @@ const EDGE = 8;
  * Visual only (`aria-hidden`): give the anchor the same text as its accessible name. The anchor owns
  * when it shows (hover, keyboard focus, tap) and closes it on Escape.
  */
-function Tooltip({ open, children }: TooltipProps) {
+function Tooltip({ open, width, children }: TooltipProps) {
   const ref = useRef<HTMLSpanElement>(null);
   const [place, setPlace] = useState({ below: false, shift: 0 });
 
@@ -48,7 +50,12 @@ function Tooltip({ open, children }: TooltipProps) {
       ref={ref}
       aria-hidden="true"
       $below={place.below}
-      style={{ '--shift': `${place.shift}px` } as CSSProperties}>
+      style={
+        {
+          '--shift': `${place.shift}px`,
+          ...(width ? { width, maxWidth: 'none' } : {}),
+        } as CSSProperties
+      }>
       {children}
     </Bubble>
   );

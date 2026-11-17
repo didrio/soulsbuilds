@@ -13,6 +13,7 @@ import {
   type Talisman,
   type Weapon,
 } from '.';
+import { scalingGrade } from './rules';
 
 const weapon = (name: string): Weapon => weapons.find((w) => w.name === name)!;
 const ash = (skill: string): AshOfWar => ashesOfWar.find((a) => a.name === `Ash of War: ${skill}`)!;
@@ -93,5 +94,28 @@ describe('talismans', () => {
     expect(talismanConflict(talisman("Erdtree's Favor +1"), [null, favor])).toBe(favor);
     expect(talismanConflict(favor, [favor])).toBe(favor); // the same one twice
     expect(talismanConflict(talisman('Godfrey Icon'), [favor, null])).toBeUndefined();
+  });
+});
+
+describe('scaling grades (T45)', () => {
+  it.each([
+    [0, null],
+    [1, 'E'],
+    [24, 'E'],
+    [25, 'D'],
+    [59, 'D'],
+    [60, 'C'],
+    [90, 'B'],
+    [139, 'B'],
+    [140, 'A'],
+    [175, 'S'],
+  ] as const)('grades %i as %s', (value, grade) => {
+    expect(scalingGrade(value)).toBe(grade);
+  });
+
+  it("grades the Uchigatana D/D, and its Heavy version D in Strength only, as the game's menu does", () => {
+    const { standard, heavy } = weapon('Uchigatana').scaling;
+    expect(standard?.map(scalingGrade)).toEqual(['D', 'D', null, null, null]);
+    expect(heavy?.map(scalingGrade)).toEqual(['D', null, null, null, null]);
   });
 });

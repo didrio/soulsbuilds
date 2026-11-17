@@ -66,14 +66,41 @@ describe('BuildSidebar', () => {
     expect(screen.queryByText('Uchigatana')).not.toBeInTheDocument();
   });
 
-  it('names an item on tap with its details, and closes on Escape', async () => {
+  it('shows the item card on tap, and closes it on Escape', async () => {
     const { user } = renderSidebar();
     const tile = screen.getByRole('button', { name: /^Uchigatana/ });
     await user.click(tile);
     expect(within(tile).getByText('Uchigatana')).toBeInTheDocument();
-    expect(within(tile).getByText('Blood · Seppuku')).toBeInTheDocument();
+    expect(within(tile).getByText('Katana · Blood · Seppuku (4 FP)')).toBeInTheDocument();
+    expect(within(tile).getByText('Scaling')).toBeInTheDocument();
+    expect(within(tile).getByText('Arc D')).toBeInTheDocument();
+    expect(within(tile).getByText('5.5')).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(within(tile).queryByText('Uchigatana')).not.toBeInTheDocument();
+  });
+
+  it('shows the item card on mouse hover and keyboard focus, and hides it as they leave', async () => {
+    const { user } = renderSidebar();
+    const mask = screen.getByRole('button', { name: 'White Mask' });
+    await user.hover(mask);
+    expect(within(mask).getByText('Helm')).toBeInTheDocument();
+    expect(within(mask).getByText('Poise')).toBeInTheDocument();
+    await user.unhover(mask);
+    expect(within(mask).queryByText('Helm')).not.toBeInTheDocument();
+
+    await user.tab();
+    const uchigatana = screen.getByRole('button', { name: /^Uchigatana/ });
+    expect(uchigatana).toHaveFocus();
+    expect(within(uchigatana).getByText('Requires')).toBeInTheDocument();
+    await user.tab();
+    expect(within(uchigatana).queryByText('Requires')).not.toBeInTheDocument();
+  });
+
+  it("describes each tile with the card's facts for screen readers", () => {
+    renderSidebar();
+    expect(screen.getByRole('button', { name: /^Uchigatana/ })).toHaveAccessibleDescription(
+      /^Katana\. Blood · Seppuku \(4 FP\)\. Scaling: Str D, Dex D, Arc D\. Requires: Str 11/,
+    );
   });
 
   it('shows the warning in the tooltip when the stats fall short', async () => {
@@ -87,6 +114,8 @@ describe('BuildSidebar', () => {
     });
     await user.click(tile);
     expect(within(tile).getByText('Needs 60 Int')).toBeInTheDocument();
+    // The card flags the requirement this build doesn't meet.
+    expect(within(tile).getByText('Int 60')).toBeInTheDocument();
     expect(screen.getByText(/memory slots/)).toHaveTextContent('3 of 10 memory slots');
   });
 
@@ -121,6 +150,8 @@ describe('BuildSidebar', () => {
     const tile = screen.getByRole('button', { name: "Change Erdtree's Favor" });
     await user.hover(tile);
     expect(within(tile).getByText("Erdtree's Favor")).toBeInTheDocument();
+    // Editing keeps the short tooltip: no card covering the other tiles.
+    expect(within(tile).queryByText('Talisman')).not.toBeInTheDocument();
   });
 });
 

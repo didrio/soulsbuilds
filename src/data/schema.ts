@@ -90,6 +90,9 @@ export const ashOfWarSchema = z.strictObject({
   affinities: z.array(affinityKeySchema).min(1),
 });
 
+/** Scaling as the game's raw correction values at +0, in the order [str, dex, int, fai, arc]. */
+const scalingValues = z.tuple([amount, amount, amount, amount, amount]);
+
 export const weaponSchema = z.strictObject({
   ...item,
   /** Weapon type ID (weaponTypes.json). */
@@ -97,8 +100,11 @@ export const weaponSchema = z.strictObject({
   weight: amount,
   /** Base attack at +0, standard affinity. */
   attack: damage,
-  /** Base scaling at +0 (the game's raw correction values, not letter grades). */
-  scaling: stats,
+  /**
+   * Scaling at +0 for each of `affinities` (T45; an infused weapon scales differently), as raw
+   * correction values; `scalingGrade` in src/data/rules.ts turns one into a letter grade.
+   */
+  scaling: z.partialRecord(affinityKeySchema, scalingValues),
   requirements: stats,
   damageTypes: z.array(z.enum(['standard', 'strike', 'slash', 'pierce'])),
   /** Built-in skill (skills.json), null when the weapon has none. */
@@ -208,8 +214,11 @@ export const characterSchema = z.strictObject({
   }),
 });
 
-/** Crystal tears, consumables, great runes and spirit ashes. */
+/** Crystal tears, consumables and great runes. */
 export const goodsSchema = z.strictObject({ ...item, effect });
+
+/** A spirit ash, with what summoning it costs (T45; 0 when it costs none of that). */
+export const spiritAshSchema = z.strictObject({ ...item, effect, fp: amount, hp: amount });
 
 /** Tag group ("Bosses", "Melee Weapons", …) → tag names. Tags are plain strings on builds. */
 /**
@@ -284,6 +293,8 @@ export type StartingClass = z.infer<typeof startingClassSchema>;
 export type Character = z.infer<typeof characterSchema>;
 export type Spell = z.infer<typeof spellSchema>;
 export type Goods = z.infer<typeof goodsSchema>;
+export type SpiritAsh = z.infer<typeof spiritAshSchema>;
+export type ScalingValues = z.infer<typeof scalingValues>;
 export type Tags = z.infer<typeof tagsSchema>;
 export type CardWeapon = z.infer<typeof cardWeaponSchema>;
 export type CardArmor = z.infer<typeof cardArmorSchema>;
@@ -419,5 +430,5 @@ export const DATA_FILES = {
   'tears.json': goodsSchema,
   'consumables.json': goodsSchema,
   'greatRunes.json': goodsSchema,
-  'spiritAshes.json': goodsSchema,
+  'spiritAshes.json': spiritAshSchema,
 } as const;

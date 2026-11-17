@@ -14,12 +14,8 @@ import {
   TEXT_XS,
 } from '@/theme';
 import { slotWeaponDetails, type SlotEntry } from './gear';
-import {
-  itemSubline,
-  weaponDetailLabels,
-  type ItemWarning,
-  type WeaponDetails,
-} from './itemDetails';
+import { weaponDetailLabels, type ItemWarning, type WeaponDetails } from './itemDetails';
+import { factsLines, itemFacts } from './itemFacts';
 import type { SlotType } from './slots';
 import { openPicker } from './store/app';
 
@@ -45,8 +41,9 @@ export type { SlotEntry } from './gear';
 export type TileSize = 64 | 44;
 
 /**
- * One slot as a row: the item's tile, its name, a muted detail line (a weapon's affinity and skill, a
- * spell's memory slots) and a warning line when it can't be used as built. Editable rows are buttons
+ * One slot as a row (the phone sections, T49): the item's tile, its name, up to two muted lines of
+ * the item card's facts (T45: a weapon's affinity and skill, then its scaling and weight; an effect;
+ * armor's weight and poise; a spell's FP and slots…) and a warning line when it can't be used as built. Editable rows are buttons
  * that open the item picker for the slot, named "Choose talisman" when empty and "Change Uchigatana
  * (Blood affinity, Seppuku skill)" when filled; read-only rows are plain text, and an empty read-only
  * slot is a faint placeholder tile that keeps the layout the same on every build (T27).
@@ -73,14 +70,17 @@ function ItemRow({
   }
 
   const weapon = slotWeaponDetails(entry);
-  const subline = item ? itemSubline(item, weapon) : '';
+  const facts = itemFacts(entry);
+  const lines = facts ? factsLines(facts) : [];
 
   const content = (
     <>
       <ItemTile src={item ? iconUrl(item.icon) : null} size={size} />
       <Text>
         {item ? <Name>{item.name}</Name> : <Empty>{`Choose ${SLOT_LABELS[type]}`}</Empty>}
-        {subline ? <Sub>{subline}</Sub> : null}
+        {lines.map((line) => (
+          <Sub key={line}>{line}</Sub>
+        ))}
         {item && warning ? <Warning $severity={warning.severity}>{warning.text}</Warning> : null}
       </Text>
     </>

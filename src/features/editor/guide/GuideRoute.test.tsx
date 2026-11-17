@@ -1,16 +1,18 @@
-import { screen, within } from '@testing-library/react';
+import { act, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import type { Equipment } from '@/lib/models';
 import {
   emptyEquipment,
+  makeBuild,
   GODRICKS_GREAT_RUNE,
   MOONVEIL,
   SEPPUKU_ASH,
   UCHIGATANA,
 } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
+import { loadBuild } from '../store/build';
 import GuideRoute from './GuideRoute';
 import type { RouteTracking } from './progress';
 
@@ -60,6 +62,26 @@ const stopsOf = (container: HTMLElement) => {
 };
 
 describe('GuideRoute', () => {
+  it("shows the build's items' cards on mouse hover over their tiles, and none for key items (T45)", async () => {
+    const { user, store } = renderWithProviders(<GuideRoute equipment={equipment} />);
+    act(() => {
+      store.dispatch(loadBuild(makeBuild({ equipment })));
+    });
+    const row = (name: string | RegExp) => screen.getAllByText(name)[0]!.closest('li')!;
+
+    const uchigatana = row('Uchigatana');
+    await user.hover(uchigatana.querySelector('img')!);
+    expect(within(uchigatana).getByText('Katana · Seppuku (4 FP)')).toBeInTheDocument();
+    expect(within(uchigatana).getByText('Scaling')).toBeInTheDocument();
+    await user.unhover(uchigatana.querySelector('img')!);
+    expect(within(uchigatana).queryByText('Scaling')).not.toBeInTheDocument();
+
+    const bell = row('Spirit Calling Bell');
+    await user.hover(bell.querySelector('img')!);
+    expect(within(bell).queryByText('Scaling')).not.toBeInTheDocument();
+    expect(bell.querySelector('[aria-hidden="true"]')).toBeNull();
+  });
+
   it('says so when no item has a known source', () => {
     renderWithProviders(<GuideRoute equipment={emptyEquipment()} />);
     expect(screen.getByText(/has a known source/)).toBeInTheDocument();

@@ -48,6 +48,8 @@ export interface SlotEntry {
   ash?: AshOfWar | null;
   /** Unmet requirements or no room in the memory slots (T8). */
   warning?: ItemWarning | null;
+  /** Weapons and spells: their requirements against the build's stats (the item card flags each, T45). */
+  check?: RequirementCheck;
 }
 
 /** A weapon slot's affinity and skill as built, or null for any other slot (or an empty one). */
@@ -132,6 +134,7 @@ export function gearGroups(state: GearState, editable: boolean): GearGroup[] {
       affinity: equipment[affinityId],
       ash: equipment[subId],
       warning: itemWarning(checks[id]),
+      check: checks[id],
     };
   };
   // Weapon slots 1–3 are the right hand, 4–6 the left.
@@ -157,6 +160,7 @@ export function gearGroups(state: GearState, editable: boolean): GearGroup[] {
     type: SLOT_TYPE_SPELL,
     item: spells[id],
     warning: itemWarning(checks[id], over.has(id)),
+    check: checks[id],
   }));
   const flask: SlotEntry[] = [
     ...TEAR_SLOTS.map((id): SlotEntry => ({ id, type: SLOT_TYPE_TEAR, item: tears[id] })),

@@ -1,12 +1,15 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, type ReactNode } from 'react';
 import styled, { css } from 'styled-components';
 import Button from '@/components/ui/Button';
 import ItemTile from '@/components/ui/ItemTile';
 import Label from '@/components/ui/Label';
+import Tooltip from '@/components/ui/Tooltip';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
+import { useAppSelector } from '@/app/hooks';
 import { CheckIcon } from '@/components/ui/icons';
 import { acquisition } from '@/data/acquisition';
 import { iconUrl } from '@/data/core';
+import type { AcquisitionFile } from '@/data/core';
 import type { Equipment } from '@/lib/models';
 import { trackedItems } from '@/lib/tracking';
 import {
@@ -27,6 +30,11 @@ import {
   TEXT_SM,
   TEXT_XS,
 } from '@/theme';
+import { gearGroups, type GearState, type SlotEntry } from '../gear';
+import ItemCard, { ITEM_CARD_WIDTH } from '../ItemCard';
+import { itemFacts } from '../itemFacts';
+import type { SlotType } from '../slots';
+import { selectGearState } from '../store/derived';
 import { DashedTile } from './GuideTiles';
 import {
   actionLead,
@@ -74,6 +82,37 @@ export function routeProgress(
   };
 }
 
+/** The data file each slot's items come from, as the route names them (`ItemRef.file`). */
+const SLOT_FILES: Record<SlotType, AcquisitionFile> = {
+  SLOT_TYPE_WEAPON: 'weapons',
+  SLOT_TYPE_ARROW: 'arrows',
+  SLOT_TYPE_HELM: 'armor',
+  SLOT_TYPE_CHEST: 'armor',
+  SLOT_TYPE_GAUNTLET: 'armor',
+  SLOT_TYPE_LEG: 'armor',
+  SLOT_TYPE_TAL: 'talismans',
+  SLOT_TYPE_SPELL: 'spells',
+  SLOT_TYPE_TEAR: 'tears',
+  SLOT_TYPE_GREAT_RUNE: 'greatRunes',
+  SLOT_TYPE_SPIRIT_ASH: 'spiritAshes',
+  SLOT_TYPE_CON: 'consumables',
+};
+
+/**
+ * The build's gear by route item (`refKey`), for the item cards on the route's tiles (T45): the same
+ * entries as the sidebar's, so affinity, skill and requirements match. A weapon held twice keeps its
+ * first slot.
+ */
+export function gearByRef(state: GearState): Map<string, SlotEntry> {
+  const entries = new Map<string, SlotEntry>();
+  for (const entry of gearGroups(state, false).flatMap((group) => group.entries)) {
+    if (!entry.item) continue;
+    const key = refKey({ file: SLOT_FILES[entry.type], id: entry.item.id });
+    if (!entries.has(key)) entries.set(key, entry);
+  }
+  return entries;
+}
+
 type StopState = 'todo' | 'done' | 'next';
 
 /**
@@ -86,6 +125,8 @@ type StopState = 'todo' | 'done' | 'next';
  */
 function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: RouteTracking }) {
   const { stops, own, progress, have, markArgs, keysOf } = routeProgress(equipment, tracking);
+  // The Guide shows the build in the editor store (it's only on a build being viewed).
+  const gear = gearByRef(useAppSelector(selectGearState));
   const [showDone, setShowDone] = useState(false);
   // The item just checked off glows once.
   const [justCollected, setJustCollected] = useState<string | null>(null);
@@ -149,6 +190,7 @@ function GuideRoute({ equipment, tracking }: { equipment: Equipment; tracking?: 
                   stop={stop}
                   done={state === 'done'}
                   own={own}
+                  gear={gear}
                   have={progress ? have : null}
                   check={
                     tracking
@@ -209,12 +251,14 @@ function StopBody({
   stop,
   done,
   own,
+  gear,
   have,
   check,
 }: {
   stop: RouteStop;
   done: boolean;
   own: Set<string>;
+  gear: Map<string, SlotEntry>;
   have: Set<string> | null;
   check?: ItemCheck;
 }) {
@@ -238,6 +282,7 @@ function StopBody({
             <RouteItems
               action={action}
               own={own}
+              gear={gear}
               have={have}
               stopDone={done}
               size={36}
@@ -258,6 +303,7 @@ function StopBody({
 function RouteItems({
   action,
   own,
+  gear,
   have,
   stopDone,
   size,
@@ -265,6 +311,8 @@ function RouteItems({
 }: {
   action: RouteAction;
   own: Set<string>;
+  /** The build's gear by `refKey`: its items get an item card on hover. */
+  gear: Map<string, SlotEntry>;
   /** The collected item keys while tracking, else null. */
   have: Set<string> | null;
   stopDone: boolean;
@@ -285,12 +333,14 @@ function RouteItems({
         const content = (
           <>
             {icon !== null ? (
-              <ItemTile
-                src={iconUrl(icon)}
-                size={size}
-                track={lit ? undefined : 'missing'}
-                celebrate={lit && check?.glow === key}
-              />
+              <HoverCard entry={mine ? gear.get(key) : undefined}>
+                <ItemTile
+                  src={iconUrl(icon)}
+                  size={size}
+                  track={lit ? undefined : 'missing'}
+                  celebrate={lit && check?.glow === key}
+                />
+              </HoverCard>
             ) : (
               <DashedTile $size={size} />
             )}
@@ -317,6 +367,33 @@ function RouteItems({
     </Items>
   );
 }
+
+/**
+ * A route tile that shows the build item's card on mouse hover (T45). Hover only, and visual only:
+ * the name is printed beside the tile, a tab stop per route item would cost more than it gives, and
+ * the sidebar's tiles carry the same facts for keyboard and screen-reader users.
+ */
+function HoverCard({ entry, children }: { entry: SlotEntry | undefined; children: ReactNode }) {
+  const [hovered, setHovered] = useState(false);
+  const facts = entry ? itemFacts(entry) : null;
+  if (!entry?.item || !facts) return children;
+  return (
+    <TileHover
+      onPointerEnter={(event) => setHovered(event.pointerType === 'mouse')}
+      onPointerLeave={() => setHovered(false)}>
+      {children}
+      <Tooltip open={hovered} width={ITEM_CARD_WIDTH}>
+        <ItemCard name={entry.item.name} facts={facts} warning={entry.warning} />
+      </Tooltip>
+    </TileHover>
+  );
+}
+
+const TileHover = styled.span`
+  display: inline-flex;
+  flex: none;
+  position: relative;
+`;
 
 const MarkRow = styled.div`
   margin-top: ${SPACE_SM};

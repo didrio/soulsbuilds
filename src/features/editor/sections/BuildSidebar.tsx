@@ -5,6 +5,7 @@ import ItemTile from '@/components/ui/ItemTile';
 import Label from '@/components/ui/Label';
 import SectionHeading from '@/components/ui/SectionHeading';
 import Tooltip from '@/components/ui/Tooltip';
+import VisuallyHidden from '@/components/ui/VisuallyHidden';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { iconUrl } from '@/data/core';
 import {
@@ -22,6 +23,8 @@ import {
 } from '@/theme';
 import { gearGroups, slotWeaponDetails, type GearGroup, type SlotEntry } from '../gear';
 import { itemSubline, type ItemWarning } from '../itemDetails';
+import ItemCard, { ITEM_CARD_WIDTH } from '../ItemCard';
+import { factsText, itemFacts } from '../itemFacts';
 import { changeLabel, itemLabel, openPickerFor, SLOT_LABELS } from '../ItemRow';
 import { selectGearState } from '../store/derived';
 import { TAB_BAR_HEIGHT } from './BuildTabs';
@@ -55,10 +58,12 @@ function useFitsWindow(ref: RefObject<HTMLElement | null>, top: number, below: n
 }
 
 /**
- * One slot as a tile: no name on the page (owner, T48). Read-only, it names itself on mouse hover,
- * keyboard focus or tap (the tooltip: the name, a weapon's affinity and skill or a spell's slots, and
- * a warning when the stats don't meet its requirements, also a small mark on the tile). Editable,
- * it's the button that opens the picker ("Choose helm" when empty), named on hover or focus.
+ * One slot as a tile: no name on the page (owner, T48). Read-only, it shows the item card (T45) on
+ * mouse hover, keyboard focus or tap: the name, what it is, its facts (scaling, requirements, weight,
+ * poise, FP, effect…) and a warning when the stats fall short (also a small mark on the tile); the
+ * facts are its description for screen readers. Editable, it's the button that opens the picker
+ * ("Choose helm" when empty), with only a short tooltip (name, affinity and skill, warning), so a big
+ * card never covers the tiles being edited.
  */
 function GearTile({ entry, editable }: { entry: SlotEntry; editable: boolean }) {
   const dispatch = useAppDispatch();
@@ -66,8 +71,11 @@ function GearTile({ entry, editable }: { entry: SlotEntry; editable: boolean }) 
   const [focused, setFocused] = useState(false);
   const [tapped, setTapped] = useState(false);
   const { item, type, warning = null } = entry;
+  const descriptionId = useId();
   const weapon = slotWeaponDetails(entry);
   const subline = item ? itemSubline(item, weapon) : '';
+  const facts = editable ? null : itemFacts(entry);
+  const open = hovered || focused || tapped;
   const close = () => {
     setHovered(false);
     setFocused(false);
@@ -75,42 +83,54 @@ function GearTile({ entry, editable }: { entry: SlotEntry; editable: boolean }) 
   };
 
   return (
-    <TileButton
-      type="button"
-      aria-label={editable ? changeLabel(entry, weapon) : itemLabel(entry, weapon)}
-      $editable={editable}
-      onBlur={() => {
-        setFocused(false);
-        setTapped(false);
-      }}
-      onClick={
-        editable
-          ? () => {
-              close();
-              dispatch(openPickerFor(entry));
-            }
-          : () => setTapped(!tapped)
-      }
-      onFocus={(event) => setFocused(event.currentTarget.matches(':focus-visible'))}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') close();
-      }}
-      onPointerEnter={(event) => setHovered(event.pointerType === 'mouse')}
-      onPointerLeave={() => setHovered(false)}>
-      <ItemTile src={item ? iconUrl(item.icon) : null} size={44} />
-      {item && warning ? <WarningMark $severity={warning.severity} aria-hidden="true" /> : null}
-      <Tooltip open={hovered || focused || tapped}>
-        {item ? (
-          <>
-            <TipLine>{item.name}</TipLine>
-            {subline ? <TipSub>{subline}</TipSub> : null}
-            {warning ? <TipWarning $severity={warning.severity}>{warning.text}</TipWarning> : null}
-          </>
+    <>
+      <TileButton
+        type="button"
+        aria-label={editable ? changeLabel(entry, weapon) : itemLabel(entry, weapon)}
+        aria-describedby={facts ? descriptionId : undefined}
+        $editable={editable}
+        onBlur={() => {
+          setFocused(false);
+          setTapped(false);
+        }}
+        onClick={
+          editable
+            ? () => {
+                close();
+                dispatch(openPickerFor(entry));
+              }
+            : () => setTapped(!tapped)
+        }
+        onFocus={(event) => setFocused(event.currentTarget.matches(':focus-visible'))}
+        onKeyDown={(event) => {
+          if (event.key === 'Escape') close();
+        }}
+        onPointerEnter={(event) => setHovered(event.pointerType === 'mouse')}
+        onPointerLeave={() => setHovered(false)}>
+        <ItemTile src={item ? iconUrl(item.icon) : null} size={44} />
+        {item && warning ? <WarningMark $severity={warning.severity} aria-hidden="true" /> : null}
+        {item && facts ? (
+          <Tooltip open={open} width={ITEM_CARD_WIDTH}>
+            <ItemCard name={item.name} facts={facts} warning={warning} />
+          </Tooltip>
         ) : (
-          `Choose ${SLOT_LABELS[type]}`
+          <Tooltip open={open}>
+            {item ? (
+              <>
+                <TipLine>{item.name}</TipLine>
+                {subline ? <TipSub>{subline}</TipSub> : null}
+                {warning ? (
+                  <TipWarning $severity={warning.severity}>{warning.text}</TipWarning>
+                ) : null}
+              </>
+            ) : (
+              `Choose ${SLOT_LABELS[type]}`
+            )}
+          </Tooltip>
         )}
-      </Tooltip>
-    </TileButton>
+      </TileButton>
+      {facts ? <VisuallyHidden id={descriptionId}>{factsText(facts)}</VisuallyHidden> : null}
+    </>
   );
 }
 

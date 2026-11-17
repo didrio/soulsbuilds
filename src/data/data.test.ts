@@ -17,6 +17,7 @@ import {
   goodsSchema,
   skillSchema,
   spellSchema,
+  spiritAshSchema,
   tagsSchema,
   talismanSchema,
   weaponSchema,
@@ -38,6 +39,7 @@ const armor = read('armor.json', armorSchema);
 const talismans = read('talismans.json', talismanSchema);
 const spells = read('spells.json', spellSchema);
 const goods = (file: string) => read(file, goodsSchema);
+const spiritAshes = read('spiritAshes.json', spiritAshSchema);
 const tags = tagsSchema.parse(JSON.parse(readFileSync(join(DIR, 'tags.json'), 'utf8')));
 
 const files = {
@@ -51,7 +53,7 @@ const files = {
   'tears.json': goods('tears.json'),
   'consumables.json': goods('consumables.json'),
   'greatRunes.json': goods('greatRunes.json'),
-  'spiritAshes.json': goods('spiritAshes.json'),
+  'spiritAshes.json': spiritAshes,
 };
 const byName = <T extends { name: string }>(items: T[], name: string) => {
   const item = items.find((i) => i.name === name);
@@ -114,6 +116,22 @@ describe('game data v2', () => {
       .filter((item) => 'icon' in item && !existsSync(join(ICONS, `${item.icon}.webp`)))
       .map((item) => item.name);
     expect(missing).toEqual([]);
+  });
+
+  it('has scaling for exactly the affinities each weapon has, as the game shows them (T45)', () => {
+    for (const weapon of weapons)
+      expect(Object.keys(weapon.scaling).sort(), weapon.name).toEqual(
+        [...weapon.affinities].sort(),
+      );
+    const uchigatana = byName(weapons, 'Uchigatana');
+    expect(uchigatana.scaling.standard).toEqual([36, 55, 0, 0, 0]);
+    expect(uchigatana.scaling.heavy).toEqual([51, 0, 0, 0, 0]);
+    expect(uchigatana.scaling.blood).toEqual([32, 49, 0, 0, 30]);
+  });
+
+  it('knows what summoning each spirit ash costs, in FP or HP (T45)', () => {
+    expect(byName(spiritAshes, 'Black Knife Tiche')).toMatchObject({ fp: 132, hp: 0 });
+    expect(byName(spiritAshes, 'Mimic Tear Ashes')).toMatchObject({ fp: 0, hp: 660 });
   });
 
   it("gives every weapon's skill a name (2022: 36 were missing or misspelled)", () => {
@@ -210,7 +228,7 @@ describe('game data v2', () => {
         spells,
         tears: goods('tears.json'),
         greatRunes: goods('greatRunes.json'),
-        spiritAshes: goods('spiritAshes.json'),
+        spiritAshes: spiritAshes,
       }),
     );
   });
@@ -322,7 +340,7 @@ describe('acquisition data (T14)', () => {
     );
     expect(summary('weapons', weapons, 'Claymore')[0]).toMatch(/\[Weeping Peninsula\]/);
     expect(summary('weapons', weapons, 'Rivers of Blood')[0]).toMatch(/\[Flame Peak\]/);
-    expect(summary('spiritAshes', goods('spiritAshes.json'), 'Mimic Tear Ashes')[0]).toMatch(
+    expect(summary('spiritAshes', spiritAshes, 'Mimic Tear Ashes')[0]).toMatch(
       /\[Nokron, Eternal City\]/,
     );
     expect(summary('weapons', weapons, "Astrologer's Staff")).toContain('start  [] Astrologer');

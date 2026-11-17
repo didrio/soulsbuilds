@@ -7,8 +7,10 @@ import type {
   Arrow,
   AshOfWar,
   Goods,
+  ScalingValues,
   Skill,
   Spell,
+  SpiritAsh,
   Talisman,
   Weapon,
   WeaponType,
@@ -61,7 +63,7 @@ export interface GameData {
   tears: Goods[];
   consumables: Goods[];
   greatRunes: Goods[];
-  spiritAshes: Goods[];
+  spiritAshes: SpiritAsh[];
   tags: Record<string, string[]>;
 }
 
@@ -138,6 +140,29 @@ export function extract({ params, text }: ExportData): Extraction {
     holy: num(row, 'attackBaseDark'),
   });
 
+  /** The affinities the game has for a weapon: Standard, plus each one with an infused row. */
+  const affinitiesOf = (id: number) =>
+    AFFINITY_KEYS.filter(
+      (key) => key === 'standard' || params.EquipParamWeapon.has(id + affinityOffset(key)),
+    );
+  /** A row's scaling at +0 as [str, dex, int, fai, arc] (the game's correction values). */
+  const correction = (row: Row): ScalingValues => [
+    num(row, 'correctStrength'),
+    num(row, 'correctAgility'),
+    num(row, 'correctMagic'),
+    num(row, 'correctFaith'),
+    num(row, 'correctLuck'),
+  ];
+  /** Scaling for each of a weapon's affinities, from its infused rows (T45). */
+  const scalingByAffinity = (id: number, row: Row): Weapon['scaling'] =>
+    Object.fromEntries(
+      affinitiesOf(id).map((key) => {
+        const infused =
+          key === 'standard' ? row : params.EquipParamWeapon.get(id + affinityOffset(key));
+        return [key, correction(infused ?? row)];
+      }),
+    );
+
   // Weapons and ammunition.
   const weaponTypes = new Map(WEAPON_TYPES.map((type) => [type.id, type]));
   const usedTypes = new Set<number>();
@@ -175,13 +200,7 @@ export function extract({ params, text }: ExportData): Extraction {
       type: typeId,
       weight: round(num(row, 'weight'), 2),
       attack: attack(row),
-      scaling: {
-        str: num(row, 'correctStrength'),
-        dex: num(row, 'correctAgility'),
-        int: num(row, 'correctMagic'),
-        fai: num(row, 'correctFaith'),
-        arc: num(row, 'correctLuck'),
-      },
+      scaling: scalingByAffinity(id, row),
       requirements: {
         str: num(row, 'properStrength'),
         dex: num(row, 'properAgility'),
@@ -192,9 +211,7 @@ export function extract({ params, text }: ExportData): Extraction {
       damageTypes: damageTypes(row),
       skill: skillFor(num(row, 'swordArtsParamId'), `weapon ${id} "${label.text}"`),
       ashesOfWar: num(row, 'gemMountType') === GEM_MOUNT_ALLOW_CHANGE,
-      affinities: AFFINITY_KEYS.filter(
-        (key) => key === 'standard' || params.EquipParamWeapon.has(id + affinityOffset(key)),
-      ),
+      affinities: affinitiesOf(id),
     });
   }
 
@@ -405,7 +422,12 @@ export function extract({ params, text }: ExportData): Extraction {
       tears: goodsOf(GOODS_TYPE.tear),
       consumables: goodsOf(GOODS_TYPE.normalItem, GOODS_TYPE.wondrousPhysick),
       greatRunes: goodsOf(GOODS_TYPE.greatRune),
-      spiritAshes: goodsOf(GOODS_TYPE.spiritLesser, GOODS_TYPE.spiritGreater),
+      spiritAshes: goodsOf(GOODS_TYPE.spiritLesser, GOODS_TYPE.spiritGreater).map((ash) => {
+        // Summoning costs FP or HP (-1 = none); every upgrade of an ash costs the same.
+        const row = params.EquipParamGoods.get(ash.id);
+        const cost = (column: string) => (row ? Math.max(0, num(row, column)) : 0);
+        return { ...ash, fp: cost('consumeMP'), hp: cost('consumeHP') };
+      }),
       tags,
     },
     problems,

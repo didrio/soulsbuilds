@@ -26,6 +26,7 @@ import type {
   Character,
   Goods,
   Spell,
+  SpiritAsh,
   StartingClass,
   Talisman,
   Weapon,
@@ -35,7 +36,7 @@ import type {
 export * from './core';
 
 /** Anything that can sit in an editor slot (what `Slot` renders). */
-export type SlotItem = Weapon | Armor | Arrow | Talisman | Spell | Goods;
+export type SlotItem = Weapon | Armor | Arrow | Talisman | Spell | Goods | SpiritAsh;
 
 export const weapons = weaponsJson as Weapon[];
 /** Weapon types (Dagger, Straight Sword…) in the game's order. */
@@ -47,9 +48,10 @@ export const spells = spellsJson as Spell[];
 export const tears = tearsJson as Goods[];
 export const consumables = consumablesJson as Goods[];
 export const greatRunes = greatRunesJson as Goods[];
-export const spiritAshes = spiritAshesJson as Goods[];
+export const spiritAshes = spiritAshesJson as SpiritAsh[];
 
 export const getWeapon = lookup(weapons);
+export const getWeaponType = lookup(weaponTypes);
 export const getArrow = lookup(arrows);
 export const getTalisman = lookup(talismans);
 export const getSpell = lookup(spells);

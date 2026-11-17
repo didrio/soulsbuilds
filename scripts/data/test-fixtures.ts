@@ -77,7 +77,7 @@ export function fixtureParams(): ExportData['params'] {
       csv(WEAPON_COLUMNS, [
         { ID: 1000000, Name: 'Dagger', ...dagger },
         { ID: 1000001, Name: 'Dagger +1', ...dagger }, // upgrade level: not an item
-        { ID: 1000100, Name: 'Heavy Dagger', ...dagger },
+        { ID: 1000100, Name: 'Heavy Dagger', ...dagger, correctStrength: 50, correctAgility: 0 },
         { ID: 1000500, Name: 'Flame Art Dagger', ...dagger },
         { ID: 1000900, Name: 'Cold Dagger', ...dagger },
         { ID: 1010000, Name: 'Unnamed in the text', ...dagger },
@@ -222,14 +222,28 @@ export function fixtureParams(): ExportData['params'] {
     ),
     EquipParamGoods: parseParamCsv(
       csv(
-        ['goodsType', 'iconId', 'sortGroupId'],
+        ['goodsType', 'iconId', 'sortGroupId', 'consumeMP', 'consumeHP'],
         [
           { ID: 4000, Name: 'Glintstone Pebble', goodsType: 5, iconId: 40 },
           { ID: 6000, Name: 'Heal', goodsType: 16, iconId: 41 },
           { ID: 11000, Name: 'Crimsonspill Crystal Tear', goodsType: 10, iconId: 42 },
           { ID: 191, Name: "Godrick's Great Rune", goodsType: 15, iconId: 43 },
-          { ID: 200000, Name: 'Black Knife Tiche', goodsType: 8, iconId: 44 },
-          { ID: 200001, Name: 'Black Knife Tiche +1', goodsType: 8, iconId: 44 },
+          {
+            ID: 200000,
+            Name: 'Black Knife Tiche',
+            goodsType: 8,
+            iconId: 44,
+            consumeMP: 132,
+            consumeHP: -1,
+          },
+          {
+            ID: 200001,
+            Name: 'Black Knife Tiche +1',
+            goodsType: 8,
+            iconId: 44,
+            consumeMP: 132,
+            consumeHP: -1,
+          },
           { ID: 1050, Name: 'Throwing Dagger', goodsType: 0, iconId: 45 },
           { ID: 8000, Name: 'A key item', goodsType: 1, iconId: 46 },
           { ID: 9000, Name: 'Bow', goodsType: 0, iconId: 47, sortGroupId: 250 }, // a gesture

@@ -29,7 +29,12 @@ describe('extract', () => {
       affinities: ['standard', 'heavy', 'flame-art', 'cold'],
       damageTypes: ['slash', 'pierce'],
       attack: { physical: 75, magic: 0, fire: 0, lightning: 0, holy: 0 },
-      scaling: { str: 35, dex: 55, int: 0, fai: 0, arc: 0 },
+      scaling: {
+        standard: [35, 55, 0, 0, 0],
+        heavy: [50, 0, 0, 0, 0],
+        'flame-art': [35, 55, 0, 0, 0],
+        cold: [35, 55, 0, 0, 0],
+      },
       requirements: { str: 5, dex: 9, int: 0, fai: 0, arc: 0 },
       dlc: false,
     });
@@ -107,7 +112,9 @@ describe('extract', () => {
     ]);
     expect(data.tears.map((g) => g.name)).toEqual(['Crimsonspill Crystal Tear']);
     expect(data.greatRunes.map((g) => g.name)).toEqual(["Godrick's Great Rune"]);
-    expect(data.spiritAshes).toMatchObject([{ id: 200000, name: 'Black Knife Tiche' }]);
+    expect(data.spiritAshes).toMatchObject([
+      { id: 200000, name: 'Black Knife Tiche', fp: 132, hp: 0 },
+    ]);
     expect(data.consumables.map((g) => g.name)).toEqual([
       'Flask of Wondrous Physick',
       'Throwing Dagger',

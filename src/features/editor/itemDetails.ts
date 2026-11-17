@@ -51,7 +51,8 @@ export function itemSubline(item: SlotDisplayItem, weapon: WeaponDetails | null)
   return '';
 }
 
-const STAT_ABBREVIATIONS: Record<RequirementStat, string> = {
+/** How the game abbreviates the scaling and requirement stats. */
+export const STAT_ABBREVIATIONS: Record<RequirementStat, string> = {
   str: 'Str',
   dex: 'Dex',
   int: 'Int',

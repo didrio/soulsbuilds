@@ -16,11 +16,12 @@ const weaponEntry: SlotEntry = {
 };
 
 describe('ItemRow', () => {
-  it('read-only: the name and the affinity and skill as text, no button', () => {
+  it("read-only: the name and the item card's facts as text (T45), no button", () => {
     renderWithProviders(<ItemRow entry={weaponEntry} editable={false} />);
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.getByText('Uchigatana')).toBeInTheDocument();
-    expect(screen.getByText('Blood · Seppuku')).toBeInTheDocument();
+    expect(screen.getByText('Blood · Seppuku (4 FP)')).toBeInTheDocument();
+    expect(screen.getByText('Str D Dex D Arc D · 5.5 wt')).toBeInTheDocument();
   });
 
   it('editable: a button named with the affinity and skill that opens the picker', async () => {

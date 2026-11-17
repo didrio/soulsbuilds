@@ -77,3 +77,23 @@ export const talismanConflict = (
   worn: readonly (Talisman | null | undefined)[],
 ): Talisman | undefined =>
   worn.find((other): other is Talisman => other != null && other.group === talisman.group);
+
+/** A scaling letter grade, best first. */
+export type ScalingGrade = 'S' | 'A' | 'B' | 'C' | 'D' | 'E';
+
+/**
+ * The lowest correction value for each grade (T45), from the export's MenuValueTableParam rows
+ * 100–105: what the game's menus use to turn a weapon's raw scaling into a letter.
+ */
+export const SCALING_GRADES: readonly { grade: ScalingGrade; min: number }[] = [
+  { grade: 'S', min: 175 },
+  { grade: 'A', min: 140 },
+  { grade: 'B', min: 90 },
+  { grade: 'C', min: 60 },
+  { grade: 'D', min: 25 },
+  { grade: 'E', min: 1 },
+];
+
+/** The letter grade of a raw scaling value, or null when it doesn't scale (0). */
+export const scalingGrade = (value: number): ScalingGrade | null =>
+  SCALING_GRADES.find(({ min }) => value >= min)?.grade ?? null;

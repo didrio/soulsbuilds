@@ -9,9 +9,8 @@ Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal*
 
 **Next:** T32 — Make a copy (Opus · extra high · plan mode on; then T33, variations); T42 freed the rules budget
 it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
-blocked on the Blaze decision), the branded email action page (T43), and item hover cards (T45, no rush; desktop
-sidebar tiles, phones already show names in the open sections since T49).
-T32, T33 and T45 start with owner questions (★ in each ticket).
+blocked on the Blaze decision) and the branded email action page (T43). T32 and T33 start with owner questions
+(★ in each ticket).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -39,7 +38,7 @@ and spacing, and the canvas notes say why.
 done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
-T42 (rules budget), T46 (tracking in How to get), T47 (generated descriptions), T48 (build page v3 on
+T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T48 (build page v3 on
 desktop) and T49 (phones).
 
 ## In progress
@@ -162,36 +161,6 @@ desktop) and T49 (phones).
   styles), `app/routes.tsx`, decision "Email verification" (send-only). The emulator's links point at its own
   handler, so e2e builds the `/auth/action?mode=…&oobCode=…` URL from the oobCodes endpoint.
 
-### T45 — Item cards on hover across the build page
-
-- **Status:** ready after T48 (owner, 2026-11-16: no rush)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Hovering over (or focusing) any item image on the build page (above all T48's sidebar, where items
-  are named only on hover; also the Guide's route icons and the title section's tile) shows a small card with
-  the item's name and the few facts a player wants at a glance. The landing page's rows stay as they are.
-  T48 ships the first version (name, affinity · skill, requirement warning); this ticket fills in the facts.
-- **Done when:** (★ owner questions first: which facts per kind; how it works on phones)
-  - One shared hover card for every item tile on the build page. The facts are per kind, kept short. A
-    proposal to confirm:
-    - Weapons: type, affinity and skill, scaling grades, requirements (met or unmet for this build's stats,
-      like `itemWarning`), weight.
-    - Armor: weight and poise.
-    - Talismans, tears, Great Runes: their effect.
-    - Spells: FP cost, slots and requirements.
-    - Spirit Ashes: FP/HP cost.
-  - ★ Only what `src/data/` already has (check `schema.ts`); a missing fact means a pipeline change in
-    `scripts/data/` from the owner's export, never a new source (golden rule 5).
-  - Opens on hover and keyboard focus, closes on Escape and when the pointer leaves. Phones have no hover:
-    ★ tap shows it, or the card stays desktop-only (T48's phone sections already name the items when opened). It never covers the edit-mode tile buttons or blocks a
-    click. Visual only for screen readers unless the facts also go in the accessible name or description.
-  - The card's facts come from a pure helper (e.g. extending `features/editor/itemDetails.ts`) with unit
-    tests; component tests for show and hide; `npm run check`; screenshots desktop and `--mobile`; `npm run
-perf` shows no regression (the full data loads with the editor only, docs/data.md).
-- **Context:** `components/ui/{Tooltip,ItemTile}.tsx` (Tooltip already places a bubble on screen and is
-  `aria-hidden`), `features/editor/{ItemRow.tsx,itemDetails.ts}`, `sections/{Loadout,BuildSummary,
-BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,schema.ts}`, the Gotcha on
-  `@/data/core` vs `@/data`.
-
 ## Backlog
 
 - Phone sections (T49 follow-ups, small): opening a `/guide` or `/comments` link directly doesn't scroll to that
@@ -202,6 +171,8 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
   farming to the build's level (where and how long), and the starting class: builds now save one (T8,
   `startingClass`; classes in `character.json`), so the route can say "your Samurai starts with it" instead of
   "or start as X", and suggest a class for builds without one.
+- Item cards (T45 follow-up): scaling grades at the build's upgrade level, not +0 (needs upgrade levels on
+  builds, like the route's upgrade materials; ReinforceParamWeapon's correction rates from the export).
 - Markdown editor in the site's palette: since T28 it's pinned to the editor's own dark theme (`data-color-mode`
   in `index.html`), GitHub's bluish dark rather than `COLOR_INSET`/`COLOR_TEXT`; override its CSS variables in
   `sections/Markdown.tsx` (`--color-canvas-default` and friends, see `@uiw/react-md-editor`'s README).
@@ -226,6 +197,10 @@ BuildHeader}.tsx`, `guide/GuideRoute.tsx` (route icons), `src/data/{index.ts,sch
 
 Older entries: `docs/tickets-archive.md`.
 
+- T45 — Item cards on hover — 2026-11-16 — `ItemCard` (in `Tooltip`, 264 px) on read-only sidebar tiles (hover,
+  focus, tap; facts as `aria-describedby`; editing keeps the short tooltip) and the route's own items (mouse
+  hover only, `gearByRef`); phone rows show `factsLines`. Pure `itemFacts.ts` per kind. Pipeline: weapon
+  `scaling` per affinity (tuples, +0), spirit ash `fp`/`hp`; `scalingGrade` from MenuValueTableParam 100–105.
 - T49 — Build page v3, phones — 2026-11-16 — below 900 px collapsible sections (`BuildSections`,
   `PhoneSection`) instead of the tab bar and sidebar, one layout per width in JS (`useMediaQuery`, jsdom stub
   `src/test/viewport.ts`); closed headers show glances (`glances.ts`: level + top attributes, gear icons, "None"

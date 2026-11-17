@@ -29,19 +29,19 @@ Ash's, or the built-in skill's Ash when none is chosen; standard only when it ta
 `talismanConflict` (same `group`). The editor's reducers, the picker, the seed and the migration all go
 through them.
 
-| File                                                                    | What                                                                                                                                  |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `weapons.json` (487, 102 DLC)                                           | type, weight, +0 attack, raw scaling, requirements, damage types, built-in `skill`, `ashesOfWar` (can take one), `affinities` offered |
-| `arrows.json` (68)                                                      | arrows, greatarrows, bolts, greatbolts                                                                                                |
-| `ashesOfWar.json` (116)                                                 | the skill it grants, weapon types it fits, affinities it allows                                                                       |
-| `skills.json` (268)                                                     | weapon skills (built-in and from Ashes), FP of the main use                                                                           |
-| `armor.json` (728)                                                      | slot, weight, poise, negation %, resistances                                                                                          |
-| `talismans.json` (154)                                                  | effect, weight, `group` (same group can't be worn together, e.g. Erdtree's Favor and +1), `modifiers` (T8; below)                     |
-| `spells.json` (213)                                                     | sorcery/incantation, FP, stamina, slots, INT/FAI/ARC requirements                                                                     |
-| `tears.json`, `consumables.json`, `greatRunes.json`, `spiritAshes.json` | name, icon, short effect                                                                                                              |
-| `weaponTypes.json`, `affinities.json`, `tags.json`                      | the 46 weapon types (8 DLC), the 13 affinities (key, name, row offset), tag groups                                                    |
-| `acquisition.json`                                                      | where every item comes from (T14; section below)                                                                                      |
-| `character.json`                                                        | the 10 starting classes (CharaInitParam 3000–3009: level, base stats) and the HP/FP/stamina/equip-load curves (T8; below)             |
+| File                                                                    | What                                                                                                                                                     |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `weapons.json` (487, 102 DLC)                                           | type, weight, +0 attack, raw scaling per affinity (T45), requirements, damage types, built-in `skill`, `ashesOfWar` (can take one), `affinities` offered |
+| `arrows.json` (68)                                                      | arrows, greatarrows, bolts, greatbolts                                                                                                                   |
+| `ashesOfWar.json` (116)                                                 | the skill it grants, weapon types it fits, affinities it allows                                                                                          |
+| `skills.json` (268)                                                     | weapon skills (built-in and from Ashes), FP of the main use                                                                                              |
+| `armor.json` (728)                                                      | slot, weight, poise, negation %, resistances                                                                                                             |
+| `talismans.json` (154)                                                  | effect, weight, `group` (same group can't be worn together, e.g. Erdtree's Favor and +1), `modifiers` (T8; below)                                        |
+| `spells.json` (213)                                                     | sorcery/incantation, FP, stamina, slots, INT/FAI/ARC requirements                                                                                        |
+| `tears.json`, `consumables.json`, `greatRunes.json`, `spiritAshes.json` | name, icon, short effect; spirit ashes also `fp` and `hp`, what summoning costs (T45; 0 = none)                                                          |
+| `weaponTypes.json`, `affinities.json`, `tags.json`                      | the 46 weapon types (8 DLC), the 13 affinities (key, name, row offset), tag groups                                                                       |
+| `acquisition.json`                                                      | where every item comes from (T14; section below)                                                                                                         |
+| `character.json`                                                        | the 10 starting classes (CharaInitParam 3000–3009: level, base stats) and the HP/FP/stamina/equip-load curves (T8; below)                                |
 
 Every item has `id`, `name`, `icon` and `dlc`. **IDs are the game's param row IDs** (owner's call,
 2026-11-15): stable across patches, unique within a file (each build slot implies its file). Dagger is
@@ -60,6 +60,16 @@ exponents }`. Talismans get `modifiers` from their SpEffectParam row (`refId`), 
 arithmetic is `src/lib/buildMath.ts` (pure; cites the rows and Fextralife, whose tables its tests check);
 `src/features/editor/store/derived.ts` feeds it the editor state. Accessors: `startingClasses`,
 `getStartingClass(id)`, `statCurves` (`@/data`).
+
+### Item card data (T45)
+
+The item cards (`features/editor/itemFacts.ts`) show only what's here. A weapon's `scaling` is keyed by
+affinity, each `[str, dex, int, fai, arc]` raw correction values at +0 read from its infused row (`id +
+offset`): a Heavy Uchigatana scales Str only. `scalingGrade` (`src/data/rules.ts`) turns a value into the
+menu's letter with MenuValueTableParam rows 100–105 (S ≥ 175, A ≥ 140, B ≥ 90, C ≥ 60, D ≥ 25, E ≥ 1).
+Builds have no upgrade levels, so the grades are +0's. Spirit ash cost is EquipParamGoods `consumeMP` /
+`consumeHP` (-1 = none; every upgrade costs the same). This added ~57 KB raw, ~10 KB gzipped to
+`weapons.json`.
 
 ### The pipeline (`scripts/data/`, TypeScript run directly by Node 24)
 

@@ -123,4 +123,5 @@ export const fitAffinity = (
   ash: AshOfWar | null,
   affinity: AffinityKey | null | undefined,
 ) => rules.fitAffinity(weapon, ash, affinity, ashesOfWar);
-export const { talismanConflict } = rules;
+export const { talismanConflict, scalingGrade } = rules;
+export type { ScalingGrade } from './rules';
