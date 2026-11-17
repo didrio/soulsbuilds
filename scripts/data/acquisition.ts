@@ -21,6 +21,7 @@ import type {
   SourceKind,
 } from '../../src/data/schema.ts';
 import { ACQUISITION_FILES, SOURCE_KINDS } from '../../src/data/schema.ts';
+import { CLASS_ROWS } from './character.ts';
 import { num, type Param, type Row, type TextIndex } from './export.ts';
 import type { GameData } from './extract.ts';
 
@@ -38,9 +39,6 @@ export const ACQUISITION_PARAMS = [
   'EquipParamCustomWeapon',
 ] as const;
 export type AcquisitionParamName = (typeof ACQUISITION_PARAMS)[number];
-
-/** The ten starting classes (Vagabond … Wretch). 3010+ are unused. */
-const CLASS_ROWS = { from: 3000, to: 3009 };
 
 // --- Hand-written inputs -------------------------------------------------------------------------
 

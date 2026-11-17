@@ -1,0 +1,36 @@
+{
+  "id": "ZV3y67UIGGp05lgAjoOl",
+  "name": "Heavy Knight Early Shield Tank",
+  "level": 50,
+  "startingClass": "Heavy Knight",
+  "stats": {
+    "vigor": 30,
+    "mind": 9,
+    "end": 25,
+    "str": 30,
+    "dex": 11,
+    "int": 7,
+    "fai": 8,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Hefty Scimitar", "affinity": "Heavy", "ash": "Cragblade" }],
+  "leftHand": [{ "weapon": "Lordsworn's Shield" }],
+  "talismans": ["Curved Sword Talisman", "Arsenal Charm"],
+  "tears": ["Greenspill Crystal Tear", "Strength-knot Crystal Tear"],
+  "armor": {
+    "helm": "Steel Helm",
+    "chest": "Steel Armor",
+    "gauntlet": "Steel Gauntlets",
+    "leg": "Steel Greaves"
+  },
+  "tags": ["Strength", "Curved Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Hefty Scimitar" },
+  "source": {
+    "author": "KeenGamer",
+    "site": "KeenGamer",
+    "title": "Heavy Knight (early game)",
+    "url": "https://www.keengamer.com/articles/guides/elden-ring-heavy-knight-build-best-weapons-armor-and-talismans/",
+    "filled": []
+  },
+  "notes": "Source (Patch 1.17 guide): level 50 stats 30/9/25/30/11/7/8/9, Heavy Hefty Scimitar with Cragblade, Lordsworn's Shield, Steel set 'with lighter pieces substituted to avoid Overloaded', Curved Sword Talisman and Arsenal Charm, Greenspill + Strength-knot Crystal Tears."
+}

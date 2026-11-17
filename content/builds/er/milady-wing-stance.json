@@ -1,0 +1,42 @@
+{
+  "id": "v16jn5lSrGJPC4IvJDbW",
+  "name": "Milady Wing Stance Quality",
+  "level": 192,
+  "startingClass": "Samurai",
+  "stats": {
+    "vigor": 60,
+    "mind": 25,
+    "end": 30,
+    "str": 54,
+    "dex": 60,
+    "int": 9,
+    "fai": 25,
+    "arc": 8
+  },
+  "rightHand": [{ "weapon": "Milady", "affinity": "Quality", "ash": "Wing Stance" }],
+  "leftHand": [{ "weapon": "Finger Seal" }],
+  "talismans": [
+    "Rellana's Cameo",
+    "Carian Filigreed Crest",
+    "Millicent's Prosthesis",
+    "Dragoncrest Greatshield Talisman"
+  ],
+  "spells": ["Golden Vow", "Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "Rellana's Helm",
+    "chest": "Rellana's Armor",
+    "gauntlet": "Rellana's Gloves",
+    "leg": "Rellana's Greaves"
+  },
+  "greatRune": "Radahn's Great Rune",
+  "tags": ["Quality", "Strength", "Dexterity", "Light Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Milady" },
+  "source": {
+    "author": null,
+    "site": "Game8",
+    "title": "Wing Stance Milady",
+    "url": "https://game8.co/games/Elden-Ring/archives/460059",
+    "filled": []
+  },
+  "notes": "Source (updated 2024-07-05): level 192, Samurai, 60/25/30/54/60/9/25/8, Quality affinity; Milady + Wing Stance, Finger Seal, Rellana's set, Rellana's Cameo plus Carian Filigreed Crest, Millicent's Prosthesis, Dragoncrest Greatshield (Rotten Winged Sword Insignia and Shard of Alexander as swaps), Golden Vow, Flame, Grant Me Strength, Radahn's Great Rune."
+}

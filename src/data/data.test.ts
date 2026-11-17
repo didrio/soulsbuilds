@@ -418,9 +418,10 @@ describe('character.json (T8)', () => {
     JSON.parse(readFileSync(join(DIR, 'character.json'), 'utf8')),
   );
 
-  it('has the ten classes, each at level = stat sum − 79 (calculateLevel and firestore.rules)', () => {
+  it('has the twelve classes, each at level = stat sum − 79 (calculateLevel and firestore.rules)', () => {
+    // 3010 Idus Knight and 3011 Heavy Knight: the Tarnished Pack (patch 1.17, T52).
     expect(character.classes.map((c) => c.id)).toEqual([
-      3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009,
+      3000, 3001, 3002, 3003, 3004, 3005, 3006, 3007, 3008, 3009, 3010, 3011,
     ]);
     for (const { name, level, stats } of character.classes)
       expect(Object.values(stats).reduce((a, b) => a + b, 0) - 79, name).toBe(level);

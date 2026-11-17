@@ -1,0 +1,39 @@
+{
+  "id": "0s0vhBOz19wDaeHGk2Og",
+  "name": "Bloodhound's Fang Dexterity",
+  "level": 100,
+  "startingClass": "Samurai",
+  "stats": {
+    "vigor": 45,
+    "mind": 16,
+    "end": 25,
+    "str": 18,
+    "dex": 50,
+    "int": 9,
+    "fai": 8,
+    "arc": 8
+  },
+  "rightHand": [{ "weapon": "Bloodhound's Fang" }],
+  "talismans": [
+    "Bull-Goat's Talisman",
+    "Shard of Alexander",
+    "Claw Talisman",
+    "Dragoncrest Greatshield Talisman"
+  ],
+  "armor": {
+    "helm": "Knight Helm",
+    "chest": "Raptor's Black Feathers",
+    "gauntlet": "Knight Gauntlets",
+    "leg": "Knight Greaves"
+  },
+  "tags": ["Dexterity", "Curved Greatsword", "Bleed (Hemorrhage)", "PVE"],
+  "image": { "kind": "weapon", "name": "Bloodhound's Fang" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Bloodhound",
+    "url": "https://eldenring.wiki.fextralife.com/Bloodhound_Build",
+    "filled": ["stats", "armor"]
+  },
+  "notes": "Source (edited 2026-08-14): all levels, any class, Dex & Vigor primary, Str secondary, needs 18 Str / 17 Dex; Bloodhound's Fang (Bloodhound's Finesse), Raptor's Black Feathers plus any armor reaching 51 poise with Bull-Goat's, the four talismans. Level 100 chosen; Knight helm, gauntlets and greaves for the poise."
+}

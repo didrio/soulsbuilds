@@ -196,7 +196,10 @@ export const statCurveSchema = z.strictObject({
 });
 
 export const startingClassSchema = z.strictObject({
-  /** CharaInitParam row ID (3000 Vagabond … 3009 Wretch); builds store it as `startingClass`. */
+  /**
+   * CharaInitParam row ID (3000 Vagabond … 3009 Wretch, 3010 Idus Knight, 3011 Heavy Knight: the
+   * Tarnished Pack, patch 1.17); builds store it as `startingClass`.
+   */
   id,
   name,
   level: z.number().int().positive(),
@@ -205,7 +208,7 @@ export const startingClassSchema = z.strictObject({
 
 /** character.json (T8): the starting classes and the stat curves behind HP, FP, stamina and equip load. */
 export const characterSchema = z.strictObject({
-  classes: z.array(startingClassSchema).length(10),
+  classes: z.array(startingClassSchema).length(12),
   curves: z.strictObject({
     hp: statCurveSchema,
     fp: statCurveSchema,

@@ -368,6 +368,9 @@ export const CLASS_FIXTURES: [string, ...number[]][] = [
   ['Samurai', 9, 12, 11, 13, 12, 15, 9, 8, 8],
   ['Prisoner', 9, 11, 12, 11, 11, 14, 14, 6, 9],
   ['Wretch', 1, 10, 10, 10, 10, 10, 10, 10, 10],
+  // The Tarnished Pack (patch 1.17).
+  ['Idus Knight', 7, 10, 12, 11, 13, 15, 8, 11, 6],
+  ['Heavy Knight', 10, 14, 8, 17, 15, 11, 7, 8, 9],
 ];
 
 /** The params scripts/data/character.ts reads, with the real classes and curves. */
@@ -798,6 +801,8 @@ export function fixtureAcquisitionParams(): Record<AcquisitionParamName, Param> 
           'Samurai',
           'Prisoner',
           'Wretch',
+          'Idus Knight',
+          'Heavy Knight',
         ].map((name, i) => ({
           ID: 3000 + i,
           Name: `Class - ${name}`,

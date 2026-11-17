@@ -1,0 +1,41 @@
+{
+  "id": "8Ki6WIsgqkGq15LTSAT5",
+  "name": "Rivers of Blood Bleed Samurai",
+  "level": 150,
+  "startingClass": "Samurai",
+  "stats": {
+    "vigor": 58,
+    "mind": 30,
+    "end": 18,
+    "str": 16,
+    "dex": 38,
+    "int": 9,
+    "fai": 15,
+    "arc": 45
+  },
+  "rightHand": [{ "weapon": "Rivers of Blood" }],
+  "leftHand": [{ "weapon": "Sacrificial Axe" }, { "weapon": "Dragon Communion Seal" }],
+  "talismans": [
+    "Lord of Blood's Exultation",
+    "Rotten Winged Sword Insignia",
+    "Carian Filigreed Crest",
+    "Shard of Alexander"
+  ],
+  "spells": ["Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "White Mask",
+    "chest": "Raging Wolf Armor",
+    "gauntlet": "Raging Wolf Gauntlets",
+    "leg": "Raging Wolf Greaves"
+  },
+  "tags": ["Dexterity", "Arcane", "Bleed (Hemorrhage)", "Katana", "PVE"],
+  "image": { "kind": "weapon", "name": "Rivers of Blood" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Sanguine Samurai",
+    "url": "https://eldenring.wiki.fextralife.com/Sanguine_Samurai_Build",
+    "filled": ["stats", "armor"]
+  },
+  "notes": "Source (edited 2026-08-14): level 150, Dex/Arc primary, Vigor/Mind secondary, at least 20 Arc, 18 Dex, 16 Str, 15 Fai, 'about 30 Mind'; White Mask or Okina Mask plus any medium-roll armor; five talismans listed (Green Turtle is the fifth, named in the write-up as the swap). Stats spread to that guidance; Raging Wolf set for a medium roll."
+}

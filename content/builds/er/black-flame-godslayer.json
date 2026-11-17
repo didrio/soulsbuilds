@@ -1,0 +1,49 @@
+{
+  "id": "VJ8twbrsLCY9gYrMFh6f",
+  "name": "Black Flame Godslayer Faith",
+  "level": 195,
+  "startingClass": "Confessor",
+  "stats": {
+    "vigor": 58,
+    "mind": 43,
+    "end": 36,
+    "str": 14,
+    "dex": 33,
+    "int": 9,
+    "fai": 72,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Sword of Darkness" }, { "weapon": "Black Knife" }],
+  "leftHand": [{ "weapon": "Godslayer's Seal" }],
+  "talismans": [
+    "Dragoncrest Greatshield Talisman",
+    "Flock's Canvas Talisman",
+    "Cerulean Amber Medallion +3",
+    "Radagon Icon"
+  ],
+  "spells": [
+    "Black Flame",
+    "Black Blade",
+    "Golden Vow",
+    "Black Flame's Protection",
+    "Scarlet Aeonia",
+    "Light of Miquella"
+  ],
+  "armor": {
+    "helm": "Godskin Apostle Hood",
+    "chest": "Godskin Apostle Robe",
+    "gauntlet": "Godskin Apostle Bracelets",
+    "leg": "Godskin Apostle Trousers"
+  },
+  "spiritAsh": "Mimic Tear Ashes",
+  "tags": ["Faith", "Sacred Seal", "Fire", "PVE"],
+  "image": { "kind": "weapon", "name": "Godslayer's Seal" },
+  "source": {
+    "author": "Kelson H.",
+    "site": "eip.gg",
+    "title": "Godslayer Evolved",
+    "url": "https://eip.gg/elden-ring/builds/godslayer-evolved/",
+    "filled": ["armor"]
+  },
+  "notes": "Source: Confessor, level 195, stats 58/43/36/14/33/9/72/7: Arcane 7 is below the Confessor's 9, and with 9 the stats sum to exactly the stated 195, so Arcane 9; Sword of Darkness (or Milady with a sacred Ash), Black Knife for Blade of Death, Godslayer's Seal; Dragoncrest, Flock's Canvas, Cerulean Amber Medallion +3, Radagon Icon; seven incantations 'switch them out as needed': six that fit 10 memory slots (Erdtree Heal is the swap, named in the write-up); the Mimic Tear. No armor named: the Godskin Apostle set."
+}

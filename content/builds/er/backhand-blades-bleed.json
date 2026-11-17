@@ -1,0 +1,44 @@
+{
+  "id": "NuGcHMVC927hsx9kTLvf",
+  "name": "Backhand Blades Blood Bleed",
+  "level": 150,
+  "startingClass": "Warrior",
+  "stats": {
+    "vigor": 50,
+    "mind": 14,
+    "end": 20,
+    "str": 10,
+    "dex": 55,
+    "int": 10,
+    "fai": 25,
+    "arc": 45
+  },
+  "rightHand": [
+    { "weapon": "Backhand Blade", "affinity": "Blood" },
+    { "weapon": "Uchigatana", "ash": "Seppuku" }
+  ],
+  "leftHand": [{ "weapon": "Finger Seal" }],
+  "talismans": [
+    "Lord of Blood's Exultation",
+    "Two-Headed Turtle Talisman",
+    "Rotten Winged Sword Insignia",
+    "Retaliatory Crossed-Tree"
+  ],
+  "spells": ["Golden Vow", "Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "White Mask",
+    "chest": "Gravebird's Blackquill Armor",
+    "gauntlet": "Gravebird Bracelets",
+    "leg": "Gravebird Anklets"
+  },
+  "tags": ["Dexterity", "Arcane", "Bleed (Hemorrhage)", "Backhand Blade", "PVE"],
+  "image": { "kind": "weapon", "name": "Backhand Blade" },
+  "source": {
+    "author": null,
+    "site": "Game8",
+    "title": "Backhand Blade",
+    "url": "https://game8.co/games/Elden-Ring/archives/460286",
+    "filled": []
+  },
+  "notes": "Source (updated 2024-07-07): level 150, Warrior, 50/14/20/10/55/10/25/45; Blood Backhand Blade with its own Blind Spot, Uchigatana with Seppuku (two-handed), Finger Seal, White Mask + Gravebird set, the four main talismans, Golden Vow, Flame, Grant Me Strength."
+}

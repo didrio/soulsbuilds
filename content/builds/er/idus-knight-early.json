@@ -1,0 +1,37 @@
+{
+  "id": "XOnl48iNhNibTCCuGSbJ",
+  "name": "Idus Knight Early Game Guard Counters",
+  "level": 20,
+  "startingClass": "Idus Knight",
+  "stats": {
+    "vigor": 20,
+    "mind": 12,
+    "end": 11,
+    "str": 14,
+    "dex": 17,
+    "int": 8,
+    "fai": 11,
+    "arc": 6
+  },
+  "rightHand": [{ "weapon": "Idus Sword", "ash": "Sacred Blade" }],
+  "leftHand": [{ "weapon": "Silver Grooved Shield" }, { "weapon": "Clawmark Seal" }],
+  "talismans": ["Assassin's Crimson Dagger"],
+  "spells": ["Urgent Heal", "Flame Sling"],
+  "tears": ["Crimson Crystal Tear", "Strength-knot Crystal Tear"],
+  "armor": {
+    "helm": "Silver Grooved Helm",
+    "chest": "Silver Grooved Armor",
+    "gauntlet": "Silver Grooved Gauntlets",
+    "leg": "Silver Grooved Greaves"
+  },
+  "tags": ["Dexterity", "Faith", "Light Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Idus Sword" },
+  "source": {
+    "author": "Console Pulse",
+    "site": "Console Pulse",
+    "title": "Idus Knight early",
+    "url": "https://consolepulse.com/multiplatform/elden-ring/guides/elden-ring-idus-knight-heavy-knight-early-guide",
+    "filled": ["stats"]
+  },
+  "notes": "Source (published 2026-08-29, updated 2026-09-07): Idus Sword with Sacred Blade, Silver-Grooved Shield, Clawmark Seal, Assassin's Crimson Dagger, Crimson Crystal Tear + Strength-knot Crystal Tear, Urgent Heal and Flame Sling; the starting Silver Grooved set; 'raise Vigor toward 20 first', route through the Third Church of Marika scarab, Deathtouched Catacombs and Gurranq. No level: 20, Vigor 20, Strength 14 for the Clawmark Seal, the rest into Dexterity."
+}

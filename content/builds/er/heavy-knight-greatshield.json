@@ -1,0 +1,42 @@
+{
+  "id": "93EXqty0nkC7rbA7jVVy",
+  "name": "Heavy Knight Greatshield Tank",
+  "level": 150,
+  "startingClass": "Heavy Knight",
+  "stats": {
+    "vigor": 60,
+    "mind": 14,
+    "end": 40,
+    "str": 80,
+    "dex": 11,
+    "int": 7,
+    "fai": 8,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Hefty Scimitar", "affinity": "Heavy", "ash": "Cragblade" }],
+  "leftHand": [{ "weapon": "Gilded Greatshield" }],
+  "talismans": [
+    "Great-Jar's Arsenal",
+    "Curved Sword Talisman",
+    "Greatshield Talisman",
+    "Bull-Goat's Talisman"
+  ],
+  "tears": ["Greenburst Crystal Tear", "Opaline Hardtear"],
+  "consumables": ["Boiled Crab"],
+  "armor": {
+    "helm": "Steel Helm",
+    "chest": "Steel Armor",
+    "gauntlet": "Steel Gauntlets",
+    "leg": "Steel Greaves"
+  },
+  "tags": ["Strength", "Curved Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Gilded Greatshield" },
+  "source": {
+    "author": "KeenGamer",
+    "site": "KeenGamer",
+    "title": "Heavy Knight (endgame)",
+    "url": "https://www.keengamer.com/articles/guides/elden-ring-heavy-knight-build-best-weapons-armor-and-talismans/",
+    "filled": []
+  },
+  "notes": "Source (Patch 1.17 guide): complete level 150 loadout: 60/14/40/80/11/7/8/9, Heavy Hefty Scimitar +25 with Cragblade, Gilded Greatshield +25 (its own skill is No Skill), full Steel set, Great-Jar's Arsenal, Curved Sword Talisman, Greatshield Talisman, Bull-Goat's Talisman, Greenburst Crystal Tear + Opaline Hardtear, Boiled Crab."
+}

@@ -1,0 +1,41 @@
+{
+  "id": "9AdD8FxOH3i1xisRJ8Th",
+  "name": "Bolt of Gransax Dex/Faith Lightning",
+  "level": 150,
+  "startingClass": "Confessor",
+  "stats": {
+    "vigor": 48,
+    "mind": 18,
+    "end": 24,
+    "str": 34,
+    "dex": 49,
+    "int": 9,
+    "fai": 38,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Bolt of Gransax" }, { "weapon": "Cleanrot Spear" }],
+  "leftHand": [{ "weapon": "Golden Greatshield" }, { "weapon": "Finger Seal" }],
+  "talismans": [
+    "Shard of Alexander",
+    "Radagon's Soreseal",
+    "Ritual Sword Talisman",
+    "Carian Filigreed Crest"
+  ],
+  "spells": ["Golden Vow", "Blessing of the Erdtree", "Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "Consort's Mask",
+    "chest": "Leyndell Knight Armor",
+    "gauntlet": "Leyndell Knight Gauntlets",
+    "leg": "Leyndell Knight Greaves"
+  },
+  "tags": ["Dexterity", "Faith", "Spear", "PVE"],
+  "image": { "kind": "weapon", "name": "Bolt of Gransax" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Lightning Dragoon",
+    "url": "https://eldenring.wiki.fextralife.com/Lightning_Dragoon_Build",
+    "filled": ["stats", "the seal"]
+  },
+  "notes": "Source (edited 2026-08-14): level 150, any class, Dex & Vigor primary, Str & End secondary, needs 40 Dex / 38 Fai / 34 Str; Bolt of Gransax and Cleanrot Spear (or Treespear), Golden Greatshield, Consort's Mask + Leyndell Knight set, the four talismans, Golden Vow, Blessing of the Erdtree, Flame, Grant Me Strength. No seal named: Finger Seal."
+}

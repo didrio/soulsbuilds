@@ -13,8 +13,8 @@ import { fileURLToPath } from 'node:url';
 import { initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore, Timestamp } from 'firebase-admin/firestore';
-import { fitAffinity, fitAsh, talismanConflict } from '../src/data/rules.ts';
 import { updateStats } from './admin.mjs';
+import { classId, imageOf, loadItemData, toEquipmentIds } from './lib/build-from-names.mjs';
 import { buildContent, GAME } from './lib/model-v2.mjs';
 
 export const SEED_PASSWORD = 'seed-password-123';
@@ -34,23 +34,7 @@ for (const name of ['FIRESTORE_EMULATOR_HOST', 'FIREBASE_AUTH_EMULATOR_HOST']) {
 }
 
 // Game data v2 (src/data/er/). Seed builds name their items; toEquipmentIds() looks the IDs up.
-const er = (file) =>
-  JSON.parse(readFileSync(join(root, 'src', 'data', 'er', `${file}.json`), 'utf8'));
-const DATA = Object.fromEntries(
-  [
-    'weapons',
-    'armor',
-    'arrows',
-    'talismans',
-    'spells',
-    'tears',
-    'consumables',
-    'greatRunes',
-    'spiritAshes',
-    'ashesOfWar',
-    'skills',
-  ].map((file) => [file, er(file)]),
-);
+const DATA = loadItemData();
 
 const at = (month, day) => Timestamp.fromDate(new Date(Date.UTC(2026, month - 1, day, 12)));
 
@@ -189,93 +173,6 @@ const BUILDS = [
   },
 ];
 
-const ARMOR_SLOTS = { helm: 'head', chest: 'chest', gauntlet: 'arms', leg: 'legs' };
-
-/**
- * A seed build's equipment with item names turned into game IDs. Throws on a name that isn't in the
- * data, an Ash of War or affinity the weapon can't have, or talismans that can't be worn together,
- * so the seed never shows something the editor would drop.
- */
-function toEquipmentIds({ id: buildId, equipment: e }) {
-  const fail = (what) => {
-    throw new Error(`Seed build ${buildId}: ${what}`);
-  };
-  const find = (file, name, matches = () => true) =>
-    DATA[file].find((item) => item.name === name && matches(item)) ??
-    fail(`no ${file} item "${name}"`);
-  const ids = (file, names = []) => names.map((name) => (name ? find(file, name).id : null));
-  const skillName = (ash) => DATA.skills.find((skill) => skill.id === ash.skill)?.name;
-
-  const weapons = (e.weapons ?? []).map((name) => (name ? find('weapons', name) : null));
-  const weaponSkills = weapons.map((weapon, i) => {
-    const name = e.weaponSkills?.[i];
-    if (!name) return null;
-    const ash = find('ashesOfWar', `Ash of War: ${name}`, (a) => skillName(a) === name);
-    if (!weapon || fitAsh(weapon, ash, DATA.ashesOfWar) !== ash)
-      fail(`${weapon?.name ?? 'an empty slot'} can't take the Ash of War "${name}"`);
-    return ash;
-  });
-  const weaponAffinities = weapons.map((weapon, i) => {
-    const key = e.weaponAffinities?.[i] ?? null;
-    if (key && (!weapon || fitAffinity(weapon, weaponSkills[i], key, DATA.ashesOfWar) !== key))
-      fail(`${weapon?.name ?? 'an empty slot'} can't have the affinity "${key}"`);
-    return key;
-  });
-  const talismans = (e.talismans ?? []).map((name) => find('talismans', name));
-  talismans.forEach((talisman, i) => {
-    const conflict = talismanConflict(talisman, talismans.slice(0, i));
-    if (conflict) fail(`"${talisman.name}" can't be worn with "${conflict.name}"`);
-  });
-  const armor = Object.fromEntries(
-    Object.entries(ARMOR_SLOTS).map(([slot, armorSlot]) => [
-      slot,
-      e[slot] ? find('armor', e[slot], (piece) => piece.slot === armorSlot).id : null,
-    ]),
-  );
-  return {
-    weapons: weapons.map((weapon) => weapon?.id ?? null),
-    weaponAffinities,
-    weaponSkills: weaponSkills.map((ash) => ash?.id ?? null),
-    arrows: ids('arrows', e.arrows),
-    talismans: talismans.map((talisman) => talisman.id),
-    spells: ids('spells', e.spells),
-    tears: ids('tears', e.tears),
-    consumables: ids('consumables', e.consumables),
-    ...armor,
-    greatRune: e.greatRune ? find('greatRunes', e.greatRune).id : null,
-    spiritAsh: e.spiritAsh ? find('spiritAshes', e.spiritAsh).id : null,
-  };
-}
-
-// The build image (T40): { kind, name } → { kind, id } (null for the default, the main weapon).
-const IMAGE_FILES = {
-  weapon: 'weapons',
-  helm: 'armor',
-  chest: 'armor',
-  gauntlet: 'armor',
-  leg: 'armor',
-  talisman: 'talismans',
-  spell: 'spells',
-  tear: 'tears',
-  greatRune: 'greatRunes',
-  spiritAsh: 'spiritAshes',
-};
-function imageOf(build) {
-  if (!build.image) return null;
-  const { kind, name } = build.image;
-  const found = DATA[IMAGE_FILES[kind]]?.find((item) => item.name === name);
-  if (!found) throw new Error(`Seed build ${build.id}: no ${kind} "${name}" for the image`);
-  return { kind, id: found.id };
-}
-
-// A starting class name → its CharaInitParam ID (null for none), from src/data/er/character.json.
-function classId(name) {
-  if (!name) return null;
-  const found = er('character').classes.find((item) => item.name === name);
-  if (!found) throw new Error(`Seed: no starting class "${name}"`);
-  return found.id;
-}
-
 // Empties the emulator's Firestore (emulator REST API), so re-seeding gives a known state.
 async function clearFirestore() {
   const url = `http://${process.env.FIRESTORE_EMULATOR_HOST}/emulator/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
@@ -289,9 +186,12 @@ async function main() {
     BUILDS.map((build) => [
       build.id,
       {
-        ...buildContent({ ...build, equipment: toEquipmentIds(build) }),
-        startingClass: classId(build.startingClass),
-        image: imageOf(build),
+        ...buildContent({
+          ...build,
+          equipment: toEquipmentIds(build.equipment, DATA, `Seed build ${build.id}`),
+        }),
+        startingClass: classId(build.startingClass, DATA, `Seed build ${build.id}`),
+        image: imageOf(build.image, DATA, `Seed build ${build.id}`),
       },
     ]),
   );

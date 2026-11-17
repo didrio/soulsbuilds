@@ -2,13 +2,13 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T64**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T66**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T52 (seeded builds: needs the owner's "Souls Builds" account and five sources first) · Opus · high effort · plan mode on. Then T53, T55 (discoverability), then
-T57–T61 (Dark Souls). Copies (T32, T33) are parked in the Backlog until the owner asks for them.
+**Next:** T55 (weapon and tag pages; the 22 seeded builds give its first hubs content) · Opus · extra high effort ·
+plan mode on. Then T64 (small), T57–T61 (Dark Souls); T65 waits for search data. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -28,8 +28,11 @@ and spacing, and the canvas notes say why.
 - Copy the Dark Souls III, Dark Souls Remastered and Dark Souls II Smithbox exports to the Mac (T58, T60, T61 are
   blocked on them; T57 settles the folder layout, `~/Documents/soulsbuilds-gamedata/<game>/` planned). Note
   which Smithbox version and game patch each came from, like the Elden Ring export's `VERSION.txt`.
-- Before T52: sign up a "Souls Builds" account on the live site (it posts the seeded builds), and pick the first
-  five community builds to recreate (links).
+- **Seeded builds (T52, T53) to production**, after the deploy that carries T52's two classes and rules (CI on
+  `main`): change the Souls Builds account's password (it was pasted into a session, 2026-11-17), then
+  `node scripts/admin.mjs export --project soulsbuilds`, `node scripts/seed-builds.mjs --project soulsbuilds --owner
+<its email>` (dry run: read it), then `--write` (docs/firebase.md "Seeded builds"). Then resubmit the sitemap. Later:
+  message the credited creators (KeenGamer, Console Pulse, eip.gg's Kelson H. and Joseph Ferguson) with their pages.
 - After T56 deploys: paste a build URL into https://search.google.com/test/rich-results (breadcrumbs should pass; `CreativeWork` has no rich result, only a schema check), and resubmit the sitemap in Search Console (its URLs now carry the slugs).
 - T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
   is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
@@ -70,59 +73,8 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 ## Up next
 
 Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
-previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53), then sharing and hub pages
-(T54 done, T55), then T56. T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
-
-#### T52 — Seeded builds: an import script and the first five, credited
-
-- **Status:** ready (after T50/T51 ideally, so they're crawlable the day they land)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Fill the site with good builds people search for, recreated from community builds the owner picks,
-  each one crediting where it came from. A new site with few builds ranks for nothing; content does more than
-  any tag (owner, 2026-11-16).
-- **Decisions to confirm with the owner at the start** (recommended answers given):
-  - **The loadout is copied; the write-up isn't.** Stats and gear are facts anyone can recreate; someone's
-    write-up is their writing, and credit isn't permission. Copied text also ranks badly: Google shows the
-    original instead (duplicate content). So each seeded build gets an original short write-up (how it plays,
-    why these pieces), written by the agent from the source's facts and reviewed by the owner, or the author's
-    own text **only with their OK** (a Reddit DM is enough; note it in the seed file).
-  - **Credit line** at the end of the write-up, in one fixed format the script adds: "Loadout from <author>'s
-    build on <site> ([original](url)). Write-up by Souls Builds." At the end, not the start: the first
-    paragraph is the share description (`shareMeta`). No model change; a structured `source` field (shown on
-    the card, can't be edited away) is a later option, and it costs rules budget (T42).
-  - **Posted by a "Souls Builds" account** (the owner signs it up on the live site), never accounts in the
-    original authors' names.
-- **Done when:**
-  - `scripts/seed-builds.mjs` (or an `admin.mjs` command): reads `content/builds/<game>/*.json` (names, not
-    IDs, so the owner can read and edit them: name → ID through `src/data/er/*.json` like
-    `scripts/lib/names-to-ids.mjs`, with `src/data/rules.ts` for affinities, Ashes and talisman conflicts),
-    checks each build as the rules would (LIMITS, level matches stats), and writes them as the Souls Builds
-    account. Dry run by default (prints each build and what it dropped), `--write`, `--project`. Idempotent: a
-    seed file carries a stable build ID, so re-running updates instead of duplicating. Runs against the
-    emulators first. Production writes are the owner's go-ahead, every time (golden rule 2), after
-    `admin.mjs export`.
-  - Five Elden Ring builds the owner picks (popular weapons or archetypes: bleed, Moonveil, faith, a DLC build),
-    with tags, starting class and build image set. The agent reads the sources (owner's links) with the
-    browser tools, never invents a loadout.
-  - Tests: `tests/admin/` style tests for the parsing, the name mapping errors and idempotency.
-  - Docs: `docs/product.md` (seeding and the credit rule under Principles), AGENTS.md commands table.
-- **Context:** `scripts/admin.mjs` (ADC, `--project`, dry run pattern), `scripts/seed.mjs` (the emulator
-  seed; don't import it, it wipes on import), `scripts/lib/{names-to-ids,model-v2}.mjs`, `src/lib/models.ts`
-  (`BuildDoc`, `LIMITS`), `firestore.rules` (what a valid build is). Admin SDK writes skip the rules, so the
-  script's own checks matter.
-
-#### T53 — Seed 20 more Elden Ring builds
-
-- **Status:** ready after T52
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** About 25 strong builds covering what people search for, so the landing page and T55's hubs aren't
-  empty.
-- **Done when:** the owner picks 20 sources (or approves a list the agent proposes from what people search:
-  Search Console data if T50 has been live a while); each gets a seed file with T52's credit line and an
-  original write-up; dry run reviewed by the owner, then `--write` to production with the owner's go-ahead.
-  Cover the main archetypes (strength, dexterity, quality, bleed, frost, int, faith, arcane, hybrid), a few
-  levels (60, 125, 150, 200+), and DLC weapons.
-- **Context:** T52's script and `content/builds/er/`. Split into batches of five if it runs long.
+previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53 done; their production write is the
+owner's), then sharing and hub pages (T54 done, T55), then T56. T62 (comments) is independent: take it whenever the owner wants. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
 
 #### T55 — Weapon and tag pages: "Moonveil builds", "Bleed builds"
 
@@ -149,6 +101,38 @@ previews. Order: crawlers can read the site (T50, T51 done), then content (T52, 
 - **Context:** `src/data/index.ts` and `acquisition.ts`, `features/editor/ItemCard.tsx` + `itemFacts.ts`,
   `features/builds/{filters.ts,queries.ts,BuildsList.tsx}`, `firestore.rules` + `tests/rules/budget.test.ts`,
   T50's function routes. Licensing: only the owner's game export (golden rule 5).
+
+#### T64 — Landing title for "build planner" searches
+
+- **Status:** ready (small; best after T50/T51's deploy so Search Console can show the effect)
+- **Session:** Sonnet · low effort · plan mode off
+- **Goal:** Google's top autocompletes for "elden ring build" are _calculator, planner, builder, maker_ (research
+  for T52, 2026-11-17), and the site is a build planner with stats and build math (T8). Say so in the landing's
+  title and description so it can rank for those words, without losing "Elden Ring builds" first.
+- **Done when:** `homeMeta` in `src/lib/share.ts` (what the landing sets in the browser) and the static `<title>`
+  and description in `index.html` (what crawlers get for `/`: the function serves only build pages, T50) read e.g.
+  "Elden Ring Builds and Build Planner: Create, Share and Discover | Souls Builds", and the description mentions
+  planning a build with stats, weight and poise; `share.test.ts` updated; the landing's visible heading unchanged
+  unless the owner wants it; `npm run check`. Ask the owner to pick between two or three wordings in one question.
+- **Context:** `src/lib/share.ts` (`homeMeta`, `pageTitle`), `index.html`, `src/features/builds/Landing.tsx`,
+  T51's `PageHead`. Keep the title under ~60 characters so Google doesn't cut it.
+
+#### T65 — Second batch of seeded builds, from real search data
+
+- **Status:** blocked — wait for 4–6 weeks of Search Console data after T50's deploy and the owner's T52
+  production seeding (owner to-dos)
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Add about 10 builds for what people actually search when they land on Souls Builds, and drop or
+  rework seeds nobody opens.
+- **Done when:** the owner exports Search Console's queries and pages (Performance → Export) and GoatCounter's
+  page views into the session; the agent proposes ~10 builds matching the queries with impressions but no good
+  page, gets the owner's OK on the list, then follows `content/builds/README.md` (sources read, never invented;
+  gaps named; our write-up), dry run reviewed, `--write` on the emulator, screenshots; production with the
+  owner's go-ahead (docs/firebase.md "Seeded builds"). Tag pages (T55) with fewer than 3 builds are a good gap
+  to fill.
+- **Context:** `content/builds/README.md`, `scripts/seed-builds.mjs`, `docs/product.md` "Seeding" (sources that
+  work for the agent: KeenGamer and eip.gg through the browser, Game8, Fextralife; Reddit and YouTube transcripts
+  don't). Fextralife at most half the batch.
 
 #### T62 — Comments worth reading: full width, likes, sorting, one level of replies
 
@@ -398,6 +382,11 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T52 + T53 — Seeded builds — 2026-11-17 — `scripts/seed-builds.mjs` (+ `lib/seed-content.mjs` checks,
+  `lib/build-from-names.mjs` out of `seed.mjs`) writes `content/builds/er/<slug>.json` + `.md` as the Souls Builds
+  account: credit line added, gaps named, idempotent, dry run by default. 22 builds from search research
+  (`docs/product.md` "Seeding"). The Tarnished Pack's Idus Knight (3010) and Heavy Knight (3011) added to the data
+  and rules. Production write is the owner's (owner to-dos); the editor's class picker wasn't screenshotted.
 - T54 — Share menu — 2026-11-17 — `ShareButton` in the build's title section: Copy link (canonical), Copy for Reddit (`lib/shareText.ts` `redditText`, ends with the link), Download image (the T37 card), Share… where `navigator.share` exists; GoatCounter events `share-link|reddit|image|native`. Arrows and consumables aren't in the Reddit text (no card names). Download image and Share… weren't tried in a real browser (the card function isn't in the emulators).
 - T63 — Equipment and Discussion tabs — 2026-11-17 — owner's request, no prior ticket. The build page's tabs are
   Equipment (default, `/build/<id>/<slug>`), Guide, Discussion (`/discussion`; old `/description` and `/comments`
@@ -414,13 +403,3 @@ Older entries: `docs/tickets-archive.md`.
   sanitized markdown, `markdown.ts`), 404 + `noindex` for missing builds; `robots.txt`; lazy card chunk, minified
   bundle (~0.9 MB); `screenshot --no-js`. Sitemap left uncached at the CDN (header glob risk); `minInstances` waits
   for a post-deploy cold-start measure (owner to-dos).
-- T37 — Link previews — 2026-11-17 — a Cloud Function (`functions/`, Blaze) behind Hosting rewrites for `/build/**` and `/og/build/**`: per-build title, description and `og:*` tags, and a Satori/resvg card (picture item, name, level, author, weapons) in the game's skin; cached, falls back to the plain page. **Not live until the owner's first deploy** (`docs/firebase.md` "Link previews").
-- T38 — Cookie-free usage counts — 2026-11-17 — GoatCounter (`lib/usage.ts`, live site only): page views by path (`usePageViews`) and events `tracking-started`, `item-collected`, `build-completed`, `route-opened`; privacy page, decision "Analytics" and docs updated. `copy-made` waits for T32.
-- T43 — Branded email action page — 2026-11-16 — `/auth/action` (`features/auth/action/`: ActionPage →
-  ResetPassword, VerifyEmail): reset-password form, verify and email-change links applied once (query hooks, no
-  refetch), expired or used links offer a new one; `auth.ts` `checkPasswordResetCode`, `confirmNewPassword`,
-  `applyEmailLink`, `isDeadLink`; e2e from the emulator's oobCodes. Owner sets the action URL after the deploy.
-- T45 — Item cards on hover — 2026-11-16 — `ItemCard` (in `Tooltip`, 264 px) on read-only sidebar tiles (hover,
-  focus, tap; facts as `aria-describedby`; editing keeps the short tooltip) and the route's own items (mouse
-  hover only, `gearByRef`); phone rows show `factsLines`. Pure `itemFacts.ts` per kind. Pipeline: weapon
-  `scaling` per affinity (tuples, +0), spirit ash `fp`/`hp`; `scalingGrade` from MenuValueTableParam 100–105.

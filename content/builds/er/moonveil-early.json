@@ -1,0 +1,35 @@
+{
+  "id": "IAumzY2DNj2NHObXD0QB",
+  "name": "Moonveil Early Game Spellblade",
+  "level": 50,
+  "startingClass": "Prisoner",
+  "stats": {
+    "vigor": 26,
+    "mind": 15,
+    "end": 12,
+    "str": 12,
+    "dex": 18,
+    "int": 31,
+    "fai": 6,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Moonveil" }],
+  "leftHand": [{ "weapon": "Glintstone Staff" }],
+  "spells": ["Loretta's Greatbow", "Glintstone Pebble", "Carian Greatsword"],
+  "armor": {
+    "helm": "Land of Reeds Helm",
+    "chest": "Land of Reeds Armor",
+    "gauntlet": "Land of Reeds Gauntlets",
+    "leg": "Land of Reeds Greaves"
+  },
+  "tags": ["Intelligence", "Dexterity", "Katana", "Glintstone Staff", "PVE"],
+  "image": { "kind": "weapon", "name": "Moonveil" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Moonveil Samurai",
+    "url": "https://eldenring.wiki.fextralife.com/Moonveil_Samurai_Build",
+    "filled": ["stats", "the staff"]
+  },
+  "notes": "Source (edited 2026-08-14): level 50, Prisoner or Samurai, Int & Vigor primary, Dex secondary, needs 26 Int / 18 Dex / 12 Str; Moonveil (Transient Moonlight), Land of Reeds set, Loretta's Greatbow, Glintstone Pebble, Carian Greatsword. No staff named: Prisoner's own Glintstone Staff."
+}

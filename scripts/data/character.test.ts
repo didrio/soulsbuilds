@@ -8,7 +8,7 @@ import { fixtureCharacterParams, fixtureParams } from './test-fixtures.ts';
 describe('extractCharacter', () => {
   const { character, problems } = extractCharacter(fixtureCharacterParams());
 
-  it('reads the ten starting classes with their level and base stats', () => {
+  it('reads the twelve starting classes with their level and base stats', () => {
     expect(problems).toEqual([]);
     expect(characterSchema.safeParse(character).success).toBe(true);
     expect(character.classes.map((c) => c.name)).toEqual([
@@ -22,6 +22,8 @@ describe('extractCharacter', () => {
       'Samurai',
       'Prisoner',
       'Wretch',
+      'Idus Knight',
+      'Heavy Knight',
     ]);
     expect(character.classes[7]).toEqual({
       id: 3007,
@@ -53,7 +55,7 @@ describe('extractCharacter', () => {
   it('formats one class or curve per line', () => {
     const text = formatCharacter(character);
     expect(JSON.parse(text)).toEqual(character);
-    expect(text.split('\n')).toHaveLength(21);
+    expect(text.split('\n')).toHaveLength(23);
   });
 });
 

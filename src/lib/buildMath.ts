@@ -4,7 +4,7 @@
 //
 // Sources. Curves: the game's own CalcCorrectGraph rows 100 (HP from Vigor), 101 (FP from Mind),
 // 104 (Stamina from Endurance) and 220 (Equip Load from Endurance), and the starting classes from
-// CharaInitParam 3000–3009, both from the owner's export of regulation 1.17.3 (docs/data.md).
+// CharaInitParam 3000–3011, both from the owner's export of regulation 1.17.3 (docs/data.md).
 // Rounding, roll-type thresholds, two-handing and how talisman rates combine: the Fextralife wiki
 // (eldenring.wiki.fextralife.com: Equip Load, Vigor, Mind, Endurance), whose tables the tests check.
 

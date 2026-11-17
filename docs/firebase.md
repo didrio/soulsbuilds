@@ -336,6 +336,24 @@ It reads every tracking doc (collection group) and every build once. A player's 
 overwritten, so run it at a quiet time; a second dry run should say "Every build is counted right". The same
 command repairs counters if they ever drift.
 
+## Seeded builds (T52)
+
+`scripts/seed-builds.mjs` writes the builds in `content/builds/er/` as the "Souls Builds" account (Admin SDK, so it
+checks every seed itself first: names, rules, requirements, memory slots, tags). Dry run by default; idempotent
+(the doc ID is in the seed file: a re-run updates the content, keeps likes, comments, counters and `createdAt`,
+backs up the old doc under `.admin-backups/`, and refuses an ID owned by anyone else). Production, owner only,
+each time:
+
+```bash
+node scripts/admin.mjs export --project soulsbuilds                               # backup first
+node scripts/seed-builds.mjs --project soulsbuilds --owner <the account's email>   # dry run: read the report
+node scripts/seed-builds.mjs --project soulsbuilds --owner <the account's email> --write
+```
+
+The account must exist with its profile (sign up on the site, pick the display name). Seeds using the
+Tarnished Pack classes (`startingClass` 3010, 3011) need T52's rules and data deployed first, or the live app
+shows no class for them and their author can't save edits.
+
 ## Backups
 
 Nothing managed is switched on (Blaze would allow point-in-time recovery and scheduled exports, but they cost money and are not enabled). Instead:

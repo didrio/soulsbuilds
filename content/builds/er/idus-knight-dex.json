@@ -1,0 +1,45 @@
+{
+  "id": "hYFBX6YFUaPotrzgsztJ",
+  "name": "Idus Knight Dex: Keen Idus Sword",
+  "level": 150,
+  "startingClass": "Idus Knight",
+  "stats": {
+    "vigor": 60,
+    "mind": 15,
+    "end": 25,
+    "str": 13,
+    "dex": 77,
+    "int": 8,
+    "fai": 25,
+    "arc": 6
+  },
+  "rightHand": [
+    { "weapon": "Idus Sword", "affinity": "Keen", "ash": "Wing Stance" },
+    { "weapon": "Milady", "affinity": "Keen" }
+  ],
+  "leftHand": [{ "weapon": "Finger Seal" }],
+  "talismans": [
+    "Shard of Alexander",
+    "Rellana's Cameo",
+    "Rotten Winged Sword Insignia",
+    "Two-Handed Sword Talisman"
+  ],
+  "spells": ["Golden Vow", "Flame, Grant Me Strength"],
+  "tears": ["Thorny Cracked Tear", "Bloodsucking Cracked Tear"],
+  "armor": {
+    "helm": "Rakshasa Helm",
+    "chest": "Rakshasa Armor",
+    "gauntlet": "Rakshasa Gauntlets",
+    "leg": "Rakshasa Greaves"
+  },
+  "tags": ["Dexterity", "Light Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Idus Sword" },
+  "source": {
+    "author": "Ali Amir",
+    "site": "KeenGamer",
+    "title": "Idus Knight",
+    "url": "https://www.keengamer.com/articles/guides/elden-ring-idus-knight-build-best-stats-weapons-armor/",
+    "filled": ["a sacred seal for the buffs"]
+  },
+  "notes": "Source (2026-08-31): exact level 150 stats (60/15/25/13/77/8/25/6), Keen Idus Sword +25 with Wing Stance, Keen Milady as the second weapon, Rakshasa set for damage (Silver Grooved for the class look), the four talismans, Thorny + Bloodsucking Cracked Tears, Golden Vow and Flame, Grant Me Strength. It names no seal: Finger Seal is the lightest that casts both at Faith 25."
+}

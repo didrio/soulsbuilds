@@ -1,0 +1,36 @@
+{
+  "id": "Jl3L5xfKYlF3WagL5Eog",
+  "name": "Blasphemous Blade Strength/Faith",
+  "level": 150,
+  "startingClass": "Vagabond",
+  "stats": {
+    "vigor": 50,
+    "mind": 20,
+    "end": 28,
+    "str": 60,
+    "dex": 15,
+    "int": 9,
+    "fai": 40,
+    "arc": 7
+  },
+  "rightHand": [{ "weapon": "Blasphemous Blade" }],
+  "leftHand": [{ "weapon": "Erdtree Seal" }],
+  "talismans": ["Sacred Scorpion Charm", "Axe Talisman", "Godfrey Icon", "Shard of Alexander"],
+  "spells": ["Golden Vow", "Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "Knight Helm",
+    "chest": "Knight Armor",
+    "gauntlet": "Knight Gauntlets",
+    "leg": "Knight Greaves"
+  },
+  "tags": ["Strength", "Faith", "Greatsword", "Fire", "PVE"],
+  "image": { "kind": "weapon", "name": "Blasphemous Blade" },
+  "source": {
+    "author": null,
+    "site": "Game8",
+    "title": "Strength Faith",
+    "url": "https://game8.co/games/Elden-Ring/archives/457590",
+    "filled": ["armor"]
+  },
+  "notes": "Source (updated 2024-06-18): level 150, Vagabond, 50/20/28/60/15/9/40/7; Blasphemous Blade as the best weapon, seals listed with Erdtree Seal first, Golden Vow and Flame, Grant Me Strength first among its spells, first four talismans; it lists only helms, so the Knight set is our pick for a medium roll."
+}

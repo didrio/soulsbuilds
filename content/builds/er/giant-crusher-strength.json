@@ -1,0 +1,39 @@
+{
+  "id": "2fwgsQKyw3MbFiHyD5SC",
+  "name": "Giant-Crusher Pure Strength",
+  "level": 150,
+  "startingClass": "Vagabond",
+  "stats": {
+    "vigor": 50,
+    "mind": 10,
+    "end": 40,
+    "str": 80,
+    "dex": 18,
+    "int": 9,
+    "fai": 15,
+    "arc": 7
+  },
+  "rightHand": [{ "weapon": "Giant-Crusher" }],
+  "leftHand": [{ "weapon": "Finger Seal" }],
+  "talismans": ["Great-Jar's Arsenal", "Erdtree's Favor +2", "Claw Talisman", "Axe Talisman"],
+  "spells": ["Flame, Grant Me Strength", "Flame, Cleanse Me"],
+  "tears": ["Cerulean Hidden Tear", "Spiked Cracked Tear"],
+  "armor": {
+    "helm": "Scaled Helm",
+    "chest": "Raptor's Black Feathers",
+    "gauntlet": "Scaled Gauntlets",
+    "leg": "Bull-Goat Greaves"
+  },
+  "greatRune": "Radahn's Great Rune",
+  "spiritAsh": "Mimic Tear Ashes",
+  "tags": ["Strength", "Colossal Weapon", "PVE"],
+  "image": { "kind": "weapon", "name": "Giant-Crusher" },
+  "source": {
+    "author": null,
+    "site": "Game8",
+    "title": "Strength",
+    "url": "https://game8.co/games/Elden-Ring/archives/457086",
+    "filled": []
+  },
+  "notes": "Source (updated 2026-07-29): level 150, Vagabond, 50/10/40/80/18/9/15/7; Giant-Crusher first of its weapons; its recommended armor setup; Great-Jar's Arsenal and Erdtree's Favor +2 ('essential') then Claw and Axe Talismans; Flame, Grant Me Strength and Flame, Cleanse Me with a Finger Seal; Radahn's Great Rune; Mimic Tear; Cerulean Hidden + Spiked Cracked Tear."
+}

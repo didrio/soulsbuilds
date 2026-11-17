@@ -52,7 +52,8 @@ shareable page, the acquisition route and credited variations.
 - **Credit is permanent.** A copy always links to the original, and the link can't be removed (T32).
 - **Seeded builds credit their source** (T52). The Souls Builds account recreates community builds: the
   loadout is copied, the write-up is our own (or the author's, with their OK), and a fixed credit line links
-  the original.
+  the original and says what we filled in where the source left gaps. No fake engagement: seeds start with no
+  likes, comments or players. "Seeding" below.
 - **Like and Track, not Favorite.** A like is public appreciation and doubles as your long-term favorites (the
   profile's Liked tab). Tracking means "I'm playing this now": private by default, with only totals on the build
   page ("37 playing · 12 finished").
@@ -78,6 +79,29 @@ shareable page, the acquisition route and credited variations.
    pages for what people search. Fextralife owns generic searches; the chance is the long tail and shared links.
 8. **More games** (T57–T61): Dark Souls III, Remastered and II from the owner's exports, same UX, seeded at
    launch.
+
+## Seeding (T52, T53)
+
+22 Elden Ring builds by the "Souls Builds" account (`content/builds/er/`, `scripts/seed-builds.mjs`; format and
+rules in `content/builds/README.md`), picked on 2026-11-17 from what people search, since Search Console had no
+data yet:
+
+- **Google autocomplete** for "elden ring build" puts _calculator, planner, builder, maker_ first, then "best …
+  builds for beginners 2026", "tarnished edition", "first playthrough". Per weapon or archetype the modifiers are
+  _stats, talismans, armor, starting class, early game, level 100/150/200, leveling guide, progression_: what a
+  build page plus the Guide answers. So names lead with the searched phrase (the title adds "· Level N Elden
+  Ring build"), and the write-up's first paragraph is the search snippet.
+- **Patch 1.17, the Tarnished Pack and the Switch 2 edition** (2026-08-27/28) brought new players and two new
+  classes. Idus Knight and Heavy Knight videos drew 100–330K YouTube views each in two months, and Fextralife
+  had no text build pages for them: hence four new-class builds (and the classes in the data, T52).
+- **Single weapons with deep autocomplete**: Rivers of Blood, Moonveil, Blasphemous Blade, Bloodhound's Fang, Dark
+  Moon Greatsword, Sword of Night and Flame, Giant-Crusher, Bolt of Gransax, Nagakiba; DLC: Milady, Rellana's
+  Twin Blades, Backhand Blades, Bloodfiend's Arm, the Carian Sorcery Sword.
+- The mix: 4 new-class, 5 early-game (they suit the Guide's route), 13 endgame and DLC; levels 20 to 195; sources
+  KeenGamer, Console Pulse, Game8, eip.gg (community authors) and the Fextralife wiki (10, under half). Reddit
+  is unreadable for the agent; posts the owner pastes in can be seeded with their author's credit.
+- **Next batch**: from Search Console's queries and GoatCounter's page views once the site has a few weeks of
+  data; then message the credited creators with their page's link (outreach does more than SEO for a new site).
 
 ## Validate cheaply
 

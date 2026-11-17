@@ -1,0 +1,41 @@
+{
+  "id": "CZR2OuaLGMyYsBgjkDKo",
+  "name": "Rellana's Twin Blades Spellblade",
+  "level": 150,
+  "startingClass": "Vagabond",
+  "stats": {
+    "vigor": 50,
+    "mind": 30,
+    "end": 30,
+    "str": 32,
+    "dex": 32,
+    "int": 23,
+    "fai": 25,
+    "arc": 7
+  },
+  "rightHand": [{ "weapon": "Rellana's Twin Blades" }],
+  "leftHand": [{ "weapon": "Golden Order Seal" }],
+  "talismans": [
+    "Rellana's Cameo",
+    "Shard of Alexander",
+    "Millicent's Prosthesis",
+    "Rotten Winged Sword Insignia"
+  ],
+  "spells": ["Golden Vow", "Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "Rellana's Helm",
+    "chest": "Rellana's Armor",
+    "gauntlet": "Rellana's Gloves",
+    "leg": "Rellana's Greaves"
+  },
+  "tags": ["Intelligence", "Faith", "Light Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Rellana's Twin Blades" },
+  "source": {
+    "author": null,
+    "site": "Game8",
+    "title": "Rellana's Twin Blades",
+    "url": "https://game8.co/games/Elden-Ring/archives/459568",
+    "filled": []
+  },
+  "notes": "Source (updated 2024-06-28): level 150, Vagabond, 50/30/30/32/32/23/25/7; Rellana's Twin Blades, Golden Order Seal; Golden Vow and Flame, Grant Me Strength (Howl of Shabriri and Lord's Divine Fortification as options); Rellana's set; talismans listed in order, first four used (Dragoncrest, Carian Filigreed Crest and Godskin Swaddling Cloth are the swaps)."
+}

@@ -1,0 +1,47 @@
+{
+  "id": "aiFQkaw4X7FAVxUNWMzj",
+  "name": "Crystal Sorcerer Mage",
+  "level": 80,
+  "startingClass": "Astrologer",
+  "stats": {
+    "vigor": 35,
+    "mind": 26,
+    "end": 12,
+    "str": 10,
+    "dex": 12,
+    "int": 48,
+    "fai": 7,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Crystal Staff" }, { "weapon": "Carian Knight's Sword" }],
+  "leftHand": [{ "weapon": "Carian Knight's Shield" }],
+  "talismans": [
+    "Ritual Sword Talisman",
+    "Godfrey Icon",
+    "Magic Scorpion Charm",
+    "Cerulean Amber Medallion +2"
+  ],
+  "spells": [
+    "Crystal Torrent",
+    "Great Glintstone Shard",
+    "Shattering Crystal",
+    "Rock Sling",
+    "Scholar's Shield"
+  ],
+  "armor": {
+    "helm": "Astrologer Hood",
+    "chest": "Astrologer Robe",
+    "gauntlet": "Astrologer Gloves",
+    "leg": "Astrologer Trousers"
+  },
+  "tags": ["Intelligence", "Glintstone Staff", "PVE"],
+  "image": { "kind": "spell", "name": "Crystal Torrent" },
+  "source": {
+    "author": "Joseph Ferguson",
+    "site": "eip.gg",
+    "title": "Crystal Mage",
+    "url": "https://eip.gg/elden-ring/builds/crystal-mage-build/",
+    "filled": ["stats", "armor"]
+  },
+  "notes": "Source: Astrologer; stat priority Int > Mind > Vigor (no numbers); Crystal Staff, Carian Knight's Sword, Carian Knight's Shield; Ritual Sword, Godfrey Icon, Magic Scorpion Charm, Cerulean Amber Medallion +2; Crystal Torrent, Great Glintstone Shard, Shattering Crystal, Rock Sling, Scholar's Shield. Level 80 with Int 48 for the Crystal Staff; the Astrologer's own set."
+}

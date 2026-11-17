@@ -1,0 +1,41 @@
+{
+  "id": "PBEuVDFyAVmJCC0B0Hva",
+  "name": "Sword of Night and Flame Int/Faith",
+  "level": 150,
+  "startingClass": "Astrologer",
+  "stats": {
+    "vigor": 50,
+    "mind": 25,
+    "end": 30,
+    "str": 12,
+    "dex": 12,
+    "int": 66,
+    "fai": 25,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Sword of Night and Flame" }, { "weapon": "Carian Regal Scepter" }],
+  "leftHand": [{ "weapon": "Carian Knight's Shield" }, { "weapon": "Frenzied Flame Seal" }],
+  "talismans": [
+    "Magic Scorpion Charm",
+    "Great-Jar's Arsenal",
+    "Assassin's Cerulean Dagger",
+    "Shard of Alexander"
+  ],
+  "spells": ["Rancorcall", "Ancient Death Rancor", "Golden Vow", "Terra Magica"],
+  "armor": {
+    "helm": "Night's Cavalry Helm",
+    "chest": "Night's Cavalry Armor",
+    "gauntlet": "Lionel's Gauntlets",
+    "leg": "Lionel's Greaves"
+  },
+  "tags": ["Intelligence", "Faith", "Straight Sword", "Glintstone Staff", "Sacred Seal", "PVE"],
+  "image": { "kind": "weapon", "name": "Sword of Night and Flame" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Death Knight",
+    "url": "https://eldenring.wiki.fextralife.com/Death_Knight_Build",
+    "filled": ["stats"]
+  },
+  "notes": "Source (edited 2026-08-14): level 150, any class, Int primary, Vigor & Mind secondary, needs 60 Int / 24 Fai / 12 Str / 12 Dex; full gear list as used ('Rancor' is Rancorcall in the game). Golden Vow needs 25 Faith, so Faith 25."
+}

@@ -1,0 +1,36 @@
+{
+  "id": "ErI3Gu34IZ6fa58NUsV6",
+  "name": "Early Game Strength Champion",
+  "level": 50,
+  "startingClass": "Vagabond",
+  "stats": {
+    "vigor": 26,
+    "mind": 10,
+    "end": 30,
+    "str": 25,
+    "dex": 13,
+    "int": 9,
+    "fai": 9,
+    "arc": 7
+  },
+  "rightHand": [
+    { "weapon": "Lordsworn's Greatsword", "ash": "Golden Vow" },
+    { "weapon": "Claymore", "ash": "Determination" }
+  ],
+  "armor": {
+    "helm": "Banished Knight Helm",
+    "chest": "Banished Knight Armor",
+    "gauntlet": "Banished Knight Gauntlets",
+    "leg": "Banished Knight Greaves"
+  },
+  "tags": ["Strength", "Greatsword", "PVE"],
+  "image": { "kind": "weapon", "name": "Lordsworn's Greatsword" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Champion",
+    "url": "https://eldenring.wiki.fextralife.com/Champion_Build",
+    "filled": ["stats"]
+  },
+  "notes": "Source (edited 2026-08-14): level 50, Hero or Vagabond, Endurance & Strength primary, Vigor & Mind secondary, needs 16 Str / 13 Dex; Lordsworn's Greatsword and Claymore, Golden Vow and Determination, Banished Knight set."
+}

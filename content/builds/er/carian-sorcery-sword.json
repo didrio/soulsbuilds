@@ -1,0 +1,43 @@
+{
+  "id": "ohgcD8VEATWJPqks7HnI",
+  "name": "Carian Sorcery Sword Spellblade",
+  "level": 154,
+  "startingClass": "Astrologer",
+  "stats": {
+    "vigor": 60,
+    "mind": 28,
+    "end": 26,
+    "str": 12,
+    "dex": 19,
+    "int": 72,
+    "fai": 7,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Carian Sorcery Sword" }],
+  "leftHand": [{ "weapon": "Wolf Crest Shield", "ash": "Carian Retaliation" }],
+  "talismans": [
+    "Magic Scorpion Charm",
+    "Blade of Mercy",
+    "Crusade Insignia",
+    "Two-Headed Turtle Talisman"
+  ],
+  "spells": ["Glintblade Trio", "Greatblade Phalanx", "Rellana's Twin Moons", "Scholar's Shield"],
+  "tears": ["Magic-Shrouding Cracked Tear", "Opaline Hardtear"],
+  "armor": {
+    "helm": "Carian Knight Helm",
+    "chest": "Rellana's Armor",
+    "gauntlet": "Beast Champion Gauntlets",
+    "leg": "Rellana's Greaves"
+  },
+  "greatRune": "Radahn's Great Rune",
+  "tags": ["Intelligence", "Thrusting Sword", "PVE"],
+  "image": { "kind": "weapon", "name": "Carian Sorcery Sword" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Carian Knight",
+    "url": "https://eldenring.wiki.fextralife.com/Carian_Knight_Build",
+    "filled": ["stats"]
+  },
+  "notes": "Source (edited 2026-08-14): level 154, any class, Int & Vigor primary, End & Mind secondary, needs 72 Int / 19 Dex / 12 Str; full gear as used (Impaling Thrust is the sword's own skill, Carian Retaliation on the Wolf Crest Shield)."
+}

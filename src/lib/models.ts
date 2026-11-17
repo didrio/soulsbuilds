@@ -76,7 +76,7 @@ export interface BuildContent {
   level: number;
   stats: Stats;
   /**
-   * Starting class by CharaInitParam ID (3000 Vagabond … 3009 Wretch; src/data/er/character.json), or
+   * Starting class by CharaInitParam ID (3000 Vagabond … 3011 Heavy Knight; src/data/er/character.json), or
    * null for none. Builds from before T8 don't store it (read as null). The editor keeps every stat at
    * or above the class's base.
    */

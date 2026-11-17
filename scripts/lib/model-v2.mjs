@@ -10,7 +10,9 @@ export const LIMITS = {
   comment: 1000,
 };
 
-const SLOT_COUNTS = { weapons: 6, arrows: 4, talismans: 4, spells: 10, tears: 2, consumables: 10 };
+// As the editor (src/features/editor/slots.ts) and firestore.rules: 12 spells (10 memory slots plus
+// Moon of Nokstella's 2).
+const SLOT_COUNTS = { weapons: 6, arrows: 4, talismans: 4, spells: 12, tears: 2, consumables: 10 };
 
 /** A stat as v2 stores it: an integer from 1 to 99 (v1 also had numeric strings). */
 export function toStat(value) {

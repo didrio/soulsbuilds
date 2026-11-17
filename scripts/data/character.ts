@@ -1,4 +1,4 @@
-// Character data for the build math (T8): the ten starting classes (CharaInitParam 3000–3009) and the
+// Character data for the build math (T8): the twelve starting classes (CharaInitParam 3000–3011) and the
 // stat curves (CalcCorrectGraph rows) for HP, FP, stamina and equip load, plus what a talisman changes
 // (its SpEffectParam row). Pure: params in, data out. src/lib/buildMath.ts does the arithmetic.
 import type { Character, StatCurve, TalismanModifiers } from '../../src/data/schema.ts';
@@ -8,7 +8,11 @@ import { num, type Param } from './export.ts';
 export const CHARACTER_PARAMS = ['CharaInitParam', 'CalcCorrectGraph', 'SpEffectParam'] as const;
 export type CharacterParamName = (typeof CHARACTER_PARAMS)[number];
 
-const CLASS_ROWS = { from: 3000, to: 3009 };
+/**
+ * The starting classes: Vagabond … Wretch (3000–3009) and the Tarnished Pack's Idus Knight and Heavy
+ * Knight (3010, 3011; patch 1.17). firestore.rules `validStartingClass` accepts the same range.
+ */
+export const CLASS_ROWS = { from: 3000, to: 3011 };
 
 /** CalcCorrectGraph rows (named in the param: "HP Scaling - Vigor", …). */
 export const CURVE_ROWS = { hp: 100, fp: 101, stamina: 104, equipLoad: 220 } as const;

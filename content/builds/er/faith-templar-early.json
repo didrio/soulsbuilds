@@ -1,0 +1,38 @@
+{
+  "id": "mDp2hwOZPJMIihqfaAlW",
+  "name": "Early Game Faith Templar",
+  "level": 50,
+  "startingClass": "Confessor",
+  "stats": {
+    "vigor": 22,
+    "mind": 14,
+    "end": 20,
+    "str": 16,
+    "dex": 12,
+    "int": 9,
+    "fai": 27,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Noble's Slender Sword", "ash": "Golden Vow" }],
+  "leftHand": [
+    { "weapon": "Brass Shield", "ash": "Barricade Shield" },
+    { "weapon": "Finger Seal" }
+  ],
+  "spells": ["Blessing's Boon", "Aspects of the Crucible: Tail"],
+  "armor": {
+    "helm": "Greathelm",
+    "chest": "Mausoleum Knight Armor",
+    "gauntlet": "Knight Gauntlets",
+    "leg": "Knight Greaves"
+  },
+  "tags": ["Faith", "Straight Sword", "Sacred Seal", "PVE"],
+  "image": { "kind": "weapon", "name": "Noble's Slender Sword" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Templar",
+    "url": "https://eldenring.wiki.fextralife.com/Templar_Build",
+    "filled": ["stats", "the seal"]
+  },
+  "notes": "Source (edited 2026-08-14): level 50, Confessor, Faith & Endurance primary, Vigor secondary, needs 27 Fai / 16 Str; Noble's Slender Sword, Brass Shield, Ashes Golden Vow / Sacred Blade / Barricade Shield, Blessing's Boon, Aspects of the Crucible: Tail, the four armor pieces. No seal named: the Confessor's own Finger Seal. Sacred Blade is the alternate Ash (write-up)."
+}

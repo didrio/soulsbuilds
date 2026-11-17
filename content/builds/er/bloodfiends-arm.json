@@ -1,0 +1,45 @@
+{
+  "id": "eY65QxuusSh7kfy9NQT5",
+  "name": "Bloodfiend's Arm Arcane Bleed",
+  "level": 150,
+  "startingClass": "Hero",
+  "stats": {
+    "vigor": 60,
+    "mind": 9,
+    "end": 36,
+    "str": 30,
+    "dex": 11,
+    "int": 8,
+    "fai": 25,
+    "arc": 50
+  },
+  "rightHand": [
+    { "weapon": "Bloodfiend's Arm", "affinity": "Blood" },
+    { "weapon": "Uchigatana", "ash": "Seppuku" }
+  ],
+  "leftHand": [{ "weapon": "Finger Seal" }],
+  "talismans": [
+    "Lord of Blood's Exultation",
+    "Two-Handed Sword Talisman",
+    "Axe Talisman",
+    "Blade of Mercy"
+  ],
+  "spells": ["Golden Vow", "Flame, Grant Me Strength"],
+  "armor": {
+    "helm": "White Mask",
+    "chest": "Rakshasa Armor",
+    "gauntlet": "Rakshasa Gauntlets",
+    "leg": "Rakshasa Greaves"
+  },
+  "tags": ["Arcane", "Strength", "Bleed (Hemorrhage)", "Colossal Weapon", "PVE"],
+  "image": { "kind": "weapon", "name": "Bloodfiend's Arm" },
+  "source": {
+    "author": null,
+    "site": "Game8",
+    "title": "Bloodfiend's Arm",
+    "url": "https://game8.co/games/Elden-Ring/archives/460010",
+    "filled": []
+  },
+  "notes": "Source (updated 2025-04-04): level 150, Hero, 60/9/36/30/11/9/25/50 (that sums to level 151: Intelligence, unused, lowered to 8), Blood Bloodfiend's Arm, Uchigatana only for Seppuku (Dex deliberately below its 15), Finger Seal, White Mask + Rakshasa, first four talismans of its list, Golden Vow, Flame, Grant Me Strength.",
+  "allowUnmet": ["Uchigatana"]
+}

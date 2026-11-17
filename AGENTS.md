@@ -15,10 +15,10 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T51, T56, T63 done; T50/T51/T56's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T54, T56, T63 done; T50/T51/T56's deploy and T52's production seeding are the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
-(base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
+(base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T48, T63): title section, tabs Equipment (stats beside the equipment panel, same height), Guide, Discussion (write-up on top, then comments) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
@@ -52,32 +52,33 @@ only (T41: an intro modal signed out); since T46 it lives only in the Guide (the
 
 ## Commands
 
-| Task                                        | Command                                                                                                |
-| ------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| All checks (run before finishing)           | `npm run check`                                                                                        |
-| Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format`                           |
-| Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                                              |
-| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                                                  |
-| Rules budget per worst-case build (T42)     | `RULES_BUDGET=measure npm run test:rules` (docs/firebase.md "Rules budget")                            |
-| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                                                        |
-| What can this machine run?                  | `npm run doctor`                                                                                       |
-| Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                                                   |
-| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                                                   |
-| Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)                                |
-| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`                                         |
-| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`                            |
-| Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`                              |
-| Tracking counters: recount/backfill (T36)   | `node scripts/admin.mjs counts [--write]` (after T36's deploy; docs/firebase.md)                       |
-| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)                                    |
-| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`                            |
-| Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]`                         |
-| … after clicking a button (a dialog, T41)   | `npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"`                                 |
-| … as crawlers see it, JS off (T50)          | `BASE_URL=<Hosting emulator> npm run screenshot -- <route> --no-js` (docs/firebase.md)                 |
-| Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)                          |
-| Link-preview function bundle (T37)          | `npm run build:functions` (also the deploy's predeploy; docs/firebase.md "Link previews and crawlers") |
-| Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)                                   |
-| Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                                             |
-| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"                                  |
+| Task                                        | Command                                                                                                        |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| All checks (run before finishing)           | `npm run check`                                                                                                |
+| Typecheck / lint / autofix / format         | `npm run typecheck` · `npm run lint` · `npm run lint:fix` · `npm run format`                                   |
+| Tests                                       | `npm test` · `npm test -- src/lib` · `npm run test:watch`                                                      |
+| Rules, migration, admin tests (own emul.)   | `npm run test:rules` (works while `npm run dev` runs)                                                          |
+| Rules budget per worst-case build (T42)     | `RULES_BUDGET=measure npm run test:rules` (docs/firebase.md "Rules budget")                                    |
+| End-to-end (Playwright, installed Chrome)   | `npm run e2e` (reuses `npm run dev` if it's up)                                                                |
+| What can this machine run?                  | `npm run doctor`                                                                                               |
+| Run the app (emulators + seed + Vite :5180) | `npm run dev` (long-lived: run it in the background)                                                           |
+| Re-seed (wipes data) / emulators only       | `npm run seed` · `npm run emulators`                                                                           |
+| Game data from the owner's export (T7)      | `npm run data` (reads `~/Documents/soulsbuilds-gamedata`; docs/data.md)                                        |
+| v1→v2 migration (done in prod at T12)       | `node scripts/migrate-v1-to-v2.mjs [--project <id>] [--write]`                                                 |
+| Moderation: reports, remove, admins (dry)   | `node scripts/admin.mjs reports` · `remove <buildId> [commentId] [--write]`                                    |
+| Accounts: rename, delete (dry; T18)         | `node scripts/admin.mjs rename <uid> <name>` · `delete-user <uid\|email>`                                      |
+| Tracking counters: recount/backfill (T36)   | `node scripts/admin.mjs counts [--write]` (after T36's deploy; docs/firebase.md)                               |
+| Community stats → `stats/<game>` (dry; T20) | `node scripts/admin.mjs stats [--write]` (daily in CI: `stats.yml`)                                            |
+| Seeded builds → Firestore (dry; T52)        | `node scripts/seed-builds.mjs [--write] [--only <file>]` · production: `--project soulsbuilds --owner <email>` |
+| Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`                                    |
+| Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]`                                 |
+| … after clicking a button (a dialog, T41)   | `npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"`                                         |
+| … as crawlers see it, JS off (T50)          | `BASE_URL=<Hosting emulator> npm run screenshot -- <route> --no-js` (docs/firebase.md)                         |
+| Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)                                  |
+| Link-preview function bundle (T37)          | `npm run build:functions` (also the deploy's predeploy; docs/firebase.md "Link previews and crawlers")         |
+| Production build / serve it                 | `npm run build` · `npm run preview` (⚠ talks to production Firebase)                                           |
+| Any Firebase CLI command                    | `node scripts/firebase.mjs <args>` (puts Java 21+ on PATH)                                                     |
+| Deploy (CI on main after approval; by hand) | `npm run deploy` (hosting only, asks); CI: docs/firebase.md "Deploys"                                          |
 
 ## How work flows: tickets and sessions
 
@@ -184,10 +185,12 @@ public/assets/             icons/<icon>.webp (T7 data)
 functions/                 Link previews (T37) and crawlers (T50): src/ (index = the `site` function, handler = routes +
                            fallbacks + sitemap + 404s, page = the build as plain HTML in #root via the editor store,
                            markdown = sanitized write-up, card = Satori/resvg image, lazy), own package.json (`npm ci --prefix functions`); lib/ + fonts/ are built
-scripts/                   seed, migrate-v1-to-v2, admin (moderation), e2e, screenshot, perf, doctor, firebase (Java
-                           wrapper), lib/ (model-v2, names-to-ids); data/ = game data pipeline (TypeScript;
+scripts/                   seed, seed-builds (T52), migrate-v1-to-v2, admin (moderation), e2e, screenshot, perf, doctor,
+                           firebase (Java wrapper), lib/ (model-v2, names-to-ids, build-from-names, seed-content); data/ = game data pipeline (TypeScript;
                            acquisition.ts + hand-written progression/places/events.ts) + name-aliases.json (2022
                            names → IDs, for T12); legacy-data/ = 2022 scrapers (reference)
+content/builds/er/         Seeded builds (T52): <slug>.json (loadout by names, source) + <slug>.md (write-up); README =
+                           the format and rules; scripts/seed-builds.mjs writes them (checks in scripts/lib/seed-content.mjs)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
 firestore.rules            v2 security rules (deployed by CI with hosting); firestore.indexes.json
 docs/                      architecture, firebase, data, decisions, product (positioning), game-data-extraction,

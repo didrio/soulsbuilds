@@ -601,11 +601,14 @@ describe('builds/{id}: create', () => {
     );
   });
 
-  // T8: a CharaInitParam ID (3000 Vagabond … 3009 Wretch) or null; required on new builds.
+  // T8: a CharaInitParam ID (3000 Vagabond … 3009 Wretch, 3010 Idus Knight, 3011 Heavy Knight: the
+  // Tarnished Pack, T52) or null; required on new builds.
   it.each([
     ['no starting class (null)', null],
     ['Vagabond', 3000],
     ['Wretch', 3009],
+    ['Idus Knight', 3010],
+    ['Heavy Knight', 3011],
   ])('accepts %s', async (_label, startingClass) => {
     await assertSucceeds(
       setDoc(doc(as('alice'), 'builds/N1'), newBuild('alice', { startingClass })),
@@ -613,7 +616,7 @@ describe('builds/{id}: create', () => {
   });
 
   it.each([
-    ['an ID past the classes', 3010],
+    ['an ID past the classes', 3012],
     ['an ID before them', 2999],
     ['the ID as text', '3007'],
     ['a class name', 'Samurai'],

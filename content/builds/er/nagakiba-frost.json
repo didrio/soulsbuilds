@@ -1,0 +1,40 @@
+{
+  "id": "ObFM0PHJSCoO0XVhRiYS",
+  "name": "Nagakiba Frost Samurai",
+  "level": 125,
+  "startingClass": "Samurai",
+  "stats": {
+    "vigor": 45,
+    "mind": 15,
+    "end": 20,
+    "str": 18,
+    "dex": 50,
+    "int": 40,
+    "fai": 8,
+    "arc": 8
+  },
+  "rightHand": [{ "weapon": "Nagakiba", "affinity": "Cold", "ash": "Chilling Mist" }],
+  "leftHand": [{ "weapon": "Black Bow" }],
+  "talismans": [
+    "Rotten Winged Sword Insignia",
+    "Millicent's Prosthesis",
+    "Bull-Goat's Talisman",
+    "Shard of Alexander"
+  ],
+  "armor": {
+    "helm": "Zamor Mask",
+    "chest": "Zamor Armor",
+    "gauntlet": "Zamor Bracelets",
+    "leg": "Zamor Legwraps"
+  },
+  "tags": ["Dexterity", "Intelligence", "Katana", "Frostbite", "PVE"],
+  "image": { "kind": "weapon", "name": "Nagakiba" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Rime Ronin",
+    "url": "https://eldenring.wiki.fextralife.com/Rime_Ronin_Build",
+    "filled": ["stats"]
+  },
+  "notes": "Source (edited 2026-08-14): all game, any class, Dex & Int primary, Vigor secondary, needs 22 Dex / 18 Str; Nagakiba with Chilling Mist and the Black Bow, Zamor set, the four talismans. Level 125 and Cold affinity (what Chilling Mist gives frost scaling with) chosen; Samurai for the katana."
+}

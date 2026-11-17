@@ -73,7 +73,7 @@ export const armorList = (slot: Armor['slot']): Armor[] =>
   armor.filter((piece) => piece.slot === slot);
 
 const character = characterJson as Character;
-/** The ten starting classes (Vagabond … Wretch), in the game's order. */
+/** The twelve starting classes (Vagabond … Wretch, then Idus Knight and Heavy Knight), in the game's order. */
 export const startingClasses: StartingClass[] = character.classes;
 /** A starting class by its CharaInitParam ID (builds store it as `startingClass`). */
 export const getStartingClass = lookup(startingClasses);

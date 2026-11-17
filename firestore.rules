@@ -205,10 +205,11 @@ service cloud.firestore {
         && (e.spiritAsh == null || e.spiritAsh is int);
     }
 
-    // A starting class is its CharaInitParam ID (3000 Vagabond … 3009 Wretch) or null for none; builds
-    // from before T8 don't have the field. The class's minimum stats are the app's job (budget).
+    // A starting class is its CharaInitParam ID (3000 Vagabond … 3009 Wretch, 3010 Idus Knight, 3011
+    // Heavy Knight: the Tarnished Pack, T52) or null for none; builds from before T8 don't have the
+    // field. The class's minimum stats are the app's job (budget).
     function validStartingClass(c) {
-      return c == null || (c is int && c >= 3000 && c <= 3009);
+      return c == null || (c is int && c >= 3000 && c <= 3011);
     }
 
     // The build image (T40): the author's pick, as an item kind (src/lib/models.ts IMAGE_KINDS) and a

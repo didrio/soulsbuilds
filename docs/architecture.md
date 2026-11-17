@@ -125,7 +125,7 @@ builds/{id}                       id: 12 chars [0-9A-Z] (nanoid), e.g. SEEDBLEED
   tags: string[]                  ≤ 20, from src/data/er/tags.json (bosses, weapon types, …)
   level: int                      sum of stats − 79, min 1 (rules check the formula)
   stats: { vigor, mind, end, str, dex, int, fai, arc }   ints 1–99
-  startingClass: int|null         T8: CharaInitParam ID 3000–3009 (character.json), required on create; absent
+  startingClass: int|null         T8: CharaInitParam ID 3000–3011 (character.json; 3010–3011 since T52), required on create; absent
                                   on older builds (read as null). Class minimums are checked by the app only
   equipment: {                    game IDs (param row IDs; each field implies its file in src/data/er/)
     weapons: (id|null)[6]                       positional: 1–3 main hand, 4–6 off hand

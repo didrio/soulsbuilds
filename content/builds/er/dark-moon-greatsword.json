@@ -1,0 +1,41 @@
+{
+  "id": "GGssEa5F3YKbSzeCHhx0",
+  "name": "Dark Moon Greatsword Int Spellblade",
+  "level": 150,
+  "startingClass": "Astrologer",
+  "stats": {
+    "vigor": 55,
+    "mind": 30,
+    "end": 20,
+    "str": 16,
+    "dex": 12,
+    "int": 80,
+    "fai": 7,
+    "arc": 9
+  },
+  "rightHand": [{ "weapon": "Dark Moon Greatsword" }],
+  "leftHand": [{ "weapon": "Carian Regal Scepter" }],
+  "talismans": [
+    "Shard of Alexander",
+    "Godfrey Icon",
+    "Magic Scorpion Charm",
+    "Dragoncrest Greatshield Talisman"
+  ],
+  "spells": ["Ranni's Dark Moon", "Greatblade Phalanx", "Terra Magica", "Comet"],
+  "armor": {
+    "helm": "Carian Knight Helm",
+    "chest": "Carian Knight Armor",
+    "gauntlet": "Carian Knight Gauntlets",
+    "leg": "Carian Knight Greaves"
+  },
+  "tags": ["Intelligence", "Greatsword", "Glintstone Staff", "Frostbite", "PVE"],
+  "image": { "kind": "weapon", "name": "Dark Moon Greatsword" },
+  "source": {
+    "author": "Fextralife",
+    "site": "the Fextralife wiki",
+    "title": "Moonlight Crusader",
+    "url": "https://eldenring.wiki.fextralife.com/Moonlight_Crusader_Build",
+    "filled": ["stats", "armor"]
+  },
+  "notes": "Source (edited 2026-08-14): level 150, any class, Int primary, Vigor & Mind secondary, needs 68 Int / 16 Str / 11 Dex; DMGS + Carian Regal Scepter, the four talismans and four sorceries; armor 'heaviest you can wear and still medium roll': Carian Knight set."
+}
