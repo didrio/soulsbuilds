@@ -4,7 +4,7 @@ import LegalPage, { ISSUES_URL } from './LegalPage';
 /** Terms of use: plain rules for a small community site. */
 function Terms() {
   return (
-    <LegalPage title="Terms of use" updated="15 November 2026">
+    <LegalPage title="Terms of use" path="/terms" updated="15 November 2026">
       <p>
         By using Souls Builds you agree to these terms. If you don’t agree, please don’t use the
         site.

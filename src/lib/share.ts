@@ -7,6 +7,22 @@ export const SITE_ORIGIN = 'https://soulsbuilds.com';
 
 const DESCRIPTION_MAX = 200;
 
+/** The name every title ends with. */
+export const SITE_NAME = 'Souls Builds';
+
+/** "<what> | Souls Builds": every page's title (T51). */
+export const pageTitle = (what: string) => `${what} | ${SITE_NAME}`;
+
+/** A build's title, in the tab, in search results and on the share card (T51). */
+export const buildTitle = (name: string, level: number) =>
+  pageTitle(`${name} · Level ${level} Elden Ring build`);
+
+/** The landing page's title and description: "Elden Ring builds" first, for what people search (T51). */
+export const homeMeta = (gameName: string): ShareMeta => ({
+  title: pageTitle(`${gameName} Builds: Create, Share and Discover`),
+  description: `${gameName} builds: create your own, share them, and discover what the community plays. Stats, weapons, armor, talismans and spells, with a route to get the gear.`,
+});
+
 export interface ShareInput {
   name: string;
   level: number;
@@ -37,7 +53,7 @@ export function shareMeta(input: ShareInput): ShareMeta {
   const prose = firstParagraph(description);
   const detail = prose || (weapons.length ? `Wields ${weapons.slice(0, 3).join(', ')}.` : '');
   return {
-    title: `${name} · Souls Builds`,
+    title: buildTitle(name, level),
     description: truncate(detail ? `${lead} ${detail}` : lead, DESCRIPTION_MAX),
   };
 }

@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
+  buildTitle,
   escapeHtml,
+  homeMeta,
   injectMeta,
   injectNoindex,
   injectRoot,
@@ -21,7 +23,7 @@ const input = {
 describe('shareMeta', () => {
   it('says the level and author, then the weapons when there is no write-up', () => {
     expect(shareMeta(input)).toEqual({
-      title: 'Bleed Samurai · Souls Builds',
+      title: 'Bleed Samurai · Level 150 Elden Ring build | Souls Builds',
       description:
         'Level 150 Elden Ring build by Anne. Wields Uchigatana, Rivers of Blood, Moonveil.',
     });
@@ -128,5 +130,19 @@ describe('sitemapXml', () => {
       '<url><loc>https://soulsbuilds.com/build/A?x=1&amp;y=2</loc><lastmod>2026-11-16</lastmod></url>',
     );
     expect(xml.trimEnd().endsWith('</urlset>')).toBe(true);
+  });
+});
+
+describe('titles', () => {
+  it('names the build with its level and game, and the site last', () => {
+    expect(buildTitle('Bleed Samurai', 150)).toBe(
+      'Bleed Samurai · Level 150 Elden Ring build | Souls Builds',
+    );
+  });
+
+  it('leads the home page with the game and its builds', () => {
+    const home = homeMeta('Elden Ring');
+    expect(home.title).toBe('Elden Ring Builds: Create, Share and Discover | Souls Builds');
+    expect(home.description.startsWith('Elden Ring builds')).toBe(true);
   });
 });

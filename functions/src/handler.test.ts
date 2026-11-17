@@ -57,7 +57,9 @@ describe('build pages', () => {
     expect(reply.headers['Content-Type']).toContain('text/html');
     expect(reply.headers['Cache-Control']).toContain('s-maxage=300');
     const body = html(reply);
-    expect(body).toContain('<title>Carian Moon Knight · Souls Builds</title>');
+    expect(body).toContain(
+      '<title>Carian Moon Knight · Level 132 Elden Ring build | Souls Builds</title>',
+    );
     expect(body).toContain('Level 132 Elden Ring build by Ranni.');
     expect(body).toContain('content="https://soulsbuilds.com/build/SEEDMOON0001"');
     expect(body).toContain('content="https://soulsbuilds.com/og/build/SEEDMOON0001.png"');
@@ -107,7 +109,9 @@ describe('build pages', () => {
       deps({ loadBuild: async () => broken as unknown as BuildDoc }),
     );
     expect(reply.status).toBe(200);
-    expect(html(reply)).toContain('<title>Carian Moon Knight · Souls Builds</title>');
+    expect(html(reply)).toContain(
+      '<title>Carian Moon Knight · Level 132 Elden Ring build | Souls Builds</title>',
+    );
     expect(html(reply)).toContain('<div id="root"></div>');
     expect(error).toHaveBeenCalledWith('page content failed', 'SEEDMOON0001', expect.anything());
   });
@@ -115,7 +119,9 @@ describe('build pages', () => {
   it('answers every tab of the build the same way', async () => {
     for (const tab of ['description', 'guide', 'comments']) {
       const reply = await handle(`/build/SEEDMOON0001/${tab}`, deps());
-      expect(html(reply)).toContain('<title>Carian Moon Knight · Souls Builds</title>');
+      expect(html(reply)).toContain(
+        '<title>Carian Moon Knight · Level 132 Elden Ring build | Souls Builds</title>',
+      );
     }
   });
 

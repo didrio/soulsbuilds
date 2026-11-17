@@ -1,8 +1,10 @@
 import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import Frame from '@/components/ui/Frame';
+import PageHead from '@/components/ui/PageHead';
 import PageHero from '@/components/ui/PageHero';
 import { displayText } from '@/components/ui/typography';
+import { pageTitle, SITE_ORIGIN } from '@/lib/share';
 import {
   COLOR_ACCENT,
   COLOR_ACCENT_STRONG,
@@ -20,15 +22,19 @@ export const ISSUES_URL = 'https://github.com/didrio/soulsbuilds/issues';
 /** Layout for the static legal pages: a title, the last-updated date, and a readable panel. */
 function LegalPage({
   title,
+  path,
   updated,
   children,
 }: {
   title: string;
+  /** The page's URL path, for its canonical link. */
+  path: string;
   updated: string;
   children: ReactNode;
 }) {
   return (
     <>
+      <PageHead title={pageTitle(title)} canonical={`${SITE_ORIGIN}${path}`} />
       <PageHero title={title} tagline={`Last updated ${updated}`} />
       <Article as="article">{children}</Article>
     </>

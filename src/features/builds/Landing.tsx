@@ -7,6 +7,7 @@ import Chips from '@/components/ui/Chips';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import { SearchIcon } from '@/components/ui/icons';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import PageHead from '@/components/ui/PageHead';
 import PageMessage from '@/components/ui/PageMessage';
 import SegmentedControl from '@/components/ui/SegmentedControl';
 import TextInput from '@/components/ui/TextInput';
@@ -15,6 +16,7 @@ import { TextButton } from '@/components/ui/TextButton';
 import { useUserProfiles } from '@/features/profile/queries';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import { errorMessage, type BuildSort } from '@/lib/firebase';
+import { homeMeta, SITE_ORIGIN } from '@/lib/share';
 import {
   BELOW_MOBILE,
   COLOR_ACCENT,
@@ -123,6 +125,7 @@ function Landing() {
 
   return (
     <>
+      <PageHead {...homeMeta(game.name)} canonical={`${SITE_ORIGIN}/`} />
       <Heading>
         <Title id="landing-title">{`${game.name} builds`}</Title>
         {stats && stats.buildCount > 0 ? (

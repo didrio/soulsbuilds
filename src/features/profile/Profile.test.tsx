@@ -149,3 +149,29 @@ describe('Playing and Completed (T36)', () => {
     expect(screen.getByText(/No finished builds yet/)).toBeInTheDocument();
   });
 });
+
+describe('Profile head (T51)', () => {
+  it('titles the page with the name and canonicals to the profile', async () => {
+    firebase.listUserBuilds.mockResolvedValue([makeBuild()]);
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'Ranni Fan' });
+    expect(document.title).toBe('Ranni Fan’s Elden Ring builds | Souls Builds');
+    expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      'https://soulsbuilds.com/user/seed-ranni',
+    );
+    expect(document.head.querySelector('meta[name="robots"]')).toBeNull();
+  });
+
+  it('keeps a profile with no builds out of search', async () => {
+    firebase.listUserBuilds.mockResolvedValue([]);
+    renderProfile();
+    await screen.findByRole('heading', { level: 1, name: 'Ranni Fan' });
+    await vi.waitFor(() =>
+      expect(document.head.querySelector('meta[name="robots"]')).toHaveAttribute(
+        'content',
+        'noindex',
+      ),
+    );
+  });
+});

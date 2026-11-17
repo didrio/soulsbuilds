@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T62
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T51 (head tags per page) · Sonnet · medium effort · plan mode off. Then T52–T56 (discoverability), then
+**Next:** T52 (seeded builds: needs the owner's "Souls Builds" account and five sources first) · Opus · high effort · plan mode on. Or T54 / T56 (Sonnet, ready). Then T53, T55 (discoverability), then
 T57–T61 (Dark Souls). Copies (T32, T33) are parked in the Backlog until the owner asks for them.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
@@ -60,7 +60,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page) and T50 (crawlable build pages).
+desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages) and T51 (head tags).
 
 ## In progress
 
@@ -69,39 +69,8 @@ desktop), T49 (phones), T43 (email action page) and T50 (crawlable build pages).
 ## Up next
 
 Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
-previews. Order: crawlers can read the site (T50 done, T51), then content (T52, T53), then sharing and hub pages
+previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53), then sharing and hub pages
 (T54, T55), then T56. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
-
-#### T51 — Head tags per page: titles, descriptions, canonicals, noindex
-
-- **Status:** ready (after T50 or before; independent)
-- **Session:** Sonnet · medium effort · plan mode off
-- **Goal:** Every page has its own title and description in the browser tab and in Google's rendered view, one
-  canonical URL on soulsbuilds.com, and pages that shouldn't be in search say so. Today nothing sets
-  `document.title`: every page is "Souls Builds".
-- **Done when:**
-  - React 19 hoists `<title>`, `<meta>` and `<link>` rendered anywhere into `<head>` (no library: check
-    `node_modules/@types/react` for the types). A small `PageHead({ title, description, canonical, noindex })`
-    in `src/components/ui/` (or `src/app/`), used by every route.
-  - Titles: home `Elden Ring Builds: Create, Share and Discover | Souls Builds` (from `useCurrentGame()`, so
-    each game gets its own in T57); build `<name> · Level <n> Elden Ring build | Souls Builds` (match
-    `shareMeta`'s wording: put the format in `src/lib/share.ts` so the function and the app agree); profile
-    `<name>'s Elden Ring builds`; privacy, terms, 404.
-  - Descriptions: home says "Elden Ring builds" in its first words; builds reuse `shareMeta`.
-  - Canonicals on soulsbuilds.com for every indexable page: home without the filter query (search and filter
-    URLs canonical to `/`), builds to `/build/<id>` whatever the tab. The static meta in `index.html` stays as
-    the fallback, but **no static canonical** there (it would claim every page is `/`); check the function's
-    injected canonical and the app's don't both end up in the head (dedupe, or the app skips it when one is there).
-  - `noindex`: `/account`, `/auth/action`, the 404 page, profiles with no builds.
-  - `index.html`: the home title and description with the keywords; the "Per-build previews would need server
-    rendering (backlog)" comment is stale since T37, fix it.
-  - Tests: one per kind of page (title and canonical in `document.head`). `npm run check`; e2e still passes.
-- **From T50:** the function's build page already has the build's title, description, canonical and (for a
-  missing build, status 404) `noindex` in the head (`injectMeta`, `injectNoindex` in `src/lib/share.ts`), and the
-  build as plain HTML in `#root`. React 19 hoisting adds tags beside them rather than replacing them, so check the
-  head of a function-served page (Hosting emulator, docs/firebase.md "Link previews and crawlers") for duplicates.
-- **Context:** `src/app/routes.tsx`, `features/builds/Landing.tsx` (already titled `${game.name} builds`),
-  `features/editor/BuildEditorPage.tsx`, `features/profile/Profile.tsx`, `src/lib/share.ts`, `index.html`.
 
 #### T52 — Seeded builds: an import script and the first five, credited
 
@@ -409,6 +378,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T51 — Head tags per page — 2026-11-17 — `PageHead` (`components/ui/`) edits the head's own title, description, canonical and `noindex` (effects, not hoisted tags, so the function's tags aren't doubled); home, build (`shareMeta`), profile (noindex with no builds), legal pages, 404, account, `/auth/action`. Formats in `lib/share.ts` (`buildTitle`, `homeMeta`, `pageTitle`) shared with the function; `index.html` has the keyword title and no static canonical.
 - T50 — Crawlable build pages — 2026-11-17 — the `site` function serves `/sitemap.xml` (home + every build,
   `updatedAt`), each build as plain HTML in `#root` (`functions/src/page.ts` via the editor store; write-up as
   sanitized markdown, `markdown.ts`), 404 + `noindex` for missing builds; `robots.txt`; lazy card chunk, minified

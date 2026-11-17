@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useParams } from 'react-router';
 import styled from 'styled-components';
+import { useCurrentGame } from '@/app/game';
 import { ButtonLink } from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import Frame from '@/components/ui/Frame';
 import { PlusIcon } from '@/components/ui/icons';
+import PageHead from '@/components/ui/PageHead';
 import PageMessage from '@/components/ui/PageMessage';
 import { TextLink } from '@/components/ui/TextButton';
 import { displayText } from '@/components/ui/typography';
@@ -14,6 +16,7 @@ import { useUserBuilds } from '@/features/builds/queries';
 import { useTrackedBuilds } from '@/features/tracking/queries';
 import { CompletedPanel, PlayingPanel } from '@/features/tracking/TrackedBuilds';
 import { errorMessage } from '@/lib/firebase';
+import { pageTitle, SITE_ORIGIN } from '@/lib/share';
 import type { UserProfile } from '@/lib/models';
 import {
   BELOW_MOBILE,
@@ -62,6 +65,8 @@ function Profile() {
     playing: tracked?.playing.length,
     completed: tracked?.finished.length,
   };
+  const game = useCurrentGame();
+  const ownBuilds = counts.builds;
   const tabs: Tab[] = isOwner ? ['builds', 'liked', 'playing', 'completed'] : ['builds', 'liked'];
 
   if (profile.isPending) return <PageMessage loading />;
@@ -77,6 +82,7 @@ function Profile() {
   if (!profile.data) {
     return (
       <PageMessage title="User not found">
+        <PageHead title={pageTitle('User not found')} noindex />
         <TextLink to="/">Browse builds</TextLink>
         {isOwner ? <DeleteAccount finishing /> : null}
       </PageMessage>
@@ -85,6 +91,12 @@ function Profile() {
 
   return (
     <>
+      <PageHead
+        title={pageTitle(`${profile.data.displayName}’s ${game.name} builds`)}
+        description={`${game.name} builds by ${profile.data.displayName} on Souls Builds.`}
+        canonical={`${SITE_ORIGIN}/user/${userId}`}
+        noindex={ownBuilds === 0}
+      />
       <ProfileHeader
         profile={profile.data}
         isOwner={isOwner}

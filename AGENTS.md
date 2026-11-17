@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T50 done; T50's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T51 done; T50/T51's deploy is the owner's): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC, game IDs) in `src/data/er/`. CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T48): title section, tabs (Description, Guide, Comments) beside one build sidebar (stats + gear tiles with item cards on hover, T45); phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50): sitemap, the build as plain HTML in the page, real 404s. Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -154,7 +154,7 @@ src/
                            slices for the build being edited + selectors + derived.ts (build math selectors,
                            selectGearState) + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
-                           PasswordInput (Show/Hide), DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage,
+                           PasswordInput (Show/Hide), DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage, PageHead (T51: title, description, canonical, noindex; edits the existing head tags),
                            ErrorMessage, FocusScope, icons, Label + typography.ts (type tiers); Frame (panel,
                            `$hero`), SectionHeading, Ornament, PageHero, ItemTile, inWorld.ts (panel, hero frame,
                            selection-bar CSS)…

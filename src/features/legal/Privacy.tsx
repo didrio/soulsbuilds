@@ -7,7 +7,7 @@ import LegalPage, { ISSUES_URL } from './LegalPage';
  */
 function Privacy() {
   return (
-    <LegalPage title="Privacy policy" updated="16 November 2026">
+    <LegalPage title="Privacy policy" path="/privacy" updated="16 November 2026">
       <p>
         Souls Builds is a small fan site for sharing Elden Ring character builds. This page explains
         what we store about you, why, and how to get it removed.

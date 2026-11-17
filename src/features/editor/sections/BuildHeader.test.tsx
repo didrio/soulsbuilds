@@ -105,4 +105,19 @@ describe('BuildHeader', () => {
       '/?tag=Comet%20Azur',
     );
   });
+
+  it('titles the tab like the share card, with the build page as its canonical (T51)', async () => {
+    renderWithProviders(
+      <BuildHeader build={makeBuild({ id: 'ABC123', name: 'Bleed Samurai', level: 150 })} />,
+    );
+    await screen.findByRole('heading', { name: 'Bleed Samurai' });
+    expect(document.title).toBe('Bleed Samurai · Level 150 Elden Ring build | Souls Builds');
+    expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute(
+      'href',
+      'https://soulsbuilds.com/build/ABC123',
+    );
+    expect(
+      document.head.querySelector('meta[name="description"]')?.getAttribute('content'),
+    ).toMatch(/^Level 150 Elden Ring build by /);
+  });
 });

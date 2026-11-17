@@ -5,15 +5,17 @@ import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import Frame from '@/components/ui/Frame';
 import ItemTile from '@/components/ui/ItemTile';
+import PageHead from '@/components/ui/PageHead';
 import Tag from '@/components/ui/Tag';
 import { HeartIcon } from '@/components/ui/icons';
-import { getCardItem, iconUrl } from '@/data/core';
+import { getCardItem, getCardWeapon, iconUrl } from '@/data/core';
 import useAuth from '@/features/auth/useAuth';
 import ReportButton from '@/features/reports/ReportButton';
 import { useUserProfile } from '@/features/profile/queries';
 import { errorMessage } from '@/lib/firebase';
 import { buildImage } from '@/lib/equipment';
 import type { Build } from '@/lib/models';
+import { shareMeta, SITE_ORIGIN } from '@/lib/share';
 import { formatFullDate, relativeTime } from '@/lib/relativeTime';
 import {
   BELOW_MOBILE,
@@ -65,9 +67,20 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
   const toggleLike = useToggleLike(build.id, uid);
   const isLiked = liked.data === true;
   const image = getCardItem(buildImage(build));
+  // The tab's title, description and canonical (T51): the same text the link-preview function writes.
+  const meta = shareMeta({
+    name: build.name,
+    level: build.level,
+    author: owner.data?.displayName ?? 'a player',
+    description: build.description,
+    weapons: build.equipment.weapons.flatMap((weapon) =>
+      weapon === null ? [] : [getCardWeapon(weapon)?.name ?? []].flat(),
+    ),
+  });
 
   return (
     <Pane $hero $tile={Boolean(image)} aria-labelledby="build-title">
+      <PageHead {...meta} canonical={`${SITE_ORIGIN}/build/${build.id}`} />
       {image ? <Portrait src={iconUrl(image.icon)} title={image.name} size={TILE} /> : null}
       <Title id="build-title">{build.name}</Title>
       <Meta>
