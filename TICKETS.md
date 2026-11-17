@@ -7,10 +7,9 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T50
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T32 — Make a copy (Opus · extra high · plan mode on; then T33, variations); T42 freed the rules budget
-it needs. Also from `docs/product.md` "Priorities": usage counts (T38, blocked on the owner), link previews (T37,
-blocked on the Blaze decision) and the branded email action page (T43). T32 and T33 start with owner questions
-(★ in each ticket).
+**Next:** T43 — Branded email action page (Sonnet · high · plan mode off). T38 (usage counts) and T37 (link
+previews) wait on owner decisions. Copies (T32, T33) are parked in the Backlog (owner, 2026-11-16: wanted, after
+the rest of Up next).
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
 action and `path` (e.g. `project/BuildTabs.dc.html`); each one's `<helmet>` style holds the exact colors, sizes
@@ -47,6 +46,26 @@ desktop) and T49 (phones).
 
 ## Up next
 
+### T43 — Branded email action page (reset password, verify email)
+
+- **Status:** ready (owner, 2026-11-16: later than T30)
+- **Session:** Sonnet · high effort · plan mode off
+- **Goal:** The links in password-reset and verification emails open a page on soulsbuilds.com in the site's
+  look, instead of Firebase's default page on soulsbuilds.firebaseapp.com.
+- **Done when:**
+  - A route `/auth/action` reads `mode` and `oobCode`: `resetPassword` → `verifyPasswordResetCode` (shows the
+    email), a new-password form (`PasswordInput`, `LIMITS.password`) → `confirmPasswordReset`, then "Log in";
+    `verifyEmail` → `applyActionCode`, then a confirmation; expired or used links get a clear message and a way
+    to ask again (the reset view, or Resend on the profile).
+  - The owner sets the action URL in the console (Authentication → Templates → Customize action URL →
+    `https://soulsbuilds.com/auth/action`); steps in `docs/firebase.md` "Sign-in setup".
+  - Unit tests for the page's states (Auth calls mocked); e2e with the Auth emulator's out-of-band codes
+    (`/emulator/v1/projects/demo-soulsbuilds/oobCodes`); `npm run check`, `npm run e2e`; screenshots desktop and
+    `--mobile`.
+- **Context:** `lib/firebase/auth.ts` (add the calls there), `features/auth/` (FormField, useFieldErrors,
+  styles), `app/routes.tsx`, decision "Email verification" (send-only). The emulator's links point at its own
+  handler, so e2e builds the `/auth/action?mode=…&oobCode=…` URL from the oobCodes endpoint.
+
 ### T38 — Cookie-free usage counts
 
 - **Status:** blocked: the owner decides whether to revisit decision "Analytics" (dropped, so there's no consent
@@ -78,10 +97,16 @@ desktop) and T49 (phones).
 - **Context:** `firebase.json` (Hosting), `docs/firebase.md` (deploys), decision "Plan and backups" (Spark). This
   replaces the backlog's "Per-build share previews".
 
-### T32 — Make a copy: a build based on another
+## Backlog
 
-- **Status:** ready (T42 made room for `basedOn`; the button goes in the build's title section, shorter since
-  T48); owner decisions first
+### Parked tickets
+
+Written in full, set aside by the owner; move back to Up next when it's their turn.
+
+#### T32 — Make a copy: a build based on another
+
+- **Status:** parked (owner, 2026-11-16: wanted, after the rest of Up next). T42 made room for `basedOn`; the
+  button goes in the build's title section, shorter since T48; owner decisions first
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Any signed-in user can start a new build from any build they see, change as little or as much as they
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
@@ -117,9 +142,9 @@ desktop) and T49 (phones).
   `features/editor/{useBuildEditor.ts,store/build.ts,BuildEditorPage.tsx}`, T28's hero, `scripts/admin.mjs`. This
   replaces the backlog's "copy this build".
 
-### T33 — Variations: every copy of a build, on its page
+#### T33 — Variations: every copy of a build, on its page
 
-- **Status:** ready (after T32)
+- **Status:** parked with T32 (after it)
 - **Session:** Opus · high effort · plan mode off
 - **Goal:** A build that's been copied shows everyone's versions of it and how each one differs, so a visitor sees
   the original next to the PVE take, the cheaper version, or the one that claims to be better.
@@ -141,27 +166,7 @@ desktop) and T49 (phones).
   `features/editor/queries.ts` and `lib/queryKeys.ts`. A side-by-side compare view (Backlog) is the natural next
   step: each variation row could link to "Compare with the original".
 
-### T43 — Branded email action page (reset password, verify email)
-
-- **Status:** ready (owner, 2026-11-16: later than T30)
-- **Session:** Sonnet · high effort · plan mode off
-- **Goal:** The links in password-reset and verification emails open a page on soulsbuilds.com in the site's
-  look, instead of Firebase's default page on soulsbuilds.firebaseapp.com.
-- **Done when:**
-  - A route `/auth/action` reads `mode` and `oobCode`: `resetPassword` → `verifyPasswordResetCode` (shows the
-    email), a new-password form (`PasswordInput`, `LIMITS.password`) → `confirmPasswordReset`, then "Log in";
-    `verifyEmail` → `applyActionCode`, then a confirmation; expired or used links get a clear message and a way
-    to ask again (the reset view, or Resend on the profile).
-  - The owner sets the action URL in the console (Authentication → Templates → Customize action URL →
-    `https://soulsbuilds.com/auth/action`); steps in `docs/firebase.md` "Sign-in setup".
-  - Unit tests for the page's states (Auth calls mocked); e2e with the Auth emulator's out-of-band codes
-    (`/emulator/v1/projects/demo-soulsbuilds/oobCodes`); `npm run check`, `npm run e2e`; screenshots desktop and
-    `--mobile`.
-- **Context:** `lib/firebase/auth.ts` (add the calls there), `features/auth/` (FormField, useFieldErrors,
-  styles), `app/routes.tsx`, decision "Email verification" (send-only). The emulator's links point at its own
-  handler, so e2e builds the `/auth/action?mode=…&oobCode=…` URL from the oobCodes endpoint.
-
-## Backlog
+### Ideas
 
 - Phone sections (T49 follow-ups, small): opening a `/guide` or `/comments` link directly doesn't scroll to that
   section (only navigation within the page does, `BuildSections`); the title section's "Tracking" link does
