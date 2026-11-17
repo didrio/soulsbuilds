@@ -23,6 +23,8 @@ spend this session's context on the work, not on re-investigating the project.
 ## 2. Pick the ticket
 
 - **Parked tickets** (Backlog > Parked tickets) are never offered as alternatives; start one only if the user names it.
+- **Priority backlog** tickets (Backlog > Priority backlog) aren't offered either until the owner has said to take
+  them out of it; start one only if the user names it.
 - **Ticket given:** use it. If it doesn't exist or is `blocked`, say so and suggest the **Next** ticket.
 - **No ticket given:** show the **Next** ticket in three lines (goal, done-when, recommended session settings),
   plus one or two alternatives from "Up next", and wait for the user to choose.

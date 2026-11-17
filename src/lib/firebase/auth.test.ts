@@ -1,12 +1,23 @@
 import { FirebaseError } from 'firebase/app';
 import { describe, expect, it, vi } from 'vitest';
-import { errorField, errorMessage, hasPassword, isWrongPassword, sendPasswordReset } from './auth';
+import {
+  errorField,
+  errorMessage,
+  hasPassword,
+  isWrongPassword,
+  onAuthChange,
+  sendPasswordReset,
+} from './auth';
 
 vi.mock('./app', () => ({ auth: {}, USE_EMULATORS: false }));
 const sendPasswordResetEmail = vi.hoisted(() => vi.fn());
+const onAuthStateChanged = vi.hoisted(() => vi.fn());
+const signOut = vi.hoisted(() => vi.fn(() => Promise.resolve()));
 vi.mock('firebase/auth', async (importOriginal) => ({
   ...(await importOriginal<typeof import('firebase/auth')>()),
   sendPasswordResetEmail,
+  onAuthStateChanged,
+  signOut,
 }));
 
 const authError = (code: string) => new FirebaseError(code, code);
@@ -93,5 +104,40 @@ describe('isWrongPassword (T31)', () => {
     expect(isWrongPassword(authError('auth/wrong-password'))).toBe(true);
     expect(isWrongPassword(authError('auth/weak-password'))).toBe(false);
     expect(isWrongPassword(new Error('auth/wrong-password'))).toBe(false);
+  });
+});
+
+describe('onAuthChange', () => {
+  // Calls the listener onAuthChange registered with a user whose token renewal fails with `error`.
+  const onDeadSession = vi.fn();
+  const restore = async (error: Error | null) => {
+    const callback = vi.fn();
+    onAuthChange(callback, onDeadSession);
+    const listener = onAuthStateChanged.mock.lastCall?.[1] as (user: unknown) => void;
+    const user = {
+      uid: 'alice',
+      getIdToken: () => (error ? Promise.reject(error) : Promise.resolve('token')),
+    };
+    listener(user);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    return callback;
+  };
+
+  it('signs out a saved session that can never renew (e.g. the emulator was re-seeded)', async () => {
+    signOut.mockClear();
+    onDeadSession.mockClear();
+    const callback = await restore(authError('auth/invalid-refresh-token'));
+    expect(callback).toHaveBeenCalledWith(expect.objectContaining({ uid: 'alice' }));
+    expect(signOut).toHaveBeenCalledTimes(1);
+    expect(onDeadSession).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the session on a network error or a working token', async () => {
+    signOut.mockClear();
+    onDeadSession.mockClear();
+    await restore(authError('auth/network-request-failed'));
+    await restore(null);
+    expect(signOut).not.toHaveBeenCalled();
+    expect(onDeadSession).not.toHaveBeenCalled();
   });
 });

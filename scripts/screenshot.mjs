@@ -3,10 +3,11 @@
 // the PNG path, so an agent can open it with its image reader. Also prints the page's console
 // errors and failed requests, which are often the real answer.
 //
-//   npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>]
-//                         [--click <button name>] [--no-js]
+//   npm run screenshot -- [route] [--mobile] [--width <px>] [--height <px>] [--full] [--wait <ms>]
+//                         [--name <file>] [--click <button name>] [--no-js]
 //   npm run screenshot -- /build/SEEDBLEED001 --mobile
 //   npm run screenshot -- /build/SEEDBLEED001 --width 1000   (desktop at another width)
+//   npm run screenshot -- /build/SEEDFULL0001 --width 1440 --height 820   (the fold target, T66)
 //   npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"
 //     (clicks the button with that accessible name first, e.g. to open a dialog; signed out only:
 //     for signed-in pages drive the browser or write an e2e test)
@@ -32,6 +33,7 @@ function parseArgs(argv) {
     route: '/',
     mobile: false,
     width: null,
+    height: null,
     full: false,
     wait: 1500,
     name: null,
@@ -43,6 +45,7 @@ function parseArgs(argv) {
     if (arg === '--mobile') opts.mobile = true;
     else if (arg === '--full') opts.full = true;
     else if (arg === '--width') opts.width = Number(argv[(i += 1)]);
+    else if (arg === '--height') opts.height = Number(argv[(i += 1)]);
     else if (arg === '--wait') opts.wait = Number(argv[(i += 1)]);
     else if (arg === '--name') opts.name = argv[(i += 1)];
     else if (arg === '--click') opts.click = argv[(i += 1)];
@@ -58,7 +61,7 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   if (opts.help) {
     console.log(
-      'npm run screenshot -- [route] [--mobile] [--width <px>] [--full] [--wait <ms>] [--name <file>] [--click <button name>] [--no-js]',
+      'npm run screenshot -- [route] [--mobile] [--width <px>] [--height <px>] [--full] [--wait <ms>] [--name <file>] [--click <button name>] [--no-js]',
     );
     return;
   }
@@ -73,7 +76,10 @@ async function main() {
   }
 
   const base = opts.mobile ? VIEWPORTS.mobile : VIEWPORTS.desktop;
-  const viewport = opts.width ? { ...base, width: opts.width } : base;
+  const viewport = {
+    width: opts.width ?? base.width,
+    height: opts.height ?? base.height,
+  };
   const browser = await chromium.launch({ executablePath: CHROME });
   const page = await browser.newPage({
     viewport,
@@ -102,7 +108,7 @@ async function main() {
 
   const slug =
     opts.name ??
-    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}${opts.js ? '' : '-nojs'}`;
+    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}${opts.height ? `x${opts.height}` : ''}${opts.js ? '' : '-nojs'}`;
   const dir = join(root, '.artifacts', 'screenshots');
   await mkdir(dir, { recursive: true });
   const file = join(dir, `${slug}.png`);

@@ -30,6 +30,9 @@ The next session starts with only `AGENTS.md`, `TICKETS.md`, `docs/` and git his
 - **Parked tickets** (Backlog > Parked tickets, e.g. T32, T33) stay there until the owner asks for one by number.
   Never move one to **Up next**, recommend it, or name it in the **Next:** line, even if it looks like the obvious
   next piece of work. If nothing else is ready, say so and ask.
+- **Priority backlog** tickets (Backlog > Priority backlog) are next after the owner's current requests but stay
+  there until the owner says to take them out: don't move one to **Up next** or name it in the **Next:** line before
+  then. With **Up next** empty, the **Next:** line is "the owner's next request".
 - Re-read **Up next** top to bottom: reorder by what should happen next; merge, split or rewrite stale tickets.
 - Set the **Next:** line at the top to the recommended ticket and its session settings (table below). Every ticket
   in **Up next** has a **Session** line.

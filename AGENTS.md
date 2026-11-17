@@ -15,11 +15,11 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64 done; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66 done; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
-`stats/{game}`. Build page (T48, T63): title section, tabs Equipment (stats beside the equipment panel, same height), Guide, Discussion (write-up on top, then comments: likes, Top/Newest, one reply level, T62) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
+`stats/{game}`. Build page (T48, T63, T66): unframed top section (title block, then one sticky row: tabs + Track/Like/Share; a full build's Equipment tab fits 1440×820, `fold.spec`), tabs Equipment (stats beside the equipment panel, same height), Guide, Discussion (write-up on top, then comments: likes, Top/Newest, one reply level, T62) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done. **Next:** `TICKETS.md`.
 
@@ -72,6 +72,7 @@ only (T41: an intro modal signed out); since T46 it lives only in the Guide (the
 | Seeded builds → Firestore (dry; T52)        | `node scripts/seed-builds.mjs [--write] [--only <file>]` · production: `--project soulsbuilds --owner <email>` |
 | Backup every document as JSON (read-only)   | `node scripts/admin.mjs export [--project soulsbuilds]` → `.admin-backups/`                                    |
 | Screenshot a page of the running app        | `npm run screenshot -- /build/SEEDBLEED001 [--mobile] [--width 1000] [--full]`                                 |
+| … at a window size (the fold, T66)          | `npm run screenshot -- /build/SEEDFULL0001 --width 1440 --height 820`                                          |
 | … after clicking a button (a dialog, T41)   | `npm run screenshot -- /build/SEEDBLEED001 --click "Track this build"`                                         |
 | … as crawlers see it, JS off (T50)          | `BASE_URL=<Hosting emulator> npm run screenshot -- <route> --no-js` (docs/firebase.md)                         |
 | Measure load, App Check wait, scroll (T21)  | `npm run perf -- <url or /route> [--cpu 4] [--head …]` (docs/architecture.md)                                  |
@@ -142,7 +143,7 @@ src/
                            useBuildEditor; tabs.ts (Equipment, Guide, Discussion (T63): URLs, old-link redirects, which
                            show, pageKey); queries.ts (useBuild, useSaveBuild, likes, comments, useLatestComment); gear.ts (T48: the
                            gear as groups of SlotEntry, view and edit; equipmentGroups = the Equipment panel's, T63; pure); sections/ (BuildHeader = title
-                           section: build image (T40), like/Share (T54: ShareButton menu: copy link, copy for Reddit = lib/shareText.ts, download the card, Share…)/report/tags, OwnerActions, BuildTabs (sticky tab bar),
+                           block, unframed: build image (T40), tags, report, OwnerActions; BuildActions = Track/like/Share (T54: ShareButton menu: copy link, copy for Reddit = lib/shareText.ts, download the card, Share…), on BuildTabs = the sticky tab row (T66),
                            BuildDetailsForm (edit title block + BuildImageDialog), BuildSidebar (T48: StatsCard + (Guide,
                            Discussion) equipment tiles named on hover/focus/tap), EquipmentSection (T63: the Equipment
                            tab's panel, game layout; editable while editing), GearTiles (GearTile, GearRow: shared),

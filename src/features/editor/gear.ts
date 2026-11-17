@@ -232,3 +232,53 @@ export function equipmentGroups(state: GearState, editable: boolean): GearGroup[
     return entries.length ? [{ ...group, entries }] : [];
   });
 }
+
+/** Where each group sits in the Equipment panel: the hands, armor and talismans, then the rest. */
+const PANEL_ORDER: GearGroupKey[] = [
+  'rightHand',
+  'leftHand',
+  'armor',
+  'talismans',
+  'flask',
+  'arrows',
+  'spells',
+  'items',
+];
+
+/** Up to this many tiles, a group takes half the Equipment panel's width (T66; five 68 px tiles fit in half the panel on desktop). */
+export const HALF_WIDTH_TILES = 5;
+
+export interface PanelCell {
+  group: GearGroup;
+  /** Across the panel rather than half of it. */
+  wide: boolean;
+}
+
+/**
+ * The Equipment panel's cells in reading order (T66, so a full build fits above the fold): the hands
+ * side by side, armor beside talismans, then the flask, arrows, spells and items packed two to a row.
+ * A group with more than `HALF_WIDTH_TILES` tiles takes the row to itself, and so does a half-width
+ * group left alone on its row (the flask with nothing beside it), so no row ends half empty.
+ */
+export function equipmentLayout(groups: GearGroup[]): PanelCell[] {
+  const byKey = new Map(groups.map((group) => [group.key, group]));
+  const cells: PanelCell[] = PANEL_ORDER.flatMap((key) => {
+    const group = byKey.get(key);
+    return group ? [{ group, wide: group.entries.length > HALF_WIDTH_TILES }] : [];
+  });
+  let secondHalf = false;
+  return cells.map((cell, index) => {
+    if (cell.wide) {
+      secondHalf = false;
+      return cell;
+    }
+    if (secondHalf) {
+      secondHalf = false;
+      return cell;
+    }
+    const next = cells[index + 1];
+    if (!next || next.wide) return { ...cell, wide: true };
+    secondHalf = true;
+    return cell;
+  });
+}

@@ -2,13 +2,13 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T66**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T67**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T57 (more games: the foundation, still only Elden Ring) · Opus · extra high effort · plan mode on;
-T58–T61 wait for the Dark Souls exports, T65 for search data. Copies (T32, T33) are parked in the Backlog until the owner asks for them.
+**Next:** the owner's next request (they have a run of them, 2026-11-17; T66 was the first). The remaining tickets (T65, T57–T61)
+wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
 The redesign (owner's call, 2026-11-16) comes from a canvas mockup, the private "Souls Builds redesign"
 artifact (https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read an artboard with the Artifact tool's `read`
@@ -71,7 +71,7 @@ done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23
 T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
 T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
 T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD), T63 (Equipment and Discussion tabs), T54 (Share menu), T55 (weapon and tag pages) and T62 (comments).
+desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD), T63 (Equipment and Discussion tabs), T54 (Share menu), T55 (weapon and tag pages), T62 (comments) and T66 (build page above the fold).
 
 ## In progress
 
@@ -79,9 +79,16 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 
 ## Up next
 
-Discoverability (T50–T56) and more games (T57–T61) were planned with the owner on 2026-11-16, after T37's link
-previews. Order: crawlers can read the site (T50, T51 done), then content (T52, T53 done, in production), then sharing and
-hub pages (T54, T55 done), then T56 (done); T62 (comments) done too. Dark Souls follows (T57 first; the data tickets are blocked on the exports).
+The owner's current run of requests (2026-11-17), one at a time, before anything in the Priority backlog. Empty
+until the owner's next request.
+
+## Backlog
+
+### Priority backlog
+
+Set aside by the owner on 2026-11-17 while they bring a run of other requests (Up next). These come **next after
+those**, in this order, but stay here until the owner says to take them out of the priority backlog: never move
+one to Up next, pick it as the next ticket, or name it in the **Next:** line before then.
 
 #### T65 — Second batch of seeded builds, from real search data
 
@@ -188,8 +195,6 @@ hub pages (T54, T55 done), then T56 (done); T62 (comments) done too. Dark Souls 
   (probably nothing: it's two weapons in the right hand).
 - **Context:** T58–T60 as the pattern; expect the extraction to need its own code path.
 
-## Backlog
-
 ### Parked tickets
 
 Written in full and **set aside by the owner indefinitely**. Never move one to Up next, pick it as the next
@@ -262,8 +267,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 ### Ideas
 
 - Comments (T62 follow-ups, owner's call): notifications when someone replies, editing a comment, markdown or
-  mentions in comments, collapsing a thread, downvotes. The Top sort ranks without the viewer's own like (so a
-  like never moves the comment); revisit if people find that odd.
+  mentions in comments, collapsing a thread, downvotes.
 - Hub pages (T55 follow-ups): talismans, spells and spirit ashes get pages the same way (their lists are compacted
   arrays, so `array-contains` works; one index each); landing rows could link their tags (stretched-link row
   instead of a whole-row `<a>`); the item card's weapon name as a link needs a hoverable card.
@@ -297,6 +301,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T66 — Build page above the fold — 2026-11-17 — owner's request: no "All builds" (the header's Builds lit on build pages, `$section`); unframed top section: title block (88 px image; Report and Edit/Delete top right) then one sticky 64 px row, tabs left (accent as wide as the label) + `BuildActions` (Track, Like, Share) right; denser Equipment panel (no heading, 68 px tiles, `gear.ts` `equipmentLayout` pairs flask/arrows/spells/items up to 5 tiles) and stats card; a full build (`SEEDFULL0001`) fits 1440×820 and 1280×800 (`tests/e2e/fold.spec.ts`; `screenshot --height`). Also: a saved sign-in that can't renew is signed out and every query reloads (`onAuthChange`, `isDeadSession`; locally after `npm run dev` restarts the Auth emulator empty); comments' Top counts the viewer's own likes, held out of the rank until a sort is chosen (`threadComments` `held`). Remaining tickets moved to Backlog > Priority backlog.
 - T62 — Comments worth reading — 2026-11-17 — comments fill the column; a heart per comment (`commentLikes/{commentId}_{uid}` + the comment's `likeCount`, ±1 in one batch); Top/Newest (Top ranks without the viewer's own like); one reply level (`parentId` = a top-level comment, "@Name " on a reply to a reply; first 2 + "Show N more" past 3); a deleted comment's replies stay under "Comment deleted"; no migration (old comments read as null/0); "Author" badge; account deletion, `deleteBuild` and `admin.mjs remove`/`delete-user` handle comment likes (`lib/comments.ts`, `CommentItem`, `CommentForm`).
 - T64 — Landing title for "build planner" searches — 2026-11-17 — landing title "Elden Ring Build Planner and Builds | Souls Builds" and a description naming stats, equip load and poise (`homeMeta`, `index.html`); judge the effect in Search Console after T50's deploy.
 - T55 — Weapon and tag pages — 2026-11-17 — `/weapons/<slug>` (facts, where to find it via the Guide's solver,

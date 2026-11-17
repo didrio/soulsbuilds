@@ -2,7 +2,7 @@ import { screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { emptyEquipment, makeBuild, makeProfile } from '@/test/fixtures';
 import { renderWithProviders } from '@/test/render';
-import BuildHeader from './BuildHeader';
+import BuildHeader, { BuildActions } from './BuildHeader';
 
 const firebase = vi.hoisted(() => ({
   getUserProfile: vi.fn(),
@@ -74,8 +74,8 @@ describe('BuildHeader', () => {
     expect(removed.querySelector('[title="Moonveil"] img')).not.toBeNull();
   });
 
-  it('signed out: shows the count, not a button', async () => {
-    renderWithProviders(<BuildHeader build={makeBuild({ likeCount: 3 })} />);
+  it('signed out: shows the count, not a button (BuildActions, T66)', async () => {
+    renderWithProviders(<BuildActions build={makeBuild({ likeCount: 3 })} />);
     expect(await screen.findByText('3 Likes')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Like/ })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Share/ })).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe('BuildHeader', () => {
 
   it('a failed like rolls back, shows why, and the button works again', async () => {
     firebase.likeBuild.mockRejectedValueOnce(new Error('offline')).mockResolvedValue(undefined);
-    const { user } = renderWithProviders(<BuildHeader build={makeBuild({ likeCount: 3 })} />, {
+    const { user } = renderWithProviders(<BuildActions build={makeBuild({ likeCount: 3 })} />, {
       uid: 'alice',
     });
     const button = await screen.findByRole('button', { name: /3 Likes/ });
@@ -95,6 +95,20 @@ describe('BuildHeader', () => {
     await vi.waitFor(() => expect(button).toBeEnabled());
     await user.click(button);
     await vi.waitFor(() => expect(firebase.likeBuild).toHaveBeenCalledTimes(2));
+  });
+
+  it('phones: shows the actions passed in, beside Report; desktop keeps them out (T66)', async () => {
+    const build = makeBuild({ likeCount: 2 });
+    const { unmount } = renderWithProviders(
+      <BuildHeader build={build} actions={<BuildActions build={build} />} />,
+      { uid: 'alice' },
+    );
+    expect(await screen.findByRole('button', { name: /2 Likes/ })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Report this build' })).toBeInTheDocument();
+    unmount();
+    renderWithProviders(<BuildHeader build={build} />, { uid: 'alice' });
+    expect(await screen.findByRole('button', { name: 'Report this build' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Likes/ })).not.toBeInTheDocument();
   });
 
   it('shows the author and level, and links each tag to the builds with it', async () => {

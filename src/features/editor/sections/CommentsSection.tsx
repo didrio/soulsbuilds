@@ -62,6 +62,20 @@ function CommentsSection({
   const addReply = useAddComment(buildId, uid);
   const deleteComment = useDeleteComment(buildId);
   const [sort, setSort] = useState<CommentSort>('top');
+  /** Like changes since the order was set (`threadComments`): the order holds until a sort is chosen. */
+  const [held, setHeld] = useState<ReadonlyMap<string, number>>(new Map());
+  const hold = (commentId: string, delta: number) =>
+    setHeld((current) => {
+      const next = new Map(current);
+      const total = (next.get(commentId) ?? 0) + delta;
+      if (total) next.set(commentId, total);
+      else next.delete(commentId);
+      return next;
+    });
+  const chooseSort = (next: CommentSort) => {
+    setSort(next);
+    setHeld(new Map());
+  };
   /** The open reply form: its thread and what it starts with ("@Name " for a reply to a reply). */
   const [replying, setReplying] = useState<{ threadId: string; prefix: string } | null>(null);
   const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
@@ -69,7 +83,7 @@ function CommentsSection({
   const list = comments.data ?? [];
   const count = comments.data?.length;
   const liked = likes.data ?? new Set<string>();
-  const threads = threadComments(list, sort, liked);
+  const threads = threadComments(list, sort, held);
   const nameOf = (comment: Comment) => authors[comment.authorId]?.displayName ?? 'Someone';
 
   const openReply = (threadId: string, prefix: string) => {
@@ -90,11 +104,19 @@ function CommentsSection({
       isOwn={comment.authorId === uid}
       liked={liked.has(comment.id)}
       likeDisabled={toggleLike.isPending || (Boolean(uid) && likes.isPending)}
-      onLike={() =>
-        uid
-          ? toggleLike.mutate({ commentId: comment.id, liked: !liked.has(comment.id) })
-          : openAuthDialog('login')
-      }
+      onLike={() => {
+        if (!uid) {
+          openAuthDialog('login');
+          return;
+        }
+        const like = !liked.has(comment.id);
+        const delta = like ? 1 : -1;
+        hold(comment.id, delta);
+        toggleLike.mutate(
+          { commentId: comment.id, liked: like },
+          { onError: () => hold(comment.id, -delta) },
+        );
+      }}
       // Replies to a reply join the same thread, naming who they answer (one level).
       onReply={
         threadId
@@ -109,7 +131,7 @@ function CommentsSection({
   // Beside the heading in the panel; above the list in the phone's section.
   const sortControl =
     threads.length > 1 ? (
-      <SegmentedControl label="Sort comments" options={SORTS} value={sort} onChange={setSort} />
+      <SegmentedControl label="Sort comments" options={SORTS} value={sort} onChange={chooseSort} />
     ) : null;
 
   const body = (

@@ -91,6 +91,57 @@ describe('CommentsSection', () => {
     expect(await within(reply).findByText('Author')).toBeInTheDocument();
   });
 
+  it('Top counts the viewer’s likes, but only re-ranks when the sort is chosen again', async () => {
+    // A tiny server: alice liked "Old" on an earlier visit.
+    const counts = new Map([
+      ['old', 1],
+      ['newer', 0],
+    ]);
+    const likes = new Set(['old']);
+    firebase.listComments.mockImplementation(() =>
+      Promise.resolve([
+        makeComment({ id: 'old', text: 'Old', likeCount: counts.get('old'), createdAt: day(1) }),
+        makeComment({
+          id: 'newer',
+          text: 'Newer',
+          likeCount: counts.get('newer'),
+          createdAt: day(5),
+        }),
+      ]),
+    );
+    firebase.listCommentLikes.mockImplementation(() => Promise.resolve(new Set(likes)));
+    const toggle = (delta: number) => (_b: string, id: string) => {
+      counts.set(id, (counts.get(id) ?? 0) + delta);
+      if (delta > 0) likes.add(id);
+      else likes.delete(id);
+      return Promise.resolve();
+    };
+    firebase.likeComment.mockImplementation(toggle(1));
+    firebase.unlikeComment.mockImplementation(toggle(-1));
+    const { user } = render('alice');
+    await screen.findByText('Old');
+    await waitFor(() => expect(texts()).toEqual(['Old', 'Newer']));
+
+    // Liking "Newer" and unliking "Old" doesn't move them under the cursor…
+    const likeOf = (text: string) =>
+      within(screen.getByText(text, { selector: 'p' }).closest('li')!).getByRole('button', {
+        name: /^Like /,
+      });
+    const likeNewer = likeOf('Newer');
+    await waitFor(() => expect(likeNewer).toBeEnabled());
+    await user.click(likeNewer);
+    await waitFor(() => expect(likeOf('Newer')).toHaveAccessibleName(/1 like$/));
+    await waitFor(() => expect(likeOf('Old')).toBeEnabled());
+    await user.click(likeOf('Old'));
+    await waitFor(() => expect(likeOf('Old')).toHaveAccessibleName(/0 likes$/));
+    expect(texts()).toEqual(['Old', 'Newer']);
+
+    // …until the sort is chosen again.
+    await user.click(screen.getByRole('button', { name: 'Newest' }));
+    await user.click(screen.getByRole('button', { name: 'Top' }));
+    expect(texts()).toEqual(['Newer', 'Old']);
+  });
+
   it('likes and unlikes a comment at once', async () => {
     // A tiny server: the list and the user's likes refetch after each toggle.
     let likeCount = 1;

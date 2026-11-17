@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { Link, NavLink } from 'react-router';
+import { Link, NavLink, useMatch } from 'react-router';
 import styled from 'styled-components';
 import Button, { ButtonLink } from '@/components/ui/Button';
 import FocusScope from '@/components/ui/FocusScope';
@@ -37,6 +37,8 @@ interface HeaderProps {
  * Full-width bar: the wordmark and the current game; Builds, the account menu (the display name:
  * Profile, Account, Log out; T31) and New build (the primary button), or Builds, Log in and Sign up.
  * Phones: a labelled "+" (New build) and a Menu button that opens the rest as a panel under the bar.
+ * On a build's page Builds shows as the current section (T66: the build page's way back to the list,
+ * since "All builds" went).
  */
 function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const { loading, uid } = useAuth();
@@ -44,6 +46,8 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const menuId = useId();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
+  const buildPage = useMatch('/build/:buildId/*');
+  const inBuilds = buildPage !== null && buildPage.params.buildId !== 'new';
 
   const logIn = (onNavigate?: () => void) => (
     <Button
@@ -66,7 +70,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
         {loading ? null : (
           <>
             <Nav aria-label="Main">
-              <NavItem to="/" end>
+              <NavItem to="/" end $section={inBuilds}>
                 Builds
               </NavItem>
               {uid ? <AccountMenu /> : logIn()}
@@ -111,7 +115,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
                 {menuOpen ? (
                   <Menu id={menuId} onEscape={closeMenu}>
                     <nav aria-label="Main">
-                      <NavItem to="/" end onClick={closeMenu}>
+                      <NavItem to="/" end onClick={closeMenu} $section={inBuilds}>
                         Builds
                       </NavItem>
                       {uid ? (
@@ -217,10 +221,10 @@ const Nav = styled.nav`
   }
 `;
 
-// Builds and Profile; the current page in the text color.
-const NavItem = styled(NavLink)`
+// Builds and Profile; the current page (or section, `$section`) in the text color.
+const NavItem = styled(NavLink)<{ $section?: boolean }>`
   align-items: center;
-  color: ${COLOR_TEXT_MUTED};
+  color: ${({ $section }) => ($section ? COLOR_TEXT : COLOR_TEXT_MUTED)};
   display: inline-flex;
   font-weight: 500;
   min-height: 44px;

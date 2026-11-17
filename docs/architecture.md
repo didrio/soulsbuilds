@@ -54,8 +54,10 @@ Function and UX are the same for every game; only the skin (accent colors) chang
   `useSaveBuild`, `useDeleteBuild`), which call the functions in `src/lib/firebase/`. Keys are in
   `src/lib/queryKeys.ts`; invalidating `['builds']` refreshes every list and detail. Likes and comment deletes
   are optimistic and roll back on error. Never copy server data into Redux. Comment threads (T62) are
-  derived at render by `threadComments` in `src/lib/comments.ts` (Top ranks without the viewer's own like, so
-  liking never moves a comment under the cursor).
+  derived at render by `threadComments` in `src/lib/comments.ts` (Top counts every like, the viewer's own
+  included; likes made since the sort was chosen are held out of the rank, so liking never moves a comment
+  under the cursor, and choosing Top or Newest again re-ranks; T66 follow-up: the old rule left out the
+  viewer's likes altogether, so Top often matched Newest).
 - **The signed-in user**: `AuthProvider` (`src/features/auth/`) listens to Firebase Auth once; components call
   `useAuth()` → `{ loading, user, uid }`. The public profile is `useUserProfile(uid)`.
 - **Redux** (`src/features/editor/store/`, store in `src/app/store.ts`) holds only the build being edited:
@@ -302,14 +304,20 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   build (or Sign up) as the primary button; on phones a labelled "+" (New build) or Sign up, and a Menu button
   that drops the rest down under the bar (`FocusScope`: Escape closes, a choice closes).
 
-**Build page** (T17, reshaped in T22, T27, T28, T48 and T49, `features/editor/`): view and edit share one layout. The
-**title section** (`BuildHeader`, the hero frame: the build image (T40: `lib/equipment.ts` `buildImage`, the
-author's pick else the main weapon; `getCardItem` in `@/data/core` shows any kind) as a 72px tile (T48; 56px below
-900px) with the skin's tint glow, name as `<h1>`, author, level and age, tags, then Track/Like/Report/owner actions
-on the right (in a row under the tags below 900px); in edit mode `BuildDetailsForm` takes its place, with the name,
+**Build page** (T17, reshaped in T22, T27, T28, T48, T49 and T66, `features/editor/`): view and edit share one layout.
+T66's goal: a fully equipped build's Equipment tab fits a 1440×820 window (and 1280×800) without scrolling,
+guarded by `tests/e2e/fold.spec.ts` on the seed build `SEEDFULL0001`; mind the height when adding to the top
+section, the stats card or the Equipment panel. No "All builds" link: the header's Builds shows as the current
+section on a build page (`$section`). The top section is unframed: the
+**title block** (`BuildHeader`, on the page background: the build image (T40: `lib/equipment.ts` `buildImage`, the
+author's pick else the main weapon; `getCardItem` in `@/data/core` shows any kind) as an 88px tile (T48, T66; 56px below
+900px) with the skin's tint glow, name as `<h1>`, author, level and age, tags, Report and the owner's Edit/Delete top right;
+below 900px every action in a row under the tags, `BuildActions` passed in as `actions`); in edit mode `BuildDetailsForm` takes its place, with the name,
 tags and "Build image": the current tile and "Change image", which opens `BuildImageDialog`, radio rows of the
-default and the build's gear), then (desktop, ≥ 900px) a **tab bar** (`sections/BuildTabs`: `NavLink`s across the page, labels
-centered, sticky at the window's top; Discussion shows the stored comment count), then the **build sidebar** beside the tab.
+default and the build's gear), then (desktop, ≥ 900px) the **tab row** (`sections/BuildTabs`: `NavLink`s on the left, the first label in line
+with the page, and `BuildActions` (Track, Like, Share) on the right, over one hairline that ends the top section;
+64px tall, the accent line as wide as the current label, sticky at the window's top, see-through until it sticks; Discussion shows the stored comment count),
+then, framed, the **build sidebar** beside the tab.
 Tabs are URLs (`/build/:buildId/*`, `tabs.ts`; T63): `/build/<id>/<slug>` Equipment, `/<slug>/guide`, `/<slug>/discussion`,
 where the slug is the name (`lib/slug.ts`, T56: `/build/x/bleed-samurai`). **The ID alone decides the build**: a missing
 or stale slug (or a rename) is replaced in the URL (`<Navigate replace>`), and `splitBuildPath` tells a lone tab
@@ -324,8 +332,9 @@ when it was stuck).
 and the main content is the equipment panel, laid out like the game's screen: `gear.ts` `equipmentGroups` (pure:
 the editable groups; read-only, the right hand, left hand, armor, talismans and flask with every slot, empty ones as
 faint `ItemTile placeholder`s hidden from screen readers, and arrows, spells, items only when filled) in a two-column
-grid (one below a 560px container): right | left hand (104px tiles), armor | talismans, flask | arrows (the flask
-spans the row without arrows), spells and items across (80px tiles). Viewing, **both columns are the same height**:
+grid (one below a 560px container), packed by `gear.ts` `equipmentLayout` (pure, T66): right | left hand (104px
+tiles), armor | talismans, then the flask, arrows, spells and items two to a row (68px tiles); a group of more than
+five tiles, or a half left alone on its row, spans it. No heading: the tab names it (`aria-label`). Viewing, **both columns are the same height**:
 the sidebar (`fill`) and the panel stretch to the row, the panel's rows share the spare height evenly (auto rows,
 `align-content: stretch`, each group centered in its band) and, when the equipment is the taller one, `StatsCard
 fill` spreads its blocks (`space-between`). Editing: every tile opens the picker, and the write-up's editor

@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import Frame from '@/components/ui/Frame';
 import ItemTile from '@/components/ui/ItemTile';
 import PageHead from '@/components/ui/PageHead';
 import Tag from '@/components/ui/Tag';
@@ -28,7 +27,6 @@ import {
   COLOR_TINT,
   FONT_DISPLAY,
   SPACE_LG,
-  SPACE_PANEL,
   SPACE_MD,
   SPACE_SM,
   SPACE_XS,
@@ -40,34 +38,33 @@ import {
 import { useHasLiked, useToggleLike } from '../queries';
 import ShareButton from './ShareButton';
 
-/** The build image's edge on desktop (T48: from 112), and below 900 px. */
-const TILE = 72;
+/** The build image's edge on desktop (T48: from 112; T66: as tall as the name, byline and tags), and below 900 px. */
+const TILE = 88;
 const TILE_SMALL = 56;
 
 export const likesLabel = (count: number) => `${count} ${count === 1 ? 'Like' : 'Likes'}`;
 
 interface BuildHeaderProps {
   build: Build;
-  /** The owner's controls (Edit, Delete), shown in the actions row. */
+  /** The owner's controls (Edit, Delete), beside Report. */
   ownerActions?: ReactNode;
-  /** "Track this build", or "Tracking" (T34, T46): the first action. */
-  trackAction?: ReactNode;
+  /**
+   * Phones and tablets: the build's actions (`BuildActions`), first in the row under the tags. On
+   * desktop they sit on the tab row instead (T66), so this is left out.
+   */
+  actions?: ReactNode;
 }
 
 /**
- * View mode's title section (T22, T28; shorter since T48): the build image (T40: the author's pick,
- * else the main weapon) as a 72 px tile with the skin's glow, the build's name (the page's `<h1>`),
- * "by <author> · Level N · 3 days ago", the tags (each links to the builds with it), and the actions:
- * Track this build (T34), Like (a count when signed out), Report and the owner's controls. Desktop:
- * actions on the right; tablets and phones: a smaller tile, the actions in a row under the tags.
- * Tracking shows no progress here (T46: it lives in the Guide).
+ * View mode's title block (T22, T28, T48; unframed since T66, the top of the page's top section): the
+ * build image (T40: the author's pick, else the main weapon) as an 88 px tile with the skin's glow, the
+ * build's name (the page's `<h1>`), "by <author> · with <weapons> · Level N · 3 days ago", the tags
+ * (each links to its tag page), and the quieter controls: Report and the owner's Edit and Delete,
+ * top right on desktop. Track, Like and Share are `BuildActions`, on the tab row (desktop) or passed
+ * in as `actions` (tablets and phones: a smaller tile, everything in a row under the tags).
  */
-function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
-  const { uid } = useAuth();
+function BuildHeader({ build, ownerActions, actions }: BuildHeaderProps) {
   const owner = useUserProfile(build.ownerId);
-  const liked = useHasLiked(build.id, uid);
-  const toggleLike = useToggleLike(build.id, uid);
-  const isLiked = liked.data === true;
   const image = getCardItem(buildImage(build));
   // T55: each weapon links to its page ("with Rivers of Blood and Uchigatana"); at most three.
   const weapons = weaponLinks(build.equipment.weapons).slice(0, 3);
@@ -83,7 +80,7 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
   });
 
   return (
-    <Pane $hero $tile={Boolean(image)} aria-labelledby="build-title">
+    <Pane $tile={Boolean(image)} aria-labelledby="build-title">
       <PageHead {...meta} canonical={`${SITE_ORIGIN}/build/${build.id}`} />
       {image ? <Portrait src={iconUrl(image.icon)} title={image.name} size={TILE} /> : null}
       <Title id="build-title">{build.name}</Title>
@@ -123,37 +120,56 @@ function BuildHeader({ build, ownerActions, trackAction }: BuildHeaderProps) {
           ))}
         </Tags>
       ) : null}
-      <Actions>
-        {trackAction}
-        {uid ? (
-          <Button
-            variant="secondary"
-            aria-pressed={isLiked}
-            disabled={toggleLike.isPending || liked.isPending}
-            onClick={() => toggleLike.mutate(!isLiked)}>
-            <Heart filled={isLiked} $liked={isLiked} />
-            {likesLabel(build.likeCount)}
-          </Button>
-        ) : (
-          <LikeCount>
-            <Heart $liked={false} />
-            {likesLabel(build.likeCount)}
-          </LikeCount>
-        )}
-        <ShareButton build={build} author={owner.data?.displayName} />
+      <Tools>
+        {actions}
         <ReportButton
           target={{ buildId: build.id }}
           authorId={build.ownerId}
           kind="build"
-          align="center"
+          align="start"
           appearance="button"
         />
         {ownerActions}
-      </Actions>
-      <Errors>
-        <ErrorMessage>{toggleLike.error ? errorMessage(toggleLike.error) : ''}</ErrorMessage>
-      </Errors>
+      </Tools>
     </Pane>
+  );
+}
+
+/**
+ * The build's actions (T66: on the desktop tab row, beside the tabs; under the tags on phones): Track
+ * this build (T34; "Tracking" while tracking, T46), Like (a count when signed out) and Share (T54).
+ */
+export function BuildActions({ build, trackAction }: { build: Build; trackAction?: ReactNode }) {
+  const { uid } = useAuth();
+  const owner = useUserProfile(build.ownerId);
+  const liked = useHasLiked(build.id, uid);
+  const toggleLike = useToggleLike(build.id, uid);
+  const isLiked = liked.data === true;
+  return (
+    <>
+      {trackAction}
+      {uid ? (
+        <Button
+          variant="secondary"
+          aria-pressed={isLiked}
+          disabled={toggleLike.isPending || liked.isPending}
+          onClick={() => toggleLike.mutate(!isLiked)}>
+          <Heart filled={isLiked} $liked={isLiked} />
+          {likesLabel(build.likeCount)}
+        </Button>
+      ) : (
+        <LikeCount>
+          <Heart $liked={false} />
+          {likesLabel(build.likeCount)}
+        </LikeCount>
+      )}
+      <ShareButton build={build} author={owner.data?.displayName} />
+      {toggleLike.error ? (
+        <LikeError>
+          <ErrorMessage>{errorMessage(toggleLike.error)}</ErrorMessage>
+        </LikeError>
+      ) : null}
+    </>
   );
 }
 
@@ -181,35 +197,30 @@ function Players({ build }: { build: Pick<Build, 'playerCount' | 'finishedCount'
   );
 }
 
-/** The hero's grid areas (desktop): the right column holds the actions. */
-function desktopAreas(tile: boolean) {
-  const left = tile ? ['tile title', 'tile meta', 'tile tags'] : ['title', 'meta', 'tags'];
-  const error = tile ? 'error error error' : 'error error';
-  return [...left.map((row) => `'${row} actions'`), `'${error}'`].join(' ');
-}
-
-// Desktop: the tile, then name / meta / tags, then the actions, top-aligned. Tablets and phones: the
-// tile beside the name and meta, then the tags and the actions across the pane.
-const Pane = styled(Frame)<{ $tile: boolean }>`
+// Desktop: the tile, then name / meta / tags, with Report and the owner's controls top right (their
+// forms open under them). Tablets and phones: the tile beside the name and meta, then the tags and
+// every action in a row across.
+const Pane = styled.section<{ $tile: boolean }>`
   align-items: center;
   column-gap: ${SPACE_LG};
   display: grid;
-  grid-template-areas: ${({ $tile }) => desktopAreas($tile)};
+  grid-template-areas: ${({ $tile }) =>
+    $tile
+      ? `'tile title tools' 'tile meta tools' 'tile tags tools'`
+      : `'title tools' 'meta tools' 'tags tools'`};
   grid-template-columns: ${({ $tile }) =>
     $tile ? `${TILE}px minmax(0, 1fr) auto` : 'minmax(0, 1fr) auto'};
   grid-template-rows: auto auto 1fr;
-  padding: ${SPACE_PANEL} ${SPACE_LG};
 
   @media ${BELOW_TABLET} {
     column-gap: ${SPACE_MD};
     grid-template-areas: ${({ $tile }) =>
       $tile
-        ? `'tile title' 'tile meta' 'tags tags' 'actions actions' 'error error'`
-        : `'title' 'meta' 'tags' 'actions' 'error'`};
+        ? `'tile title' 'tile meta' 'tags tags' 'tools tools'`
+        : `'title' 'meta' 'tags' 'tools'`};
     grid-template-columns: ${({ $tile }) =>
       $tile ? `${TILE_SMALL}px minmax(0, 1fr)` : 'minmax(0, 1fr)'};
     grid-template-rows: none;
-    padding: ${SPACE_MD};
   }
 `;
 
@@ -267,16 +278,20 @@ const Strong = styled.b`
   font-variant-numeric: tabular-nums;
 `;
 
-// Desktop: right-aligned in the right column.
-const Actions = styled.div`
+// Desktop: right-aligned in the right column. Phones: every action, in a row under the tags.
+const Tools = styled.div`
   align-items: center;
   align-self: start;
   display: flex;
   flex-wrap: wrap;
   gap: ${SPACE_SM};
-  grid-area: actions;
+  grid-area: tools;
   justify-content: flex-end;
   max-width: 420px;
+
+  &:empty {
+    display: none;
+  }
 
   @media ${BELOW_TABLET} {
     justify-content: flex-start;
@@ -284,8 +299,16 @@ const Actions = styled.div`
   }
 `;
 
-const Errors = styled.div`
-  grid-area: error;
+// Desktop: under the tab row's buttons, so the row keeps its height; phones: a line of its own.
+const LikeError = styled.div`
+  position: absolute;
+  right: 0;
+  top: 100%;
+
+  @media ${BELOW_TABLET} {
+    flex-basis: 100%;
+    position: static;
+  }
 `;
 
 // The accent only when you've liked it (the liked state is in the accent budget).

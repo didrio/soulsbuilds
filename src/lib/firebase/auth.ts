@@ -38,9 +38,42 @@ function emailLinkSettings(): ActionCodeSettings {
   return { url: USE_EMULATORS ? window.location.origin : 'https://soulsbuilds.com' };
 }
 
-/** Calls `callback` with the signed-in user (or null) now and on every change; returns unsubscribe. */
-export function onAuthChange(callback: (user: AuthUser | null) => void): () => void {
-  return onAuthStateChanged(auth, callback);
+/**
+ * Whether a saved sign-in can never work again: its refresh token was revoked, or the account was
+ * deleted or disabled (locally: `npm run dev` starts the Auth emulator empty, so an account you made
+ * last time is gone). A network error isn't.
+ */
+export function isDeadSession(error: unknown): boolean {
+  return (
+    error instanceof FirebaseError &&
+    [
+      'auth/invalid-refresh-token',
+      'auth/user-token-expired',
+      'auth/user-not-found',
+      'auth/user-disabled',
+    ].includes(error.code)
+  );
+}
+
+/**
+ * Calls `callback` with the signed-in user (or null) now and on every change; returns unsubscribe.
+ * A user restored from a saved session whose token can't be renewed is signed out (the callback
+ * then gets null), then `onDeadSession` runs: Firestore, unable to get a token, was offline
+ * meanwhile, so whatever was read then came back empty and should be read again.
+ */
+export function onAuthChange(
+  callback: (user: AuthUser | null) => void,
+  onDeadSession?: () => void,
+): () => void {
+  return onAuthStateChanged(auth, (user) => {
+    callback(user);
+    if (!user) return;
+    user.getIdToken().catch(async (error: unknown) => {
+      if (!isDeadSession(error)) return;
+      await firebaseSignOut(auth);
+      onDeadSession?.();
+    });
+  });
 }
 
 /** Signs in with email and password; resolves to the uid. */

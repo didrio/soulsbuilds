@@ -41,9 +41,25 @@ describe('threadComments', () => {
     ]);
   });
 
-  it('the viewer’s own like doesn’t move a comment', () => {
-    const liked = threadComments([c('a', 1, { likeCount: 1 }), c('b', 2)], 'top', new Set(['a']));
-    expect(shape(liked)).toEqual(['b: ', 'a: ']);
+  it('counts every like, the viewer’s own included', () => {
+    expect(shape(threadComments([c('a', 1, { likeCount: 1 }), c('b', 2)], 'top'))).toEqual([
+      'a: ',
+      'b: ',
+    ]);
+  });
+
+  it('likes held since the order was set don’t move a comment (liking under the cursor)', () => {
+    const comments = [
+      c('a', 1, { likeCount: 1 }),
+      c('b', 2, { likeCount: 1 }),
+      c('d', 3, { likeCount: 1 }),
+    ];
+    // The viewer just liked "a" (1, was 0) and unliked "d" (1, was 2): both keep their place.
+    const held = new Map([
+      ['a', 1],
+      ['d', -1],
+    ]);
+    expect(shape(threadComments(comments, 'top', held))).toEqual(['d: ', 'b: ', 'a: ']);
   });
 
   it('replies of a deleted comment stay, under a placeholder ranked like an unliked comment', () => {

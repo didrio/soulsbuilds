@@ -1,6 +1,7 @@
 import { fireEvent, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/render';
+import { COLOR_TEXT, COLOR_TEXT_MUTED } from '@/theme';
 import Header from './Header';
 
 const signOut = vi.hoisted(() => vi.fn(() => Promise.resolve()));
@@ -10,12 +11,12 @@ vi.mock('@/lib/firebase', () => ({
     Promise.resolve({ id, displayName: 'Alice', createdAt: new Date('2026-01-01') }),
 }));
 
-const renderHeader = (uid: string | null = null) => {
+const renderHeader = (uid: string | null = null, route?: string) => {
   const onLogIn = vi.fn();
   const onSignUp = vi.fn();
   const result = renderWithProviders(
     <Header openDialog={null} onLogIn={onLogIn} onSignUp={onSignUp} />,
-    { uid },
+    { uid, route, path: route ? '/build/:buildId/*' : undefined },
   );
   return { ...result, onLogIn, onSignUp };
 };
@@ -32,6 +33,19 @@ describe('Header', () => {
     expect(onLogIn).toHaveBeenCalled();
     await user.click(within(nav).getByRole('button', { name: 'Sign up' }));
     expect(onSignUp).toHaveBeenCalled();
+  });
+
+  it("lights Builds on a build's page, not on a new build (T66)", () => {
+    const builds = () =>
+      within(screen.getByRole('navigation', { name: 'Main' })).getByRole('link', {
+        name: 'Builds',
+      });
+    const { unmount } = renderHeader(null, '/build/abc/some-build/guide');
+    expect(builds()).toHaveStyle({ color: COLOR_TEXT });
+    expect(builds()).not.toHaveAttribute('aria-current');
+    unmount();
+    renderHeader(null, '/build/new');
+    expect(builds()).toHaveStyle({ color: COLOR_TEXT_MUTED });
   });
 
   it('signed in: the display name opens Profile, Account and Log out (T31)', async () => {

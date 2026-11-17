@@ -40,4 +40,11 @@ describe('BuildTabs', () => {
     const links = within(screen.getByRole('navigation')).getAllByRole('link');
     expect(links.map((link) => link.textContent)).toEqual(['Equipment']);
   });
+
+  it('shows the actions it is given beside the tabs, outside the tab navigation (T66)', () => {
+    renderTabs('/build/abc', { actions: <button type="button">Share</button> });
+    const bar = screen.getByRole('navigation', { name: 'Build sections' });
+    expect(within(bar).queryByRole('button', { name: 'Share' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Share' })).toBeInTheDocument();
+  });
 });

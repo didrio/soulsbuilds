@@ -14,15 +14,16 @@ export interface Thread {
 }
 
 /**
- * Groups replies under their top-level comment and sorts the threads. Top: most liked first, ties
- * newest first. A comment's rank leaves out the viewer's own like (`likedByViewer`), so liking a
- * comment never moves it under your cursor. A deleted comment's thread ranks like a comment with no
- * likes posted when its first reply was.
+ * Groups replies under their top-level comment and sorts the threads. Top: most liked first (every
+ * like, the viewer's own included), ties newest first. `held`: the viewer's like changes since the
+ * order was set (+1 a like, -1 an unlike, by comment id), taken back out of the rank so liking a
+ * comment never moves it under the cursor; choosing a sort again clears them. A deleted comment's
+ * thread ranks like a comment with no likes posted when its first reply was.
  */
 export function threadComments(
   comments: readonly Comment[],
   sort: CommentSort,
-  likedByViewer: ReadonlySet<string> = new Set(),
+  held: ReadonlyMap<string, number> = new Map(),
 ): Thread[] {
   const tops = new Map<string, Comment>();
   const replies = new Map<string, Comment[]>();
@@ -43,7 +44,7 @@ export function threadComments(
 
   const date = (thread: Thread) => (thread.comment ?? thread.replies[0]!).createdAt.getTime();
   const score = (thread: Thread) =>
-    thread.comment ? thread.comment.likeCount - (likedByViewer.has(thread.comment.id) ? 1 : 0) : 0;
+    thread.comment ? thread.comment.likeCount - (held.get(thread.comment.id) ?? 0) : 0;
   return threads.sort((a, b) => (sort === 'top' ? score(b) - score(a) : 0) || date(b) - date(a));
 }
 

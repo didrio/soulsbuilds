@@ -5,7 +5,6 @@ import styled from 'styled-components';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import PageMessage from '@/components/ui/PageMessage';
-import { TextLink } from '@/components/ui/TextButton';
 import { useAppSelector } from '@/app/hooks';
 import { useOpenAuthDialog } from '@/app/authDialog';
 import { useMediaQuery } from '@/app/useMediaQuery';
@@ -24,7 +23,7 @@ import {
   SPACE_XXL,
 } from '@/theme';
 import BuildDetailsForm from './sections/BuildDetailsForm';
-import BuildHeader from './sections/BuildHeader';
+import BuildHeader, { BuildActions } from './sections/BuildHeader';
 import BuildSections from './sections/BuildSections';
 import BuildSidebar from './sections/BuildSidebar';
 import BuildTabs from './sections/BuildTabs';
@@ -53,8 +52,10 @@ function BuildEditorPage() {
 }
 
 /**
- * View, create and edit a build (T22, T28, T48, T63: the owner's design): the title section, a tab
- * bar (Equipment, Guide, Discussion), then the build sidebar (`BuildSidebar`) beside the tab. Equipment
+ * View, create and edit a build (T22, T28, T48, T63, T66: the owner's design). The top section,
+ * unframed: the title block, then one row with the tabs (Equipment, Guide, Discussion) and the
+ * build's actions (Track, Like, Share). Under it, framed: the build sidebar (`BuildSidebar`) beside
+ * the tab. A fully equipped build's Equipment tab fits a 1440×820 window (T66; e2e `fold.spec`). Equipment
  * (the build's own URL): the stats in the sidebar and the equipment as the main content, the two the
  * same height. Guide and Discussion: the sidebar has the stats and the equipment as small tiles.
  * Discussion: the author's write-up (if any) at the top, then the comments. Editing (and new builds):
@@ -134,6 +135,16 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
     />
   ) : null;
 
+  // Track, Like and Share: on the tab row on desktop, under the tags on phones.
+  const actions = build ? (
+    <BuildActions
+      build={build}
+      trackAction={
+        <TrackButton tracking={tracking} guidePath={tabPath(build.id, 'guide', build.name)} />
+      }
+    />
+  ) : null;
+
   // Each tab's content: beside the sidebar on desktop, in its section on phones (bare: the section
   // is the panel and has the heading). Phones show the equipment as their own gear sections.
   const bodies: Record<BuildTab, ReactNode> = {
@@ -175,7 +186,6 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
 
   return (
     <Page>
-      <Back to="/">← All builds</Back>
       {editable ? (
         <BuildDetailsForm
           isNew={isNew}
@@ -191,9 +201,7 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
       ) : build ? (
         <BuildHeader
           build={build}
-          trackAction={
-            <TrackButton tracking={tracking} guidePath={tabPath(build.id, 'guide', build.name)} />
-          }
+          actions={phone ? actions : undefined}
           ownerActions={
             editor.isOwner ? (
               <OwnerActions
@@ -229,6 +237,7 @@ function BuildEditor({ buildId, rest }: { buildId: string | null; rest?: string 
             current={tab}
             tabs={tabs}
             commentCount={editable ? undefined : build?.commentCount}
+            actions={editable ? undefined : actions}
           />
           <WithSidebar>
             <BuildSidebar
@@ -263,11 +272,16 @@ const Page = styled.div`
   display: grid;
   gap: ${SPACE_LG};
   margin-bottom: ${SPACE_XXL};
-`;
+  padding-top: ${SPACE_MD};
 
-const Back = styled(TextLink)`
-  justify-self: start;
-  margin: ${SPACE_MD} 0 -${SPACE_SM};
+  /* Desktop: the title block sits close to its tab row, one top section. */
+  > section:first-child {
+    margin-bottom: -${SPACE_MD};
+
+    @media ${BELOW_TABLET} {
+      margin-bottom: 0;
+    }
+  }
 `;
 
 // The tab's panels, stacked. Equipment: a column whose first panel stretches to the sidebar's height.
@@ -285,7 +299,7 @@ const WithSidebar = styled.div`
   display: grid;
   gap: ${SPACE_REGION};
   grid-template-columns: ${STATS_COLUMN_WIDTH}px minmax(0, 1fr);
-  margin-top: ${SPACE_REGION};
+  margin-top: ${SPACE_MD};
 `;
 
 // Stays on screen at the bottom while editing, so Save is always one Tab or tap away.

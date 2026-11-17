@@ -20,6 +20,8 @@ bookkeeping, not a new task.
 - **Reorder**: **Up next** is in the order to do them. If the top changes, update the **Next:** line too.
 - **Park**: when the owner sets work aside indefinitely, move the full ticket to **Backlog > Parked tickets** with
   `Status: parked`; only the owner brings it back (by asking for it), never `/wrap` or `/start`.
+- **Priority backlog**: tickets the owner wants next but not yet (Backlog > Priority backlog, in order); only the
+  owner takes them out, never `/wrap` or `/start`.
 - **Block**: `Status: blocked — <what it's waiting on>`.
 
 Confirm in one line what changed (e.g. "Added T13 — Build comparison view, after T9").

@@ -41,7 +41,9 @@ const spell = (name: string) => spells.find((entry) => entry.name === name) ?? n
 describe('EquipmentSection', () => {
   it('lays out each hand, armor, talismans and the flask, empty slots as placeholders', () => {
     renderPanel();
-    expect(screen.getByRole('heading', { name: 'Equipment' })).toBeInTheDocument();
+    // No heading of its own (T66): the current tab names it.
+    expect(screen.getByRole('region', { name: 'Equipment' })).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Equipment' })).not.toBeInTheDocument();
     expect(
       within(group('Right hand'))
         .getAllByRole('button')

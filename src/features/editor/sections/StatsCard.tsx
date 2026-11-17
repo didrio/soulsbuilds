@@ -22,7 +22,6 @@ import {
   SPACE_MD,
   SPACE_SM,
   SPACE_XS,
-  TEXT_DISPLAY,
   TEXT_LABEL,
   TEXT_MD,
   TEXT_SM,
@@ -321,13 +320,9 @@ const LevelValue = styled.span`
   ${displayText}
   color: ${COLOR_ACCENT};
   display: block;
-  font-size: ${TEXT_DISPLAY};
+  font-size: ${TEXT_XXL};
   font-variant-numeric: tabular-nums;
   line-height: 1;
-
-  @media ${BELOW_TABLET} {
-    font-size: ${TEXT_XXL};
-  }
 `;
 
 const ClassPicker = styled.div`
@@ -336,8 +331,8 @@ const ClassPicker = styled.div`
 
 const Block = styled.section`
   border-top: 1px solid ${COLOR_LINE};
-  margin-top: ${SPACE_MD};
-  padding-top: ${SPACE_MD};
+  margin-top: ${SPACE_SM};
+  padding-top: ${SPACE_SM};
 `;
 
 const BlockHead = styled.div`
@@ -364,14 +359,14 @@ const Attributes = styled.ul<{ $editable: boolean }>`
   }
 `;
 
-// Desktop: a row about 30px tall (name, bar, value). Phones: a cell, the name and value over the bar.
+// Desktop: a row about 25px tall (name, bar, value; T66: from 30, so the card fits above the fold). Phones: a cell, the name and value over the bar.
 const Attribute = styled.li<{ $editable: boolean }>`
   align-items: center;
   column-gap: 12px;
   display: grid;
   grid-template-areas: 'name bar value';
   grid-template-columns: 96px minmax(0, 1fr) ${({ $editable }) => ($editable ? '56px' : '30px')};
-  min-height: 30px;
+  min-height: 25px;
 
   @media ${BELOW_TABLET} {
     grid-template-areas: ${({ $editable }) => ($editable ? `'name' 'value' 'bar'` : `'name value' 'bar bar'`)};

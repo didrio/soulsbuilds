@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { makeStore } from '@/app/store';
 import { arrows, spells, talismans, weapons } from '@/data';
-import { equipmentGroups, gearGroups } from './gear';
+import {
+  equipmentGroups,
+  equipmentLayout,
+  gearGroups,
+  type GearGroup,
+  type GearGroupKey,
+} from './gear';
 import { selectGearState } from './store/derived';
 import { updateArrow, updateTal, updateWeapon } from './store/equipment';
 import { updateSpell } from './store/spells';
@@ -141,5 +147,55 @@ describe('equipmentGroups (the Equipment panel, T63)', () => {
   it('editable: the same groups as the editor (every slot to choose)', () => {
     const store = makeStore();
     expect(panel(store, true)).toEqual(gearGroups(selectGearState(store.getState()), true));
+  });
+});
+
+describe('equipmentLayout (the Equipment panel, T66)', () => {
+  const group = (key: GearGroupKey, tiles: number): GearGroup => ({
+    key,
+    title: key,
+    entries: Array.from({ length: tiles }, (_, index) => ({
+      id: `${key}${index}`,
+      label: key,
+      item: null,
+    })) as unknown as GearGroup['entries'],
+  });
+  const fixed = [
+    group('flask', 4),
+    group('talismans', 4),
+    group('armor', 4),
+    group('leftHand', 3),
+    group('rightHand', 3),
+  ];
+  const layout = (groups: GearGroup[]) =>
+    equipmentLayout(groups).map(({ group, wide }) => `${group.key}${wide ? ' (wide)' : ''}`);
+
+  it('puts the hands, then armor and talismans, side by side; a flask alone spans its row', () => {
+    expect(layout(fixed)).toEqual(['rightHand', 'leftHand', 'armor', 'talismans', 'flask (wide)']);
+  });
+
+  it('pairs the flask, arrows, spells and items while each has at most five tiles', () => {
+    expect(layout([...fixed, group('arrows', 2), group('spells', 5), group('items', 3)])).toEqual([
+      'rightHand',
+      'leftHand',
+      'armor',
+      'talismans',
+      'flask',
+      'arrows',
+      'spells',
+      'items',
+    ]);
+    expect(layout([...fixed, group('spells', 3)]).slice(4)).toEqual(['flask', 'spells']);
+  });
+
+  it('gives a group of more than five tiles its own row, and the half left before it too', () => {
+    expect(layout([...fixed, group('spells', 6), group('items', 2)]).slice(4)).toEqual([
+      'flask (wide)',
+      'spells (wide)',
+      'items (wide)',
+    ]);
+    expect(
+      layout([...fixed, group('arrows', 1), group('spells', 8), group('items', 2)]).slice(4),
+    ).toEqual(['flask', 'arrows', 'spells (wide)', 'items (wide)']);
   });
 });
