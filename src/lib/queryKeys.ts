@@ -25,6 +25,8 @@ export const queryKeys = {
   userBuilds: (userId: string) => ['builds', 'user', userId] as const,
   likedBuilds: (userId: string) => ['builds', 'liked', userId] as const,
   hasLiked: (buildId: string, userId: string) => ['likes', buildId, userId] as const,
+  /** Every build a user likes (T79: the hearts on build rows), one query for a whole list. */
+  likedIds: (userId: string) => ['likedIds', userId] as const,
   comments: (buildId: string) => ['comments', buildId] as const,
   /** A build's newest comment (the phone's Comments header, T49); under the comments prefix. */
   latestComment: (buildId: string) => ['comments', buildId, 'latest'] as const,

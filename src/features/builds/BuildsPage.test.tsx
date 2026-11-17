@@ -68,9 +68,7 @@ describe('BuildsPage (T74)', () => {
     renderWithProviders(<BuildsPage />, { route: '/builds' });
     expect(await screen.findByText('Bleed')).toBeInTheDocument();
     expect(firebase.listBuilds).toHaveBeenCalledWith(expect.objectContaining({ sort: 'top' }));
-    expect(
-      screen.getByRole('heading', { level: 1, name: 'Elden Ring builds' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1, name: 'View builds' })).toBeInTheDocument();
     expect(screen.getByText('3 builds')).toBeInTheDocument();
     expect(document.head.querySelector('link[rel="canonical"]')).toHaveAttribute(
       'href',

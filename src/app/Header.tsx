@@ -3,8 +3,10 @@ import { Link, NavLink, useMatch } from 'react-router';
 import styled from 'styled-components';
 import Button, { ButtonLink } from '@/components/ui/Button';
 import FocusScope from '@/components/ui/FocusScope';
+import Label from '@/components/ui/Label';
 import { CloseIcon, MenuIcon, PlusIcon } from '@/components/ui/icons';
 import OutsideClickHandler from '@/components/ui/OutsideClickHandler';
+import GameMenu, { GameList } from './GameMenu';
 import NewHereStrip from './NewHereStrip';
 import useAuth from '@/features/auth/useAuth';
 import { signOut } from '@/lib/firebase';
@@ -21,12 +23,9 @@ import {
   SHADOW_OVERLAY,
   SPACE_GUTTER,
   TEXT_BODY,
-  TEXT_MD,
   TEXT_SM,
-  TEXT_XS,
 } from '@/theme';
 import AccountMenu, { useDisplayName } from './AccountMenu';
-import { useCurrentGame } from './game';
 
 interface HeaderProps {
   /** Which auth dialog is open, for aria-expanded. */
@@ -39,13 +38,13 @@ interface HeaderProps {
  * Full-width bar: the wordmark and the current game; Builds, the account menu (the display name:
  * Profile, Account, Log out; T31) and New build (the primary button), or Builds, Plan a build (the
  * planner opens signed out, T68), Log in and Sign up. Phones: a labelled "+" (New build, or Plan a
- * build) and a Menu button that opens the rest as a panel under the bar.
+ * build) and a Menu button that opens the rest as a panel under the bar (with the game list, T79).
+ * The game name next to the wordmark is the game menu (T79, `GameMenu`).
  * On a build's page Builds shows as the current section (T66: the build page's way back to the list,
  * since "All builds" went). Builds is the full list, `/builds`; the wordmark is the home page (T74).
  */
 function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
   const { loading, uid } = useAuth();
-  const game = useCurrentGame();
   const menuId = useId();
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = () => setMenuOpen(false);
@@ -69,7 +68,7 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
     <Bar>
       <Inner>
         <Wordmark to="/">Souls Builds</Wordmark>
-        <GameName>{game.name}</GameName>
+        <GameMenu />
         <NewHereStrip place="header" />
         {loading ? null : (
           <>
@@ -139,6 +138,10 @@ function Header({ openDialog, onLogIn, onSignUp }: HeaderProps) {
                         logIn(closeMenu)
                       )}
                     </nav>
+                    <PhoneGames>
+                      <GameLabel>Game</GameLabel>
+                      <GameList onNavigate={closeMenu} />
+                    </PhoneGames>
                   </Menu>
                 ) : null}
               </OutsideClickHandler>
@@ -200,23 +203,16 @@ const Inner = styled.div`
 const Wordmark = styled(Link)`
   color: ${COLOR_TEXT};
   font-family: ${FONT_BRAND};
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  margin-right: 12px; /* T79: room between the wordmark and the game menu */
   white-space: nowrap;
 
+  /* Phones: the game menu moves into the Menu panel, so the bar has room (T79). */
   @media ${BELOW_MOBILE} {
-    font-size: 17px;
-  }
-`;
-
-const GameName = styled.span`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_MD};
-  white-space: nowrap;
-
-  @media ${BELOW_MOBILE} {
-    font-size: ${TEXT_XS};
+    font-size: 19px;
+    margin-right: 0;
   }
 `;
 
@@ -243,7 +239,7 @@ const NavItem = styled(NavLink)<{ $section?: boolean }>`
   display: inline-flex;
   font-weight: 500;
   min-height: 44px;
-  padding: 0 12px;
+  padding: 0 12px 1px; /* T79: lifts mixed-case text to the optical center, like opticalCenter */
   white-space: nowrap;
 
   &:hover,
@@ -323,6 +319,23 @@ const Menu = styled(FocusScope)`
   & > nav > p {
     border-top: 1px solid ${COLOR_LINE};
   }
+`;
+
+// The game list in the phone menu (T79), under the links.
+const PhoneGames = styled.div`
+  border-top: 1px solid ${COLOR_LINE};
+  margin-top: 8px;
+  padding-top: 8px;
+
+  li > a,
+  li[aria-disabled] {
+    padding: 0 8px;
+  }
+`;
+
+const GameLabel = styled(Label)`
+  display: block;
+  padding: 4px 8px;
 `;
 
 const SignedInAs = styled.p`

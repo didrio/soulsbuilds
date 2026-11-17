@@ -13,6 +13,13 @@ export const GAMES: Record<GameId, Game> = {
   [GAME_ELDEN_RING]: { id: GAME_ELDEN_RING, name: 'Elden Ring' },
 };
 
+/** Games the header's game menu lists as "Coming soon" (T79): where players will switch games. */
+export const UPCOMING_GAMES: readonly string[] = [
+  'Dark Souls Remastered',
+  'Dark Souls II',
+  'Dark Souls III',
+];
+
 /**
  * The game the current page is about. One game today; when per-game routes arrive (e.g. `/ds3/…`),
  * this reads the route (or the build's `game`) and nothing that calls it changes.

@@ -46,7 +46,7 @@ describe('the home intro (T69)', () => {
     for (const panel of INTRO_PANELS) {
       expect(home).toContain(`>${panel.title}</a></h2>`);
       expect(home).toContain(`<p>${panel.text}</p>`);
-      if (panel.to) expect(home).toContain(`<a href="${panel.to}">${panel.title}</a>`);
+      expect(home).toContain(`<a href="${panel.to}">${panel.title}</a>`);
     }
   });
 });

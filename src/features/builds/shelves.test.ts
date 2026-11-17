@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SearchEntry } from '@/lib/models';
-import { arrangeShelves, indexShelves, trendingIds, type Shelf } from './shelves';
+import { arrangeShelves, tagShelves, trendingIds, type Shelf } from './shelves';
 
 const entry = (id: string, createdAt: number, more: Partial<SearchEntry> = {}): SearchEntry => ({
   id,
@@ -45,29 +45,13 @@ describe('trendingIds', () => {
   });
 });
 
-describe('indexShelves', () => {
-  it('Most played needs three played builds; ordered by players, then newest', () => {
-    expect(
-      indexShelves(
-        many(5, (i) => ({ playerCount: i < 2 ? 1 : 0 })),
-        {},
-      ).played,
-    ).toBeNull();
-    const played = indexShelves(
-      many(5, (i) => ({ playerCount: [1, 3, 1, 0, 0][i] })),
-      {},
-    ).played;
-    expect(played).toMatchObject({ title: 'Most played', href: '/builds?sort=played' });
-    expect(played?.ids).toEqual(['b1', 'b0', 'b2']);
-  });
-
+describe('tagShelves', () => {
   it('a Top shelf per most used tag with three builds or more, most liked first', () => {
     const index = many(6, (i) => ({
       tags: i < 4 ? ['Bleed (Hemorrhage)'] : ['Mohg'],
       likeCount: i === 3 ? 5 : 0,
     }));
-    const { tags } = indexShelves(index, { 'Bleed (Hemorrhage)': 4, Mohg: 2 });
-    expect(tags).toEqual([
+    expect(tagShelves(index, { 'Bleed (Hemorrhage)': 4, Mohg: 2 })).toEqual([
       {
         key: 'tag:Bleed (Hemorrhage)',
         title: 'Top Bleed builds',
@@ -78,12 +62,22 @@ describe('indexShelves', () => {
     ]);
   });
 
+  it('three shelves at most, for the three most used tags', () => {
+    const index = many(8, () => ({ tags: ['Bleed (Hemorrhage)', 'Dexterity', 'Katana', 'Mohg'] }));
+    const counts = { 'Bleed (Hemorrhage)': 4, Dexterity: 4, Katana: 4, Mohg: 3 };
+    // Every tag is on all 8 builds, under BROAD_FROM (10), so none counts as too broad.
+    expect(tagShelves(index, counts).map((shelf) => shelf.title)).toEqual([
+      'Top Bleed builds',
+      'Top Dexterity builds',
+      'Top Katana builds',
+    ]);
+  });
+
   it('no shelf for a tag on most builds ("PVE")', () => {
     const index = many(12, (i) => ({ tags: i < 9 ? ['PVE', 'Faith'] : ['PVE'] }));
-    const { tags } = indexShelves(index, { PVE: 12, Faith: 9 });
-    expect(tags.map((shelf) => shelf.title)).toEqual([]);
+    expect(tagShelves(index, { PVE: 12, Faith: 9 }).map((shelf) => shelf.title)).toEqual([]);
     const fewer = many(12, (i) => ({ tags: i < 9 ? ['PVE'] : ['Faith'] }));
-    expect(indexShelves(fewer, { PVE: 9, Faith: 3 }).tags.map((s) => s.title)).toEqual([
+    expect(tagShelves(fewer, { PVE: 9, Faith: 3 }).map((s) => s.title)).toEqual([
       'Top Faith builds',
     ]);
   });
@@ -91,16 +85,20 @@ describe('indexShelves', () => {
 
 describe('arrangeShelves', () => {
   const shelf = (key: string): Shelf => ({ key, title: key, caption: '', href: '', ids: [] });
+  const keys = (list: Shelf[]) => list.map((s) => s.key);
+
+  it('the Top shelves, then Fresh builds', () => {
+    expect(keys(arrangeShelves([shelf('a'), shelf('b'), shelf('c')], shelf('fresh')))).toEqual([
+      'a',
+      'b',
+      'c',
+      'fresh',
+    ]);
+  });
 
   it('keeps an even number (two across): the last tag shelf goes', () => {
-    const keys = (list: Shelf[]) => list.map((s) => s.key);
-    expect(keys(arrangeShelves(shelf('played'), shelf('fresh'), [shelf('a'), shelf('b')]))).toEqual(
-      ['played', 'fresh', 'a', 'b'],
-    );
-    expect(keys(arrangeShelves(null, shelf('fresh'), [shelf('a'), shelf('b')]))).toEqual([
-      'fresh',
-      'a',
-    ]);
-    expect(keys(arrangeShelves(null, shelf('fresh'), []))).toEqual(['fresh']);
+    expect(keys(arrangeShelves([shelf('a'), shelf('b')], shelf('fresh')))).toEqual(['a', 'fresh']);
+    expect(keys(arrangeShelves([], shelf('fresh')))).toEqual(['fresh']);
+    expect(keys(arrangeShelves([shelf('a'), shelf('b'), shelf('c')], null))).toEqual(['a', 'b']);
   });
 });

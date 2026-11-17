@@ -15,13 +15,13 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74, T76, T78 done; T72, T73, T75, T77 (the UI/UX pass) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74, T76, T78, T79 done; T72, T73, T75, T77 (the UI/UX pass) and T80 (stats unattended, at scale) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T48, T63, T66): unframed top section (title block, then one sticky row: tabs + Track/Like/Share; a full build's Equipment tab fits 1440×820, `fold.spec`), tabs Equipment (stats beside the equipment panel, same height), Guide, and the discussion tab, labelled "Write-up & comments" or just "Comments" (T71; write-up on top, then comments: likes, Top/Newest, one reply level, T62) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
-only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Planning needs no account: `/build/new` opens for anyone, Save asks to sign up (T68); signed out, `/` opens with an intro (T69). Home `/` = shelves, `/builds` = the full list with search over a daily index (T74). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done; readability pass (T67): larger rem type, Inter write-ups, ~72-character lines, 1200px. **Next:** `TICKETS.md`.
+only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Planning needs no account: `/build/new` opens for anyone, Save asks to sign up (T68); signed out, `/` opens with an intro (T69). Home `/` = shelves, `/builds` = the full list with search over a daily index (T74). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done; readability pass (T67): larger rem type, Inter write-ups, ~72-character lines, 1200px. Polish (T79): Spectral headings, softer contrast, level colors by band, gold row hearts that like. **Next:** `TICKETS.md`.
 
 ## Golden rules
 
@@ -112,20 +112,24 @@ src/
                            routes.tsx (/, /builds, /build/:buildId/*, /weapons/:slug, /tags/:slug, /user/:userId, /account, /auth/action, /privacy, /terms, 404), AppProviders
                            (Query, Auth, Redux, router), queryClient, store.ts, hooks.ts (useAppSelector/Dispatch),
                            NewHereStrip (T70: signed out, on build/weapon/tag pages: one line on what the site is + How it works → `/`; in the header row ≥ 1200px (the build's fold), else a row under it; dismissed in localStorage),
-                           Header + AccountMenu (T31: the display name opens Profile, Account, Log out)
+                           Header + AccountMenu (T31: the display name opens Profile, Account, Log out) + GameMenu (T79: the
+                           game name opens the games, the Dark Souls ones "Coming soon"; phones: in the Menu panel)
   features/auth/           AuthProvider + useAuth ({ loading, user, uid }); AuthDialog (T30: views Login, SignUp,
                            ForgotPassword, ChooseName = the display-name step for any account without a profile;
                            GoogleButton, FormField + useFieldErrors: errors by field, focus the first; action/ = the page behind the emails' links, `/auth/action`, T43: ActionPage → ResetPassword, VerifyEmail)
-  features/builds/         LandingIntro (T69: signed out only, above the shelves: the page's h1, one sentence, three
-                           Frame panels: Start planning, See an example route, Browse builds; copy, icons and the
-                           example build in intro.ts, mirrored in index.html's #root for crawlers),
-                           Landing = the home `/` (T74: title + "Search and filter all builds", shelves from shelves.ts:
-                           Trending, Most played, Fresh builds, Top <tag> builds; Popular weapons; View all),
+  features/builds/         LandingIntro (T69; T79 for everyone: the page's h1, one sentence, "View all builds", then three
+                           panels in a box closed for good with its X (localStorage): Start planning, See an example
+                           route, Browse builds; copy, icons and the example build in intro.ts, mirrored in
+                           index.html's #root for crawlers),
+                           Landing = the home `/` (T74, order T79; shelves.ts: Popular weapons, Trending, then 2×2: Top
+                           <tag> builds for the 3 most used tags, Fresh builds),
                            BuildsPage = `/builds` (T74: search, FilterBar = Sort/Level/Tags/Weapon popovers (Popover in
                            components/ui) or a phone Filters sheet, FilterControls, removable chips, count; load more),
-                           BuildsList (rows: likes rail, portrait, name, meta (comments, playing), tags, slot strip, Lv;
+                           BuildsList (rows: likes rail (T79: gold heart, a like button signed in; useLikedIds = one read),
+                           portrait, name (the row's stretched link), meta (comments, playing), tags or "No tags", slot
+                           strip, Lv in its band's color;
                            `compact` for shelves; tags.ts fits tags on one line + "+N"), filters.ts (URL filters, weapon,
-                           LEVEL_PRESETS, activeFilters, buildsHref), search.ts (the daily index: words anywhere,
+                           LEVEL_PRESETS = the level bands, activeFilters, buildsHref), search.ts (the daily index: words anywhere,
                            suggestions, resultCount; pure), queries.ts (useBuilds, useBuildSearch, useBuildsByIds,
                            useFreshBuilds, useUserBuilds, useGameStats)
   features/profile/        Profile = the public page (T31: framed hero; Builds/Liked tabs; the owner's Playing/Completed,
@@ -171,7 +175,8 @@ src/
                            selectGearState) + build.ts (loadBuild / selectBuildFields: build ⇄ editor state)
   components/ui/           Shared UI: Button (+ButtonLink, variants), TextButton/TextLink, TextInput/TextAreaInput,
                            PasswordInput (Show/Hide), DropDown, SegmentedControl, Chips (tag picker), Tag, Dialog, Tooltip, PageMessage, PageHead (T51: title, description, canonical, noindex; edits the existing head tags),
-                           ErrorMessage, FocusScope, icons, Label + typography.ts (type tiers); Frame (panel,
+                           ErrorMessage, FocusScope, icons, LevelNumber (T79: a level in its band's color, legend on
+                           hover), Label + typography.ts (type tiers, opticalCenter); Frame (panel,
                            `$hero`), SectionHeading, Ornament, PageHero, ItemTile, inWorld.ts (panel, hero frame,
                            selection-bar CSS)…
   lib/                     firebase/ (ALL Auth/Firestore access: app (+ App Check; appCheckStatus watches
@@ -181,7 +186,7 @@ src/
                            (firstParagraph), tracking.ts (T34: item keys, progress, changes, merge; pure),
                            buildMath.ts (level, stat clamping, T8
                            vitals/equip load/poise/requirements/memory slots; pure, game tables as arguments),
-                           relativeTime.ts ("3 days ago"), comments.ts (T62: threads, sort, replies shown; pure), slug.ts (T56: a name as a URL segment), hubs.ts (T55: weapon/tag slugs, paths,
+                           relativeTime.ts ("3 days ago"), levels.ts (T79: level bands; pure), comments.ts (T62: threads, sort, replies shown; pure), slug.ts (T56: a name as a URL segment), hubs.ts (T55: weapon/tag slugs, paths,
                            titles, Popular weapons; pure), shareText.ts (T54: a build as Reddit markdown), array.ts, usage.ts (T38: GoatCounter page views + events, live site only)
   theme/                   Tokens: colors.ts (base) + skins.ts (per-game accent, as CSS vars), fonts (FONT_*,
                            TEXT_*), spacing, radius, elevation, motion, media (BELOW_MOBILE/TABLET), GlobalStyle,

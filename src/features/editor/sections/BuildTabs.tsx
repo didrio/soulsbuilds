@@ -221,7 +221,8 @@ const Count = styled.span`
   font-size: ${TEXT_XS};
   font-variant-numeric: tabular-nums;
   font-weight: 600;
-  padding: 1px 6px;
+  line-height: 1;
+  padding: 4px 6px 5px;
 `;
 
 export default BuildTabs;

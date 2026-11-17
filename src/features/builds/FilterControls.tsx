@@ -2,6 +2,7 @@
 // (presets + custom), Tags (the most used + all), Weapon (those in builds, findable by name).
 import { useState, type FormEvent } from 'react';
 import styled from 'styled-components';
+import { LEVEL_BAND_COLORS } from '@/components/ui/LevelNumber';
 import Chips from '@/components/ui/Chips';
 import TextInput from '@/components/ui/TextInput';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
@@ -12,6 +13,7 @@ import type { BuildSort } from '@/lib/firebase';
 import { tagLabel, weaponSlug } from '@/lib/hubs';
 import {
   COLOR_ACCENT,
+  COLOR_BG,
   COLOR_LINE,
   COLOR_SURFACE,
   COLOR_TEXT,
@@ -81,7 +83,10 @@ export function LevelOptions({ filters, onChange }: { filters: BuildFilters; onC
               setMaxText(String(option.maxLevel));
               onChange({ minLevel: option.minLevel, maxLevel: option.maxLevel });
             }}>
-            <Dot aria-hidden="true" />
+            <Dot
+              aria-hidden="true"
+              style={option.band ? { background: LEVEL_BAND_COLORS[option.band] } : undefined}
+            />
             {option.label}
             {option.note ? <Note>{option.note}</Note> : null}
           </Option>
@@ -258,8 +263,10 @@ const Option = styled.button`
     background: ${COLOR_SURFACE};
   }
 
+  /* Each band's dot is filled with its color (T79); the chosen one gets the accent ring. */
   &[aria-pressed='true'] ${Dot} {
-    border: 4px solid ${COLOR_ACCENT};
+    border: 2px solid ${COLOR_ACCENT};
+    box-shadow: 0 0 0 2px ${COLOR_BG};
   }
 
   &[aria-pressed='true'] {

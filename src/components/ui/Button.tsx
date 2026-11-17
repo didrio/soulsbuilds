@@ -7,7 +7,7 @@ import {
   COLOR_ACCENT_STRONG,
   COLOR_DANGER,
   COLOR_DANGER_SOFT,
-  COLOR_LINE_STRONG,
+  COLOR_LINE_CONTROL,
   COLOR_ON_ACCENT,
   COLOR_SURFACE_RAISED,
   COLOR_TEXT,
@@ -18,6 +18,7 @@ import {
   TEXT_MD,
   TEXT_SM,
 } from '@/theme';
+import { opticalCenter } from './typography';
 
 /**
  * - `primary`: the one main action on a screen (the accent; one per screen, part of the accent budget).
@@ -60,7 +61,7 @@ const variants = {
   `,
   secondary: css`
     color: ${COLOR_TEXT};
-    border-color: ${COLOR_LINE_STRONG};
+    border-color: ${COLOR_LINE_CONTROL};
     background: ${COLOR_SURFACE_RAISED};
 
     &:not(:disabled):hover {
@@ -102,11 +103,13 @@ const base = css<{ $variant: ButtonVariant }>`
   min-height: 44px;
   padding: 0 16px;
   text-align: center;
+  ${opticalCenter}
 
   /* Phones: 14px and tighter sides, so a row of buttons (the build's Track, Like, Share) fits (T67). */
   @media ${BELOW_MOBILE} {
     font-size: ${TEXT_SM};
-    padding: 0 12px;
+    padding-left: 12px;
+    padding-right: 12px;
   }
   transition:
     box-shadow ${DURATION_FAST},

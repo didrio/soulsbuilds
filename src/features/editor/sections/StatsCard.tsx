@@ -14,7 +14,10 @@ import {
   COLOR_ACCENT,
   COLOR_ACCENT_DEEP,
   COLOR_DANGER,
+  COLOR_FP,
+  COLOR_HP,
   COLOR_LINE,
+  COLOR_STAMINA,
   COLOR_SUCCESS,
   COLOR_TEXT,
   COLOR_TEXT_MUTED,
@@ -209,19 +212,21 @@ function StatsCard({
       </Block>
 
       <Block aria-labelledby="character-title">
-        <BlockLabel as="h3" id="character-title">
-          Character
-        </BlockLabel>
+        <BlockHead>
+          <BlockLabel as="h3" id="character-title">
+            Character
+          </BlockLabel>
+        </BlockHead>
         <Vitals>
-          <Vital $area="hp">
+          <Vital $area="hp" $color={COLOR_HP}>
             <dt>HP</dt>
             <dd>{formatNumber(hp)}</dd>
           </Vital>
-          <Vital $area="fp">
+          <Vital $area="fp" $color={COLOR_FP}>
             <dt>FP</dt>
             <dd>{formatNumber(fp)}</dd>
           </Vital>
-          <Vital $area="stamina">
+          <Vital $area="stamina" $color={COLOR_STAMINA}>
             <dt>Stamina</dt>
             <dd>{formatNumber(stamina)}</dd>
           </Vital>
@@ -438,9 +443,11 @@ const AttributeValue = styled.span`
 `;
 
 // Desktop: HP | FP | Stamina, then the load, then poise. Phones: HP | FP | Stamina | Poise, then the load.
+// T79: the rows get more air (they read as squashed); 1280×800 still fits (`fold.spec`).
 const Vitals = styled.dl`
+  column-gap: ${SPACE_SM};
   display: grid;
-  gap: ${SPACE_SM}; /* T67: from 12, for the fold */
+  row-gap: ${SPACE_GROUP};
   grid-template-areas: 'hp fp stamina' 'load load load' 'poise poise poise';
   grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
@@ -448,6 +455,7 @@ const Vitals = styled.dl`
   dt {
     color: ${COLOR_TEXT_MUTED};
     font-size: ${TEXT_XS};
+    line-height: 1.3;
   }
 
   dd {
@@ -472,11 +480,13 @@ const bigValue = css`
   }
 `;
 
-const Vital = styled.div<{ $area: string }>`
+// HP, FP and stamina in the game's bar colors (T79).
+const Vital = styled.div<{ $area: string; $color: string }>`
   grid-area: ${({ $area }) => $area};
 
   dd {
     ${bigValue}
+    color: ${({ $color }) => $color};
   }
 `;
 
@@ -562,7 +572,7 @@ const Poise = styled.div`
   display: flex;
   grid-area: poise;
   justify-content: space-between;
-  padding-top: ${SPACE_GROUP};
+  padding-top: ${SPACE_SM};
 
   dd {
     color: ${COLOR_TEXT};

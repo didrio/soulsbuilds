@@ -2,9 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   COLOR_BG,
   COLOR_DANGER,
+  COLOR_FP,
+  COLOR_HP,
   COLOR_INSET,
+  COLOR_LEVEL_EARLY,
+  COLOR_LEVEL_END,
+  COLOR_LEVEL_LATE,
+  COLOR_LEVEL_MID,
+  COLOR_LEVEL_PVP,
   COLOR_LINE_STRONG,
   COLOR_PLACEHOLDER,
+  COLOR_STAMINA,
   COLOR_SUCCESS,
   COLOR_SURFACE,
   COLOR_SURFACE_RAISED,
@@ -44,7 +52,21 @@ const BACKGROUNDS = {
   COLOR_INSET,
   COLOR_TILE_BOTTOM,
 };
-const TEXT = { COLOR_TEXT, COLOR_TEXT_MUTED, COLOR_DANGER, COLOR_SUCCESS };
+const TEXT = {
+  COLOR_TEXT,
+  COLOR_TEXT_MUTED,
+  COLOR_DANGER,
+  COLOR_SUCCESS,
+  // T79: the vitals and the level bands are text too.
+  COLOR_HP,
+  COLOR_FP,
+  COLOR_STAMINA,
+  COLOR_LEVEL_EARLY,
+  COLOR_LEVEL_MID,
+  COLOR_LEVEL_LATE,
+  COLOR_LEVEL_PVP,
+  COLOR_LEVEL_END,
+};
 
 describe('contrast (WCAG AA)', () => {
   it('helper matches known values', () => {

@@ -20,17 +20,17 @@ export interface GameSkin {
 }
 
 export const SKINS: Record<GameId, GameSkin> = {
-  // Elden Ring: Erdtree gold.
+  // Elden Ring: Erdtree gold (T79: a shade deeper, so the primary button doesn't glare).
   [GAME_ELDEN_RING]: {
-    accent: '#d8b874',
-    accentStrong: '#f0d495',
+    accent: '#cdad6c',
+    accentStrong: '#e2c487',
     accentDeep: '#8a6d35',
     onAccent: '#1a1307',
-    frame: 'rgba(216, 184, 116, 0.34)',
-    frameSoft: 'rgba(216, 184, 116, 0.16)',
+    frame: 'rgba(205, 173, 108, 0.34)',
+    frameSoft: 'rgba(205, 173, 108, 0.16)',
     glow: 'rgba(232, 196, 120, 0.13)',
     tint: 'rgba(232, 196, 120, 0.15)',
-    accentLine: 'rgba(216, 184, 116, 0.6)',
+    accentLine: 'rgba(205, 173, 108, 0.6)',
     celebrate: 'rgba(240, 212, 149, 0.55)',
   },
 };

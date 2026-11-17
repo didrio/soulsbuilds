@@ -115,7 +115,7 @@ function BuildsPage() {
     <>
       <PageHead {...buildsMeta(game.name)} canonical={`${SITE_ORIGIN}${BUILDS_PATH}`} />
       <Heading>
-        <Title>{`${game.name} builds`}</Title>
+        <Title>View builds</Title>
         {stats && stats.buildCount > 0 ? (
           <Community>
             <b>{stats.buildCount}</b> {stats.buildCount === 1 ? 'build' : 'builds'} by{' '}

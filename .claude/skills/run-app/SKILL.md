@@ -19,7 +19,9 @@ npm run dev
 
 It starts the auth + firestore emulators (project `demo-soulsbuilds`), seeds them (`scripts/seed.mjs`), then
 Vite at **http://127.0.0.1:5180**. Wait for the `Local:` line. Data resets on every start; re-seed a running
-instance with `npm run seed` (it wipes the emulator's Firestore first). Emulator UI (browse Firestore docs, auth users): http://127.0.0.1:4005.
+instance with `npm run seed` (it wipes the emulator's Firestore first). The test seed has 5 builds, too few for the home page's Popular weapons and Top shelves (3 builds
+each): add the 22 real seeded builds with `node scripts/seed-builds.mjs --write`, then `node scripts/admin.mjs
+stats --write` (T79; e2e works with or without them). Emulator UI (browse Firestore docs, auth users): http://127.0.0.1:4005.
 
 - Port busy? `npm run doctor` says which. Reuse a running `npm run dev` rather than starting a second.
 - Vite only (no Firebase), e.g. for pure layout work: `npm run dev:vite` (data calls will fail).

@@ -11,6 +11,7 @@ import {
   RADIUS_FRAME,
   TEXT_SM,
 } from '@/theme';
+import { opticalCenter } from './typography';
 
 interface SegmentedControlProps<T extends string> {
   /** Accessible name of the group (e.g. "Sort builds"). */
@@ -58,6 +59,7 @@ const Segment = styled.button`
   font-weight: 500;
   min-height: 42px;
   padding: 0 16px;
+  ${opticalCenter}
   position: relative;
 
   & + & {

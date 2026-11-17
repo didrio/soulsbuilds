@@ -1,6 +1,7 @@
 import { Fragment, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import styled from 'styled-components';
+import LevelNumber from '@/components/ui/LevelNumber';
 import Button from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
 import ItemTile from '@/components/ui/ItemTile';
@@ -102,7 +103,7 @@ function BuildHeader({ build, ownerActions, actions }: BuildHeaderProps) {
           </span>
         ) : null}
         <span>
-          Level <Strong>{build.level}</Strong>
+          Level <LevelValue level={build.level} legend />
         </span>
         <Players build={build} />
         <time dateTime={build.createdAt.toISOString()} title={formatFullDate(build.createdAt)}>
@@ -149,17 +150,17 @@ export function BuildActions({ build, trackAction }: { build: Build; trackAction
     <>
       {trackAction}
       {uid ? (
-        <Button
+        <LikeButton
           variant="secondary"
           aria-pressed={isLiked}
           disabled={toggleLike.isPending || liked.isPending}
           onClick={() => toggleLike.mutate(!isLiked)}>
-          <Heart filled={isLiked} $liked={isLiked} />
+          <Heart filled={build.likeCount > 0} $liked={isLiked} />
           {likesLabel(build.likeCount)}
-        </Button>
+        </LikeButton>
       ) : (
         <LikeCount>
-          <Heart $liked={false} />
+          <Heart filled={build.likeCount > 0} $liked={false} />
           {likesLabel(build.likeCount)}
         </LikeCount>
       )}
@@ -273,6 +274,11 @@ const AuthorLink = styled(Link)`
   }
 `;
 
+// The level in its band's color, the bands on hover (T79).
+const LevelValue = styled(LevelNumber)`
+  font-weight: 700;
+`;
+
 const Strong = styled.b`
   color: ${COLOR_TEXT};
   font-variant-numeric: tabular-nums;
@@ -312,8 +318,22 @@ const LikeError = styled.div`
 `;
 
 // The accent only when you've liked it (the liked state is in the accent budget).
+// Always gold (T79), like the hearts on build rows; filled once the build has any likes (outlined: none).
+// Your like is the button's pressed look.
 const Heart = styled(HeartIcon)<{ $liked: boolean }>`
-  color: ${({ $liked }) => ($liked ? COLOR_ACCENT : COLOR_TEXT_MUTED)};
+  color: ${COLOR_ACCENT};
+
+  /* No likes yet (outlined): a little dimmer. */
+  &[fill='none'] {
+    opacity: 0.55;
+  }
+`;
+
+// Liked by you (T79): a gold border, since the heart's fill now means "has likes".
+const LikeButton = styled(Button)`
+  &[aria-pressed='true'] {
+    border-color: ${COLOR_ACCENT};
+  }
 `;
 
 const LikeCount = styled.span`

@@ -14,6 +14,7 @@ import {
   SPACE_XS,
   TEXT_SM,
 } from '@/theme';
+import { opticalCenter } from './typography';
 import FocusScope from './FocusScope';
 import { ChevronDownIcon } from './icons';
 import OutsideClickHandler from './OutsideClickHandler';
@@ -82,6 +83,7 @@ const Trigger = styled.button<{ $active: boolean; $open: boolean }>`
   gap: 6px;
   min-height: 44px;
   padding: 0 12px;
+  ${opticalCenter}
   white-space: nowrap;
 
   &:hover {

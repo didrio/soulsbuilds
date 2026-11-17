@@ -1,4 +1,4 @@
-// The home page's intro for signed-out visitors (T69): what Souls Builds is and the three things you can do.
+// The home page's intro (T69; since T79 for everyone, its panels dismissible): what Souls Builds is and the three things you can do.
 // Pure, so the component, the static copy in index.html (what crawlers read on `/`) and the tests agree.
 import { getCardSpell, getCardTalisman, getCardWeapon, type SlotDisplayItem } from '@/data/core';
 import { tabPath } from '@/features/editor/tabs';
@@ -21,9 +21,6 @@ export const EXAMPLE_BUILD = {
 
 export const EXAMPLE_GUIDE_PATH = tabPath(EXAMPLE_BUILD.id, 'guide', EXAMPLE_BUILD.name);
 
-/** The id of the list's heading, which "Browse builds" scrolls to. */
-export const LIST_HEADING_ID = 'landing-title';
-
 export type IntroIcon = { kind: 'weapon' | 'talisman' | 'spell'; id: number };
 
 export interface IntroPanel {
@@ -31,8 +28,7 @@ export interface IntroPanel {
   title: string;
   text: string;
   action: string;
-  /** A route, or null for "Browse builds" (it scrolls to the list). */
-  to: string | null;
+  to: string;
   event: UsageEvent;
   /** Decorative item icons, by game ID. */
   icons: IntroIcon[];
@@ -72,7 +68,7 @@ export const INTRO_PANELS: IntroPanel[] = [
     title: 'Share and discover',
     text: 'One link shows the whole build. Browse what other players run, and like the ones you’d try.',
     action: 'Browse builds',
-    to: null,
+    to: '/builds',
     event: 'intro-browse',
     // Rivers of Blood, Bloodhound's Fang, Black Knife.
     icons: [

@@ -28,8 +28,8 @@ await bundle.write({
 
 mkdirSync(resolve(root, 'functions/fonts'), { recursive: true });
 for (const [pkg, file] of [
-  ['eb-garamond', 'eb-garamond-latin-400-normal.woff'],
-  ['eb-garamond', 'eb-garamond-latin-600-normal.woff'],
+  ['spectral', 'spectral-latin-400-normal.woff'],
+  ['spectral', 'spectral-latin-600-normal.woff'],
   ['cinzel', 'cinzel-latin-700-normal.woff'],
 ]) {
   cpSync(

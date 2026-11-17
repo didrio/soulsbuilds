@@ -51,20 +51,18 @@ export interface Shelf {
 }
 
 /**
- * The compact shelves after Trending: Most played (only builds someone plays), then Top builds for the
- * most used tags, each only with `SHELF_MIN` builds or more. Fresh builds comes from Firestore (newer
- * than the index), so the page adds it between these.
+ * The Top shelves (T74; T79: the home page's 2×2 grid with Fresh builds): Top builds for the most used
+ * tags, each only with `SHELF_MIN` builds or more. A tag on most builds ("PVE") isn't a category, so it
+ * gets no shelf once there are enough builds (owner's call, T79).
  */
-export function indexShelves(
+export function tagShelves(
   index: readonly SearchEntry[],
   tagCounts: Record<string, number>,
-  tagShelves = 3,
-): { played: Shelf | null; tags: Shelf[] } {
-  const played = index.filter((entry) => entry.playerCount > 0).sort(compareEntries('played'));
-  // A tag on most builds ("PVE") isn't a category: no shelf for it once there are enough builds.
-  const broad = (count: number) => index.length >= BROAD_FROM && count > index.length / 2;
-  const candidates = topTags(tagCounts, 20).filter(({ count }) => !broad(count));
-  const tags = candidates.slice(0, tagShelves).flatMap(({ tag }): Shelf[] => {
+  count = 3,
+): Shelf[] {
+  const broad = (n: number) => index.length >= BROAD_FROM && n > index.length / 2;
+  const candidates = topTags(tagCounts, 20).filter(({ count: n }) => !broad(n));
+  return candidates.slice(0, count).flatMap(({ tag }): Shelf[] => {
     const withTag = index.filter((entry) => entry.tags.includes(tag)).sort(compareEntries('top'));
     if (withTag.length < SHELF_MIN) return [];
     return [
@@ -77,27 +75,15 @@ export function indexShelves(
       },
     ];
   });
-  return {
-    played:
-      played.length >= SHELF_MIN
-        ? {
-            key: 'played',
-            title: 'Most played',
-            caption: 'Followed through the Guide',
-            href: buildsHref({ sort: 'played' }),
-            ids: played.slice(0, SHELF_SIZE).map((entry) => entry.id),
-          }
-        : null,
-    tags,
-  };
 }
 
 /**
- * The compact shelves in page order, an even number when there are several (two across on desktop):
- * the last tag shelf goes if the count is odd.
+ * The compact shelves in page order (T79): the Top tag shelves, then Fresh builds (from Firestore, so a
+ * new build shows at once). An even number when there are several (two across on desktop): the last
+ * tag shelf goes if the count is odd.
  */
-export function arrangeShelves(played: Shelf | null, fresh: Shelf | null, tags: Shelf[]): Shelf[] {
-  const shelves = [played, fresh, ...tags].filter((shelf): shelf is Shelf => shelf !== null);
+export function arrangeShelves(tags: Shelf[], fresh: Shelf | null): Shelf[] {
+  const shelves = [...tags, fresh].filter((shelf): shelf is Shelf => shelf !== null);
   if (shelves.length > 1 && shelves.length % 2 === 1 && tags.length) {
     const last = tags.at(-1);
     return shelves.filter((shelf) => shelf !== last);

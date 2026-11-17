@@ -87,16 +87,33 @@ describe('Landing: the home shelves (T74)', () => {
     expect(screen.queryByRole('region', { name: 'Most played' })).not.toBeInTheDocument();
   });
 
-  it('links to the full list at the top and the bottom', async () => {
+  it('orders the page: Popular weapons, Trending, then the Top shelves and Fresh builds', async () => {
+    firebase.getGameStats.mockResolvedValue({ ...stats, weaponCounts: { 9060000: 5 } }); // Moonveil
     renderWithProviders(<Landing />, { uid: 'alice' });
-    expect(
-      await screen.findByRole('link', { name: 'Search and filter all builds' }),
-    ).toHaveAttribute('href', '/builds');
-    expect(await screen.findByRole('link', { name: 'View all 128 builds' })).toHaveAttribute(
+    await screen.findByRole('region', { name: 'Trending' });
+    const order = screen
+      .getAllByRole('region')
+      .map((region) => region.getAttribute('aria-labelledby'))
+      .filter((id) => id?.startsWith('shelf-'));
+    expect(order).toEqual(['shelf-weapons', 'shelf-trending', 'shelf-tag-Malenia', 'shelf-fresh']);
+  });
+
+  it('a lone Fresh builds shelf (no Top shelves) takes the full width, with full rows (T79)', async () => {
+    firebase.getGameStats.mockResolvedValue({ ...stats, tagCounts: {} });
+    renderWithProviders(<Landing />, { uid: 'alice' });
+    const fresh = await screen.findByRole('region', { name: 'Fresh builds' });
+    expect(fresh.querySelector('[data-testid="slots"]')).not.toBeNull();
+  });
+
+  it('one way to the full list, at the top; no community count (T79)', async () => {
+    renderWithProviders(<Landing />, { uid: 'alice' });
+    await screen.findByRole('region', { name: 'Trending' });
+    expect(screen.getByRole('link', { name: 'View all builds →' })).toHaveAttribute(
       'href',
       '/builds',
     );
-    expect(screen.getByText(/builds by/)).toHaveTextContent('128 builds by 41 players');
+    expect(screen.queryByText(/builds by/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Elden Ring builds' })).not.toBeInTheDocument();
   });
 
   it('without the daily index yet: the newest builds lead, no other shelves', async () => {
@@ -116,15 +133,14 @@ describe('Landing: the home shelves (T74)', () => {
   });
 });
 
-describe('Landing intro (T69)', () => {
-  it('signed out: the intro holds the h1, with one link or button per thing to do', async () => {
+describe('Landing intro (T69, T79)', () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it('holds the h1 and one link per thing to do, signed out', async () => {
     renderWithProviders(<Landing />);
     expect(await screen.findByRole('region', { name: 'Trending' })).toBeInTheDocument();
     expect(
       screen.getByRole('heading', { level: 1, name: 'Plan, share and follow Elden Ring builds' }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('heading', { level: 2, name: 'Elden Ring builds' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Start planning' })).toHaveAttribute(
       'href',
@@ -134,23 +150,28 @@ describe('Landing intro (T69)', () => {
       'href',
       '/build/IAumzY2DNj2NHObXD0QB/moonveil-early-game-spellblade/guide',
     );
-    expect(screen.getByRole('button', { name: 'Browse builds' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Browse builds' })).toHaveAttribute('href', '/builds');
   });
 
-  it('"Browse builds" moves focus to the builds', async () => {
-    Element.prototype.scrollIntoView = vi.fn();
-    const { user } = renderWithProviders(<Landing />);
-    await user.click(screen.getByRole('button', { name: 'Browse builds' }));
-    expect(screen.getByRole('heading', { name: 'Elden Ring builds' })).toHaveFocus();
-    expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
-  });
-
-  it('signed in: no intro, the title keeps the h1', async () => {
+  it('signed in too: the title and the panels', async () => {
     renderWithProviders(<Landing />, { uid: 'alice' });
     expect(await screen.findByRole('region', { name: 'Trending' })).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', { level: 1, name: 'Elden Ring builds' }),
+      screen.getByRole('heading', { level: 1, name: 'Plan, share and follow Elden Ring builds' }),
     ).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Start planning' })).toBeInTheDocument();
+  });
+
+  it('closing the panels keeps the title, and they stay closed on the next visit', async () => {
+    const { user, unmount } = renderWithProviders(<Landing />);
+    await user.click(await screen.findByRole('button', { name: 'Hide these tips' }));
+    expect(screen.queryByRole('link', { name: 'Start planning' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+      'Plan, share and follow Elden Ring builds',
+    );
+    unmount();
+    renderWithProviders(<Landing />);
+    expect(await screen.findByRole('region', { name: 'Trending' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Start planning' })).not.toBeInTheDocument();
   });
 });

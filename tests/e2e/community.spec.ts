@@ -3,23 +3,28 @@
 import { expect, test } from '@playwright/test';
 
 test('home shelves, a tag filter on the builds page, and the discussion tab', async ({ page }) => {
-  // The home page (T74): the community line, Trending, and the way to the full list.
+  // The home page (T74, T79): Trending, and the way to the full list; the count is on the builds page.
   await page.goto('/');
-  await expect(page.getByText(/\d+ builds? by \d+ players?/)).toBeVisible();
   await expect(page.getByRole('region', { name: 'Trending' })).toBeVisible();
-  await page.getByRole('link', { name: 'Search and filter all builds' }).click();
+  await page.getByRole('link', { name: 'View all builds →' }).click();
   await expect(page).toHaveURL(/\/builds$/);
+  await expect(page.getByText(/\d+ builds? by \d+ players?/)).toBeVisible();
 
-  // A top tag from the Tags popover filters the list (T20, T74).
+  // A top tag from the Tags popover filters the list (T20, T74). The first one, whichever it is: the
+  // seeded builds (`node scripts/seed-builds.mjs --write`) may be loaded locally too (T79).
   await page.getByRole('button', { name: /^Tags Any/ }).click();
-  const mohg = page
-    .getByRole('group', { name: 'Most used tags' })
-    .getByRole('button', { name: /^Mohg/ });
-  await mohg.click();
-  await expect(mohg).toHaveAttribute('aria-pressed', 'true');
-  await expect(page).toHaveURL(/[?&]tag=Mohg/);
+  const top = page.getByRole('group', { name: 'Most used tags' }).getByRole('button').first();
+  const tag = (await top.textContent())!.replace(/\d+ builds?$/, '').trim();
+  await top.click();
+  await expect(top).toHaveAttribute('aria-pressed', 'true');
+  await expect(page).toHaveURL(/[?&]tag=/);
   await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: `${tag} (remove)` })).toBeVisible();
+
+  // Mohg (one seed build) leaves Carian Moon Knight out.
+  await page.goto('/builds?tag=Mohg');
   await expect(page.getByRole('button', { name: /Mohg \(remove\)/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /Bloodhound Samurai/ })).toBeVisible();
   await expect(page.getByRole('link', { name: /Carian Moon Knight/ })).toHaveCount(0);
   await page.getByRole('link', { name: /Bloodhound Samurai/ }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Bloodhound Samurai' })).toBeVisible();

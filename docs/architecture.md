@@ -7,17 +7,17 @@ Read this before changing routes, the editor, state or Firestore access. It desc
 
 `src/app/routes.tsx` defines the routes:
 
-| Route               | Component         | What it does                                                                                                                                                                   |
-| ------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `/`                 | `Landing`         | Home (T74): signed out the intro (T69); shelves from the daily search index: Trending, Most played, Fresh builds, Top builds per used tag; Popular weapons; links to `/builds` |
-| `/builds`           | `BuildsPage`      | Every build (T74): search (words anywhere, over the index), Sort/Level/Tags/Weapon popovers (phones: a Filters sheet), removable chips, "Load more"; filters in the URL        |
-| `/build/:buildId/*` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                           |
-| `/weapons/:slug`    | `WeaponPage`      | A weapon's page (T55): facts, where to find it (the Guide's route for that weapon), its builds most liked first; `noindex` under 3 builds; unknown slug → not found            |
-| `/tags/:slug`       | `TagPage`         | A tag's page (T55): its builds most liked first ("Builds for Malenia", "Bleed Builds"); `noindex` under 3 builds                                                               |
-| `/user/:userId`     | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                      |
-| `/account`          | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                  |
-| `/auth/action`      | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one   |
-| `*`                 | `NotFound`        | 404 page                                                                                                                                                                       |
+| Route               | Component         | What it does                                                                                                                                                                                                                      |
+| ------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                 | `Landing`         | Home (T74, T79): the intro for everyone (the h1, "View all builds", getting-started panels until closed); Popular weapons, Trending, then Top builds for the 3 most used tags and Fresh builds (2×2), from the daily search index |
+| `/builds`           | `BuildsPage`      | Every build (T74): search (words anywhere, over the index), Sort/Level/Tags/Weapon popovers (phones: a Filters sheet), removable chips, "Load more"; filters in the URL                                                           |
+| `/build/:buildId/*` | `BuildEditorPage` | View, create (`/build/new`), edit, cancel and delete a build, plus likes and comments; tabs `description`, `route`, `comments` (T28)                                                                                              |
+| `/weapons/:slug`    | `WeaponPage`      | A weapon's page (T55): facts, where to find it (the Guide's route for that weapon), its builds most liked first; `noindex` under 3 builds; unknown slug → not found                                                               |
+| `/tags/:slug`       | `TagPage`         | A tag's page (T55): its builds most liked first ("Builds for Malenia", "Bleed Builds"); `noindex` under 3 builds                                                                                                                  |
+| `/user/:userId`     | `Profile`         | Public profile: framed hero (name, joined, counts), tabs Builds and Liked; the owner's private Playing and Completed (T36) and a link to `/account` (T31)                                                                         |
+| `/account`          | `AccountPage`     | Signed-in only (T31): display name, email (verification, change by link), sign-in methods (change or set a password), Log out, Delete account                                                                                     |
+| `/auth/action`      | `ActionPage`      | Where the emails' links land (T43): `mode=resetPassword` (new-password form), `verifyEmail` and `verifyAndChangeEmail` (applied once); expired or used links offer a new one                                                      |
+| `*`                 | `NotFound`        | 404 page                                                                                                                                                                                                                          |
 
 Every page has loading, error (with "Try again"), empty and not-found states (`PageMessage`, `ErrorMessage`).
 Log in and Sign up are not routes: a modal `Dialog` in `src/app/App.tsx`, opened from `Header`. Signed in, the
@@ -288,20 +288,32 @@ The in-world feel comes from layout, the item art and the build hero, not from d
   items (`COLOR_ACCENT_LINE` border, check badge), reached stats, the progress figure and pips, and the
   new-items notice's border (`COLOR_CELEBRATE` is the glow of collecting an item or finishing a build), and the
   route's next stop (T35: accent marker, `COLOR_ACCENT_LINE` border on a `COLOR_TINT` box, the Next stop card's
-  border and label). Panel
+  border and label). Hearts are always gold (T79: build rows and the build page), filled once a build has any likes and outlined with none; your own like is the row's count in gold and the Like button's gold border. Panel
   borders are `COLOR_LINE`,
-  headings are the text color, tags and chips are neutral (inset fill, `COLOR_LINE_STRONG` border), counts and
-  icons are muted. Check a new use of `COLOR_ACCENT*` against this list.
+  headings are the text color, tags and chips are neutral (inset fill, `COLOR_LINE_CONTROL` border; "No tags"
+  muted with a `COLOR_LINE` border), counts and icons are muted. Check a new use of `COLOR_ACCENT*` against this
+  list.
+- **Softer contrast** (T79, owner): text `#dcd4c4` (not off-white), the page a little off black, the gold a shade
+  deeper; buttons and tags take the quieter `COLOR_LINE_CONTROL` border (their label marks them out), inputs keep
+  `COLOR_LINE_STRONG` (3:1).
+- **Meaning colors, shared by all games** (T79, outside the accent budget): HP, FP and stamina values in
+  `COLOR_HP`/`COLOR_FP`/`COLOR_STAMINA`; a **level** always in its band's color (`LevelNumber`, bands in
+  `lib/levels.ts`: up to 50 early, 51–100 mid, 101–124 late, 125–150 PvP meta, 151+ endgame; the Level filter's
+  presets are these bands, its dots their colors), the bands' legend on hover where `legend` is set. The rune level
+  figure in the stats card stays the accent.
+- **Labels in boxes** (T79): buttons, tags, chips, segments and filter triggers mix in `opticalCenter`
+  (`typography.ts`): Inter's lowercase sits ~0.09em under the box's center, so the label is lifted half that and
+  icons dropped back. Check with a `--scale 2` screenshot.
 - **Type: three tiers** (`fonts.ts`, CSS in `components/ui/typography.ts`; sizes in **rem**, so a browser's default
-  font size applies, T67). **Names and headings**: `FONT_DISPLAY` (EB Garamond 600, `WEIGHT_DISPLAY`), title case,
-  the text color (`displayText`; build names in lists and phone section headers 22px `TEXT_NAME`, `SectionHeading`
-  and dialog titles 24px, page titles and the build name 32px). **Never below 22px**: its short letters read about
-  3/4 of their size. **Labels**: Inter 12px/600, uppercase, 0.06em tracking, muted (`labelText`, `Label`): the only
+  font size applies, T67). **Names and headings**: `FONT_DISPLAY` (Spectral 600 since T79, `WEIGHT_DISPLAY`; was EB
+  Garamond, whose short letters read about 3/4 of their size), title case, the text color (`displayText`; build
+  names in list rows 18px `TEXT_NAME_ROW`, phone section headers and shelf titles 22px `TEXT_NAME`,
+  `SectionHeading` and dialog titles 24px, page titles and the build name 32px). Nothing smaller than 18px. **Labels**: Inter 12px/600, uppercase, 0.06em tracking, muted (`labelText`, `Label`): the only
   caps style. **Values and body**: Inter (`FONT_UI`; UI text 15px `TEXT_MD`, secondary 14px, small print 13px),
   numbers with `font-variant-numeric: tabular-nums`. Write-ups (`MarkdownView`): Inter 16px/1.7 (`TEXT_BODY`);
   h1 serif 28px, h2 serif 24px over a hairline, h3 the label, h4–h6 Inter 16px/600. Form fields are 16px
   (`fieldStyles`; iOS zooms into smaller ones); buttons 15px, 14px on phones. `FONT_BRAND` (Cinzel 700) is the
-  wordmark only. All self-hosted OFL from `@fontsource`, imported in `src/index.css` (EB Garamond 600 only).
+  wordmark only. All self-hosted OFL from `@fontsource`, imported in `src/index.css` (Spectral 600 only).
 - **Line length**: running text (write-ups, comments, taglines, legal pages) is capped at `MEASURE` (35em, about
   72 characters of Inter). Use em, not ch: Inter's "0" is ~1.3 average characters wide, so `68ch` ran ~90.
 - **Density**: content 1200px wide (`CONTENT_WIDTH`, T67: from 1240; the Equipment tab's five-spell row sets the
@@ -466,7 +478,7 @@ A pasted build link shows a card because `functions/` (one HTTPS function `site`
 Hosting rewrites (`firebase.json`): `/build/**` → the app's own `index.html` fetched from Hosting, with the title,
 description, `og:*` tags and a canonical link replaced (`injectMeta`, `shareMeta` in `src/lib/share.ts`); and
 `/og/build/<id>.png` → a 1200×630 PNG (`functions/src/card.ts`: Satori draws the element tree as SVG, resvg makes
-the PNG, sharp turns the item's WebP icon into a PNG first; EB Garamond and Cinzel come from `@fontsource`; the
+the PNG, sharp turns the item's WebP icon into a PNG first; Spectral and Cinzel come from `@fontsource`; the
 colors are the game's skin). Routing and fallbacks live in `functions/src/handler.ts` with injected dependencies
 (tested in `handler.test.ts`); `index.ts` wires the Admin SDK (reads `builds/{id}` and `users/{uid}`, never writes)
 and the host allow-list for fetching static files. `scripts/build-functions.mjs` bundles `functions/src` together

@@ -11,6 +11,7 @@ import {
   SHADOW_OVERLAY,
   TEXT_SM,
 } from '@/theme';
+import { opticalCenter } from './typography';
 import Button from './Button';
 import FocusScope from './FocusScope';
 import { ChevronDownIcon, CloseIcon, PlusIcon } from './icons';
@@ -153,6 +154,7 @@ const Chip = styled.button`
   gap: 6px;
   min-height: 36px;
   padding: 0 10px 0 12px;
+  ${opticalCenter}
 
   & > svg {
     color: ${COLOR_TEXT_MUTED};

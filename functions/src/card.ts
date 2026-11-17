@@ -58,14 +58,14 @@ let fonts: { name: string; data: Buffer; weight: 400 | 600 | 700; style: 'normal
 const loadFonts = () =>
   (fonts ??= [
     {
-      name: 'EB Garamond',
-      data: fontFile('eb-garamond-latin-400-normal.woff'),
+      name: 'Spectral',
+      data: fontFile('spectral-latin-400-normal.woff'),
       weight: 400,
       style: 'normal',
     },
     {
-      name: 'EB Garamond',
-      data: fontFile('eb-garamond-latin-600-normal.woff'),
+      name: 'Spectral',
+      data: fontFile('spectral-latin-600-normal.woff'),
       weight: 600,
       style: 'normal',
     },
@@ -96,7 +96,7 @@ export function cardTree(card: CardTreeData): El {
       boxSizing: 'border-box',
       flexDirection: 'column',
       backgroundColor: COLOR_BG,
-      fontFamily: 'EB Garamond',
+      fontFamily: 'Spectral',
       color: COLOR_TEXT,
     },
     el(

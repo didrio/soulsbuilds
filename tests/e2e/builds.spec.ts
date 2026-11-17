@@ -1,6 +1,8 @@
 // The builds page (T74) on the seed data: search finds words anywhere (over the daily index the seed
-// writes), filters combine as removable chips, and phones get one Filters sheet. Read-only. `npm run e2e`.
+// writes), filters combine as removable chips, phones get one Filters sheet, and (T79) a row's heart likes
+// the build. Read-only apart from that like, which it takes back. `npm run e2e`.
 import { expect, test } from '@playwright/test';
+import { completeSignUp } from './helpers';
 
 test('search words anywhere, a level preset, remove a chip', async ({ page }) => {
   await page.goto('/builds');
@@ -20,6 +22,25 @@ test('search words anywhere, a level preset, remove a chip', async ({ page }) =>
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: /Level 51–100 \(remove\)/ }).click();
   await expect(page.getByRole('link', { name: /Bloodhound Samurai/ })).toBeVisible();
+});
+
+test('the heart on a row likes and unlikes, signed in (T79)', async ({ page }) => {
+  // A search keeps the row on the first page, whatever else the emulator holds.
+  await page.goto('/builds?q=carian');
+  // Signed out: the heart is shown, not a button.
+  await expect(page.getByRole('link', { name: 'Carian Moon Knight' })).toBeVisible();
+  await expect(page.getByRole('button', { name: /^Like Carian Moon Knight/ })).toHaveCount(0);
+
+  await page.getByRole('button', { name: 'Sign up' }).first().click();
+  await completeSignUp(page, 'heart');
+  const heart = page.getByRole('button', { name: /^Like Carian Moon Knight/ });
+  await expect(heart).toHaveAttribute('aria-pressed', 'false');
+  await heart.click();
+  await expect(heart).toHaveAttribute('aria-pressed', 'true');
+  await page.reload();
+  await expect(heart).toHaveAttribute('aria-pressed', 'true');
+  await heart.click();
+  await expect(heart).toHaveAttribute('aria-pressed', 'false');
 });
 
 test.describe('phones', () => {

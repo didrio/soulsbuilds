@@ -6,6 +6,7 @@ import { tagGroups } from '@/data/core';
 import { MAX_LEVEL } from '@/lib/buildMath';
 import type { BuildSort } from '@/lib/firebase';
 import { tagLabel, weaponBySlug } from '@/lib/hubs';
+import { LEVEL_BANDS, type LevelBandKey } from '@/lib/levels';
 import type { Build } from '@/lib/models';
 
 /** The full, filterable list of builds (the home page shows shelves; T74). */
@@ -104,17 +105,25 @@ export interface LevelPreset {
   label: string;
   /** Why people build there, shown beside the label. */
   note?: string;
+  /** The level band it is (its color), if any. */
+  band?: LevelBandKey;
   minLevel: number;
   maxLevel: number;
 }
 
-/** The levels people build at (docs/product.md: early game, mid game, the PvP brackets, end game). */
+/**
+ * The levels people build at (docs/product.md): any, then the level bands (T79: contiguous, each with
+ * its color, `lib/levels.ts`). Old links with other ranges still work as a custom range.
+ */
 export const LEVEL_PRESETS: readonly LevelPreset[] = [
   { label: 'Any level', minLevel: 1, maxLevel: MAX_LEVEL },
-  { label: 'Up to 50', note: 'early game', minLevel: 1, maxLevel: 50 },
-  { label: '51–100', minLevel: 51, maxLevel: 100 },
-  { label: '125–150', note: 'PvP', minLevel: 125, maxLevel: 150 },
-  { label: '200 and up', minLevel: 200, maxLevel: MAX_LEVEL },
+  ...LEVEL_BANDS.map(({ key, label, note, minLevel, maxLevel }) => ({
+    band: key,
+    label,
+    note,
+    minLevel,
+    maxLevel,
+  })),
 ];
 
 /** The preset these levels are, if any. */

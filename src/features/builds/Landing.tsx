@@ -2,14 +2,11 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router';
 import styled from 'styled-components';
 import { useCurrentGame } from '@/app/game';
-import { ButtonLink } from '@/components/ui/Button';
 import ErrorMessage from '@/components/ui/ErrorMessage';
-import { SearchIcon } from '@/components/ui/icons';
 import ItemTile from '@/components/ui/ItemTile';
 import PageHead from '@/components/ui/PageHead';
 import PageMessage from '@/components/ui/PageMessage';
 import { cardWeapons, iconUrl } from '@/data/core';
-import useAuth from '@/features/auth/useAuth';
 import { useUserProfiles } from '@/features/profile/queries';
 import { errorMessage } from '@/lib/firebase';
 import { popularWeapons } from '@/lib/hubs';
@@ -25,53 +22,48 @@ import {
   COLOR_TEXT_MUTED,
   FONT_DISPLAY,
   RADIUS_FRAME,
-  SPACE_LG,
-  SPACE_MD,
   SPACE_SM,
   SPACE_XL,
   SPACE_XXL,
   TEXT_NAME,
   TEXT_SM,
-  TEXT_XL,
   TEXT_XS,
   WEIGHT_DISPLAY,
 } from '@/theme';
 import BuildsList from './BuildsList';
-import { BUILDS_PATH, buildsHref } from './filters';
-import { LIST_HEADING_ID } from './intro';
+import { buildsHref } from './filters';
 import LandingIntro from './LandingIntro';
 import { useBuildsByIds, useFreshBuilds, useGameStats } from './queries';
 import {
   arrangeShelves,
-  indexShelves,
   SHELF_MIN,
   SHELF_SIZE,
+  tagShelves,
   trendingIds,
   type Shelf,
 } from './shelves';
 
 /**
- * `/` (T74): the home page curates; `/builds` is the full list. Signed out, the intro (T69) first. Then
- * Trending (full rows), compact shelves two across (Most played, Fresh builds, Top builds for the most
- * used tags; each "See all" is `/builds` with that sort or tag), Popular weapons, and the way to every
- * build. The shelves come from the daily search index (one read), their builds read by id; Fresh
- * builds from Firestore, so a new build shows at once.
+ * `/` (T74; order since T79): the home page curates; `/builds` is the full list. The intro first (the h1,
+ * "View all builds", and closable getting-started panels), then Popular weapons, Trending (full rows),
+ * and compact shelves two across: Top builds for the three most used tags, then Fresh builds (each "See
+ * all" is `/builds` with that tag or sort). The shelves come from the daily search index (one read),
+ * their builds read by id; Fresh builds from Firestore, so a new build shows at once.
  */
 function Landing() {
   const game = useCurrentGame();
-  const auth = useAuth();
-  // T69: signed-out visitors get the intro, which holds the page's h1; the title steps down to h2.
-  const intro = !auth.loading && !auth.uid;
   const statsQuery = useGameStats();
   const stats = statsQuery.data;
   const index = stats?.searchIndex ?? [];
 
   const trending = trendingIds(index);
-  const { played, tags } = indexShelves(index, stats?.tagCounts ?? {});
+  const tags = tagShelves(index, stats?.tagCounts ?? {});
   const fresh = useFreshBuilds(SHELF_SIZE);
   const freshBuilds = fresh.data ?? [];
+  // No index yet (before the daily job's first run since T74): the newest builds stand in for Trending,
+  // so they don't get a shelf of their own as well.
   const freshShelf: Shelf | null =
-    freshBuilds.length >= SHELF_MIN
+    trending.length && freshBuilds.length >= SHELF_MIN
       ? {
           key: 'fresh',
           title: 'Fresh builds',
@@ -80,11 +72,9 @@ function Landing() {
           ids: freshBuilds.map((build) => build.id),
         }
       : null;
-  const shelves = arrangeShelves(played, freshShelf, tags);
+  const shelves = arrangeShelves(tags, freshShelf);
 
-  const indexIds = [
-    ...new Set([...trending, ...(played?.ids ?? []), ...tags.flatMap((shelf) => shelf.ids)]),
-  ];
+  const indexIds = [...new Set([...trending, ...tags.flatMap((shelf) => shelf.ids)])];
   const byIds = useBuildsByIds(indexIds);
   const builds = new Map<string, Build>(
     [...(byIds.data ?? []), ...freshBuilds].map((build) => [build.id, build]),
@@ -96,29 +86,12 @@ function Landing() {
   const loading =
     statsQuery.isPending || fresh.isPending || (indexIds.length > 0 && byIds.isPending);
   const failed = statsQuery.error ?? fresh.error ?? byIds.error;
-  const total = stats?.buildCount ?? 0;
-  // No index yet (before the daily job's first run since T74): the newest builds stand in for Trending.
   const lead = trending.length ? pick(trending) : freshBuilds;
 
   return (
     <>
       <PageHead {...homeMeta(game.name)} canonical={`${SITE_ORIGIN}/`} />
-      {intro ? <LandingIntro /> : null}
-      <Heading>
-        <Title as={intro ? 'h2' : 'h1'} id={LIST_HEADING_ID} tabIndex={-1}>
-          {`${game.name} builds`}
-        </Title>
-        {stats && total > 0 ? (
-          <Community>
-            <b>{total}</b> {total === 1 ? 'build' : 'builds'} by <b>{stats.authorCount}</b>{' '}
-            {stats.authorCount === 1 ? 'player' : 'players'}
-          </Community>
-        ) : null}
-        <AllLink to={BUILDS_PATH}>
-          <SearchIcon size={16} />
-          Search and filter all builds
-        </AllLink>
-      </Heading>
+      <LandingIntro />
 
       {loading ? <PageMessage loading /> : null}
       {failed && !loading ? (
@@ -136,34 +109,6 @@ function Landing() {
 
       {!loading && !failed ? (
         <Shelves>
-          {lead.length ? (
-            <ShelfSection
-              id="shelf-trending"
-              title={trending.length ? 'Trending' : 'Fresh builds'}
-              caption={trending.length ? 'Liked and played lately' : 'Just posted'}>
-              <BuildsList builds={lead} authors={authors} />
-            </ShelfSection>
-          ) : (
-            <PageMessage title="No builds yet">
-              <p>Be the first: plan one and save it.</p>
-            </PageMessage>
-          )}
-
-          {trending.length && shelves.length ? (
-            <Grid>
-              {shelves.map((shelf) => (
-                <ShelfSection
-                  key={shelf.key}
-                  id={`shelf-${shelf.key.replace(/[^a-z0-9]+/gi, '-')}`}
-                  title={shelf.title}
-                  caption={shelf.caption}
-                  href={shelf.href}>
-                  <BuildsList builds={pick(shelf.ids)} authors={authors} compact />
-                </ShelfSection>
-              ))}
-            </Grid>
-          ) : null}
-
           {weapons.length ? (
             <ShelfSection
               id="shelf-weapons"
@@ -188,10 +133,37 @@ function Landing() {
             </ShelfSection>
           ) : null}
 
-          {total > 0 ? (
-            <ViewAll>
-              <ButtonLink to={BUILDS_PATH}>View all {total} builds</ButtonLink>
-            </ViewAll>
+          {lead.length ? (
+            <ShelfSection
+              id="shelf-trending"
+              title={trending.length ? 'Trending' : 'Fresh builds'}
+              caption={trending.length ? 'Liked and played lately' : 'Just posted'}>
+              <BuildsList builds={lead} authors={authors} />
+            </ShelfSection>
+          ) : (
+            <PageMessage title="No builds yet">
+              <p>Be the first: plan one and save it.</p>
+            </PageMessage>
+          )}
+
+          {/* Two across; a lone shelf (no Top shelves yet) takes the full width with full rows (T79). */}
+          {shelves.length ? (
+            <Grid $single={shelves.length === 1}>
+              {shelves.map((shelf) => (
+                <ShelfSection
+                  key={shelf.key}
+                  id={`shelf-${shelf.key.replace(/[^a-z0-9]+/gi, '-')}`}
+                  title={shelf.title}
+                  caption={shelf.caption}
+                  href={shelf.href}>
+                  <BuildsList
+                    builds={pick(shelf.ids)}
+                    authors={authors}
+                    compact={shelves.length > 1}
+                  />
+                </ShelfSection>
+              ))}
+            </Grid>
           ) : null}
         </Shelves>
       ) : null}
@@ -228,49 +200,6 @@ function ShelfSection({
     </section>
   );
 }
-
-const Heading = styled.div`
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  gap: ${SPACE_SM} ${SPACE_MD};
-  margin: ${SPACE_LG} 0 ${SPACE_XL};
-
-  @media ${BELOW_MOBILE} {
-    margin: ${SPACE_MD} 0 ${SPACE_LG};
-  }
-`;
-
-const Title = styled.h1`
-  color: ${COLOR_TEXT};
-  font-family: ${FONT_DISPLAY};
-  font-size: ${TEXT_XL};
-  font-weight: ${WEIGHT_DISPLAY};
-  line-height: 1.2;
-  margin: 0;
-  scroll-margin-top: ${SPACE_LG};
-`;
-
-const Community = styled.p`
-  color: ${COLOR_TEXT_MUTED};
-  font-size: ${TEXT_SM};
-  margin: 0;
-
-  & > b {
-    color: ${COLOR_TEXT};
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-  }
-`;
-
-const AllLink = styled(ButtonLink)`
-  margin-left: auto;
-
-  @media ${BELOW_MOBILE} {
-    margin-left: 0;
-    width: 100%;
-  }
-`;
 
 const Shelves = styled.div`
   display: flex;
@@ -315,10 +244,11 @@ const SeeAll = styled(Link)`
   white-space: nowrap;
 `;
 
-const Grid = styled.div`
+const Grid = styled.div<{ $single: boolean }>`
   display: grid;
   gap: ${SPACE_XXL};
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: ${({ $single }) =>
+    $single ? 'minmax(0, 1fr)' : 'repeat(2, minmax(0, 1fr))'};
 
   @media ${BELOW_TABLET} {
     gap: ${SPACE_XL};
@@ -358,12 +288,6 @@ const WeaponCount = styled.span`
   color: ${COLOR_TEXT_MUTED};
   font-size: ${TEXT_XS};
   font-variant-numeric: tabular-nums;
-`;
-
-const ViewAll = styled.div`
-  display: flex;
-  justify-content: center;
-  margin-bottom: ${SPACE_LG};
 `;
 
 export default Landing;

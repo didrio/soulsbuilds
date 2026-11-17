@@ -10,6 +10,7 @@ import {
   getBuild,
   hasLiked,
   likeBuild,
+  listLikedBuildIds,
   likeComment,
   listCommentLikes,
   listComments,
@@ -92,10 +93,27 @@ export function useHasLiked(buildId: string | null, userId: string | null) {
   });
 }
 
-/** Likes or unlikes (`liked` = the new state), updating the count and button at once. */
+/**
+ * The ids of every build the signed-in user likes (T79), so a list's hearts show "liked" with one read
+ * instead of one per row. Empty when signed out.
+ */
+export function useLikedIds(userId: string | null) {
+  return useQuery({
+    queryKey: queryKeys.likedIds(userId ?? ''),
+    queryFn: async () => new Set(await listLikedBuildIds(userId!)),
+    enabled: Boolean(userId),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/**
+ * Likes or unlikes (`liked` = the new state), updating the count and button at once: the build page's
+ * Like and (T79) the hearts on build rows.
+ */
 export function useToggleLike(buildId: string, userId: string | null) {
   const queryClient = useQueryClient();
   const likedKey = queryKeys.hasLiked(buildId, userId ?? '');
+  const likedIdsKey = queryKeys.likedIds(userId ?? '');
   const buildKey = queryKeys.build(buildId);
   return useMutation({
     mutationFn: async (liked: boolean) => {
@@ -105,11 +123,19 @@ export function useToggleLike(buildId: string, userId: string | null) {
     onMutate: async (liked) => {
       await queryClient.cancelQueries({ queryKey: likedKey });
       await queryClient.cancelQueries({ queryKey: buildKey });
+      await queryClient.cancelQueries({ queryKey: likedIdsKey });
       const previous = {
         liked: queryClient.getQueryData<boolean>(likedKey),
+        likedIds: queryClient.getQueryData<Set<string>>(likedIdsKey),
         build: queryClient.getQueryData<Build | null>(buildKey),
       };
       queryClient.setQueryData(likedKey, liked);
+      if (previous.likedIds) {
+        const ids = new Set(previous.likedIds);
+        if (liked) ids.add(buildId);
+        else ids.delete(buildId);
+        queryClient.setQueryData(likedIdsKey, ids);
+      }
       queryClient.setQueryData<Build | null>(buildKey, (build) =>
         build ? { ...build, likeCount: Math.max(0, build.likeCount + (liked ? 1 : -1)) } : build,
       );
@@ -117,10 +143,12 @@ export function useToggleLike(buildId: string, userId: string | null) {
     },
     onError: (_error, _liked, previous) => {
       queryClient.setQueryData(likedKey, previous?.liked);
+      queryClient.setQueryData(likedIdsKey, previous?.likedIds);
       queryClient.setQueryData(buildKey, previous?.build);
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: likedKey });
+      void queryClient.invalidateQueries({ queryKey: likedIdsKey });
       void queryClient.invalidateQueries({ queryKey: queryKeys.builds });
     },
   });

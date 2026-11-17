@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import styled from 'styled-components';
+import LevelNumber from '@/components/ui/LevelNumber';
 import ItemTile from '@/components/ui/ItemTile';
 import Label from '@/components/ui/Label';
 import VisuallyHidden from '@/components/ui/VisuallyHidden';
@@ -10,14 +11,7 @@ import { iconUrl, type SlotDisplayItem } from '@/data/core';
 import { firstParagraph } from '@/lib/markdown';
 import type { Build } from '@/lib/models';
 import { trackedItems } from '@/lib/tracking';
-import {
-  COLOR_ACCENT,
-  COLOR_DANGER,
-  COLOR_TEXT,
-  COLOR_TEXT_MUTED,
-  SPACE_GROUP,
-  TEXT_XS,
-} from '@/theme';
+import { COLOR_DANGER, COLOR_TEXT, COLOR_TEXT_MUTED, SPACE_GROUP, TEXT_XS } from '@/theme';
 import type { BuildTracking } from '@/features/tracking/useBuildTracking';
 import { loadRoute } from '../guide/GuideSection';
 import ItemRow from '../ItemRow';
@@ -205,7 +199,7 @@ function BuildSections({
         title="Stats"
         glance={
           <span>
-            <Level>RL {level}</Level>
+            <Level level={level}>RL {level}</Level>
             {top.map(({ short, value }) => ` · ${short} ${value}`).join('')}
           </span>
         }
@@ -272,8 +266,8 @@ const List = styled.div`
   ${panel}
 `;
 
-const Level = styled.strong`
-  color: ${COLOR_ACCENT};
+// The level in its band's color (T79).
+const Level = styled(LevelNumber)`
   font-weight: 600;
 `;
 

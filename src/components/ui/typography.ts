@@ -11,7 +11,7 @@ import {
   WEIGHT_DISPLAY,
 } from '@/theme';
 
-/** Names and headings: EB Garamond 600, title case, the text color. Set the size where it's used. */
+/** Names and headings: Spectral 600 (T79), title case, the text color. Set the size where it's used. */
 export const displayText = css`
   color: ${COLOR_TEXT};
   font-family: ${FONT_DISPLAY};
@@ -30,4 +30,20 @@ export const labelText = css`
   letter-spacing: ${TRACKING_LABEL};
   line-height: 1.4;
   text-transform: uppercase;
+`;
+
+/**
+ * Optical centering for a label in a box (buttons, chips, tags, triggers; T79). Inter's caps sit dead
+ * center in a flex box, but its lowercase (x-height) sits ~0.09em lower, so mixed-case labels read low
+ * and an icon at the box center reads high. Lift the label by half that and drop icons back to center.
+ * Mix in after the box's own `padding`.
+ */
+export const opticalCenter = css`
+  padding-bottom: 0.09em;
+  padding-top: 0;
+
+  & > svg {
+    position: relative;
+    top: 0.045em;
+  }
 `;

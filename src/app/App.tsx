@@ -99,10 +99,15 @@ const SkipLink = styled.a`
 const Main = styled.main`
   margin: 0 auto;
   max-width: ${CONTENT_WIDTH};
-  /* A full screen even while the page loads, so the footer starts below the fold instead of showing
-     mid-screen and then jumping away when the content arrives (most of the layout shift, T21). */
-  min-height: 100vh;
   outline: none;
+
+  /* A full screen while the page loads (a loading state is busy), so the footer starts below the fold
+     instead of showing mid-screen and then jumping away when the content arrives (most of the layout
+     shift, T21). Only then: once loaded, the footer follows the content, with no gap on a page shorter
+     than the window (the build's Equipment tab; owner, T79). */
+  &:has([aria-busy='true']) {
+    min-height: 100vh;
+  }
   padding: 0 24px;
 
   @media ${BELOW_MOBILE} {

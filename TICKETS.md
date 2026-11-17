@@ -7,7 +7,7 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T79
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T72 (back to your run; Opus · high · plan mode on), then T73, T75, T77: the UI/UX pass's tickets in
+**Next:** T72 (back to your run; Opus · high · plan mode on), then T73, T75, T77, T80 (stats unattended and at scale): the UI/UX pass's tickets in
 Up next. The remaining tickets (T65, T57–T61)
 wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
 T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
@@ -188,6 +188,33 @@ ProgressBar.tsx}`, `features/builds/Landing.tsx`, `app/AccountMenu.tsx`,
     (T74) does; move them onto it if it fits, and give the phone Filters sheet (a `Dialog`) a bottom-sheet look.
 - **Context:** `src/theme/` (motion, spacing, fonts), `components/ui/` (Dialog, FocusScope, Tooltip),
   `docs/architecture.md` "Styling", the run-app skill for screenshots.
+
+#### T80 — Home shelves that hold up unattended and at scale
+
+- **Status:** ready (found while wrapping T79, 2026-11-17)
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** Trending, the Top <tag> shelves and `/builds` search keep working with no one tending the site, at
+  tens of thousands of builds. Today two things break that:
+  1. **The daily job stops.** `.github/workflows/stats.yml` is a `schedule` in a **public** repo, and GitHub turns
+     scheduled workflows off after 60 days without repository activity. Then `stats/<game>` freezes: Trending,
+     the Top shelves, Popular weapons, search and the counts all go stale (Fresh builds still work: Firestore).
+  2. **The index is one document.** `searchIndex` (`scripts/admin.mjs` ~line 459, T74) holds one entry per build
+     in `stats/<game>`, ~200 bytes each (45 builds = 9 KB), with no cap. Firestore's 1 MB document limit is hit
+     near ~5,000 builds: the write fails and the stats freeze. Every home visit also downloads the whole index.
+- **Done when:**
+  - The daily stats run without depending on repo activity (e.g. a scheduled Cloud Function / Cloud Scheduler on
+    Blaze, or a keep-alive the owner approves); a failing or missing run is noticed (an alert, or the page shows
+    the index's age and falls back sensibly).
+  - The index can't outgrow a document: cap it (e.g. the newest N plus the all-time top M), or shard it, or move
+    search to queries; the home page reads a small precomputed doc (shelf ids only) instead of the whole index.
+  - Trending stays meaningful at volume: today's score is activity ÷ (1 + builds-posted-since/10)^1.5 on
+    all-time likes; at hundreds of builds a day that is "the last day's most liked". Decide (owner) whether to
+    count recent likes (needs like timestamps per window) or keep the rank decay with a larger step.
+  - Top <tag> shelves rank by all-time likes: decide whether they should favour recent builds (patch drift).
+  - Tests for the cap/shard and the shelf picks at 10k+ entries; docs (architecture "Search", firebase "Deploys").
+- **Context:** `scripts/admin.mjs` (`updateStats`, `searchEntry`), `src/features/builds/{shelves.ts,search.ts,
+queries.ts}`, `src/lib/firebase/stats.ts`, `.github/workflows/stats.yml`, `docs/product.md` (the rewards rule).
+  Production today: 66 builds, so nothing is urgent except the 60-day schedule rule.
 
 ## Backlog
 
@@ -408,6 +435,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 Older entries: `docs/tickets-archive.md`.
 
+- T79 — Owner's polish list — 2026-11-17 — one session, no ticket before it. Header: bigger wordmark, the game name is a menu (Dark Souls Remastered/II/III "Coming soon"; phones: in the Menu panel, the bar overflowed signed out at ≤ 390px). Home: intro title + "View all builds" for everyone, the three panels in a box closed for good with its X; order Popular weapons → Trending → Top <tag> ×3 + Fresh (2×2); Most played, the count line and the bottom View all gone. `/builds` titled "View builds". Rows: gold 22px hearts, filled once a build has likes (outlined and dimmer with none), that like/unlike signed in (your like = the count in gold; stretched link on the name; `useLikedIds`, one read), "No tags", quieter divider; a lone compact shelf takes the full width with full rows. Levels in five band colors (`lib/levels.ts`, `LevelNumber`, legend on hover; the Level filter's presets = the bands, so 101–124 and 151+ are new and 200+ went). Spectral replaces EB Garamond (app, crawler HTML, link-preview card), list names 18px. Locally, the home's Popular weapons and Top shelves need more than the 5 test builds: `node scripts/seed-builds.mjs --write` then `node scripts/admin.mjs stats --write` (e2e works with either). Softer contrast (text, bg, gold; `COLOR_LINE_CONTROL` on buttons and tags). Labels in boxes optically centered (`opticalCenter`; `npm run screenshot -- … --scale 2`). Build page: footer follows the content (no gap under Equipment), Character block spaced, HP/FP/stamina colored. Not checked: Safari/Firefox rendering of the centering; the live site (deploy is the owner's; the link-preview card's new font needs the functions deploy).
 - T78 — Level filters failed in production — 2026-11-17 — every `/builds` level range said "Couldn't load builds": Firestore wants a range field (`level`) last in the index in the last orderBy's direction, ours were ascending after likes/date/players; 9 indexes flipped to `level` descending (deployed by hand, checked live), `src/lib/firebase/indexes.test.ts` checks every list/search query shape against `firestore.indexes.json` (the emulator never does). Production still holds 18 indexes not in the file (the old ascending ones + older); harmless, delete in the console or with `--force` if wanted.
 - T76 — Small fixes from the UI/UX pass — 2026-11-17 — signed-out comment box is one "Log in to comment" button (opens the dialog); Guide legend swatches 12 px; stat "+N" titled "From talismans"; phone tags keep distance from the actions. Not checked: Report's spacing signed in on phones.
 - T74 — Home list: shelves and the builds page — 2026-11-17 — `/` = shelves (Trending by activity over builds-since, Most played, Fresh, Top <tag>), `/builds` = feed rows (likes rail), one filter bar (popovers, phone sheet, chips), search over a daily index in `stats/<game>`, likes/played ties newest first (new indexes)
@@ -427,17 +455,3 @@ Older entries: `docs/tickets-archive.md`.
   `features/builds/intro.ts`); the list title steps down to h2; a static copy in `index.html`'s `#root` for
   crawlers, which the link-preview function strips (`share.ts` `stripHome`); usage `intro-*`; Privacy's counted
   actions updated.
-- T68 — Plan a build without an account — 2026-11-17 — owner's request (newcomers can't tell what the site is for;
-  first of T68–T70): `/build/new` opens for anyone (`useBuildEditor`: a new build is editable signed out); Save
-  signed out opens the sign-up dialog and saves as the new account through `onSignedIn` (`useSaveBuild` takes the
-  owner per save, since `useAuth` lags); a note beside Save says an account is needed; a `beforeunload` warning
-  while an unsaved new build has a name, write-up, tags or gear; header **Plan a build** signed out (desktop nav,
-  phone "+" and menu); GoatCounter events `planner-opened-signed-out`, `signed-in-to-save`. No rules change.
-  Tests: `BuildEditorPage.test.tsx` (plan, Save, sign in, saved as the new uid), `Header.test.tsx`, e2e
-  `build-flow.spec.ts` "plan a build signed out, then sign up to save it" (the old "Log in to create a build"
-  e2e test removed). Docs: decision row "Plan before an account", `docs/product.md` "Low friction".
-
-- T67 — Readability pass — 2026-11-17 — owner's request (the site felt too wide, the serif hard to read): type scale one step up and in rem (`fonts.ts`: UI 15px, secondary 14, small 13, labels 12, `TEXT_BODY` 16, `TEXT_NAME` 22); write-ups in Inter 16px/1.7 (`MarkdownView`), EB Garamond only for names and headings ≥ 22px (400/italic/700 no longer loaded; Inter italic added); running text capped at `MEASURE` 35em ≈ 72 characters (write-ups, comments, taglines, legal); `CONTENT_WIDTH` 1240 → 1200 and the stats column 340 → 312 (the owner chose 1160, but the Equipment tab's five-spell row needs 372px columns for the T66 fold); attribute rows 24px and vitals gaps 10px so 1280×800 still fits (~10px to spare); form fields 16px (iOS focus zoom); buttons 14px with 12px sides on phones so Track/Like/Share share a row at 390px (375px wraps, as before).
-- T66 — Build page above the fold — 2026-11-17 — owner's request: no "All builds" (the header's Builds lit on build pages, `$section`); unframed top section: title block (88 px image; Report and Edit/Delete top right) then one sticky 64 px row, tabs left (accent as wide as the label) + `BuildActions` (Track, Like, Share) right; denser Equipment panel (no heading, 68 px tiles, `gear.ts` `equipmentLayout` pairs flask/arrows/spells/items up to 5 tiles) and stats card; a full build (`SEEDFULL0001`) fits 1440×820 and 1280×800 (`tests/e2e/fold.spec.ts`; `screenshot --height`). Also: a saved sign-in that can't renew is signed out and every query reloads (`onAuthChange`, `isDeadSession`; locally after `npm run dev` restarts the Auth emulator empty); comments' Top counts the viewer's own likes, held out of the rank until a sort is chosen (`threadComments` `held`). Remaining tickets moved to Backlog > Priority backlog.
-- T62 — Comments worth reading — 2026-11-17 — comments fill the column; a heart per comment (`commentLikes/{commentId}_{uid}` + the comment's `likeCount`, ±1 in one batch); Top/Newest (Top ranks without the viewer's own like); one reply level (`parentId` = a top-level comment, "@Name " on a reply to a reply; first 2 + "Show N more" past 3); a deleted comment's replies stay under "Comment deleted"; no migration (old comments read as null/0); "Author" badge; account deletion, `deleteBuild` and `admin.mjs remove`/`delete-user` handle comment likes (`lib/comments.ts`, `CommentItem`, `CommentForm`).
-- T64 — Landing title for "build planner" searches — 2026-11-17 — landing title "Elden Ring Build Planner and Builds | Souls Builds" and a description naming stats, equip load and poise (`homeMeta`, `index.html`); judge the effect in Search Console after T50's deploy.

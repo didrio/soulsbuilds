@@ -4,7 +4,7 @@
 // errors and failed requests, which are often the real answer.
 //
 //   npm run screenshot -- [route] [--mobile] [--width <px>] [--height <px>] [--full] [--wait <ms>]
-//                         [--name <file>] [--click <button name>] [--no-js]
+//                         [--name <file>] [--click <button name>] [--no-js] [--scale 2]
 //   npm run screenshot -- /build/SEEDBLEED001 --mobile
 //   npm run screenshot -- /build/SEEDBLEED001 --width 1000   (desktop at another width)
 //   npm run screenshot -- /build/SEEDFULL0001 --width 1440 --height 820   (the fold target, T66)
@@ -50,6 +50,7 @@ function parseArgs(argv) {
     else if (arg === '--name') opts.name = argv[(i += 1)];
     else if (arg === '--click') opts.click = argv[(i += 1)];
     else if (arg === '--no-js') opts.js = false;
+    else if (arg === '--scale') opts.scale = Number(argv[(i += 1)]);
     else if (arg === '--help' || arg === '-h') opts.help = true;
     else if (!arg.startsWith('--')) opts.route = arg.startsWith('/') ? arg : `/${arg}`;
     else throw new Error(`Unknown option ${arg}`);
@@ -85,6 +86,8 @@ async function main() {
     viewport,
     isMobile: opts.mobile,
     hasTouch: opts.mobile,
+    // --scale 2: a retina-sharp image, for checking text and icon alignment up close (T79).
+    ...(opts.scale ? { deviceScaleFactor: opts.scale } : {}),
     javaScriptEnabled: opts.js,
   });
   const problems = [];
@@ -108,7 +111,7 @@ async function main() {
 
   const slug =
     opts.name ??
-    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}${opts.height ? `x${opts.height}` : ''}${opts.js ? '' : '-nojs'}`;
+    `${opts.route.replace(/^\//, '').replace(/[^a-zA-Z0-9]+/g, '-') || 'home'}-${opts.mobile ? 'mobile' : 'desktop'}${opts.width ? `-${opts.width}` : ''}${opts.height ? `x${opts.height}` : ''}${opts.js ? '' : '-nojs'}${opts.scale ? `@${opts.scale}x` : ''}`;
   const dir = join(root, '.artifacts', 'screenshots');
   await mkdir(dir, { recursive: true });
   const file = join(dir, `${slug}.png`);
