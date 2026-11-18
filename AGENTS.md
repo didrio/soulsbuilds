@@ -15,13 +15,16 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-17 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74, T76, T78, T79 done; T72, T73, T75, T77 (the UI/UX pass) and T80 (stats unattended, at scale) in Up next; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-18 (T1–T31, T34–T36, T37 (code; first deploy is the owner's), T38–T56, T62–T64, T66–T71, T74, T76, T78, T79 done; T72 retired; Up next: the redesign (T85, then T81, T83, T84, T82; T73/T75/T77 folded into T85), then T80; T57–T61, T65 wait in TICKETS.md's Priority backlog; T50/T51/T55/T56/T62's deploy is the owner's; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
 `stats/{game}`. Build page (T48, T63, T66): unframed top section (title block, then one sticky row: tabs + Track/Like/Share; a full build's Equipment tab fits 1440×820, `fold.spec`), tabs Equipment (stats beside the equipment panel, same height), Guide, and the discussion tab, labelled "Write-up & comments" or just "Comments" (T71; write-up on top, then comments: likes, Top/Newest, one reply level, T62) beside one build sidebar (stats; + equipment tiles on Guide/Discussion; item cards on hover, T45); no generated descriptions; phones: collapsible sections with glances (T49), build math (T8), the
 route (T14/19/15). Tracking (T34): check off gear and level stats, private `users/{uid}/tracking`, account
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Planning needs no account: `/build/new` opens for anyone, Save asks to sign up (T68); signed out, `/` opens with an intro (T69). Home `/` = shelves, `/builds` = the full list with search over a daily index (T74). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done; readability pass (T67): larger rem type, Inter write-ups, ~72-character lines, 1200px. Polish (T79): Spectral headings, softer contrast, level colors by band, gold row hearts that like. **Next:** `TICKETS.md`.
+**Redesign chosen (2026-11-18), not built yet:** **"the mockup"** (the owner's word for it) is the "Loadout" design every new UI
+change aims at: dark and dense, a signature color per build, grades and analysis, PvE/PvP lists, the new editor and picker.
+Source, live link, previews and screenshots: `design/mockup/README.md`; decisions: TICKETS.md "Design direction Loadout" (T81–T85).
 
 ## Golden rules
 
@@ -213,6 +216,8 @@ content/builds/er/         Seeded builds (T52): <slug>.json (loadout by names, s
                            the format and rules; scripts/seed-builds.mjs writes them (checks in scripts/lib/seed-content.mjs)
 firebase.json              Hosting (dist/), emulator ports; firebase.test.json = rules-test emulator ports
 firestore.rules            v2 security rules (deployed by CI with hosting); firestore.indexes.json
+design/mockup/             "The mockup": the chosen redesign as one artifact page + data (README: preview, screenshot,
+                           republish; scripts/preview.mjs, generators for its data from src/data/er/)
 docs/                      architecture, firebase, data, decisions, product (positioning), game-data-extraction,
                            tickets-archive
 TICKETS.md                 Ordered backlog; one ticket per session

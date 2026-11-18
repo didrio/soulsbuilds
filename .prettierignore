@@ -22,3 +22,7 @@ scripts/data/name-aliases.json
 # Built by npm run build:functions (T37)
 functions/lib/
 functions/fonts/
+
+# Design mock-up (design/mockup/README.md): a hand-tuned single page and generated data, kept as published
+design/mockup/*.html
+design/mockup/*.js

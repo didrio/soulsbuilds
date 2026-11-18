@@ -13,6 +13,12 @@ Elden Ring builds"**, then "A free build planner: put a build together with live
 route to every item in it, and share it with one link. No account needed to start." Plan, follow, share: the
 three buttons.
 
+**Update 2026-11-18 (owner, design session; `TICKETS.md` "Design direction Loadout", T81–T85):** the selling
+point is **browsing, comparing, sharing and discussing** builds. Every build gets a Souls Builds **analysis and
+grade** (PvE or PvP, graded separately), so visitors can judge builds before there are many likes. Planning and
+tracking stay, but quietly: no Track button or player counts; ticking the Guide's checklist is tracking. Where
+this page still leads with "get" and tracking, the update wins until the restyle (T85) rewrites it.
+
 ## Three jobs
 
 - **Share**: post a build as a page worth linking: every item named, visual, readable on a phone.

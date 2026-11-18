@@ -1,0 +1,47 @@
+/* Round 2 sample data: grades, verdicts and the example analysis are illustrative (written for the mock-up, not by a model). */
+window.GRADES = {
+  'rellanas-twin-blades': ['S', 'Huge magic-and-fire combos; asks for high Int and Faith.'],
+  'bloodfiends-arm': ['S', 'Colossal bleed that staggers everything; heavy and stamina-hungry.'],
+  'rivers-of-blood-bleed': ['A', 'Corpse Piler shreds groups and bosses; comes together late.'],
+  'blasphemous-blade': ['A', 'Big fire damage that heals you; slow against fast bosses.'],
+  'black-flame-godslayer': ['A', 'Black flame melts big bosses; slow casts, FP-hungry.'],
+  'bolt-of-gransax': ['A', 'Long-range lightning pokes; stamina-heavy up close.'],
+  'dark-moon-greatsword': ['A', 'Frost waves at range and buffed melee; slow startup.'],
+  'milady-wing-stance': ['A', 'Fast, flexible quality damage; no status to lean on.'],
+  'moonveil-early': ['A', 'Transient Moonlight hits hard early; needs FP to keep up.'],
+  'nagakiba-frost': ['A', 'Frost procs and long reach; Chilling Mist eats FP.'],
+  'sword-of-night-and-flame': ['A', 'Ranged burst from a sword; long recovery on the skill.'],
+  'backhand-blades-bleed': ['B', 'Fast bleed pressure; fragile once you get caught.'],
+  'bloodhounds-fang': ['B', 'Strong from Limgrave on; falls behind late without help.'],
+  'carian-sorcery-sword': ['B', 'Melee and casting in one hand; needs high Int to shine.'],
+  'crystal-sorcerer': ['B', 'Crystal burst at level 80; paper-thin up close.'],
+  'giant-crusher-strength': ['B', 'Ends fights in a few charged hits; slow and heavy.'],
+  'heavy-knight-greatshield': ['B', 'Nearly unkillable; fights take a while.'],
+  'idus-knight-dex': ['B', 'Wing Stance combos; average reach.'],
+  'faith-templar-early': ['B', 'Safe, buffed melee for the early game; low ceiling.'],
+  'strength-champion-early': ['B', 'Simple, sturdy early melee; no status or range.'],
+  'heavy-knight-early': ['C', 'Shield and Cragblade carry early fights; slow kills.'],
+  'idus-knight-early': ['C', 'Guard counters from hour one; very low damage.'],
+};
+
+window.ANALYSIS = {
+  grade: 'A', mode: 'PvE', ease: 'Easy to play',
+  summary: 'A strong, simple boss-killer: one skill does most of the work, and everything else in the build makes that skill hit harder or cost less. It loses a grade for coming together very late.',
+  scores: [
+    ['Damage', 9, 'Corpse Piler scales with 38 Dexterity and 45 Arcane and builds bleed on everything it touches. Flame, Grant Me Strength boosts both of its damage types, and Shard of Alexander boosts the skill itself.', ['Dex 38 · Arc 45', 'Corpse Piler', 'Physical + fire', 'Bleed']],
+    ['Synergy', 9, 'Every talisman serves the same attack: Shard of Alexander raises it, Carian Filigreed Crest makes it cheaper, Lord of Blood’s Exultation triggers off the bleed it causes, and the insignia rewards its many hits. The seal scales on Arcane, so the buff needs no extra Faith.', ['4 of 4 talismans on the skill', 'Seal scales on Arcane']],
+    ['Survivability', 7, 'Solid HP for level 150. Poise and stamina are low, so you dodge rather than trade hits, and long fights drain stamina.', ['HP 1,871', 'Poise 42', 'Stamina 110', 'Medium roll · 64% load']],
+    ['Range', 6, 'Rivers of Blood comes from Flame Peak, late in the base game, and the Rotten Winged Sword Insignia from Elphael near the end. Until then it plays as a plain Dex/Arc katana. Once assembled, bleed works on most bosses in the base game and Shadow of the Erdtree.', ['Main weapon at stop 8 of 10', 'Flame Peak', 'Elphael']],
+  ],
+  playsLike: 'Close the gap, fire one or two Corpse Pilers, step out. Bosses melt once bleed procs, and the skill clears groups too. Swap to the seal before a boss to cast the buff.',
+  strengths: ['Bleed procs on nearly everything, groups included', 'Two buffs and four talismans all feed one attack', 'Sacrificial Axe and the Crest keep FP going in long dungeons'],
+  weaknesses: ['Comes together late: Flame Peak and Elphael', 'Low stamina and poise: little room to trade hits', 'Leans on one skill; plain swings do far less'],
+  journey: [
+    ['Early game', 'Not this build yet. Any Dex/Arc weapon with bleed fills in.'],
+    ['Mid game', 'The seal, the buff and the Crest arrive (Caelid, Swamp of Aeonia, Liurnia).'],
+    ['Late game', 'Rivers of Blood at Flame Peak; the build is complete after Elphael.'],
+    ['Shadow of the Erdtree', 'Bleed still works on most bosses; Scadutree blessings matter more than gear.'],
+  ],
+  raise: 'Carry the Winged Sword Insignia (Cleanrot Knight, Stillwater Cave, Liurnia) until you reach Elphael. It’s the same effect in a weaker form and arrives mid-game, so the build comes together much earlier.',
+  meta: 'Graded 3 days ago · rubric v1',
+};

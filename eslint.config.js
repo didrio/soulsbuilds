@@ -16,6 +16,7 @@ export default tseslint.config(
       'public/**',
       'functions/lib/**',
       'scripts/legacy-data/**',
+      'design/**',
     ],
   },
   js.configs.recommended,
