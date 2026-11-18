@@ -1,6 +1,7 @@
 # Tickets archive
 
-The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest last.
+Every finished ticket, moved here from `TICKETS.md`'s **Done** to keep it lean (it keeps only the last session or
+two). Oldest first. Read an entry when a ticket names it; nobody needs to read this file top to bottom.
 
 - T1 — Foundation — 2026-11-14 — leaked service-account key removed; CRA → Vite 8, React 19, RTK 2,
   styled-components 6, Firebase 12; TS/ESLint 9/Prettier/Vitest; emulators + seed + screenshot + doctor; CI;
@@ -231,3 +232,23 @@ The oldest **Done** lines from `TICKETS.md`, moved here to keep it lean. Newest 
   Tests: `BuildEditorPage.test.tsx` (plan, Save, sign in, saved as the new uid), `Header.test.tsx`, e2e
   `build-flow.spec.ts` "plan a build signed out, then sign up to save it" (the old "Log in to create a build"
   e2e test removed). Docs: decision row "Plan before an account", `docs/product.md` "Low friction".
+- T69 — Home page intro — 2026-11-17 — signed out, `/` opens with `LandingIntro` (the page's h1, one sentence,
+  three panels: Start planning, See an example route = the Moonveil seed's Guide, Browse builds; copy in
+  `features/builds/intro.ts`); the list title steps down to h2; a static copy in `index.html`'s `#root` for
+  crawlers, which the link-preview function strips (`share.ts` `stripHome`); usage `intro-*`; Privacy's counted
+  actions updated.
+- T70 — "New here?" strip — 2026-11-17 — `src/app/NewHereStrip.tsx`: signed out on build, weapon and tag pages, one line (what the site is, How it works → `/`, Plan your own → `/build/new`, close; dismissal in localStorage `sb-new-here-dismissed`). A separate 44 px row broke `fold.spec` (+35 px), so from 1200 px wide it sits in the header row (shorter text, no Plan link: the nav has Plan a build) and below that in a row under the header. Header nav items `nowrap`.
+- T71 — The write-up named in its tab — 2026-11-17 — from the UI/UX pass (owner's pick: name it in the tab, layout
+  and fold unchanged): the write-up sat under "Discussion 0" (phones: "Discussion · No comments yet"), so nobody
+  found it. `tabs.ts` `tabLabel` + `hasWriteUp`: the tab reads **Write-up & comments** with a write-up, **Comments**
+  without (URL still `/discussion`); phones: a **Write-up** section after the gear (glance: its first paragraph),
+  then Guide, then **Comments** (comments only); a `/discussion` link opens both. The heading is "Write-up"
+  everywhere (view, editor, crawler HTML; was "Description"). Tests: `tabs.test.ts`, `BuildTabs.test.tsx`,
+  `BuildSections.test.tsx`, `BuildEditorPage.test.tsx`, six e2e specs. Docs: decision row "Build page layout",
+  `docs/architecture.md`.
+- T74 — Home list: shelves and the builds page — 2026-11-17 — `/` = shelves (Trending by activity over builds-since, Most played, Fresh, Top <tag>), `/builds` = feed rows (likes rail), one filter bar (popovers, phone sheet, chips), search over a daily index in `stats/<game>`, likes/played ties newest first (new indexes)
+- T76 — Small fixes from the UI/UX pass — 2026-11-17 — signed-out comment box is one "Log in to comment" button (opens the dialog); Guide legend swatches 12 px; stat "+N" titled "From talismans"; phone tags keep distance from the actions. Not checked: Report's spacing signed in on phones.
+- T78 — Level filters failed in production — 2026-11-17 — every `/builds` level range said "Couldn't load builds": Firestore wants a range field (`level`) last in the index in the last orderBy's direction, ours were ascending after likes/date/players; 9 indexes flipped to `level` descending (deployed by hand, checked live), `src/lib/firebase/indexes.test.ts` checks every list/search query shape against `firestore.indexes.json` (the emulator never does). Production still holds 18 indexes not in the file (the old ascending ones + older); harmless, delete in the console or with `--force` if wanted.
+- T79 — Owner's polish list — 2026-11-17 — one session, no ticket before it. Header: bigger wordmark, the game name is a menu (Dark Souls Remastered/II/III "Coming soon"; phones: in the Menu panel, the bar overflowed signed out at ≤ 390px). Home: intro title + "View all builds" for everyone, the three panels in a box closed for good with its X; order Popular weapons → Trending → Top <tag> ×3 + Fresh (2×2); Most played, the count line and the bottom View all gone. `/builds` titled "View builds". Rows: gold 22px hearts, filled once a build has likes (outlined and dimmer with none), that like/unlike signed in (your like = the count in gold; stretched link on the name; `useLikedIds`, one read), "No tags", quieter divider; a lone compact shelf takes the full width with full rows. Levels in five band colors (`lib/levels.ts`, `LevelNumber`, legend on hover; the Level filter's presets = the bands, so 101–124 and 151+ are new and 200+ went). Spectral replaces EB Garamond (app, crawler HTML, link-preview card), list names 18px. Locally, the home's Popular weapons and Top shelves need more than the 5 test builds: `node scripts/seed-builds.mjs --write` then `node scripts/admin.mjs stats --write` (e2e works with either). Softer contrast (text, bg, gold; `COLOR_LINE_CONTROL` on buttons and tags). Labels in boxes optically centered (`opticalCenter`; `npm run screenshot -- … --scale 2`). Build page: footer follows the content (no gap under Equipment), Character block spaced, HP/FP/stamina colored. Not checked: Safari/Firefox rendering of the centering; the live site (deploy is the owner's; the link-preview card's new font needs the functions deploy).
+- T72 — Back to your run — retired 2026-11-18 (owner): the mockup has no home-page run row; the account-menu
+  Playing link and the phone Guide-first went into T84.

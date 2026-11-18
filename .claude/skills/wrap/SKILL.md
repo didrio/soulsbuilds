@@ -36,7 +36,8 @@ The next session starts with only `AGENTS.md`, `TICKETS.md`, `docs/` and git his
 - Re-read **Up next** top to bottom: reorder by what should happen next; merge, split or rewrite stale tickets.
 - Set the **Next:** line at the top to the recommended ticket and its session settings (table below). Every ticket
   in **Up next** has a **Session** line.
-- Keep the file lean: if **Done** grows past ~30 lines, move the oldest lines to `docs/tickets-archive.md`.
+- Keep the file lean: **Done** holds only the last session or two (about 10 lines); move older lines to the end
+  of `docs/tickets-archive.md` (oldest first).
 
 ### Choosing session settings
 

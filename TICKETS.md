@@ -7,81 +7,15 @@ ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T86
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T85 (plan and split the Loadout restyle; Opus · extra high · plan mode on), then T81 (analysis and grades),
-T83 (key items), T84 (tracking without a button), T82 (compare), then T80 (stats unattended and at scale): all in
-Up next, owner's order (2026-11-18). The remaining tickets (T65, T57–T61)
-wait in **Backlog > Priority backlog** until the owner says to take them out; copies (T32, T33) stay parked.
-T50 is code-complete; deploying it and the Search Console steps are owner to-dos below.
+**Next:** T85 (plan and split the Loadout restyle; Opus · extra high · plan mode on). Then, in Up next and in the
+owner's order (2026-11-18): the tickets T85 splits off, T81 (analysis and grades), T83 (key items), T84 (tracking
+without a button), T82 (compare), T80 (stats unattended and at scale). After Up next: **Backlog > Priority
+backlog** (T65, T57–T61), only once the owner says so; copies (T32, T33) stay parked.
+
 **"The mockup"** (owner's word) is the chosen redesign, "Loadout" (2026-11-18): `design/mockup/README.md` has the
 live link, the source, and how to preview, screenshot and republish it; Up next > Design direction "Loadout" has
-every decision. It replaces today's look, which came from the 2026-11-16 canvas mock-up ("Souls Builds redesign",
-https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): read that only to understand the current code.
-
-**Owner to-dos** (from T12; checklist in `docs/firebase.md` "Relaunch checklist"):
-
-- After T50 deploys (CI on `main` or `npm run deploy`; functions and hosting together): check
-  `curl -sI https://soulsbuilds.com/build/NOSUCHBUILD` (404), `curl -s https://soulsbuilds.com/sitemap.xml | head`
-  and `curl -sI https://soulsbuilds.com/robots.txt`. Then **Google Search Console**: add a _domain_ property for
-  soulsbuilds.com (a DNS TXT record at the registrar), submit `https://soulsbuilds.com/sitemap.xml`; **Bing
-  Webmaster Tools**: import the site from Search Console, submit the sitemap there too. Cold start: leave the site
-  idle 30+ minutes, then `curl -s -o /dev/null -w '%{time_starttransfer}\n' "https://soulsbuilds.com/build/<id>?x=$RANDOM"`;
-  if it's still over ~1 s, decide on `minInstances: 1` in `functions/src/index.ts` (roughly $5–10 a month; the
-  Billing page is the truth) and note it in `docs/decisions.md` "Crawlers".
-- Copy the Dark Souls III, Dark Souls Remastered and Dark Souls II Smithbox exports to the Mac (T58, T60, T61 are
-  blocked on them; T57 settles the folder layout, `~/Documents/soulsbuilds-gamedata/<game>/` planned). Note
-  which Smithbox version and game patch each came from, like the Elden Ring export's `VERSION.txt`.
-- Seeded builds (T52, T53) are in production (2026-11-17). Left: change the Souls Builds account's password if not
-  done yet (it was pasted into a session), resubmit the sitemap, and message the credited creators (KeenGamer,
-  Console Pulse, eip.gg's Kelson H. and Joseph Ferguson) with their pages.
-- After T55 deploys (CI on `main`: functions, hosting, rules and indexes together): wait for the new
-  `equipment.weapons` index to show **Enabled** (Firestore → Indexes; weapon pages serve the plain page until then),
-  then `curl -sI https://soulsbuilds.com/weapons/moonveil` (expect `s-maxage=300`),
-  `curl -s https://soulsbuilds.com/sitemap.xml | grep -c -e weapons/ -e tags/`, open a weapon page and a tag page.
-  The landing's Popular weapons appears after the next daily stats run (or Actions → Community stats → Run
-  workflow). Resubmit the sitemap in Search Console.
-- After T62 deploys (CI on `main`: hosting, rules and indexes together): wait for the new `commentLikes.userId`
-  collection-group index to show **Enabled** (Firestore → Indexes; account deletion fails until then), then on
-  a build's Discussion tab like a comment, reply to one, and switch Top/Newest.
-- After T69 deploys: `curl -s https://soulsbuilds.com/ | grep -c 'Plan, share and follow'` (expect 1) and
-  `curl -s https://soulsbuilds.com/build/IAumzY2DNj2NHObXD0QB | grep -c 'sb-home'` (expect 0: the function strips it).
-- After T74 deploys (CI on `main`: hosting, functions, rules and indexes together): the home shelves, the builds
-  list and weapon/tag pages query new composite indexes (count, then `createdAt`). Wait for them to show
-  **Enabled** (Firestore → Indexes; until then those lists fail with "requires an index"), or deploy them first:
-  `node scripts/firebase.mjs deploy --only firestore:indexes --project soulsbuilds`. Then run the stats job once
-  (Actions → Community stats → Run workflow) so search and the shelves have their index; open `/`, `/builds`,
-  search "samurai", and resubmit the sitemap (it now lists `/builds`).
-- After T56 deploys: paste a build URL into https://search.google.com/test/rich-results (breadcrumbs should pass; `CreativeWork` has no rich result, only a schema check), and resubmit the sitemap in Search Console (its URLs now carry the slugs).
-- T43's action URL (Authentication → Templates → Customize action URL → `https://soulsbuilds.com/auth/action`)
-  is **blocked**: the console and the API refuse it (`EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED`, 2026-11-17). Try
-  again later, set up the custom email domain, or ask Firebase support; details in `docs/firebase.md` "Sign-in
-  setup" step 6. Until then the emails use Firebase's default page.
-- Approve the first CI production run (Actions → the run → Review deployments); it proves Workload Identity end to
-  end and is the first CI deploy of the link-preview function (T37; its roles were granted 2026-11-17: if it names
-  a missing permission, add that role and note it in `docs/firebase.md` "Link previews and crawlers"). Open a throwaway PR once to see the preview comment.
-- T37/T38 are live (deployed by hand 2026-11-17). Still to check: paste a never-shared build link into Discord and
-  see the card; open soulsbuilds.com and see a hit at abhpro.goatcounter.com (if none, add the domain to its
-  allowed domains); `localStorage.skipgc = 't'` on the site keeps your own visits out; look at the first month's
-  Blaze bill (the $5 budget alert is set per `docs/firebase.md`).
-- In a day or two: App Check → APIs, check that nearly all requests are verified, then **Enforce** for Firestore
-  and Auth (`docs/firebase.md` "App Check" step 4). Automated browsers (perf runs, bots) count as unverified.
-- App Check token TTL → **1 day** (T23; App Check → Apps → the web app → reCAPTCHA Enterprise → Token time to
-  live). Then `npm run perf -- https://soulsbuilds.com/ --runs 1` should print `token ttl 86400s`.
-- Console: delete the disposable test account "claude" (Authentication → Users); unlink Google Analytics if it's
-  linked (Project settings → Integrations); set the email templates' sender name to "Souls Builds".
-- Decide on the display name "Anne Frankly" (migrated from 2022; public on profiles). If it goes:
-  `node scripts/admin.mjs rename <uid> "<new name>" --project soulsbuilds` (dry run), then `--write`.
-- Keep a copy of `.admin-backups/export_soulsbuilds_2026-11-15T22-59-34-751Z.json` (the v1 data) outside the repo.
-- After T36's production deploy: back up, then backfill the build counters so "Most played" includes every build:
-  `node scripts/admin.mjs counts --project soulsbuilds` (dry run), then `--write` (`docs/firebase.md`
-  "Tracking counters backfill").
-
-**Relaunched** 2026-11-15 (T12) on soulsbuilds.com. **Order from here** (owner's calls, 2026-11-15): the redesign
-(T16, T17), "How to get this build" (T14, T19, T15), build math (T8), browse (T9) and performance (T21) are
-done, and so are T18 (account deletion), T22 (layout), T20 (community feel), T23 (App Check wait), T24 (blocked reCAPTCHA), T25 (Firebase SDK 13), T26 (redesign v2 foundations), T27 (loadout and stats card), T28 (build page tabs), T29 (landing), T39 (loadout without empty rows) and
-T34 (tracking), T35 (the route during a run), T41 (tracking needs an account), T36 (Playing and Completed),
-T40 (the build image), T30 (sign up and log in), T31 (profile and account settings), T44 (route stops done),
-T42 (rules budget), T45 (item cards), T46 (tracking in How to get), T47 (generated descriptions), T37 (link previews), T38 (usage counts), T48 (build page v3 on
-desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T51 (head tags), T56 (named URLs, JSON-LD), T63 (Equipment and Discussion tabs), T54 (Share menu), T55 (weapon and tag pages), T62 (comments) and T66 (build page above the fold).
+every decision. Today's code still has the previous look (from the 2026-11-16 canvas mock-up,
+https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): history only, never a target.
 
 ## In progress
 
@@ -89,10 +23,8 @@ desktop), T49 (phones), T43 (email action page), T50 (crawlable build pages), T5
 
 ## Up next
 
-In the owner's order (2026-11-18): the redesign first. The earlier run (2026-11-17: newcomers, T68–T71 done; the
-UI/UX pass, T74 and T76 done) ended there: T72 was retired (its account-menu link and phone Guide-first went into
-T84; its home "Continue your run" row was dropped, since the mockup has no run banner), and T73, T75 and T77
-were folded into T85 (Backlog > Folded into T85 keeps their details for its planning session).
+In the owner's order (2026-11-18): the redesign first (T85, then the tickets it splits off, placed right after it),
+then T81, T83, T84, T82, then T80.
 
 ### Design direction "Loadout" (owner, 2026-11-18)
 
@@ -219,13 +151,30 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
   list on home), and splits the work into session-sized tickets placed right after this one in Up next (likely:
   tokens and type; home list and filters; build page header and tabs; equipment pane and item cards; Analysis,
   Notes, Guide and Comments; the editor; the item picker; phones), with the pieces that need T81 (grades), T83
-  (key items) or T84 (tracking) marked as waiting or built without them. It takes what still applies from the
-  folded T73, T75 and T77 (Backlog > Folded into T85). Each piece rewrites its part of `docs/architecture.md`
+  (key items) or T84 (tracking) marked as waiting or built without them, and the carried-over items below
+  assigned to pieces. Each piece rewrites its part of `docs/architecture.md`
   "Styling" and `docs/decisions.md` (Build page layout, Tracking) as it lands; a check of each piece is a
   screenshot next to the mockup's.
 - **Context:** the Loadout direction above, `design/mockup/`; `src/theme/`, `src/features/builds/`,
   `src/features/editor/`, `docs/architecture.md` "Styling"; the old look (gold, in-world frames, Spectral) is
   replaced, not merged.
+- **Carried over** (T73, T75 and T77 were tickets for the old look, folded in here on 2026-11-18; their full text
+  is in git, commit `1c4a06d`). What the mockup doesn't already cover:
+  - From T73 (the planner's first minute): saving without a name scrolls to the name field, focuses it and shows
+    the error under it (today the message shows only in the bottom bar, even with the field off screen; the check
+    is in `features/editor/useBuildEditor.ts`; `features/auth/FormField` + `useFieldErrors` do errors by field).
+    One name for the action (today "Plan a build" signed out, "New build" in the header, "Create a build" on the
+    profile). The e2e journeys `build-flow` and the signed-out planner follow the new editor.
+  - From T75 (picker rows with facts): the picker stays fast on a phone with 487 weapon rows (measure before and
+    after); the rows' fact lines come from `features/editor/itemFacts.ts`.
+  - From T77 (craft pass), for the new look: review every page and dialog at full resolution with the
+    screenshot script (1440, 1000 and `--mobile`); loading (no blank panels or layout jumps; the picker's first open
+    loads ~1 MB), empty, error and offline states on every page; small, purposeful motion that honours
+    `prefers-reduced-motion` (tabs, dialogs, popovers, checking an item, the progress bar, and the Build complete
+    moment: the rewards rule in `docs/product.md`); every flow by keyboard and screen reader (focus order, visible
+    focus, the page behind a dialog out of reach); phones end to end, targets ≥ 44 px, nothing that needs hover;
+    `Chips`' tag picker and `ShareButton`'s menu moved onto `components/ui/Popover` if it fits, and the phone
+    Filters sheet as a bottom sheet.
 
 #### T81 — Souls Builds analysis: a grade and a write-up for every build
 
@@ -270,11 +219,13 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
 - **Status:** ready to plan (owner's idea, 2026-11-18; in the mockup); after T81
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** While editing, the author can mark any equipped item as **key** (weapons, talismans, spells, armor,
-  tears, items…): the pieces the build depends on. Key items get the highlight in the equipment pane (the
-  damage-color glow and a KEY tag on weapons, a lit ring on talismans, a lit cell on spells) and "Key item" in the
-  item card; everything else is plain. Without any marked, the first right-hand weapon is the key item.
+  tears, items…): the pieces the build depends on. Key items are the only highlighted items in the equipment
+  pane (the build's signature color; no "Key" label on them; one legend line under the pane) and say "Key item"
+  in the item card; everything else is plain. The key item is the build's picture, and it decides the build's
+  signature color (Loadout direction above). Without any marked, the first weapon is the key item (the editor
+  marks it by default).
 - **Done when (plan mode):** where it's stored (e.g. `Equipment.key`: slot ids, kept valid when a slot changes),
-  a cap (about 3–5, so it stays meaningful), the rules change and its cost against the rules budget (Gotchas:
+  a cap of 3 (the mockup's editor: "Mark key items (N of 3)"), the rules change and its cost against the rules budget (Gotchas:
   builds are near the 1,000-expression limit), the editor control (a toggle on each slot or in the picker),
   tests (rules, editor); T81's analysis can read the key items as the author's statement of intent.
 - **Context:** the mockup (the build page's test builds; the editor's key star);
@@ -341,14 +292,15 @@ queries.ts}`, `src/lib/firebase/stats.ts`, `.github/workflows/stats.yml`, `docs/
 
 ### Priority backlog
 
-Set aside by the owner on 2026-11-17 while they bring a run of other requests (Up next). These come **next after
-those**, in this order, but stay here until the owner says to take them out of the priority backlog: never move
-one to Up next, pick it as the next ticket, or name it in the **Next:** line before then.
+Set aside by the owner on 2026-11-17. These come **after Up next**, in this order, but stay here until the owner
+says to take them out of the priority backlog: never move one to Up next, pick it as the next ticket, or name it
+in the **Next:** line before then. They were written before the Loadout redesign: where they name parts of
+today's UI (landing, sidebar, hero, skin), read them as "its equivalent after the redesign".
 
 #### T65 — Second batch of seeded builds, from real search data
 
-- **Status:** blocked — wait for 4–6 weeks of Search Console data after T50's deploy and the owner's T52
-  production seeding (owner to-dos)
+- **Status:** blocked — wait for 4–6 weeks of Search Console data (set up by the owner by 2026-11-18, so not
+  before late December 2026; T50's crawler pages and the T52 seeds are live)
 - **Session:** Sonnet · medium effort · plan mode off
 - **Goal:** Add about 10 builds for what people actually search when they land on Souls Builds, and drop or
   rework seeds nobody opens.
@@ -373,7 +325,8 @@ one to Up next, pick it as the next ticket, or name it in the **Next:** line bef
   - `GameId` becomes a union (`er`, `ds3`, `ds1`, `ds2`, IDs the session picks), the registry in
     `src/app/game.ts` has each game's name, stats and slots. Routes per game: `/` stays Elden Ring; `/ds3`,
     `/ds1`, `/ds2` landings; builds keep `/build/<id>` (a build knows its game) and `useCurrentGame()` reads
-    the route or the build. A game switcher in the header, shown only for games with data.
+    the route or the build. The header's game menu (T79: the Dark Souls games "Coming soon") links the games
+    that have data.
   - The build model per game: `Equipment` and attributes as a union by `game` (DS games: rings instead of
     talismans (2 in DS1, 4 in DS2 and DS3), infusions instead of affinities, weapon arts fixed by weapon in
     DS3, no Ashes of War, tears, Great Rune or Spirit Ash; DS1 has 8 attributes, DS2 and DS3 9, with different
@@ -383,7 +336,8 @@ one to Up next, pick it as the next ticket, or name it in the **Next:** line bef
     lazily (docs/data.md: core stays small); the pipeline takes a game (`npm run data -- ds3`) and the export
     folder becomes `~/Documents/soulsbuilds-gamedata/<game>/` (the owner moves the Elden Ring export into
     `er/`, or the script falls back to the old layout).
-  - Per game: skin (`src/theme/skins.ts`), tags, link-preview card text ("Level 120 Dark Souls III build"),
+  - Per game: the look (today `src/theme/skins.ts`; the Loadout redesign has no site accent, so T85 decides
+    what, if anything, differs per game), tags, link-preview card text ("Level 120 Dark Souls III build"),
     page titles (T51), sitemap (T50), community stats (`stats/<game>`).
   - The Guide (route and tracking) needs hand-written progression per game (`scripts/data/progression.ts`,
     `places.ts`, `events.ts`). ★ Recommended: Dark Souls builds ship **without the Guide tab** first (tabs.ts
@@ -450,86 +404,12 @@ one to Up next, pick it as the next ticket, or name it in the **Next:** line bef
   (probably nothing: it's two weapons in the right hand).
 - **Context:** T58–T60 as the pattern; expect the extraction to need its own code path.
 
-### Folded into T85 (reference)
-
-Owner, 2026-11-18: these were the UI/UX pass's next tickets in today's look. The redesign replaces that look, so
-T85's planning session reads them for what still applies; nobody runs them on their own.
-
-#### T73 — The planner's first minute
-
-- **Status:** folded into T85 (owner, 2026-11-18): its planning session takes what still applies
-- **Session:** Opus · high effort · plan mode on
-- **Note (2026-11-18):** the mockup's **New build** covers this and goes further (live card, checklist, Suggest a
-  name, tag suggestions, the grade moment). Still useful here: the save-without-a-name behaviour, one name for
-  the action, the e2e journeys.
-- **Goal:** Someone who pressed "Start planning" knows what to do without reading: the equipment is in view
-  and the empty slots invite a tap. Today `/build/new` opens on a form (name, tags, build image), the
-  equipment starts halfway down, and empty slots are faint squares with a dot.
-- **Done when:** (owner's pick, 2026-11-17: slots + compact title)
-  - Empty slots in edit mode show a **+** and what goes there (helm, chest, gauntlets, legs, crystal tear,
-    great rune, spirit ash: the labels exist as the buttons' accessible names).
-  - One line above the panel on an empty build: pick a starting class, then tap a slot. It goes once the
-    build has gear.
-  - The title block in edit mode fits one row on desktop (name, tags, image), so the equipment is in view at
-    1440×820.
-  - Save without a name: the message shows only in the bottom bar while the name field is off screen: focus
-    and scroll to the field, the error under it.
-  - One name for the action. Today "Plan a build" (signed out), "New build" (header, signed in), "Create a
-    build" (profile).
-  - Tests; e2e (`build-flow`, the signed-out planner); screenshots desktop and `--mobile`; docs.
-- **Context:** `features/editor/sections/{BuildDetailsForm.tsx,EquipmentSection.tsx,GearTiles.tsx}`,
-  `features/editor/useBuildEditor.ts` (the name check, line ~126), `features/auth/FormField` +
-  `useFieldErrors` (errors by field, focus the first), `app/Header.tsx`, `features/profile/Profile.tsx`,
-  `features/builds/intro.ts`.
-
-#### T75 — Picker rows with facts
-
-- **Status:** folded into T85 (owner, 2026-11-18): its planning session takes what still applies
-- **Session:** Sonnet · medium effort · plan mode off
-- **Note (2026-11-18):** the mockup's item picker covers this and goes further (a detail pane with your stats vs.
-  requirements, "Only what my stats can use", the weapon's second step for skill and affinity). Still useful
-  here: phone performance with 487 rows.
-- **Goal:** Planners choose by numbers. Today the picker lists 214 helms and 487 weapons by name only: no
-  weight, poise or requirements, and nothing on hover.
-- **Done when:**
-  - Each row has one muted fact line from `itemFacts.ts`: armor weight · poise; weapons type · requirements
-    (marked when the build's stats don't meet them); spells FP · slots · requirement; talismans their effect
-    if the data has a short one.
-  - Armor sorts by name, weight or poise.
-  - Removing a weapon is one step: Remove on the Ash of War and affinity step (today: tile → Change weapon →
-    Remove).
-  - The list stays fast on a phone (487 rows; measure before and after). Tests; screenshots desktop and
-    `--mobile`.
-- **Context:** `features/editor/{ItemSelector.tsx,picker.ts,itemFacts.ts,itemDetails.ts}`, the weapon step
-  (`WeaponOptions`). Picker code loads `@/data` (the full data), which is fine there.
-
-#### T77 — Craft pass at full resolution
-
-- **Status:** folded into T85 (owner, 2026-11-18): its planning session takes what still applies (the
-  states, motion, keyboard and touch checks hold for the new look)
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** The details an award jury (and every user, without naming them) notices, which the UI/UX pass
-  couldn't judge through a downscaled browser pane.
-- **Done when:** findings fixed as the session goes; anything large becomes a ticket.
-  - **Full-resolution review** with `npm run screenshot` at 1440, 1000 and `--mobile` of every page and
-    dialog: alignment, spacing rhythm, type, truncation, the accent budget.
-  - **States:** loading (no blank panels or layout jumps while builds, the route or the picker's data load;
-    the picker's first open loads ~1 MB), empty, error and offline for each page.
-  - **Motion**, small and purposeful, honouring `prefers-reduced-motion`: tab changes, dialogs and popovers,
-    an item checking off, the progress bar moving, and the **Build complete** moment: the one place the site
-    should feel like the game (`docs/product.md`, the rewards rule).
-  - **Keyboard and screen reader:** every flow start to finish without a mouse (plan a build, pick items,
-    track, comment); focus order and visible focus; the page behind an open dialog out of reach.
-  - **Touch:** the phone editor end to end; targets ≥ 44 px; nothing that needs hover.
-  - **Popovers:** `Chips`' tag picker and `ShareButton`'s menu still hand-roll what `components/ui/Popover`
-    (T74) does; move them onto it if it fits, and give the phone Filters sheet (a `Dialog`) a bottom-sheet look.
-- **Context:** `src/theme/` (motion, spacing, fonts), `components/ui/` (Dialog, FocusScope, Tooltip),
-  `docs/architecture.md` "Styling", the run-app skill for screenshots.
-
 ### Parked tickets
 
 Written in full and **set aside by the owner indefinitely**. Never move one to Up next, pick it as the next
 ticket, or put it in the **Next:** line unless the owner asks for it by number. Wrapping and starting skip them.
+Written before the Loadout redesign: the model, rules and tests stand; where the button, banner, tab and rows go
+is for the mockup's layout to decide when one is picked up.
 
 #### T32 — Make a copy: a build based on another
 
@@ -541,7 +421,7 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
   like, and save it as their own. The copy always credits the original, so its author doesn't feel copied
   without appreciation (owner's idea, 2026-11-16).
 - **Done when:** (ask the owner about the ★ items in one question at the start; mock the button, banner and
-  credit line on the redesign canvas first)
+  credit line in the mockup's style first)
   - Model: an optional `basedOn: { buildId, ownerId }` on a build, set only when it's created and never changed or
     removed, so credit can't be stripped later. Rules: on create, `basedOn.ownerId` must equal the parent's
     `ownerId` (one `get`); on update, `basedOn` is unchanged. Existing builds don't have it: no migration. Rules
@@ -578,12 +458,11 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 - **Goal:** A build that's been copied shows everyone's versions of it and how each one differs, so a visitor sees
   the original next to the PVE take, the cheaper version, or the one that claims to be better.
 - **Done when:**
-  - ★ A "Variations" tab on the build page with its count, shown only when there's at least one. Since T48 the
-    tabs are Description · Guide · Comments beside the build sidebar, with collapsible sections on phones:
-    decide then whether Variations is a fourth tab (and section) or part of Description. The count is one `count()` aggregation (`where('basedOn.buildId', '==', id)`, about 1
+  - ★ A "Variations" tab on the build page with its count, shown only when there's at least one (the redesign's
+    tabs are Loadout · Analysis · Notes · Guide · Comments: decide then where it goes). The count is one `count()` aggregation (`where('basedOn.buildId', '==', id)`, about 1
     read), not a stored counter: no counter rules, and nothing drifts when copies are deleted.
-  - The tab lists the copies, most liked first (composite index in `firestore.indexes.json`), in T29's row
-    style. Each row says what changed against this build, e.g. "3 items changed · Faith 80 → 60 · +1 spell ·
+  - The tab lists the copies, most liked first (composite index in `firestore.indexes.json`), as the home list's
+    rows or cards. Each row says what changed against this build, e.g. "3 items changed · Faith 80 → 60 · +1 spell ·
     Level 201 → 150", or "No changes yet" (identical copies sort last). The summary is a pure function in
     `src/lib/` (e.g. `buildDiff.ts`) with unit tests; item names come from `@/data`.
   - ★ On a copy, the credit line adds "and N other variations", linking to the original's Variations tab.
@@ -592,8 +471,8 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
     the copy's summary); `npm run check` and `npm run e2e` pass; screenshots desktop and `--mobile`.
   - Docs: a decision row (counting with a query instead of a counter), AGENTS.md's project map.
 - **Context:** T32's `basedOn`; T28's tabs; `features/builds/BuildsList.tsx` rows;
-  `features/editor/queries.ts` and `lib/queryKeys.ts`. A side-by-side compare view (Backlog) is the natural next
-  step: each variation row could link to "Compare with the original".
+  `features/editor/queries.ts` and `lib/queryKeys.ts`. Compare (T82) is the natural next step: each variation row
+  could link to "Compare with the original".
 
 ### Ideas
 
@@ -602,21 +481,18 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 - Hub pages (T55 follow-ups): talismans, spells and spirit ashes get pages the same way (their lists are compacted
   arrays, so `array-contains` works; one index each); landing rows could link their tags (stretched-link row
   instead of a whole-row `<a>`); the item card's weapon name as a link needs a hoverable card.
-- Phone sections (T49 follow-ups, small): opening a `/guide` or `/comments` link directly doesn't scroll to that
-  section (only navigation within the page does, `BuildSections`); the title section's "Tracking" link does
-  nothing when the URL is already `/guide` and the Guide was closed; "Jump to" links under the sticky
-  Description header weren't tried on a phone (`MarkdownView` scroll margin).
 - Route (T15 follow-ups): upgrade materials (Smithing/Somber stones, needs upgrade levels on builds), rune
   farming to the build's level (where and how long), and the starting class: builds now save one (T8,
   `startingClass`; classes in `character.json`), so the route can say "your Samurai starts with it" instead of
   "or start as X", and suggest a class for builds without one.
 - Item cards (T45 follow-up): scaling grades at the build's upgrade level, not +0 (needs upgrade levels on
   builds, like the route's upgrade materials; ReinforceParamWeapon's correction rates from the export).
-- Markdown editor in the site's palette: since T28 it's pinned to the editor's own dark theme (`data-color-mode`
-  in `index.html`), GitHub's bluish dark rather than `COLOR_INSET`/`COLOR_TEXT`; override its CSS variables in
-  `sections/Markdown.tsx` (`--color-canvas-default` and friends, see `@uiw/react-md-editor`'s README).
-- Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup).
-- Build comparison view: now T82 (Design direction "Loadout").
+- Markdown editor in the site's palette, if T85's editor piece keeps `@uiw/react-md-editor`: since T28 it's
+  pinned to its own dark theme (`data-color-mode` in `index.html`), GitHub's bluish dark; override its CSS
+  variables in `sections/Markdown.tsx` (`--color-canvas-default` and friends, see its README).
+- Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup). Also from
+  T78: production holds 18 indexes not in `firestore.indexes.json` (old ascending ones and older); harmless,
+  delete them in the console or deploy indexes with `--force` (owner's go-ahead).
 - Firebase MCP server for agents (local emulator use only) once its emulator support is clear.
 - Build history / "updated" badge using `updatedAt`, with a patch label ("updated for 1.x") and a short changelog;
   edit comments (rules allow no comment updates today).
@@ -630,29 +506,14 @@ ticket, or put it in the **Next:** line unless the owner asks for it by number. 
 
 ## Done
 
-Older entries: `docs/tickets-archive.md`.
+Finished tickets, newest first; `/wrap` moves the older ones to `docs/tickets-archive.md` (every finished ticket
+since T1, oldest first).
 
+- Tickets cleanup (no ticket) — 2026-11-18 — owner to-dos removed (owner: all checked); T73/T75/T77's
+  still-useful parts merged into T85 ("Carried over"); T83, T57, T32, T33 and T65 brought in line with the mockup
+  and what's live; old Done lines moved to `docs/tickets-archive.md`; `/wrap` keeps Done to the last session or
+  two. No app code changed.
 - Design session (no ticket) — 2026-11-18 — the redesign chosen: "the mockup" (Loadout look, grades and analysis, PvE/PvP, editor and picker) in `design/mockup/` with preview/screenshot tooling and the live artifact; T81–T85 written and put next; T72 retired; T73, T75, T77 folded into T85; `docs/product.md` positioning note. No app code changed.
-- T72 — Back to your run — retired 2026-11-18 (owner): the mockup has no home-page run row; the account-menu
-  Playing link and the phone Guide-first went into T84.
-
-- T79 — Owner's polish list — 2026-11-17 — one session, no ticket before it. Header: bigger wordmark, the game name is a menu (Dark Souls Remastered/II/III "Coming soon"; phones: in the Menu panel, the bar overflowed signed out at ≤ 390px). Home: intro title + "View all builds" for everyone, the three panels in a box closed for good with its X; order Popular weapons → Trending → Top <tag> ×3 + Fresh (2×2); Most played, the count line and the bottom View all gone. `/builds` titled "View builds". Rows: gold 22px hearts, filled once a build has likes (outlined and dimmer with none), that like/unlike signed in (your like = the count in gold; stretched link on the name; `useLikedIds`, one read), "No tags", quieter divider; a lone compact shelf takes the full width with full rows. Levels in five band colors (`lib/levels.ts`, `LevelNumber`, legend on hover; the Level filter's presets = the bands, so 101–124 and 151+ are new and 200+ went). Spectral replaces EB Garamond (app, crawler HTML, link-preview card), list names 18px. Locally, the home's Popular weapons and Top shelves need more than the 5 test builds: `node scripts/seed-builds.mjs --write` then `node scripts/admin.mjs stats --write` (e2e works with either). Softer contrast (text, bg, gold; `COLOR_LINE_CONTROL` on buttons and tags). Labels in boxes optically centered (`opticalCenter`; `npm run screenshot -- … --scale 2`). Build page: footer follows the content (no gap under Equipment), Character block spaced, HP/FP/stamina colored. Not checked: Safari/Firefox rendering of the centering; the live site (deploy is the owner's; the link-preview card's new font needs the functions deploy).
-- T78 — Level filters failed in production — 2026-11-17 — every `/builds` level range said "Couldn't load builds": Firestore wants a range field (`level`) last in the index in the last orderBy's direction, ours were ascending after likes/date/players; 9 indexes flipped to `level` descending (deployed by hand, checked live), `src/lib/firebase/indexes.test.ts` checks every list/search query shape against `firestore.indexes.json` (the emulator never does). Production still holds 18 indexes not in the file (the old ascending ones + older); harmless, delete in the console or with `--force` if wanted.
-- T76 — Small fixes from the UI/UX pass — 2026-11-17 — signed-out comment box is one "Log in to comment" button (opens the dialog); Guide legend swatches 12 px; stat "+N" titled "From talismans"; phone tags keep distance from the actions. Not checked: Report's spacing signed in on phones.
-- T74 — Home list: shelves and the builds page — 2026-11-17 — `/` = shelves (Trending by activity over builds-since, Most played, Fresh, Top <tag>), `/builds` = feed rows (likes rail), one filter bar (popovers, phone sheet, chips), search over a daily index in `stats/<game>`, likes/played ties newest first (new indexes)
-- T71 — The write-up named in its tab — 2026-11-17 — from the UI/UX pass (owner's pick: name it in the tab, layout
-  and fold unchanged): the write-up sat under "Discussion 0" (phones: "Discussion · No comments yet"), so nobody
-  found it. `tabs.ts` `tabLabel` + `hasWriteUp`: the tab reads **Write-up & comments** with a write-up, **Comments**
-  without (URL still `/discussion`); phones: a **Write-up** section after the gear (glance: its first paragraph),
-  then Guide, then **Comments** (comments only); a `/discussion` link opens both. The heading is "Write-up"
-  everywhere (view, editor, crawler HTML; was "Description"). Tests: `tabs.test.ts`, `BuildTabs.test.tsx`,
-  `BuildSections.test.tsx`, `BuildEditorPage.test.tsx`, six e2e specs. Docs: decision row "Build page layout",
-  `docs/architecture.md`.
-
-- T70 — "New here?" strip — 2026-11-17 — `src/app/NewHereStrip.tsx`: signed out on build, weapon and tag pages, one line (what the site is, How it works → `/`, Plan your own → `/build/new`, close; dismissal in localStorage `sb-new-here-dismissed`). A separate 44 px row broke `fold.spec` (+35 px), so from 1200 px wide it sits in the header row (shorter text, no Plan link: the nav has Plan a build) and below that in a row under the header. Header nav items `nowrap`.
-
-- T69 — Home page intro — 2026-11-17 — signed out, `/` opens with `LandingIntro` (the page's h1, one sentence,
-  three panels: Start planning, See an example route = the Moonveil seed's Guide, Browse builds; copy in
-  `features/builds/intro.ts`); the list title steps down to h2; a static copy in `index.html`'s `#root` for
-  crawlers, which the link-preview function strips (`share.ts` `stripHome`); usage `intro-*`; Privacy's counted
-  actions updated.
+- T73, T75, T77 — folded into T85 — 2026-11-18 (owner) — tickets for the old look; what still applies is under
+  T85's **Carried over**. T72 (Back to your run) was retired the same day: its account-menu Playing link and the
+  phone Guide-first went into T84.
