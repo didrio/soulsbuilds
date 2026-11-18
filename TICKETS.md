@@ -2,20 +2,27 @@
 
 Living, ordered backlog. **One ticket per session**: `/clear` → `/start Tn` → work → `/wrap`. The agent that
 wraps a session updates this file and picks the next ticket. Rules: `.claude/skills/wrap/SKILL.md`. Capture
-ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T86**.
+ideas any time with `/ticket`. Ticket numbers are never reused; **next free: T96**.
 
 Each ticket has: **Status**, **Session** (model · effort · plan mode), **Goal**, **Done when**, **Context**
 (read-first files, decisions, pitfalls). A fresh session reads the ticket and only what it names.
 
-**Next:** T85 (plan and split the Loadout restyle; Opus · extra high · plan mode on). Then, in Up next and in the
-owner's order (2026-11-18): the tickets T85 splits off, T81 (analysis and grades), T83 (key items), T84 (tracking
-without a button), T82 (compare), T80 (stats unattended and at scale). After Up next: **Backlog > Priority
-backlog** (T65, T57–T61), only once the owner says so; copies (T32, T33) stay parked.
+**Next:** T86 (the redesign's foundation, and the `redesign` branch; Opus · high · plan mode on). Then, in Up
+next and in this order (T85, 2026-11-18), all on the `redesign` branch: T87 (build facts), T88 (build page
+frame), T89 (equipment pane, item cards), T90 (home list), T91 (editor), T92 (item picker), T93 (the rest of the
+site), T81 (analysis and grades), T83 (key items), T84 (the Guide, tracking without a button), T94 (craft pass),
+T95 (launch: merge and deploy). After launch: T82 (compare), T80 (stats unattended and at scale). After Up next:
+**Backlog > Priority backlog** (T65, T57–T61), only once the owner says so; copies (T32, T33) stay parked.
 
 **"The mockup"** (owner's word) is the chosen redesign, "Loadout" (2026-11-18): `design/mockup/README.md` has the
 live link, the source, and how to preview, screenshot and republish it; Up next > Design direction "Loadout" has
-every decision. Today's code still has the previous look (from the 2026-11-16 canvas mock-up,
+every decision. **The mockup as it looks is the spec** (owner, 2026-11-18): where it and this file's text differ,
+the mockup wins. Today's code still has the previous look (from the 2026-11-16 canvas mock-up,
 https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): history only, never a target.
+
+**The redesign happens on the `redesign` branch** (owner, 2026-11-18), from T86 until T95 merges it: one PR, its
+preview channel updated on every push; `main` and soulsbuilds.com keep today's look meanwhile, and a fix that
+can't wait goes on `main` and is merged into `redesign`.
 
 ## In progress
 
@@ -23,8 +30,8 @@ https://claude.ai/artifact/6Wuekku4Q9cGVkmN7iS9ym): history only, never a target
 
 ## Up next
 
-In the owner's order (2026-11-18): the redesign first (T85, then the tickets it splits off, placed right after it),
-then T81, T83, T84, T82, then T80.
+In this order (T85, 2026-11-18), all on the `redesign` branch until T95 launches it: T86–T93 (the restyle), T81,
+T83, T84 (the mockup's new features; the launch waits for them), T94 (craft pass), T95 (launch). Then T82, T80.
 
 ### Design direction "Loadout" (owner, 2026-11-18)
 
@@ -35,7 +42,30 @@ Build page and New build, three test builds (magic + PvP + every slot, bleed + h
 class) and the editor's empty / in-progress states. How it was chosen (three pitches, then rounds of feedback):
 the "Souls Builds Directions" artifact (https://claude.ai/artifact/TyFTCcL3YfBitcciV4o8zZ), history only.
 The site is about **browsing, comparing, sharing and discussing** builds; planning and tracking stay but are
-never the selling point. Owner's calls (2026-11-18), all in the mockup:
+never the selling point.
+
+**How to use this section** (owner, 2026-11-18, at T85): the mockup as it looks is the spec, approved view by
+view; this text records what the owner asked for and should agree with it, but where they differ, **build what
+the mockup shows**. Before building a view, screenshot the mockup's (`node design/mockup/scripts/preview.mjs …`,
+README) and read its markup. **Nothing on today's site carries over unless the mockup has it**: the home shelves
+(Popular weapons, Trending, Top <tag> builds, Fresh builds), the signed-out intro (LandingIntro and its copy in
+`index.html`), the "new here" strip, level colors by band, liking from a list row, player counts, the build
+sidebar and the phone collapsible sections all go, along with the gold, the in-world frames and Spectral. Pages
+the mockup doesn't show (profile, account, sign-in, `/auth/action`, privacy, terms, 404, **weapon and tag pages:
+kept**, owner) stay and take the new look.
+
+**Owner's calls at T85 (2026-11-18):**
+
+- **Launch:** the redesign is built on a `redesign` branch with one PR (its preview channel shows each piece;
+  previews read and write production data, so look, don't save) and goes live in one go at T95. The site never
+  shows half the redesign.
+- **Launch scope: the full mockup on day one.** T81 (grades and analysis), T83 (key items) and T84 (the Guide
+  and tracking without a button) land on the branch before T95. The restyle tickets leave the grade spots out
+  (T81 adds them everywhere); they don't build gradeless stand-ins.
+- **One look for every game:** with no site accent, nothing in the look differs per game but its name (the game
+  menu and page titles). `src/theme/skins.ts` goes in T86.
+
+Owner's calls (2026-11-18), all in the mockup:
 
 - **Look:** dark and dense, numbers first; reads as a professional site from a family of sites, not a fan site
   (owner liked that: keep it, no ornament). The only color besides the neutrals is each build's **signature color
@@ -59,9 +89,10 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
   between. Sorts: **Top graded** (default), Most liked, Trending, New. The **level** filter names the game stage:
   Early game 1–50, Mid 51–100, Late 101–124, Endgame 125–150, NG+ 151+ (in the PvP list: the usual brackets
   instead). Cards: grade badge, a one-line verdict (T81), the eight-bar stat profile with the top two lit, the
-  gear strip, likes and comments, author. **Grid or list is undecided**: the mockup has a toggle (list = one
-  build per row, columns Grade · Build · Verdict · Attributes · Loadout · Likes) for the owner to choose; it may
-  stay as a toggle, but **only on desktop** (above ~1100px): tablets and phones always get the grid and no toggle.
+  gear strip, likes and comments, author. **Grid or list (owner, T85): the toggle stays, grid by default**, the
+  visitor's choice remembered in this browser (list = one build per row, columns Grade · Build · Verdict ·
+  Attributes · Loadout · Likes), **only on desktop** (above ~1100px): tablets and phones always get the grid and
+  no toggle.
   No player counts anywhere, no "your run" banner. **New build** is a secondary button.
 - **Build page header:** the build image, then title, mode tag, level, class, "by <author>", tags; **Like and
   Share at the top right** (both secondary buttons: no bright white button on the page; under the title on
@@ -138,47 +169,246 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
     the weapon or the chosen Ash doesn't allow disabled; "can't be infused" for unique weapons). Remove is in the
     picker's footer. Phones: full-screen, the list first, tapping a row opens its detail with Back.
 
-#### T85 — The Loadout restyle
+**Every redesign ticket (T86–T95, and T81, T83, T84 as far as they touch UI)** works on the `redesign` branch.
+It builds its views **to the mockup**: desktop, tablet, and the mockup's own phone layout (structurally different
+where the mockup is). It deletes the old pieces it replaces rather than keeping them alongside, and checks
+itself with screenshots next to the mockup's (`npm run screenshot -- <route>` and `--mobile` against
+`node design/mockup/scripts/preview.mjs "<name>|<w>|<h>|<view>|<js>"`). It also rewrites its part of
+`docs/architecture.md` "Styling" and `docs/decisions.md` (Build page layout, Tracking, …) as it lands. The e2e
+journeys and `fold.spec` change with the UI they test.
 
-- **Status:** next (owner, 2026-11-18); this session plans and splits it, nothing else
+#### T86 — Redesign foundation: branch, tokens, type, UI kit, shell
+
+- **Status:** next (T85, 2026-11-18)
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The new look's base, so every later piece builds from the same parts: the branch, the theme, the
+  fonts, the shared UI components and the app shell (header and footer) as the mockup has them.
+- **Done when:**
+  - The branch: `redesign` from `main`, pushed, with a draft PR "Redesign: the Loadout look" (CI runs checks
+    and posts its preview URL on every push). AGENTS.md says the work happens there.
+  - Theme (`src/theme/`): the mockup's tokens (`--bg`, `--panel`, `--panel-2`, `--hover`, `--line`, `--line-2`,
+    `--text`, `--muted`, `--dim`, `--ok`, `--warn`, `--white`, `--ink`) and the seven signature colors (bleed,
+    frost, fire, magic, holy, lightning, physical). Dark only. **No site accent:** `skins.ts`, `GameSkinStyle`
+    and `COLOR_ACCENT` go. A build's signature is a CSS variable set on its view (`--sig` in the mockup).
+    `colors.test.ts` covers the new text/background pairs (WCAG AA), signature colors on panels included.
+  - Type: Barlow (UI), Barlow Condensed (names and headings, uppercase), JetBrains Mono (numbers and caps labels),
+    self-hosted with `@fontsource` (OFL) in `src/index.css`. Inter, Spectral and Cinzel and their packages are
+    removed, and `index.html`'s inline fallback font follows. New type tiers in `fonts.ts` and `typography.ts`.
+  - UI kit (`components/ui/`) to the mockup: Button (primary = white, secondary = panel, quiet; `sm`), text
+    inputs, SegmentedControl, chips and Tag, a panel (replaces `Frame`), `Grade` badge (S–D, sizes; T81 feeds it),
+    signature tag ("■ BLEED · DEX / ARC"), Dialog, Popover, Tooltip, PageMessage. **Deleted:** `inWorld.ts`,
+    `Ornament`, `PageHero`, `$hero` corner marks, `LevelNumber`'s band colors (T87 replaces the bands). Old
+    callers compile and look plain until their ticket restyles them.
+  - Shell: the header as the mockup (logo mark, the game pill opening the GameMenu, the search box with ⌘K (T90
+    wires it to the list), Sign in, **New build as a secondary button**, the AccountMenu when signed in, the
+    phone header from the mockup's phone view), and the footer. **NewHereStrip is removed** (not in the mockup).
+  - Screenshots of the header and a few pages, desktop and `--mobile`, next to the mockup's; `npm run check`.
+- **Context:** the mockup's `<style>` block (`design/mockup/souls-builds-loadout.html`, top: tokens, `.top`,
+  `.btn`, `.grade`, `.sigtag`, `.pnl`), `src/theme/`, `src/components/ui/`, `src/app/` (Header, AccountMenu,
+  GameMenu, NewHereStrip, App), `src/index.css`, `index.html`, `docs/architecture.md` "Styling". T57 (more
+  games) no longer needs per-game looks: update its line when this lands.
+
+#### T87 — Build facts: signature, stat profile, game stages, PvE/PvP
+
+- **Status:** after T86
 - **Session:** Opus · extra high effort · plan mode on
-- **Goal:** Make the live site look and work like the mockup (the section above has every call): theme tokens and
-  type (Barlow, Barlow Condensed, JetBrains Mono), the home list and filters, the build page header and tabs, the
-  equipment pane, item cards, the Analysis, Notes, Guide and Comments tabs, **the editor and the item picker**
-  (New build), phones and tablets (denser, not a copy of desktop).
-- **Done when:** the planning session reads `design/mockup/README.md`, screenshots the mockup's views
-  (`node design/mockup/scripts/preview.mjs …`), reads the current code, asks the owner what's left open (grid or
-  list on home), and splits the work into session-sized tickets placed right after this one in Up next (likely:
-  tokens and type; home list and filters; build page header and tabs; equipment pane and item cards; Analysis,
-  Notes, Guide and Comments; the editor; the item picker; phones), with the pieces that need T81 (grades), T83
-  (key items) or T84 (tracking) marked as waiting or built without them, and the carried-over items below
-  assigned to pieces. Each piece rewrites its part of `docs/architecture.md`
-  "Styling" and `docs/decisions.md` (Build page layout, Tracking) as it lands; a check of each piece is a
-  screenshot next to the mockup's.
-- **Context:** the Loadout direction above, `design/mockup/`; `src/theme/`, `src/features/builds/`,
-  `src/features/editor/`, `docs/architecture.md` "Styling"; the old look (gold, in-world frames, Spectral) is
-  replaced, not merged.
-- **Carried over** (T73, T75 and T77 were tickets for the old look, folded in here on 2026-11-18; their full text
-  is in git, commit `1c4a06d`). What the mockup doesn't already cover:
-  - From T73 (the planner's first minute): saving without a name scrolls to the name field, focuses it and shows
-    the error under it (today the message shows only in the bottom bar, even with the field off screen; the check
-    is in `features/editor/useBuildEditor.ts`; `features/auth/FormField` + `useFieldErrors` do errors by field).
-    One name for the action (today "Plan a build" signed out, "New build" in the header, "Create a build" on the
-    profile). The e2e journeys `build-flow` and the signed-out planner follow the new editor.
-  - From T75 (picker rows with facts): the picker stays fast on a phone with 487 weapon rows (measure before and
-    after); the rows' fact lines come from `features/editor/itemFacts.ts`.
-  - From T77 (craft pass), for the new look: review every page and dialog at full resolution with the
-    screenshot script (1440, 1000 and `--mobile`); loading (no blank panels or layout jumps; the picker's first open
-    loads ~1 MB), empty, error and offline states on every page; small, purposeful motion that honours
-    `prefers-reduced-motion` (tabs, dialogs, popovers, checking an item, the progress bar, and the Build complete
-    moment: the rewards rule in `docs/product.md`); every flow by keyboard and screen reader (focus order, visible
-    focus, the page behind a dialog out of reach); phones end to end, targets ≥ 44 px, nothing that needs hover;
-    `Chips`' tag picker and `ShareButton`'s menu moved onto `components/ui/Popover` if it fits, and the phone
-    Filters sheet as a bottom sheet.
+- **Goal:** The numbers every redesigned view shows about a build, computed once, tested, and in the data:
+  its signature (damage or status type), its top two scaling stats, its eight-bar profile, its game stage, and
+  whether it's a PvE or a PvP build.
+- **Done when:**
+  - **Status buildup in the game data:** `npm run data` adds each weapon's status buildup (bleed, frost, poison,
+    scarlet rot, sleep, madness, death blight) from the owner's export (`EquipParamWeapon` `spEffectBehaviorId0–2`
+    → `SpEffectParam`'s `*AttackPower` buildup columns) and what each affinity adds (Blood, Cold, Poison and
+    Occult). Schema, `data.test.ts` spot checks (Rivers of Blood bleeds, Frozen Needle has frost), docs/data.md.
+    Golden rule 5: the owner's export only.
+  - **`lib/signature.ts` (pure):** a build's signature, one of the seven, from what its key items (T83; until
+    then, the main weapon) actually do: status buildup (with affinity) first, then element (weapon attack, then
+    spells: sorceries magic, incantations by their element); otherwise physical. Plus the top two scaling stats
+    ("DEX / ARC") and the eight-bar profile with the top two lit (`lib/buildMath.ts` neighbours). Unit tests; the
+    22 seeded builds' signatures match the mockup's `sig` in `design/mockup/data.js` (or the owner OKs each
+    difference).
+  - **Game stages** replace `lib/levels.ts`'s bands and colors: Early game 1–50, Mid 51–100, Late 101–124, Endgame
+    125–150, NG+ 151+, and for PvP lists the usual brackets (the session proposes them; owner OKs).
+    `features/builds/filters.ts` `LEVEL_PRESETS` and `LevelNumber` follow (the level shows in plain mono).
+  - **`mode: 'pve' | 'pvp'`** on builds (moved here from T81): `models.ts`, the editor store, `toBuild`/`loadBuild`,
+    `firestore.rules` (create and update; measure with `RULES_BUDGET=measure npm run test:rules` and lower
+    `HEADROOM`), rules tests. Builds without it read as PvP when tagged PVP, else PvE (no migration; T95's
+    backfill writes it); seeded builds are PvE; the "PVE/PVP" tag group leaves the tag list
+    (`scripts/data/tags.ts`), since the mode replaces it.
+  - **The search index** (`searchEntry` in `scripts/admin.mjs`, read by `features/builds/search.ts`) gains what
+    the new list filters and cards need: signature, profile, starting class, mode, the gear strip's icons.
+    `tests/admin/` cover it; the size per entry is noted for T80.
+- **Context:** `src/data/` (schema, rules.ts, index.ts), `scripts/data/extract.ts` (it already reads
+  `SpEffectParam` for talismans), `src/lib/buildMath.ts`, `src/lib/levels.ts`, `src/lib/models.ts`,
+  `firestore.rules` + `tests/rules/budget.test.ts` (Gotchas: rules budget), `scripts/admin.mjs` (`searchEntry`,
+  `computeStats`), the mockup's `data.js` (`sig`, `stats`) and `data-loadouts.js`.
+
+#### T88 — Build page frame: header, tabs, attributes, Notes, Comments
+
+- **Status:** after T87
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The build page as the mockup has it, except the equipment pane (T89), the analysis (T81) and the
+  Guide (T84).
+- **Done when:**
+  - Header: the build image in its signature-tinted box, the signature line ("■ BLEED · DEX / ARC"), the name in
+    capitals, the mode tag (PvE / PvP), level, starting class (left out when there's none), "by <author>",
+    tags; **Like and Share** top right as secondary buttons (under the title on phones). Gone: the stat bar,
+    player counts, patch, OwnerActions where the mockup has none (the owner's Edit and Delete find a place the
+    session proposes).
+  - Tabs **Loadout · Analysis · Notes · Guide · Comments** (counts on Guide and Comments), sticky, a faded right
+    edge on phones; `tabs.ts` keeps today's URLs working (Equipment → Loadout, the discussion tab → Comments;
+    the write-up → Notes). Analysis shows once T81 gives a build one.
+  - Loadout's left column: attributes with soft-cap marks, Vigor and the top two scaling stats lit in the
+    signature color, then HP / FP / Stamina / Poise in a 2×2 box, then "Starting class <name or Any>" and level;
+    the phone version (two columns of attributes, the four vitals in one row). The middle is T89's; the right
+    column is T81's (until then the board has two columns).
+  - **Notes:** the Author's Notes in a panel (title, author, date), the seeded build's source credit in a side
+    box. **Comments:** the same panel and side box: count, Top / Newest, a one-line comment box, avatar, "Author"
+    tag, like, Reply and a menu (Report), one reply level, Show more (T62's behaviour unchanged).
+  - **Removed:** BuildSidebar, StatsCard (its numbers move into the column), BuildSections, PhoneSection and
+    `glances.ts` (phones get the mockup's stacked layout, not collapsible sections), the "Write-up & comments"
+    tab. The Track button stays where it is until T84 replaces it. The crawler page (`functions/src/page.ts`,
+    plain HTML) still renders the build.
+  - Tests for the tab redirects and header; e2e `build-tabs`, `build-phone`, `comments`, `fold` updated;
+    screenshots of the three test builds' headers vs the mockup's (Full, Half, Sparse).
+- **Context:** the mockup's `#v-build` markup and `renderBuild()`; `features/editor/BuildEditorPage.tsx`,
+  `tabs.ts`, `sections/` (BuildHeader, BuildTabs, BuildActions, ShareButton, BuildSidebar, StatsCard,
+  BuildSections, PhoneSection, DescriptionSection, CommentsSection, CommentItem, CommentForm), `lib/buildMath.ts`.
+
+#### T89 — Equipment pane and item cards
+
+- **Status:** after T88
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The Loadout tab's middle column and the item cards, exactly as the mockup's three test builds show
+  them (Full: every slot; Half; Sparse: few items).
+- **Done when:**
+  - The pane as the Design direction "Equipment pane" bullet and the mockup describe it: the equip load bar
+    (weight / max, light-medium ticks, roll type) heading it; hands side by side; armament cards (type, name,
+    affinity or "Can't be infused", "· Needs Fai 28" in amber only when the build misses one); a 48px skill badge
+    on every armament with a skill (Ash of War icon, the one applied or the one it comes with, or a unique-skill
+    glyph in the signature color) with its own card; ammo chips; armor rows; talisman rings; spells as memory
+    cells (a costlier spell takes more cells, free cells dashed); tears, Great Rune, Spirit Ash as three small
+    cards; quick items as a 10-cell strip; unused groups in one "Not used" line; "Nothing in this hand".
+  - **Key styling** exists here, with the default rule (no key items stored yet: the first weapon is key); T83
+    adds the stored ones. Key items are the only highlighted items.
+  - **Item cards** for every item on the site (pane, Guide, picker rows): weight, poise, memory, requirements
+    checked against the build's stats, skill, effect, where to get it (no stop number); on hover and focus on
+    desktop, a bottom sheet on tap on phones; the cursor stays the arrow. Reuse `ItemCard` + `itemFacts.ts`.
+  - The phone pane (smaller weapon cards, armor 2×2, talismans in one row).
+  - `gear.ts` / `equipmentGroups` tests updated; screenshots of Full, Half and Sparse vs the mockup's, desktop and
+    phone; `GearTiles` and `EquipmentSection`'s old layout are deleted (the editor's edit mode is T91's).
+- **Context:** the mockup's `.eq`, `.wp`, `.ashic`, `.ar`, `.tl`, `.membar`, `.extras`, `.items`, `.itemcard`
+  styles and its render code; `features/editor/` (gear.ts, sections/EquipmentSection, GearTiles, ItemRow,
+  ItemCard, itemFacts.ts, itemDetails.ts, slots.ts), `src/data/rules.ts` (affinities, Ashes), `lib/buildMath.ts`
+  (load, roll, requirements, memory slots).
+
+#### T90 — Home: the build list and filters
+
+- **Status:** after T89
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** `/` is the mockup's home: the list of builds with the filter rail, the PvE / PvP switch, Popular
+  chips, sorts, and cards or list rows. Today's home (shelves, intro) is replaced, not kept.
+- **Done when:**
+  - Routes: `/` is the list; `/builds` (and its query strings) redirects there; sitemap and the crawler HTML for
+    `/` follow (`functions/`).
+  - The rail in the mockup's order: mode is the PvE / PvP switch with counts; main stats (same-width chips, two
+    columns, Strength / Dexterity / Quality left, Intelligence / Faith / Arcane right); level by game stage (PvP:
+    brackets) from T87; damage & status; starting class. The Grade group comes with T81. Filters live in the URL
+    (`filters.ts`), with clear links; phones get a Filters button opening a bottom sheet.
+  - **Popular** chips above the list, different per mode (each mode's most used filters, weapons and grades), from
+    `stats/<game>` (`computeStats` in `scripts/admin.mjs`). The fields only the old home used (popular weapons
+    and tags, trending shelves) go.
+  - Sorts Most liked, Trending, New (Top graded arrives with T81 as the default). Result count, load more, the
+    empty state ("No builds match" + clear).
+  - **Cards** (grid): signature glow, image, signature tag, name in capitals, level and class, the eight-bar
+    profile, gear strip, likes and comments, author; the whole card is the link. **List rows** (desktop above
+    ~1100px only): the mockup's columns. **The toggle**: grid by default, remembered in localStorage (try/catch).
+    No like button on rows or cards.
+  - The header's search (T86) searches builds by name, weapon and talisman over the index (`search.ts`), opening
+    the list filtered; ⌘K focuses it.
+  - **Removed:** `Landing`, `shelves.ts`, `LandingIntro` + `intro.ts` and its mirror in `index.html`'s `#root`,
+    `BuildsList`'s old rows (the cards replace them for the profile and hub pages too).
+  - Tests (filters, search, the stats job), e2e `builds` and `community` updated; screenshots of grid, list and
+    phone vs the mockup's.
+- **Context:** the mockup's `#v-home` markup and its list code; `features/builds/` (BuildsPage, FilterBar,
+  FilterControls, BuildsList, filters.ts, search.ts, shelves.ts, Landing, LandingIntro, queries.ts),
+  `scripts/admin.mjs` (`computeStats`, `searchEntry`), `src/lib/firebase/stats.ts`, `functions/src/handler.ts`
+  (routes, sitemap), `index.html`. T80 (the index at scale) comes after launch.
+
+#### T91 — The editor: New build and Edit
+
+- **Status:** after T90
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** Making or editing a build is the build page in edit mode, as the mockup's "New build" view shows it
+  (Empty and In progress): it guides the player and feels like building, not filling in a form.
+- **Done when:**
+  - Everything in the Design direction's **New build** bullet except the picker (T92) and the key star (T83):
+    the header (picture or "Your first weapon goes here", signature line, the large name field with **Suggest a
+    name**, the PvE / PvP switch, level and class, suggested tag chips, Cancel and Save); tabs Loadout and Notes
+    with Analysis and Guide locked ("after you save"); the starting-class list ("Any class" = no minimums);
+    attributes with − / + and typed values, soft caps, live level and vitals; the equipment pane (T89) in edit
+    mode with every empty slot as an invitation, the first-weapon hint, "+ Add another", hover actions (replace,
+    remove), the "Also add" chips; the right column's **live card** and **checklist** ("2 of 3 required",
+    jumping to each step), Save in the signature color; the phone bottom bar.
+  - **Required to save: PvE or PvP, at least one armament, a name** (level comes from the stats). Saving
+    without a name scrolls to the name field, focuses it and shows the error under it (from T73; today it shows
+    only in the bottom bar; the check is in `useBuildEditor.ts`; `features/auth/FormField` + `useFieldErrors`
+    do errors by field).
+  - **One name for the action: "New build"** everywhere (from T73; today "Plan a build" signed out and "Create a
+    build" on the profile). Signed out, `/build/new` still opens and Save asks to sign up (T68).
+  - Notes: a markdown box with Heading / Bold / List and the prompt buttons (How it plays, Why these pieces,
+    Stats, Swaps). Decide whether `@uiw/react-md-editor` stays (if it does, it takes the new palette: Ideas).
+  - The save moment: "Grading your build…" then the reveal, built with T81's result when T81 lands (until then,
+    Save goes straight to the build page).
+  - Tests (the store, required fields, Suggest a name), e2e `build-flow`, the signed-out planner and
+    `build-image` updated; screenshots of Empty and In progress, desktop and phone, vs the mockup's.
+- **Context:** the mockup's `#v-new` markup and its editor script (state `E`, `renderAll()`); `features/editor/`
+  (BuildEditorPage, useBuildEditor, store/, sections/BuildDetailsForm, BuildImageDialog, Markdown, slots.ts),
+  `data/startingClasses`, `lib/buildMath.ts`, `tagGroups` in `src/data/core.ts` (for the tag suggestions).
+
+#### T92 — The item picker
+
+- **Status:** after T91
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The mockup's picker: a large dialog with the list on the left and the selected item on the right,
+  and the weapon's second step for skill and affinity.
+- **Done when:**
+  - Everything in the Design direction's **item picker** bullet: search, type chips, "Only what my stats can
+    use", sorts per kind; rows with icon, name and one fact line (from `itemFacts.ts`; misses in amber),
+    "Equipped"; the right pane with facts, **your stats vs. its requirements as bars**, effect, where to get it;
+    weapons' second step (Skill: keep or an Ash of War that fits, with FP; **Affinity**: 13 buttons, the
+    disallowed ones disabled, "can't be infused"); Remove in the footer; phones full-screen, the list first,
+    a row opens its detail with Back.
+  - **Fast on a phone with 487 weapon rows** (from T75): measure opening and typing with `npm run perf` (or a
+    profile) before and after; virtualize only if the numbers say so. The first open still loads the full data
+    (~1 MB) lazily, with a loading state.
+  - Tests (filters in `picker.ts`, the affinity rules), e2e through the picker; screenshots vs the mockup's
+    (`window.__edPick('right:0')`).
+- **Context:** the mockup's picker markup and `openPicker()`; `features/editor/` (ItemSelector, WeaponOptions,
+  picker.ts, itemFacts.ts, slots.ts), `src/data/rules.ts`, `components/ui/Dialog`, `src/test/editor.tsx`.
+
+#### T93 — The rest of the site in the new look
+
+- **Status:** after T92
+- **Session:** Sonnet · medium effort · plan mode off
+- **Goal:** Every page the mockup doesn't show takes its look, with nothing from the old one left: no gold,
+  frames, Spectral or old rows anywhere.
+- **Done when:**
+  - Restyled with T86's kit and T90's cards: the profile (`/user/:id`: header, Builds / Liked tabs, the owner's
+    Playing / Completed panels, which T84 may adjust), the account page, the auth dialog (Login, Sign up, Forgot
+    password, Choose a name), `/auth/action`, privacy, terms, the 404, and the **weapon and tag pages**
+    (`/weapons/<slug>`, `/tags/<slug>`: kept for search traffic (owner); facts, "where to find" and the builds as
+    cards).
+  - The share card image (`functions/src/card.ts`, Satori) and the crawler HTML of hubs follow the new look
+    (Barlow Condensed name in capitals, signature color).
+  - A sweep for leftovers: `rg` for the deleted tokens and components finds nothing; unused UI files deleted.
+  - e2e `account`, `auth`, `hubs`, `settings`, `email-actions` pass; screenshots desktop and `--mobile` of each.
+- **Context:** `features/profile/`, `features/account/`, `features/auth/`, `features/legal/`, `features/hubs/`,
+  `functions/src/` (card, hub, weaponHub), T86's kit and T90's `BuildCard`.
 
 #### T81 — Souls Builds analysis: a grade and a write-up for every build
 
-- **Status:** ready to plan; after T85 (owner's order, 2026-11-18)
+- **Status:** ready to plan; after T93, on the `redesign` branch (T85, 2026-11-18): the launch (T95) waits for it
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** Every build gets an **analysis** written by an LLM when it's saved: a letter grade (S, A, B, C, D) with
   sub-scores and the reasoning behind each, plus playstyle, strengths, weaknesses, how it holds up across the base
@@ -186,7 +416,7 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
   builds while the site has few likes. The author's write-up becomes **Author's Notes**; ours is **Analysis**.
 - **Owner's calls (2026-11-18):**
   - **Mode is required per build: PvE or PvP**, graded only in that mode (no "both"). Replaces the PVE tag;
-    seeded builds are PvE. Changing the mode re-grades.
+    seeded builds are PvE. Changing the mode re-grades. (The `mode` field itself lands earlier, in T87.)
   - **Absolute grading from a rubric**, one prompt per build; nothing relative to other builds for now.
   - **Holistic**: power, synergy within the build, and how its strengths and weaknesses matter through the whole
     game and DLC. Cheese builds can grade high if they work. Graded for the build's level (an early build for its
@@ -209,14 +439,26 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
   Builds, may be wrong, with Report; Privacy page names the AI provider; a line in `docs/decisions.md` (it differs
   from T47's generated description, removed in T63, which read as the author's); tests (rules, the function with
   a stubbed model, the UI).
+- **The UI, to the mockup** (the restyle tickets left every grade spot out for this one): the **Analysis tab**
+  (hero with the big grade, title, summary, ease label and four sub-score tiles; the breakdown in one panel; how
+  it plays; strengths and weaknesses; through the game; one change that would raise it; the side column: about
+  this analysis, the grade scale, the PvP note); the **Loadout right column** (grade, title, sub-scores, short
+  text, pros and cons, "Full analysis →", the generated-by line; first on phones as the grade summary); the
+  **home list** (grade badge and one-line verdict on cards and rows, the Grade filter group, **Top graded** as
+  the default sort, grades in the Popular chips); the **editor's save moment** (T91: "Grading your build…", the
+  sub-scores filling, the reveal "B as a PvE build", See the analysis / Keep editing). The seeded builds in the
+  emulator get analyses (generated, or the calibrated ones) so screenshots compare with the mockup's. The 66
+  production builds are graded at launch (T95).
 - **Context:** `docs/product.md` (principles), `src/lib/buildMath.ts` (the numbers to send), `src/data/rules.ts`,
   `src/data/acquisition.ts`, `functions/` (existing function setup, T37), `firestore.rules` and its budget
   (Gotchas: keep analysis out of the build doc's rules). No attack-rating math yet, so damage grades are judgment;
-  AR math would sharpen them later. Use the `claude-api` skill for model choice and the SDK.
+  AR math would sharpen them later. Use the `claude-api` skill for model choice and the SDK. The mockup's
+  `#t-analysis` view and `data-r2.js` (sample grades and the Rivers of Blood analysis) for the UI and the tone;
+  T87's `signature.ts` and the index entry (add the grade and verdict to it).
 
 #### T83 — Key items: the author marks what makes the build work
 
-- **Status:** ready to plan (owner's idea, 2026-11-18; in the mockup); after T81
+- **Status:** ready to plan (owner's idea, 2026-11-18; in the mockup); after T81, on the `redesign` branch
 - **Session:** Opus · extra high effort · plan mode on
 - **Goal:** While editing, the author can mark any equipped item as **key** (weapons, talismans, spells, armor,
   tears, items…): the pieces the build depends on. Key items are the only highlighted items in the equipment
@@ -227,49 +469,108 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
 - **Done when (plan mode):** where it's stored (e.g. `Equipment.key`: slot ids, kept valid when a slot changes),
   a cap of 3 (the mockup's editor: "Mark key items (N of 3)"), the rules change and its cost against the rules budget (Gotchas:
   builds are near the 1,000-expression limit), the editor control (a toggle on each slot or in the picker),
-  tests (rules, editor); T81's analysis can read the key items as the author's statement of intent.
+  tests (rules, editor); T81's analysis can read the key items as the author's statement of intent. Already
+  there by then: T89 styles key items (with the default rule, the first weapon), T91's filled slots have hover
+  actions (the key star joins them; the checklist's "Mark key items (N of 3)"), T87's `signature.ts` takes key
+  items as an input. Decide how the key item as the build's picture sits with T40's picked `image`.
 - **Context:** the mockup (the build page's test builds; the editor's key star);
   `src/lib/models.ts` (`Equipment`), `src/features/editor/slots.ts`, `firestore.rules`, `tests/rules/budget.test.ts`.
 
-#### T84 — Tracking without a Track button
+#### T84 — The Guide, and tracking without a Track button
 
-- **Status:** ready to plan (owner's call, 2026-11-18); after T83
-- **Session:** Opus · high effort · plan mode on
-- **Goal:** Tracking isn't a mode you switch on: it starts when a player ticks the first checkbox in a build's
-  Guide, and that's all. No Track button, no "Tracking" state on the page, no "37 playing · 12 finished" on the
-  build page or in lists. The profile still lists the builds you're playing and have completed (T36). The
-  checks are the Guide's: tick a stop, or click an item in its "Your gear" column (Loadout direction above:
-  collected items are the source of truth, a stop is done when all its items are).
-- **Done when (plan mode):** what replaces the Track button and `TrackingIntro` (T41): signed out, the first tick
+- **Status:** ready to plan (owner's call, 2026-11-18); after T83, on the `redesign` branch. Widened at T85: it
+  also builds the Guide tab's new layout (the restyle tickets leave the Guide to it)
+- **Session:** Opus · extra high effort · plan mode on
+- **Goal:** The mockup's Guide tab, and tracking that isn't a mode you switch on: it starts when a player ticks
+  the first checkbox in a build's Guide, and that's all. No Track button, no "Tracking" state on the page, no "37
+  playing · 12 finished" on the build page or in lists. The profile still lists the builds you're playing and
+  have completed (T36). The checks are the Guide's: tick a stop, or click an item in its "Your gear" column
+  (Loadout direction above: collected items are the source of truth, a stop is done when all its items are).
+- **Done when (plan mode):** the Guide tab as the mockup: a panel of stop rows, every row the same height
+  (number, region and place, "You get" chips that never wrap, with "+N more" whose card lists the rest, how,
+  done), checkboxes in the signature color with a part-done middle state; the **Your gear** column (every item
+  the route gets, by group, dimmed until collected, a check in the signature color, "N of M" and a bar);
+  tablets drop the How column; phones show the gear grid first (no group labels), then the stops as compact
+  cards. The tracking model follows "collected items are the one source of truth" (`lib/tracking.ts`: ticking a
+  stop collects its items; T44's `marked` stops kept, derived or migrated: decide). What replaces the Track
+  button and `TrackingIntro` (T41): signed out, the first tick
   asks to sign up or log in to keep the checks (or keeps them locally until then; decide); what happens to
   `TrackingBar` (progress, Your stats, Stop) and the "Build complete" moment (rewards rule in `docs/product.md`);
   whether `playerCount`/`finishedCount` stay (still used by the profile counters? "Most played" sort is gone from
   the new design); from the retired T72: an account-menu **Playing** link to the profile's Playing tab, and on
-  phones, on a build you're tracking, the Guide first; no home-page run row; e2e journey updated; screenshots.
-- **Context:** `src/features/tracking/` (TrackButton, TrackingIntro, TrackingBar, useBuildTracking),
-  `src/features/editor/guide/`, T34–T36, T41, T44, T46 in `docs/tickets-archive.md`; the Loadout direction above.
+  phones, on a build you're tracking, the Guide first; no home-page run row; e2e `guide`, `tracking`,
+  `playing` updated; screenshots of the Guide vs the mockup's, desktop, tablet and phone.
+- **Context:** the mockup's `#t-guide` markup and its Guide code (`.step`, `.gear`, `.gtile`); `src/features/tracking/`
+  (TrackButton, TrackingIntro, TrackingBar, useBuildTracking, saveQueue), `src/lib/tracking.ts`,
+  `src/features/editor/guide/` (GuideSection, GuideRoute, progress.ts, route.ts, phrases.ts), T34–T36, T41,
+  T44, T46 in `docs/tickets-archive.md`; the Loadout direction above.
+
+#### T94 — Craft pass: every page, every state
+
+- **Status:** after T84, on the `redesign` branch; the last piece before launch
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** The whole redesigned site holds up beyond the happy path, page by page, as a careful designer would
+  check it before launch (from T77, folded into T85 and now this).
+- **Done when:**
+  - Every page and dialog reviewed at full resolution with the screenshot script (1440, 1000 and `--mobile`)
+    next to the mockup's, and what's off fixed.
+  - Loading (no blank panels or layout jumps; the picker's first open loads ~1 MB), empty, error and offline
+    states on every page.
+  - Small, purposeful motion that honours `prefers-reduced-motion`: tabs, dialogs, popovers, checking an item,
+    the progress bar, the editor's save reveal, and the Build complete moment (the rewards rule in
+    `docs/product.md`).
+  - Every flow by keyboard and screen reader (focus order, visible focus, the page behind a dialog out of
+    reach); phones end to end, targets ≥ 44 px, nothing that needs hover (item cards are bottom sheets).
+  - `Chips`' tag picker and `ShareButton`'s menu on `components/ui/Popover` if it fits; the phone Filters sheet
+    and item sheets share one bottom-sheet component.
+  - `npm run check`, `npm run test:rules`, `npm run e2e` pass on the branch.
+- **Context:** every ticket from T86; `scripts/screenshot.mjs`, `components/ui/` (Popover, Dialog, FocusScope),
+  `src/theme/motion.ts`, `docs/product.md`.
+
+#### T95 — Launch the redesign
+
+- **Status:** after T94
+- **Session:** Opus · high effort · plan mode on
+- **Goal:** soulsbuilds.com switches to the redesign in one go, with every production build ready for it.
+- **Done when:** (every production step asks the owner first; golden rule 2)
+  - `main` merged into `redesign` (anything fixed meanwhile), all checks green, the PR's preview reviewed by the
+    owner.
+  - A backup first (`node scripts/admin.mjs export --project soulsbuilds`).
+  - The PR merged; CI's approved deploy ships hosting, rules and indexes; T81's function deployed with its
+    secret.
+  - Production data made ready: `mode` written where it's missing (PvP for builds tagged PVP), every build
+    graded by T81's function (cost noted), the tracking change from T84 migrated if it needs one, the stats job
+    run (`admin.mjs stats --write`) so the index has the new fields.
+  - A smoke check on soulsbuilds.com, desktop and phone: home filters, a build's five tabs, New build to Save
+    with a grade, the Guide's ticks, sign-in; link previews and the crawler HTML (`--no-js`).
+  - AGENTS.md: the redesign is live, work returns to `main`, the branch deleted.
+- **Context:** `docs/firebase.md` ("Deploys", "Rules budget"), `.github/workflows/ci.yml`, `scripts/admin.mjs`,
+  T81's and T84's notes on data.
 
 #### T82 — Compare builds side by side
 
-- **Status:** ready to plan (owner's call, 2026-11-18: wanted, not in the mockup yet); after T84
+- **Status:** ready to plan (owner's call, 2026-11-18: wanted, not in the mockup yet); after the launch (T95), on
+  `main`
 - **Session:** Opus · high effort · plan mode on
 - **Goal:** Pick two or three builds (a Compare checkbox on list cards and a button on the build page) and see
   them side by side: grade and sub-scores (T81), stats with the top attributes highlighted, vitals, gear, route
   length. Browsing and comparing builds is the site's selling point (owner, 2026-11-18).
-- **Done when:** plan mode settles the URL (e.g. `/compare?ids=a,b,c`, shareable), the phone layout, and what
-  shows before T81 lands; e2e journey; screenshots desktop and `--mobile`.
+- **Done when:** plan mode settles the URL (e.g. `/compare?ids=a,b,c`, shareable) and the phone layout, mocked
+  in the Loadout look first (it isn't in the mockup: add a view to `design/mockup/` for the owner to approve);
+  e2e journey; screenshots desktop and `--mobile`.
 - **Context:** the Loadout direction above; replaces the "Build comparison view" idea (T33's "Compare with the
   original" can reuse it later).
 
-#### T80 — Home shelves that hold up unattended and at scale
+#### T80 — The home list's index, unattended and at scale
 
-- **Status:** ready (found while wrapping T79, 2026-11-17); after the redesign tickets, or sooner if the stats job stops
+- **Status:** ready (found while wrapping T79, 2026-11-17; rewritten for the redesign at T85); after T82, on
+  `main`, or sooner if the stats job stops (a fix on `main` then merges into `redesign`)
 - **Session:** Opus · extra high effort · plan mode on
-- **Goal:** Trending, the Top <tag> shelves and `/builds` search keep working with no one tending the site, at
-  tens of thousands of builds. Today two things break that:
+- **Goal:** The home list (T90: search, filters, Popular chips, the Trending sort, counts) keeps working with no
+  one tending the site, at tens of thousands of builds. Today two things break that:
   1. **The daily job stops.** `.github/workflows/stats.yml` is a `schedule` in a **public** repo, and GitHub turns
-     scheduled workflows off after 60 days without repository activity. Then `stats/<game>` freezes: Trending,
-     the Top shelves, Popular weapons, search and the counts all go stale (Fresh builds still work: Firestore).
+     scheduled workflows off after 60 days without repository activity. Then `stats/<game>` freezes: the index,
+     Trending, the Popular chips and the counts all go stale.
   2. **The index is one document.** `searchIndex` (`scripts/admin.mjs` ~line 459, T74) holds one entry per build
      in `stats/<game>`, ~200 bytes each (45 builds = 9 KB), with no cap. Firestore's 1 MB document limit is hit
      near ~5,000 builds: the write fails and the stats freeze. Every home visit also downloads the whole index.
@@ -278,15 +579,18 @@ never the selling point. Owner's calls (2026-11-18), all in the mockup:
     Blaze, or a keep-alive the owner approves); a failing or missing run is noticed (an alert, or the page shows
     the index's age and falls back sensibly).
   - The index can't outgrow a document: cap it (e.g. the newest N plus the all-time top M), or shard it, or move
-    search to queries; the home page reads a small precomputed doc (shelf ids only) instead of the whole index.
+    the list's filters to queries (T87 and T81 made the entries larger: signature, profile, mode, grade); the
+    home page doesn't download the whole index on every visit.
+  - New builds show in the list without waiting a day (today the index is daily; decide: write-time updates,
+    or Firestore queries for New).
   - Trending stays meaningful at volume: today's score is activity ÷ (1 + builds-posted-since/10)^1.5 on
     all-time likes; at hundreds of builds a day that is "the last day's most liked". Decide (owner) whether to
     count recent likes (needs like timestamps per window) or keep the rank decay with a larger step.
-  - Top <tag> shelves rank by all-time likes: decide whether they should favour recent builds (patch drift).
-  - Tests for the cap/shard and the shelf picks at 10k+ entries; docs (architecture "Search", firebase "Deploys").
-- **Context:** `scripts/admin.mjs` (`updateStats`, `searchEntry`), `src/features/builds/{shelves.ts,search.ts,
-queries.ts}`, `src/lib/firebase/stats.ts`, `.github/workflows/stats.yml`, `docs/product.md` (the rewards rule).
-  Production today: 66 builds, so nothing is urgent except the 60-day schedule rule.
+  - Tests for the cap/shard and the picks at 10k+ entries; docs (architecture "Search", firebase "Deploys").
+- **Context:** `scripts/admin.mjs` (`updateStats`, `computeStats`, `searchEntry`), `src/features/builds/`
+  (`search.ts`, `filters.ts`, `queries.ts`), `src/lib/firebase/stats.ts`, `.github/workflows/stats.yml`,
+  `docs/product.md` (the rewards rule). Production today: 66 builds, so nothing is urgent except the 60-day
+  schedule rule.
 
 ## Backlog
 
@@ -336,8 +640,8 @@ today's UI (landing, sidebar, hero, skin), read them as "its equivalent after th
     lazily (docs/data.md: core stays small); the pipeline takes a game (`npm run data -- ds3`) and the export
     folder becomes `~/Documents/soulsbuilds-gamedata/<game>/` (the owner moves the Elden Ring export into
     `er/`, or the script falls back to the old layout).
-  - Per game: the look (today `src/theme/skins.ts`; the Loadout redesign has no site accent, so T85 decides
-    what, if anything, differs per game), tags, link-preview card text ("Level 120 Dark Souls III build"),
+  - Per game: no look of its own (T85: one look for every game; `skins.ts` is gone in T86), but tags,
+    link-preview card text ("Level 120 Dark Souls III build"),
     page titles (T51), sitemap (T50), community stats (`stats/<game>`).
   - The Guide (route and tracking) needs hand-written progression per game (`scripts/data/progression.ts`,
     `places.ts`, `events.ts`). ★ Recommended: Dark Souls builds ship **without the Guide tab** first (tabs.ts
@@ -487,7 +791,7 @@ is for the mockup's layout to decide when one is picked up.
   "or start as X", and suggest a class for builds without one.
 - Item cards (T45 follow-up): scaling grades at the build's upgrade level, not +0 (needs upgrade levels on
   builds, like the route's upgrade materials; ReinforceParamWeapon's correction rates from the export).
-- Markdown editor in the site's palette, if T85's editor piece keeps `@uiw/react-md-editor`: since T28 it's
+- Markdown editor in the site's palette, if T91 (the editor) keeps `@uiw/react-md-editor`: since T28 it's
   pinned to its own dark theme (`data-color-mode` in `index.html`), GitHub's bluish dark; override its CSS
   variables in `sections/Markdown.tsx` (`--color-canvas-default` and friends, see its README).
 - Delete the unused 2022 doc `app/tags` in production (no rule matches it; it's in the T12 backup). Also from
@@ -509,11 +813,8 @@ is for the mockup's layout to decide when one is picked up.
 Finished tickets, newest first; `/wrap` moves the older ones to `docs/tickets-archive.md` (every finished ticket
 since T1, oldest first).
 
+- T85 — The Loadout restyle: plan and split — 2026-11-18 — the mockup screenshotted and read; owner's calls: the mockup as it looks wins over the text, nothing from today's site carries over unless it's in the mockup, grid/list toggle with grid default, built on a `redesign` branch and launched in one go (T95) with T81, T83 and T84 included, weapon and tag pages kept, one look for every game; split into T86–T95 (T84 widened to the Guide tab, `mode` moved from T81 to T87, T73/T75/T77 leftovers in T91/T92/T94); AGENTS.md and `/start` know the branch. No app code changed.
 - Tickets cleanup (no ticket) — 2026-11-18 — owner to-dos removed (owner: all checked); T73/T75/T77's
   still-useful parts merged into T85 ("Carried over"); T83, T57, T32, T33 and T65 brought in line with the mockup
   and what's live; old Done lines moved to `docs/tickets-archive.md`; `/wrap` keeps Done to the last session or
   two. No app code changed.
-- Design session (no ticket) — 2026-11-18 — the redesign chosen: "the mockup" (Loadout look, grades and analysis, PvE/PvP, editor and picker) in `design/mockup/` with preview/screenshot tooling and the live artifact; T81–T85 written and put next; T72 retired; T73, T75, T77 folded into T85; `docs/product.md` positioning note. No app code changed.
-- T73, T75, T77 — folded into T85 — 2026-11-18 (owner) — tickets for the old look; what still applies is under
-  T85's **Carried over**. T72 (Back to your run) was retired the same day: its account-menu Playing link and the
-  phone Guide-first went into T84.

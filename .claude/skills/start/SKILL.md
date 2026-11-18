@@ -17,6 +17,8 @@ spend this session's context on the work, not on re-investigating the project.
 - Read `TICKETS.md`. (`AGENTS.md` is already loaded.)
 - `git status --short`, `git branch --show-current` and `git log --oneline -5`. Uncommitted changes mean a
   previous session didn't wrap: ask whether they belong to this ticket before touching anything.
+- If the ticket works on a branch (the redesign tickets: `redesign`, see `TICKETS.md`), switch to it with a
+  clean tree (`git switch redesign`; create it from `main` only if the ticket says to, as T86 does).
 - Don't explore the codebase broadly. Read only what the ticket's **Context** points to, plus what the work
   turns out to need. Never Read `src/data/**/*.json` whole (grep / `node -e` instead).
 

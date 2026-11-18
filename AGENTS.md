@@ -15,7 +15,7 @@ copies, the rewards rule): `docs/product.md`.
 
 ## Where things stand (current state only, ≤ 8 lines; history lives in git)
 
-As of 2026-11-18 (T1–T31, T34–T36, T37–T56, T62–T64, T66–T71, T74, T76, T78, T79 done; T72 retired; Up next: the redesign (T85, then T81, T83, T84, T82; T73/T75/T77 folded into T85), then T80; T57–T61, T65 wait in TICKETS.md's Priority backlog; everything through T79 deployed by CI; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
+As of 2026-11-18 (T1–T31, T34–T36, T37–T56, T62–T64, T66–T71, T74, T76, T78, T79 done; T72 retired; T85 split the redesign: Up next T86–T93, T81, T83, T84, T94, T95 on the `redesign` branch, then T82, T80; T57–T61, T65 wait in TICKETS.md's Priority backlog; everything through T79 deployed by CI; seeded builds in production): **live on soulsbuilds.com** since T12. Vite 8, React 19 (Compiler), RTK 2,
 TanStack Query 5, styled-components 6, Firebase 13 (Blaze since T37), strict TS. Firestore model v2 + tested rules; search,
 likes, comments, reports + `scripts/admin.mjs`; privacy/terms; account deletion; Playwright e2e. Game data v2
 (base + DLC + the Tarnished Pack's two classes, game IDs) in `src/data/er/`; 22 seeded builds in `content/builds/er/` (T52, T53). Weapon and tag pages `/weapons/<slug>`, `/tags/<slug>` (T55; `features/hubs/`, `lib/hubs.ts`). CI: checks, PR previews, approved prod deploys on `main`, daily
@@ -24,7 +24,9 @@ route (T14/19/15). Tracking (T34): check off gear and level stats, private `user
 only (T41: an intro modal signed out); since T46 it lives only in the Guide (the route is the checklist; stops without gear marked done, T44); profile Playing/Completed + build counters (T36). Build image picked by the author (T40). Planning needs no account: `/build/new` opens for anyone, Save asks to sign up (T68); signed out, `/` opens with an intro (T69). Home `/` = shelves, `/builds` = the full list with search over a daily index (T74). Sign-in (T30): Google or email + password, then a display-name step; the emails' links open `/auth/action` (T43). Account page (T31) apart from the public profile. Crawlers (T50, T51): sitemap, the build as plain HTML in the page, real 404s, per-page title/description/canonical/noindex (`PageHead`). Rules budget guarded (T42). App Check left: enforcing. Redesign v2 (T26–T29) done; readability pass (T67): larger rem type, Inter write-ups, ~72-character lines, 1200px. Polish (T79): Spectral headings, softer contrast, level colors by band, gold row hearts that like. **Next:** `TICKETS.md`.
 **Redesign chosen (2026-11-18), not built yet:** **"the mockup"** (the owner's word for it) is the "Loadout" design every new UI
 change aims at: dark and dense, a signature color per build, grades and analysis, PvE/PvP lists, the new editor and picker.
-Source, live link, previews and screenshots: `design/mockup/README.md`; decisions: TICKETS.md "Design direction Loadout" (T81–T85).
+Source, live link, previews and screenshots: `design/mockup/README.md`; decisions: TICKETS.md "Design direction Loadout".
+**The mockup as it looks wins** over that text, and nothing on today's site carries over unless the mockup has it (owner, T85).
+Built on the `redesign` branch, live in one go at T95 (the full mockup: grades, key items and the new Guide included).
 
 ## Golden rules
 
@@ -99,7 +101,9 @@ they write the handoff; a fresh session trusts it and reads only what the ticket
 - Pushback welcome: give an honest opinion, propose the simpler option when there is one, say where you deviated.
 - Done properly, but time and tokens matter: read narrowly, one ticket per session, docs ready for a fresh session.
 - **`/wrap` commits and pushes** the current branch (owner's call, 2026-11-14); otherwise commit or push only
-  when asked. Work happens on `main`. Never force-push.
+  when asked. Work happens on `main`, except the redesign: T86–T95 and T81, T83, T84 happen on the `redesign`
+  branch until T95 merges it (`/start` switches to it; a fix that can't wait goes on `main`, then merges into
+  `redesign`). Never force-push.
 - End every reply that finishes a step with a short **Next for you** line: the exact command to type, a question
   to answer, or "nothing, I'm continuing".
 
